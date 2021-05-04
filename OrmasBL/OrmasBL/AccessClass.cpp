@@ -44,9 +44,9 @@ namespace BusinessLayer{
 		accessItemID = aiID;
 	}
 
-	bool Access::CreateAccess(DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage)
+	bool Access::CreateAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, rID, aiID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, rID, aiID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		roleID = rID;
@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Access::CreateAccess(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Access::CreateAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateAccess(id, roleID, accessItemID, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Access::DeleteAccess(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Access::DeleteAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteAccess(id, errorMessage))
 		{
@@ -91,7 +91,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Access::UpdateAccess(DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage)
+	bool Access::UpdateAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage)
 	{
 		roleID = rID;
 		accessItemID = aiID;
@@ -105,7 +105,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Access::UpdateAccess(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Access::UpdateAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateAccess(id, roleID, accessItemID, errorMessage))
 		{
@@ -127,7 +127,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Access::GetAccessByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Access::GetAccessByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -163,11 +163,11 @@ namespace BusinessLayer{
 	}
 
 
-	bool Access::CheckAccess(DataLayer::OrmasDal* ormasDal, int accessItemID, std::string checkedDivision, std::string checkingItem)
+	bool Access::CheckAccess(GlobalVariable* globalVar, DataLayer::OrmasDal* ormasDal, int accessItemID, std::string checkedDivision, std::string checkingItem)
 	{
 		AccessItem accessItem;
 		errorMessage = "";
-		if (accessItem.GetAccessItemByID(*ormasDal, accessItemID, errorMessage))
+		if (accessItem.GetAccessItemByID(globalVar, *ormasDal, accessItemID, errorMessage))
 		{
 			if (0 == checkedDivision.compare(accessItem.GetDivision()))
 			{
@@ -178,11 +178,11 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Access::CheckAccess(DataLayer::OrmasDal* ormasDal, int accessItemID, std::string checkedDivision)
+	bool Access::CheckAccess(GlobalVariable* globalVar, DataLayer::OrmasDal* ormasDal, int accessItemID, std::string checkedDivision)
 	{
 		AccessItem accessItem;
 		errorMessage = "";
-		if (accessItem.GetAccessItemByID(*ormasDal, accessItemID, errorMessage))
+		if (accessItem.GetAccessItemByID(globalVar, *ormasDal, accessItemID, errorMessage))
 		{
 			if (0 == checkedDivision.compare(accessItem.GetDivision()))
 			{
@@ -192,13 +192,13 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	std::string Access::GetCRUDAccess(DataLayer::OrmasDal* ormasDal, User* loggedUser, std::string accessItemName)
+	std::string Access::GetCRUDAccess(GlobalVariable* globalVar, DataLayer::OrmasDal* ormasDal, User* loggedUser, std::string accessItemName)
 	{
 		std::vector<int> rights;
-		rights = GetRightsList(ormasDal, loggedUser);
+		rights = GetRightsList(globalVar, ormasDal, loggedUser);
 		if (1 == rights.size())
 		{
-			if (CheckAccess(ormasDal, rights.at(0), "ALL"))
+			if (CheckAccess(globalVar, ormasDal, rights.at(0), "ALL"))
 			{
 				// returning 'CRUD', CREATE/READ/UPDATE/DELETE - max access rights
 				return "CRUD";
@@ -209,12 +209,12 @@ namespace BusinessLayer{
 			std::string errorMessage = "";
 			AccessItem itemRights;
 			AccessItem itemForCheck;
-			if (!itemForCheck.GetAccessItemByEngName(*ormasDal, accessItemName, errorMessage))
+			if (!itemForCheck.GetAccessItemByEngName(globalVar, *ormasDal, accessItemName, errorMessage))
 				return "";
 			for each (auto id in rights)
 			{
 				itemRights.Clear();
-				if (itemRights.GetAccessItemByID(*ormasDal, id, errorMessage))
+				if (itemRights.GetAccessItemByID(globalVar, *ormasDal, id, errorMessage))
 				{
 					if (itemRights.GetNameEng() == itemForCheck.GetNameEng())
 					{
@@ -229,7 +229,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::vector<int> Access::GetRightsList(DataLayer::OrmasDal* ormasDal, User *loggedUser)
+	std::vector<int> Access::GetRightsList(GlobalVariable* globalVar, DataLayer::OrmasDal* ormasDal, User *loggedUser)
 	{
 		std::vector<int> accessItemIDVector;
 		SetRoleID(loggedUser->GetRoleID());
@@ -245,7 +245,7 @@ namespace BusinessLayer{
 		return accessItemIDVector;
 	}
 
-	bool Access::IsDuplicate(DataLayer::OrmasDal& ormasDal, int rID, int aiID, std::string& errorMessage)
+	bool Access::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage)
 	{
 		Access access;
 		access.Clear();
@@ -264,7 +264,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Access::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Access::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Access access;
 		access.Clear();

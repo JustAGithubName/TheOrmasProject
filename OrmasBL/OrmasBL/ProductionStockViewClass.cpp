@@ -60,4 +60,52 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+	void ProductionStockView::SetProductName(std::string cProductName)
+	{
+		productName = cProductName;
+	}
+	void ProductionStockView::SetPrice(double cPrice)
+	{
+		price = cPrice;
+	}
+	void  ProductionStockView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+	void ProductionStockView::SetVolume(double cVolume)
+	{
+		volume = cVolume;
+	}
+	void ProductionStockView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void ProductionStockView::SetSumCurrencyName(std::string cSumCurrencyName)
+	{
+		sumCurrencyName = cSumCurrencyName;
+	}
+	void ProductionStockView::SetWarehouseName(std::string pWarehouseName)
+	{
+		warehouseName = pWarehouseName;
+	}
+	void ProductionStockView::SetSubaccountNumber(std::string pSubaccountNumber)
+	{
+		subaccountNumber = pSubaccountNumber;
+	}
+	void ProductionStockView::SetMeasureName(std::string cMeasureName)
+	{
+		measureName = cMeasureName;
+	}
+
+	std::string ProductionStockView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !productName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty()
+			|| 0 != count || 0 != sum || !sumCurrencyName.empty() || !statusName.empty() || 0 != productID || 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForStockView(id, productName, price, currencyName, volume, measureName, count, sum,
+				sumCurrencyName, warehouseName, subaccountNumber, statusName, productID, statusID, currencyID, warehouseID);
+		}
+		return "";
+	}
+
 }

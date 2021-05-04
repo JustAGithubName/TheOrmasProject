@@ -76,7 +76,7 @@ void CreateLcnDlg::CreateLocation()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetLocationParams(countryNameEdit->text(), countryCodeEdit->text(), regionNameEdit->text(), cityNameEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateLocation(location, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -92,7 +92,13 @@ void CreateLcnDlg::CreateLocation()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -126,7 +132,7 @@ void CreateLcnDlg::EditLocation()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetLocationParams(countryNameEdit->text(), countryCodeEdit->text(), regionNameEdit->text(), cityNameEdit->text(),
 				location->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateLocation(location, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -141,7 +147,13 @@ void CreateLcnDlg::EditLocation()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

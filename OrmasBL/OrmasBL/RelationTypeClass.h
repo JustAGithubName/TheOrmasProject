@@ -26,15 +26,15 @@ namespace BusinessLayer{
 		void SetComment(std::string);
 		
 		// Create, delete and update RelationType
-		bool CreateRelationType(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateRelationType(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteRelationType(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateRelationType(DataLayer::OrmasDal &ormasDal, std::string rtName, std::string rtComment, std::string& errorMessage);
-		bool UpdateRelationType(DataLayer::OrmasDal &ormasDal, std::string rtName, std::string rtComment, std::string& errorMessage);
+		bool CreateRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rtName, std::string rtComment, std::string& errorMessage);
+		bool UpdateRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rtName, std::string rtComment, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetRelationTypeByID(DataLayer::OrmasDal& ormasDal, int rtID, std::string& errorMessage);
+		bool GetRelationTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rtID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:

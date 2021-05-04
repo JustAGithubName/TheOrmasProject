@@ -39,22 +39,22 @@ namespace BusinessLayer
 		void SetDate(std::string);
 
 		//Create, delete, update methods
-		bool CreateSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateSpecification(DataLayer::OrmasDal& ormasDal, int pID, double sSum, int cID, int eID, std::string sDate, std::string& errorMessage);
-		bool UpdateSpecification(DataLayer::OrmasDal& ormasDal, int pID, double sSum, int cID, int eID, std::string sDate, std::string& errorMessage);
+		bool CreateSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sSum, int cID, int eID, std::string sDate, std::string& errorMessage);
+		bool UpdateSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sSum, int cID, int eID, std::string sDate, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetSpecificationByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool GetSpecificationByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool UpdateSpecificationByProductID(DataLayer::OrmasDal& ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetSpecificationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool GetSpecificationByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool UpdateSpecificationByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, double sSum, int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sSum, int cID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //SpecificationCLASS_H

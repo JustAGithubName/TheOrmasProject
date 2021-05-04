@@ -44,9 +44,9 @@ namespace BusinessLayer{
 		payslipID = pID;
 	}
 
-	bool BalancePayslipRelation::CreateBalancePayslipRelation(DataLayer::OrmasDal &ormasDal, int bID, int pID, std::string& errorMessage)
+	bool BalancePayslipRelation::CreateBalancePayslipRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int pID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, bID, pID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, bID, pID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		balanceID = bID;
@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool BalancePayslipRelation::CreateBalancePayslipRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool BalancePayslipRelation::CreateBalancePayslipRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateBalancePayslip(id, balanceID, payslipID, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool BalancePayslipRelation::DeleteBalancePayslipRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool BalancePayslipRelation::DeleteBalancePayslipRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteBalancePayslip(balanceID, payslipID, errorMessage))
 		{
@@ -102,9 +102,13 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::vector<int> BalancePayslipRelation::GetAllPayslipByBalanceID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	std::vector<int> BalancePayslipRelation::GetAllPayslipByBalanceID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		std::vector<int> payslipIDVector;
+		if (bID <= 0)
+			return payslipIDVector;
+
+		
 		BalancePayslipRelation bpRelation;
 		bpRelation.SetBalanceID(bID);
 		bpRelation.SetPayslipID(0);
@@ -120,9 +124,12 @@ namespace BusinessLayer{
 		return payslipIDVector;
 	}
 
-	std::vector<int> BalancePayslipRelation::GetAllBalanceByPayslipID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	std::vector<int> BalancePayslipRelation::GetAllBalanceByPayslipID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		std::vector<int> balanceIDVector;
+		if (pID <= 0)
+			return balanceIDVector;
+		
 		BalancePayslipRelation bpRelation;
 		bpRelation.SetBalanceID(0);
 		bpRelation.SetPayslipID(pID);
@@ -154,7 +161,7 @@ namespace BusinessLayer{
 	}
 
 
-	bool BalancePayslipRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int bID, int pID, std::string& errorMessage)
+	bool BalancePayslipRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int pID, std::string& errorMessage)
 	{
 		BalancePayslipRelation bpRelation;
 		bpRelation.Clear();
@@ -173,7 +180,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool BalancePayslipRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool BalancePayslipRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		BalancePayslipRelation bpRelation;
 		bpRelation.Clear();

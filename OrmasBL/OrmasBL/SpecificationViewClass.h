@@ -18,6 +18,7 @@ namespace BusinessLayer
 		SpecificationView(DataLayer::specificationsViewCollection);
 		SpecificationView(){};
 		~SpecificationView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// SpecificationView class Accessors
 		std::string GetProductName();
@@ -27,6 +28,12 @@ namespace BusinessLayer
 		std::string GetEmployeePhone();
 		std::string GetEmployeePositionName();
 
+		void SetProductName(std::string);
+		void SetCurrencyName(std::string);
+		void SetEmployeeName(std::string);
+		void SetEmployeeSurname(std::string);
+		void SetEmployeePhone(std::string);
+		void SetEmployeePositionName(std::string);
 	};
 }
 #endif //SPECIFICATIONVIEWCLASS_H

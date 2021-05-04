@@ -18,6 +18,7 @@ namespace BusinessLayer
 		FixedAssetsDetailsView(DataLayer::fixedAssetsDetailsViewCollection);
 		FixedAssetsDetailsView(){};
 		~FixedAssetsDetailsView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// OrderView class Accessors
 		int GetGroupNumber();
@@ -26,6 +27,13 @@ namespace BusinessLayer
 		std::string GetDivisionName();
 		double GetPrimaryAccValue();
 		double GetAmortizeAccValue();
+
+		void SetGroupNumber(int);
+		void SetAmortizeTypeName(std::string);
+		void SetAmortizeTypeCode(std::string);
+		void SetDivisionName(std::string);
+		void SetPrimaryAccValue(double);
+		void SetAmortizeAccValue(double);
 	};
 }
 #endif //FixedAssetsDetailsVIEWCLASS_H

@@ -61,7 +61,7 @@ void CreatePosDlg::CreatePosition()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetPositionParams(nameEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreatePosition(position, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -75,7 +75,13 @@ void CreatePosDlg::CreatePosition()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -104,7 +110,7 @@ void CreatePosDlg::EditPosition()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetPositionParams(nameEdit->text(), position->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdatePosition(position, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -117,7 +123,13 @@ void CreatePosDlg::EditPosition()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

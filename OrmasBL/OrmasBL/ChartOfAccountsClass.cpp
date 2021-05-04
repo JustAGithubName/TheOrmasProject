@@ -55,9 +55,9 @@ namespace BusinessLayer{
 		accountTypeID = cAccountTypeID;
 	}
 
-	bool ChartOfAccounts::CreateChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage)
+	bool ChartOfAccounts::CreateChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, cNumber, cName, cAccountTypeID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, cNumber, cName, cAccountTypeID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(cNumber, cName);
@@ -74,9 +74,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool ChartOfAccounts::CreateChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ChartOfAccounts::CreateChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateChartOfAccount(id, number, name, accountTypeID, errorMessage))
@@ -89,7 +89,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool ChartOfAccounts::DeleteChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ChartOfAccounts::DeleteChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteChartOfAccount(id, errorMessage))
 		{
@@ -102,7 +102,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool ChartOfAccounts::UpdateChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage)
+	bool ChartOfAccounts::UpdateChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage)
 	{
 		TrimStrings(cNumber, cName);
 		number = cNumber;
@@ -118,7 +118,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool ChartOfAccounts::UpdateChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ChartOfAccounts::UpdateChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateChartOfAccount(id, number, name, accountTypeID, errorMessage))
 		{
@@ -140,7 +140,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool ChartOfAccounts::GetChartOfAccountsByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool ChartOfAccounts::GetChartOfAccountsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -162,7 +162,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool ChartOfAccounts::GetChartOfAccountsByNumber(DataLayer::OrmasDal& ormasDal, std::string cNumber, std::string& errorMessage)
+	bool ChartOfAccounts::GetChartOfAccountsByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cNumber, std::string& errorMessage)
 	{
 		if (cNumber.empty())
 			return false;
@@ -207,7 +207,7 @@ namespace BusinessLayer{
 			boost::trim(cNumber);
 	}
 
-	bool ChartOfAccounts::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage)
+	bool ChartOfAccounts::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage)
 	{
 		ChartOfAccounts chartOfAccounts;
 		chartOfAccounts.Clear();
@@ -227,7 +227,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool ChartOfAccounts::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ChartOfAccounts::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ChartOfAccounts chartOfAccounts;
 		chartOfAccounts.Clear();

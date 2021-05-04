@@ -71,6 +71,64 @@ namespace BusinessLayer
 	{
 		return currencyName;
 	}
+	
+	void WriteOffRawView::SetStatusCode(std::string cStatusCode)
+	{
+		statusCode = cStatusCode;
+	}
+	void WriteOffRawView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void WriteOffRawView::SetEmployeeName(std::string cEmployeeName)
+	{
+		employeeName = cEmployeeName;
+	}
+	void WriteOffRawView::SetEmployeeSurname(std::string cEmployeeSurname)
+	{
+		employeeSurname = cEmployeeSurname;
+	}
+	void WriteOffRawView::SetEmployeePhone(std::string cEmployeePhone)
+	{
+		employeePhone = cEmployeePhone;
+	}
+	void WriteOffRawView::SetEmployeePosition(std::string cEmployeePosition)
+	{
+		employeePosition = cEmployeePosition;
+	}
+	void WriteOffRawView::SetStockEmployeeName(std::string eStockEmployeeName)
+	{
+		stockEmployeeName = eStockEmployeeName;
+	}
+	void WriteOffRawView::SetStockEmployeeSurname(std::string eStockEmployeeSurname)
+	{
+		stockEmployeeSurname = eStockEmployeeSurname;
+	}
+	void WriteOffRawView::SetStockEmployeePhone(std::string eStockEmployeePhone)
+	{
+		stockEmployeePhone = eStockEmployeePhone;
+	}
+	void WriteOffRawView::SetStockEmployeePosition(std::string eStockEmployeePosition)
+	{
+		stockEmployeePosition = eStockEmployeePosition;
+	}
+	void WriteOffRawView::SetCurrencyName(std::string eCurrencyName)
+	{
+		currencyName = eCurrencyName;
+	}
 
+	std::string WriteOffRawView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !executionDate.empty() || !statusCode.empty() || !statusName.empty() || !employeeName.empty() || !employeeSurname.empty()
+			|| !employeePhone.empty() || !employeePosition.empty() || !stockEmployeeName.empty() || !stockEmployeeSurname.empty()
+			|| !stockEmployeePhone.empty() || !stockEmployeePosition.empty() || 0 != count || 0 != sum || !currencyName.empty() ||
+			0 != stockEmployeeID || 0 != employeeID || 0 != statusID || currencyID)
+		{
+			return ormasDal.GetFilterForWOffRawView(id, date, executionDate, statusCode, statusName, employeeName, employeeSurname, employeePhone, employeePosition,
+				stockEmployeeName, stockEmployeeSurname, stockEmployeePhone, stockEmployeePosition, count, sum, currencyName, stockEmployeeID, employeeID, statusID, currencyID);
+		}
+		return "";
+	}
 }
+
 

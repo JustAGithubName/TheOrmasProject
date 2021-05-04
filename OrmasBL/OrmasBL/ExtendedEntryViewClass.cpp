@@ -35,4 +35,35 @@ namespace BusinessLayer{
 	{
 		return subaccountID;
 	}
+
+	void ExtendedEntryView::SetDebitingAccountNumber(std::string eDebitingAccountNumber)
+	{
+		debitingAccountNumber = eDebitingAccountNumber;
+	}
+
+	void ExtendedEntryView::SetCreditingAccountNumber(std::string eCreditingAccountNumber)
+	{
+		creditingAccountNumber = eCreditingAccountNumber;
+	}
+
+	void ExtendedEntryView::SetOperationID(int eOperationID)
+	{
+		operationID = eOperationID;
+	}
+
+	void ExtendedEntryView::SetSubaccountID(int eSubaccountID)
+	{
+		subaccountID = eSubaccountID;
+	}
+
+	std::string ExtendedEntryView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !debitingAccountNumber.empty() || 0.0 != value || !creditingAccountNumber.empty() || 0 != operationID || 0 != subaccountID 
+			|| 0 != debitingAccountID || 0 != creditingAccountID || !description.empty())
+		{
+			return ormasDal.GetFilterForEntryFullView(id, date, debitingAccountNumber, value, creditingAccountNumber, operationID, subaccountID,
+				debitingAccountID, creditingAccountID, description);
+		}
+		return "";
+	}
 }

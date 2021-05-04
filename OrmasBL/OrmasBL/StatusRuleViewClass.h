@@ -11,9 +11,12 @@ namespace BusinessLayer{
 		StatusRuleView(DataLayer::statusRuleViewCollection);
 		StatusRuleView(){};
 		~StatusRuleView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
 
 		// StatusRuleView class Accessors
 		std::string GetStatusName();
+
+		void SetStatusName(std::string);
 	};
 }
 

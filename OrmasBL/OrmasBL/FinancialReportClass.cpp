@@ -225,12 +225,12 @@ namespace BusinessLayer{
 		tillDate = fTillDate;
 	}
 
-	bool FinancialReport::CreateFinancialReport(DataLayer::OrmasDal &ormasDal, double fAccount44010, double fAccount55010, double fAccount552, double fAccount55270,
+	bool FinancialReport::CreateFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double fAccount44010, double fAccount55010, double fAccount552, double fAccount55270,
 		double fAccount553, double fAccount55321, double fAccount44020_90, double fAccount66010_66110, double fAccount66020_66120,
 		double fAccount66040_66140, double fAccount66050_66150, double fAccount66060_66160, double fAccount66130, double fAccount66070_66170,
 		double fTax, std::string fFromDate, std::string fTillDate, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, fFromDate, fTillDate, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, fFromDate, fTillDate, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		account44010 = fAccount44010;
@@ -262,9 +262,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool FinancialReport::CreateFinancialReport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FinancialReport::CreateFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateFinancialReport(id, account44010, account55010, account552, account55270, account553,
@@ -279,7 +279,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool FinancialReport::DeleteFinancialReport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FinancialReport::DeleteFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteFinancialReport(id, errorMessage))
 		{
@@ -293,7 +293,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool FinancialReport::UpdateFinancialReport(DataLayer::OrmasDal &ormasDal, double fAccount44010, double fAccount55010, double fAccount552, double fAccount55270,
+	bool FinancialReport::UpdateFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double fAccount44010, double fAccount55010, double fAccount552, double fAccount55270,
 		double fAccount553, double fAccount55321, double fAccount44020_90, double fAccount66010_66110, double fAccount66020_66120,
 		double fAccount66040_66140, double fAccount66050_66150, double fAccount66060_66160, double fAccount66130, double fAccount66070_66170,
 		double fTax, std::string fFromDate, std::string fTillDate, std::string& errorMessage)
@@ -327,7 +327,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool FinancialReport::UpdateFinancialReport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FinancialReport::UpdateFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateFinancialReport(id, account44010, account55010, account552, account55270, account553,
 			account55321, account44020_90, account66010_66110, account66020_66120, account66040_66140, account66050_66150,
@@ -355,7 +355,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool FinancialReport::GetFinancialReportByID(DataLayer::OrmasDal& ormasDal, int fID, std::string& errorMessage)
+	bool FinancialReport::GetFinancialReportByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fID, std::string& errorMessage)
 	{
 		if (fID <= 0)
 			return false;
@@ -422,7 +422,7 @@ namespace BusinessLayer{
 		tillDate = "";
 	}
 
-	bool FinancialReport::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
+	bool FinancialReport::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
 	{
 		FinancialReport financialReport;
 		financialReport.Clear();
@@ -441,7 +441,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool FinancialReport::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FinancialReport::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		FinancialReport financialReport;
 		financialReport.Clear();

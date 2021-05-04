@@ -54,7 +54,7 @@ void CreateCERDlg::SetID(int ID, QString childName)
 				employeeEdit->setText(QString::number(ID));
 			}
 			BusinessLayer::User user;
-			if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+			if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 			{
 				empNamePh->setText(user.GetName().c_str());
 				empSurnamePh->setText(user.GetSurname().c_str());
@@ -79,7 +79,7 @@ void CreateCERDlg::FillEditElements(int ceCompenyID, int ceEmployeeID, int ceBra
 	companyCmb->setCurrentIndex(companyCmb->findData(QVariant(ceCompenyID)));
 	branchCmb->setCurrentIndex(branchCmb->findData(QVariant(ceBranchID)));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), ceEmployeeID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ceEmployeeID, errorMessage))
 	{
 		empNamePh->setText(user.GetName().c_str());
 		empSurnamePh->setText(user.GetSurname().c_str());
@@ -114,7 +114,7 @@ void CreateCERDlg::CreateCompanyEmployee()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetCompanyEmployeeParams(companyCmb->currentData().toInt(), employeeEdit->text().toInt(), branchCmb->currentData().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateCompanyEmployeeRelation(companyEmployee, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -124,9 +124,9 @@ void CreateCERDlg::CreateCompanyEmployee()
 					BusinessLayer::Company *company = new BusinessLayer::Company();
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 					BusinessLayer::Branch *branch = new BusinessLayer::Branch();
-					if (!company->GetCompanyByID(dialogBL->GetOrmasDal(), companyEmployee->GetCompanyID(), errorMessage)
-						|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), companyEmployee->GetEmployeeID(), errorMessage)
-						|| !branch->GetBranchByID(dialogBL->GetOrmasDal(), companyEmployee->GetBranchID(), errorMessage))
+					if (!company->GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyEmployee->GetCompanyID(), errorMessage)
+						|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyEmployee->GetEmployeeID(), errorMessage)
+						|| !branch->GetBranchByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyEmployee->GetBranchID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -157,7 +157,13 @@ void CreateCERDlg::CreateCompanyEmployee()
 					delete branch;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 			
 			Close();
@@ -186,11 +192,12 @@ void CreateCERDlg::EditCompanyEmployee()
 	errorMessage.clear();
 	if (!companyCmb->currentText().isEmpty() && 0 != employeeEdit->text().toInt())
 	{
-		if (companyEmployee->GetCompanyID() != companyCmb->currentData().toInt() || companyEmployee->GetEmployeeID() != employeeEdit->text().toInt())
+		if (companyEmployee->GetCompanyID() != companyCmb->currentData().toInt() || companyEmployee->GetEmployeeID() != employeeEdit->text().toInt()
+			|| companyEmployee->GetBranchID() != branchCmb->currentData().toInt())
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetCompanyEmployeeParams(companyCmb->currentData().toInt(), employeeEdit->text().toInt(), branchCmb->currentData().toInt(), companyEmployee->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateCompanyEmployeeRelation(companyEmployee, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -200,9 +207,9 @@ void CreateCERDlg::EditCompanyEmployee()
 						BusinessLayer::Company *company = new BusinessLayer::Company();
 						BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 						BusinessLayer::Branch *branch = new BusinessLayer::Branch();
-						if (!company->GetCompanyByID(dialogBL->GetOrmasDal(), companyEmployee->GetCompanyID(), errorMessage)
-							|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), companyEmployee->GetEmployeeID(), errorMessage)
-							|| !branch->GetBranchByID(dialogBL->GetOrmasDal(), companyEmployee->GetBranchID(), errorMessage))
+						if (!company->GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyEmployee->GetCompanyID(), errorMessage)
+							|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyEmployee->GetEmployeeID(), errorMessage)
+							|| !branch->GetBranchByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyEmployee->GetBranchID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -231,7 +238,13 @@ void CreateCERDlg::EditCompanyEmployee()
 						delete branch;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}
@@ -287,7 +300,7 @@ void CreateCERDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

@@ -2,83 +2,91 @@
 	<body style="padding: 20px;">
 		<div id="report-header" style="margin:auto;	position:relative;	width:250px;">
 			<div id="report-name">
-				<b>Карточка счета AccountNumberPh</b>
-				SubaccountInfoPh
+				<b>Карточка счета AccountNumberPh<br/></b>
+				AccountInfoPh
 			</div></br>
 			<div id="report-period" ><b>
 				за fromDatePh - tillDatePh
 			</b></div>
 		</div>
 		<div id="content">
-			<table style="width:800px; border: 1px solid black;font-size:12px; border-collapse: collapse;">
-				<tr>
-					<td style="border: 1px solid black; text-align: center; padding:0px;">
-						<table style="font-size:12px; border-collapse: collapse;">
-							<tr style="border: 1px solid black; text-align: center; padding:0px;">
-								<td style="width:60px;border: 1px solid black; text-align: center;">Дата</td>
-								<td style="width:110px;border: 1px solid black; text-align: center;">Документ</td>
-								<td style="width:190px;border: 1px solid black; text-align: center;">Операции</td>
-								<td style="width:170px;border: 1px solid black; text-align: center; padding:0px;">
-									<table style="width:170px; border: 0px solid black;font-size:12px; border-collapse: collapse; padding:0px;">
+			<table style="width:1200px; border: 1px solid black; border-collapse: collapse;">
+				<tr style="width:100%;">
+					<td style="width:100%;border: 1px solid black; text-align: center; padding:0px;">
+						<table style="width:100%; border-collapse: collapse;">
+							<tr style="width:100%;border: 1px solid black; text-align: center; padding:0px;">
+								<td style="width:10%; max-width :120px; min-width: 120px;border: 1px solid black; text-align: center;">Дата</td>
+								<td style="width:20%;max-width: 240px;min-width: 240px;border: 1px solid black; text-align: center;">Документ</td>
+								<td style="width:30%;max-width: 360px;min-width: 360px;border: 1px solid black; text-align: center;">Операции</td>
+								<td style="width:15%;max-width: 180px;min-width: 180px;border: 1px solid black; text-align: center; padding:0px;">
+									<table style="width:100%;max-width: 180px; min-width: 180px;border: 0px solid black; border-collapse: collapse; padding:0px;">
 										<tr style="border: 1px solid black; text-align: center;">Дебет</tr>
 										<tr style="border: 1px solid black; text-align: center; padding:0px;">
-											<td style="width:85px;border: 1px solid black; text-align: center;">Счет</td>
-											<td style="width:85px;border: 1px solid black; text-align: center;">Сумма</td>
+											<td style="width:50%;max-width: 88px;min-width: 88px;border: 1px solid black; text-align: center;">Счет</td>
+											<td style="width:50%;max-width: 88px;min-width:88px;border: 1px solid black; text-align: center;">Сумма</td>
 										</tr>
 									</table>
 								</td>
-								<td style="width:170px;border: 1px solid black; text-align: center; padding:0px;">
-									<table style="width:170px; border: 0px solid black;font-size:12px; border-collapse: collapse; padding:0px;">
-										<tr style="border: 1px solid black; text-align: center;">Дебет</tr>
+								<td style="width:15%;max-width: 180px;min-width: 180px;border: 1px solid black; text-align: center; padding:0px;">
+									<table style="width:100%; border: 0px solid black; border-collapse: collapse; padding:0px;">
+										<tr style="border: 1px solid black; text-align: center;">Кредит</tr>
 										<tr style="border: 1px solid black; text-align: center; padding:0px;">
-											<td style="width:85px;border: 1px solid black; text-align: center;">Счет</td>
-											<td style="width:85px;border: 1px solid black; text-align: center;">Сумма</td>
+											<td style="width:50%;max-width: 88px;min-width: 88px;border: 1px solid black; text-align: center;">Счет</td>
+											<td style="width:50%;max-width: 88px;min-width: 88px;border: 1px solid black; text-align: center;">Сумма</td>
 										</tr>
 									</table>
 								</td>
-								<td style="width:100px;border: 1px solid black; text-align: center;">Текущее сальдо</td>
+								<td style="width:10%;border: 1px solid black; text-align: center;">Текущее сальдо</td>
 							</tr>
 						</table>
 					</td>
 				</tr>
-				<tr>
+				<tr style="width:100%;">
 					<td style="padding:0px;">
-						<table style="width:800px; border: 0px solid black;font-size:12px; border-collapse: collapse; padding:0px;">
+						<table style="width:100%; border: 0px solid black; border-collapse: collapse; padding:0px;">
 							<tr style="border: 1px solid black; padding:0px;">
-								<td style="width:360px;border: 1px solid black; text-align: left;">Сальдо на fromDatePh</td>
-								<td style="width:170px;border: 1px solid black; text-align: right;">fromDebSumPh</td>
-								<td style="width:170px;border: 1px solid black; text-align: right;">fromCredSumPh</td>
-								<td style="width:100px;border: 1px solid black; text-align: right;"></td>
+								<td style="width:50%;max-width: 720px;min-width: 720px;border: 1px solid black; text-align: left;">Сальдо на fromDatePh</td>
+								<td style="width:20%;max-width: 179px;min-width: 179px;border: 1px solid black; text-align: right;">fromDebSumPh</td>
+								<td style="width:20%;max-width: 179px;min-width: 179px;border: 1px solid black; text-align: right;">fromCredSumPh</td>
+								<td style="width:10%;max-width: 119px;min-width: 119px;border: 1px solid black; text-align: right;"></td>
 							</tr>
 						</table>
 					</td>
 				</tr>
 				TableBodyPh
-				<tr>
+				<tr style="width:100%;">
 					<td style="padding:0px;">
-						<table style="width:800px; border: 0px solid black;font-size:12px; border-collapse: collapse; padding:0px;">
+						<table style="width:100%; border: 0px solid black; border-collapse: collapse; padding:0px;">
 							<tr style="border: 1px solid black; padding:0px;">
-								<td style="width:360px;border: 1px solid black; text-align: left;">Обороты за период</td>
-								<td style="width:170px;border: 1px solid black; text-align: right;">curDebSumPh</td>
-								<td style="width:170px;border: 1px solid black; text-align: right;">curCredSumPh</td>
-								<td style="width:100px;border: 1px solid black; text-align: right;"></td>
+								<td style="width:50%;max-width: 720px;min-width: 720px;border: 1px solid black; text-align: left;">Обороты за период  fromDatePh - tillDatePh</td>
+								<td style="width:20%;max-width: 179px;min-width: 179px;border: 1px solid black; text-align: right;">curDebSumPh</td>
+								<td style="width:20%;max-width: 179px;min-width: 179px;border: 1px solid black; text-align: right;">curCredSumPh</td>
+								<td style="width:10%;max-width: 119px;min-width: 119px;border: 1px solid black; text-align: right;"></td>
 							</tr>
 						</table>
 					</td>
 				</tr>
-				<tr>
+				<tr style="width:100%;">
 					<td style="padding:0px;">
-						<table style="width:800px; border: 0px solid black;font-size:12px; border-collapse: collapse; padding:0px;">
+						<table style="width:100%; border: 0px solid black; border-collapse: collapse; padding:0px;">
 							<tr style="border: 1px solid black; padding:0px;">
-								<td style="width:360px;border: 1px solid black; text-align: left;">Сальдо на tillDatePh</td>
-								<td style="width:170px;border: 1px solid black; text-align: right;">tillDebSumPh</td>
-								<td style="width:170px;border: 1px solid black; text-align: right;">tillCredSumPh</td>
-								<td style="width:100px;border: 1px solid black; text-align: right;"></td>
+								<td style="width:50%;max-width: 720px;min-width: 720px;border: 1px solid black; text-align: left;">Сальдо на tillDatePh</td>
+								<td style="width:20%;max-width: 179px;min-width: 179px;border: 1px solid black; text-align: right;">tillDebSumPh</td>
+								<td style="width:20%;max-width: 179px;min-width: 179px;border: 1px solid black; text-align: right;">tillCredSumPh</td>
+								<td style="width:10%;max-width: 119px;min-width: 119px;border: 1px solid black; text-align: right;"></td>
 							</tr>
 						</table>
 					</td>
 				</tr>
 			</table>
+		</div>
+		<br/>
+		<br/>
+		<div style="font-size:10px;">
+			Отчет сформирован ReportDatePh
+		<div>
+		<div style="font-size:10px;">
+			Пользователь: UserNamePh UserSurnamePh
 		</div>
 	</body>
 </html>

@@ -13,11 +13,16 @@ namespace BusinessLayer{
 		TimesheetView(DataLayer::timesheetViewCollection);
 		TimesheetView(){};
 		~TimesheetView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// TimesheetView class Accessors
 		std::string GetUsername();
 		std::string GetUserSurname();
 		std::string GetUserPhone();
+
+		void SetUsername(std::string);
+		void SetUserSurname(std::string);
+		void SetUserPhone(std::string);
 	};
 }
 

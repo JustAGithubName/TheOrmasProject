@@ -72,5 +72,62 @@ namespace BusinessLayer
 		return currencyName;
 	}
 
+	void TransportView::SetStatusCode(std::string cStatusCode)
+	{
+		statusCode = cStatusCode;
+	}
+	void TransportView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void TransportView::SetEmployeeName(std::string cEmployeeName)
+	{
+		employeeName = cEmployeeName;
+	}
+	void TransportView::SetEmployeeSurname(std::string cEmployeeSurname)
+	{
+		employeeSurname = cEmployeeSurname;
+	}
+	void TransportView::SetEmployeePhone(std::string cEmployeePhone)
+	{
+		employeePhone = cEmployeePhone;
+	}
+	void TransportView::SetEmployeePosition(std::string cEmployeePosition)
+	{
+		employeePosition = cEmployeePosition;
+	}
+	void TransportView::SetUserName(std::string eUserName)
+	{
+		userName = eUserName;
+	}
+	void TransportView::SetUserSurname(std::string eUserSurname)
+	{
+		userSurname = eUserSurname;
+	}
+	void TransportView::SetUserPhone(std::string eUserPhone)
+	{
+		userPhone = eUserPhone;
+	}
+	void TransportView::SetUserPosition(std::string eUserPosition)
+	{
+		userPosition = eUserPosition;
+	}
+	void TransportView::SetCurrencyName(std::string eCurrencyName)
+	{
+		currencyName = eCurrencyName;
+	}
+
+	std::string TransportView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !executionDate.empty() || !statusCode.empty() || !statusName.empty() || !employeeName.empty() || !employeeSurname.empty()
+			|| !employeePhone.empty() || !employeePosition.empty() || !userName.empty() || !userSurname.empty()
+			|| !userPhone.empty() || !userPosition.empty() || 0 != count || 0 != sum || !currencyName.empty() ||
+			0 != userID || 0 != employeeID || 0 != statusID || currencyID)
+		{
+			return ormasDal.GetFilterForStTranView(id, date, executionDate, statusCode, statusName, employeeName, employeeSurname, employeePhone, employeePosition,
+				userName, userSurname, userPhone, userPosition, count, sum, currencyName, userID, employeeID, statusID, currencyID);
+		}
+		return "";
+	}
 }
 

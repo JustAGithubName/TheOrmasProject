@@ -23,4 +23,22 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+	void SpecificationListView::SetProductName(std::string sProductName)
+	{
+		productName = sProductName;
+	}
+
+	void SpecificationListView::SetMeasureName(std::string pMeasureName)
+	{
+		measureName = pMeasureName;
+	}
+
+	std::string SpecificationListView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != specificationID || 0 != productID || 0 != count)
+		{
+			return ormasDal.GetFilterForSpecListView(id, specificationID, productName, count, measureName, productID);
+		}
+		return "";
+	}
 }

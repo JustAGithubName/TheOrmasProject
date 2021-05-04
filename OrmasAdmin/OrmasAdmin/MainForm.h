@@ -25,6 +25,8 @@ private slots :
 	void OpenBorrowerForm();
 	void OpenCreditorForm(){};
 	void OpenShareholderForm(){};
+	void OpenGroupForm();
+	void OpenUserGroupForm();
 	void OpenCompanyEmployeeForm();
 	void OpenCashboxEmployeeForm();
 	void OpenWarehouseEmployeeForm();
@@ -52,6 +54,7 @@ private slots :
 
 	void OpenProductionForm();
 	void OpenProductionListForm();
+	void OpenProductionStockForm();
 	void OpenProductionConsumeRawForm();
 	void OpenProductionPlanForm();
 	void OpenProductionPlanListForm();
@@ -75,16 +78,19 @@ private slots :
 	void OpenBalanceForm();
 	void OpenAccountForm();
 	void OpenSubaccountForm();
+	void OpenSubaccountLimitForm();
 	void GenerateAccountsForm();
 	void GenerateOneAccountForm();	
 	void OpenSalaryForm();
 	void OpenSalaryTypeForm();
 	void OpenPayrollForm();
 	void OpenAccountTypeForm();
+	void OpenBranchSubaccountForm();
 	void OpenDivisionAccountsForm();
 	void OpenChartOfAccountsForm();
 	void OpenCompanyAccountForm();
 	void OpenEntryForm();
+	void OpenAccountableDocumentForm();
 	void OpenEntryRoutingForm();
 	void OpenCloseOfMonthForm();
 	void OpenCashboxForm();
@@ -98,6 +104,7 @@ private slots :
 	void OpenCashBookListForm();
 
 	void OpenStockForm();
+	void OpenStockLimitForm();
 	void OpenStockRawForm();
 	void OpenStockProductForm();
 	void OpenOrderRawForm();
@@ -120,6 +127,12 @@ private slots :
 	void SalesReportForm();
 	void AccountCardForm();
 	void WarehouseTurnoverForm();
+	void DailySalesReportForm();
+	void CommonReportForm();
+	void AgentReportForm();
+	void FixedAssetsForm();
+	void WarehouseReportForm();
+	
 
 	void OpenCompanyForm();
 	void OpenCurrencyForm();
@@ -137,6 +150,7 @@ private slots :
 	void OpenAboutForm();
 
 	void CloseChildsByName();
+
 private:
 	void CreateConnections();
 	BusinessLayer::User *loggedUser = nullptr;

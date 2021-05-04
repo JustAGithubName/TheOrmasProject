@@ -34,4 +34,34 @@ namespace BusinessLayer{
 	{
 		return price;
 	}
+
+	void EmployeeProductRelationView::SetUsername(std::string eUserName)
+	{
+		userName = eUserName;
+	}
+	void EmployeeProductRelationView::SetUserSurname(std::string eUserSurname )
+	{
+		userSurname = eUserSurname;
+	}
+	void EmployeeProductRelationView::SetUserPhone(std::string eUserPhone)
+	{
+		userPhone = eUserPhone;
+	}
+	void EmployeeProductRelationView::SetProductName(std::string eProductName)
+	{
+		productName = eProductName;
+	}
+	void EmployeeProductRelationView::SetPrice(double ePrice)
+	{
+		price = ePrice;
+	}
+
+	std::string EmployeeProductRelationView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !userName.empty() || !userSurname.empty() || !userPhone.empty() || !productName.empty() || 0 != price || 0 != employeeID || 0 != productID)
+		{
+			return ormasDal.GetFilterForEmpProductView(id, userName, userSurname, userPhone, productName, price, employeeID, productID);
+		}
+		return "";
+	}
 }

@@ -46,4 +46,34 @@ namespace BusinessLayer{
 	{
 		return isContract;
 	}
+
+	void EmployeeView::SetPositionName(std::string ePositionName)
+	{
+		positionName = ePositionName;
+	}
+	void EmployeeView::SetRoleName(std::string eRoleNamee)
+	{
+		roleName = eRoleNamee;
+	}
+
+	void EmployeeView::SetDivisionEmployeeID(int eDivisionEmployeeID)
+	{
+		divisionEmployeeID = eDivisionEmployeeID;
+	}
+
+	void EmployeeView::SetDivisionID(int eDivisionID)
+	{
+		divisionID = eDivisionID;
+	}
+
+	std::string EmployeeView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !name.empty() || !surname.empty() || !positionName.empty() || !phone.empty() || !address.empty() || !birthDate.empty() || !roleName.empty() 
+			|| !hireDate.empty() || !password.empty() || !email.empty() || 0 != roleID || 0 != positionID || 0 != divisionEmployeeID || 0 != divisionID)
+		{
+			return ormasDal.GetFilterForEmployeeView(id, name, surname, positionName, phone, address, birthDate, roleName, hireDate, password, email, 
+				roleID, positionID, divisionID);
+		}
+		return "";
+	}
 }

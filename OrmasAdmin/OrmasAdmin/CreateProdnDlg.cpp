@@ -100,7 +100,7 @@ void CreateProdnDlg::CreateProduction()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetProductionParams(prdDateEdit->text(), expiryDateEdit->text(), sesStartTimeEdit->text(), sesEndTimeEdit->text(), production->GetID());
 		production->warehouseID = warehouseCmb->currentData().toInt();
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateProduction(production, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -118,7 +118,13 @@ void CreateProdnDlg::CreateProduction()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -151,7 +157,7 @@ void CreateProdnDlg::EditProduction()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetProductionParams(prdDateEdit->text(), expiryDateEdit->text(), sesStartTimeEdit->text(), sesEndTimeEdit->text(), production->GetID());
 			production->warehouseID = warehouseCmb->currentData().toInt();
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateProduction(production, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -168,7 +174,13 @@ void CreateProdnDlg::EditProduction()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else
@@ -212,7 +224,7 @@ void CreateProdnDlg::OpenProdnListDlg()
 	dForm->productionID = production->GetID();
 	BusinessLayer::ProductionList pList;
 	pList.SetProductionID(production->GetID());
-	production->prodCountMap = pList.GetProductCount(dialogBL->GetOrmasDal(), errorMessage);
+	production->prodCountMap = pList.GetProductCount(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	std::string filter = pList.GenerateFilter(dialogBL->GetOrmasDal());
 	dForm->setWindowModality(Qt::WindowModal);
 	dForm->FillTable<BusinessLayer::ProductionListView>(errorMessage, filter);
@@ -254,8 +266,8 @@ void CreateProdnDlg::InitComboBox()
 	BusinessLayer::Warehouse warehouse;
 	BusinessLayer::WarehouseType warehouseType;
 	BusinessLayer::WarehouseEmployeeRelation weRelation;
-	std::vector<int> warehouseIDVector = weRelation.GetWarehouseIDListByEmployeeID(dialogBL->GetOrmasDal(), dataFormParent->loggedUser->GetID());
-	if (!warehouseType.GetWarehouseTypeByCode(dialogBL->GetOrmasDal(), "PRODUCTION", errorMessage))
+	std::vector<int> warehouseIDVector = weRelation.GetWarehouseIDListByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), dataFormParent->loggedUser->GetID());
+	if (!warehouseType.GetWarehouseTypeByCode(dialogBL->globalVar, dialogBL->GetOrmasDal(), "PRODUCTION", errorMessage))
 		return;
 	warehouse.SetWarehouseTypeID(warehouseType.GetID());
 	std::string filter = warehouse.GenerateFilter(dialogBL->GetOrmasDal());

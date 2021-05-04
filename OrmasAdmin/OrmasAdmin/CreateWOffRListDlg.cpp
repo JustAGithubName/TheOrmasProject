@@ -71,12 +71,12 @@ void CreateWOffRListDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
@@ -90,7 +90,7 @@ void CreateWOffRListDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -119,18 +119,18 @@ void CreateWOffRListDlg::FillEditElements(int wWriteOffRawID, int wProductID, do
 	statusEdit->setText(QString::number(wStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(wCurrencyID)));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), wProductID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wProductID, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), wStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -186,7 +186,7 @@ void CreateWOffRListDlg::AddProductToList()
 		BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 		BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
 
-		if (!product->GetProductByID(dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
+		if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr(errorMessage.c_str())),
@@ -199,9 +199,9 @@ void CreateWOffRListDlg::AddProductToList()
 		}
 		else
 		{
-			if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-				|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
-				|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
+			if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
+				|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
+				|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -280,7 +280,7 @@ void CreateWOffRListDlg::EditProductInList()
 			|| statusEdit->text().toInt() != writeOffRawList->GetStatusID() || currencyCmb->currentData().toInt() != writeOffRawList->GetCurrencyID())
 		{
 			BusinessLayer::Product *product = new BusinessLayer::Product();
-			if (!product->GetProductByID(dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
+			if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -308,10 +308,10 @@ void CreateWOffRListDlg::EditProductInList()
 						BusinessLayer::Status *status = new BusinessLayer::Status();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
-						if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
-							|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
+						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
+							|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Warning")),
 								QString(tr(errorMessage.c_str())),

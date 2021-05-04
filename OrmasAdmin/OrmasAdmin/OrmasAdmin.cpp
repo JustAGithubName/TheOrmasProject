@@ -10,6 +10,8 @@
 #include "ConfigParser.h"
 #include <QString>
 
+
+
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
@@ -19,6 +21,11 @@ int main(int argc, char* argv[])
 	QResource::registerResource("OrmasResource.rcc");
 	BusinessLayer::OrmasBL *oBL = new BusinessLayer::OrmasBL();
 	ConfigParser conParser;
+	/*conParser.dbIPAddress = "109.74.68.244";
+	conParser.dbName = "FarhundaDB";
+	conParser.dbPassword = "postgres2018";
+	conParser.dbUsername = "postgres";
+	conParser.port = 5432;*/
 	std::string executablePath = qApp->applicationDirPath().toStdString();
 	executablePath += "/";
 	executablePath += "appconfig.xml";
@@ -38,11 +45,14 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	BusinessLayer::User *loggedUser = new BusinessLayer::User();
+	BusinessLayer::GlobalVariable *gVar = new BusinessLayer::GlobalVariable();
 	LoginForm logForm(oBL, loggedUser);
 	logForm.setWindowIcon(QIcon("./images/ormas.png"));
 	logForm.exec();
 	if (!loggedUser->IsEmpty())
 	{
+		gVar->userID = loggedUser->GetID();
+		oBL->SetGlobalVariables(gVar);
 		MainForm startForm(oBL, loggedUser);
 		startForm.setWindowState(Qt::WindowMaximized);
 		startForm.show();

@@ -71,7 +71,7 @@ void CreateAcsItemDlg::CreateAccessItem()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetAccessItemParams(nameEngEdit->text(), nameRuEdit->text(), divisionEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateAccessItem(accessItem, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -85,7 +85,13 @@ void CreateAcsItemDlg::CreateAccessItem()
 					itemModel->appendRow(accessListItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -117,7 +123,7 @@ void CreateAcsItemDlg::EditAccessItem()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetAccessItemParams(nameEngEdit->text(), nameRuEdit->text(), divisionEdit->text(), accessItem->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateAccessItem(accessItem, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -130,7 +136,13 @@ void CreateAcsItemDlg::EditAccessItem()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

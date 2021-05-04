@@ -76,7 +76,7 @@ void CreateCmpDlg::CreateCompany()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetCompanyParams(nameEdit->text(), addressEdit->text(), phoneEdit->text(), commentTextEdit->toPlainText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateCompany(company,errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -92,7 +92,13 @@ void CreateCmpDlg::CreateCompany()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -125,7 +131,7 @@ void CreateCmpDlg::EditCompany()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetCompanyParams(nameEdit->text(), addressEdit->text(), phoneEdit->text(), commentTextEdit->toPlainText(), company->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateCompany(company, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -140,7 +146,13 @@ void CreateCmpDlg::EditCompany()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

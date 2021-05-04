@@ -117,12 +117,12 @@ namespace BusinessLayer
 		activated = uActivated;
 	}
 
-	bool User::CreateUser(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, 
+	bool User::CreateUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, 
 		std::string uPhone,	std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uName, uSurname, uPhone, uAddress, uRoleID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uName, uSurname, uPhone, uAddress, uRoleID, errorMessage))
 			return false;
-		if (!IsUnique(ormasDal, uPhone, errorMessage))
+		if (!IsUnique(globalVar, ormasDal, uPhone, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(uEmail, uName, uSurname, uPhone, uAddress, uPassword);
@@ -136,21 +136,21 @@ namespace BusinessLayer
 		activated = uActivated;
 		if (0 != id && ormasDal.CreateUser(id, email, name, surname, phone, address, roleID, password, activated, errorMessage))
 		{
-			CreateBalance(ormasDal, errorMessage);
+			CreateBalance(globalVar, ormasDal, errorMessage);
 			return true;
 		}
 		return false;
 	}
-	bool User::CreateUser(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool User::CreateUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		if (!IsUnique(ormasDal, errorMessage))
+		if (!IsUnique(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateUser(id, email, name, surname, phone, address, roleID, password, activated, errorMessage))
 		{
-			if (CreateBalance(ormasDal, errorMessage))
+			if (CreateBalance(globalVar, ormasDal, errorMessage))
 				return true;
 			return false;
 		}
@@ -160,17 +160,17 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool User::DeleteUser(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool User::DeleteUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		Balance balance;
 		Subaccount subAcc;
-		if (balance.GetBalanceByUserID(ormasDal, id, errorMessage))
+		if (balance.GetBalanceByUserID(globalVar, ormasDal, id, errorMessage))
 		{
 			
-			if (subAcc.GetSubaccountByID(ormasDal, balance.GetSubaccountID(), errorMessage))
+			if (subAcc.GetSubaccountByID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 			{
-				if (balance.DeleteBalance(ormasDal, errorMessage) && subAcc.DeleteSubaccount(ormasDal, errorMessage)
+				if (balance.DeleteBalance(globalVar, ormasDal, errorMessage) && subAcc.DeleteSubaccount(globalVar, ormasDal, errorMessage)
 					&& ormasDal.DeleteUser(id, errorMessage))
 				{
 					Clear();
@@ -182,13 +182,13 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool User::UpdateUser(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname,
+	bool User::UpdateUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname,
 		std::string uPhone, std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string& errorMessage)
 	{
-		std::string prevPhone = GetCurrentPhone(ormasDal, id, errorMessage);
+		std::string prevPhone = GetCurrentPhone(globalVar, ormasDal, id, errorMessage);
 		if (0 != prevPhone.compare(uPhone))
 		{
-			if (!IsUnique(ormasDal, uPhone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, uPhone, errorMessage))
 				return false;
 		}
 		TrimStrings(uEmail, uName, uSurname, uPhone, uAddress, uPassword);
@@ -206,12 +206,12 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool User::UpdateUser(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool User::UpdateUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::string prevPhone = GetCurrentPhone(ormasDal, id, errorMessage);
+		std::string prevPhone = GetCurrentPhone(globalVar, ormasDal, id, errorMessage);
 		if (0 != prevPhone.compare(phone))
 		{
-			if (!IsUnique(ormasDal, phone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, phone, errorMessage))
 				return false;
 		}
 		if (0 != id && ormasDal.UpdateUser(id, email, name, surname, phone, address, roleID, password, activated, errorMessage))
@@ -235,7 +235,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	std::string User::GenerateINFilter(DataLayer::OrmasDal& ormasDal, std::vector<int> userIDList)
+	std::string User::GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> userIDList)
 	{
 		if (userIDList.size()>0)
 		{
@@ -244,7 +244,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool User::GetUserByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool User::GetUserByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		if (uID <= 0)
 			return false;
@@ -271,7 +271,7 @@ namespace BusinessLayer
 		return false;
 	}
 	
-	bool User::GetUserByCredentials(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string uPassword)
+	bool User::GetUserByCredentials(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string uPassword)
 	{
 		std::string errorMessage = "";
 		if (!uPhone.empty() && !uPassword.empty())
@@ -339,7 +339,7 @@ namespace BusinessLayer
 			boost::trim(uPassword);
 	}
 
-	bool User::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string uName, std::string uSurname, std::string uPhone,
+	bool User::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uName, std::string uSurname, std::string uPhone,
 		std::string uAddress, int uRoleID, std::string& errorMessage)
 	{
 		User user;
@@ -362,7 +362,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool User::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool User::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		User user;
 		user.Clear();
@@ -384,7 +384,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool User::IsUnique(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string& errorMessage)
+	bool User::IsUnique(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string& errorMessage)
 	{
 		User user;
 		user.SetPhone(uPhone);
@@ -400,7 +400,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool User::IsUnique(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool User::IsUnique(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		User user;
 		user.SetPhone(phone);
@@ -416,46 +416,46 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool User::CreateBalance(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool User::CreateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Currency currency;
 		std::string number = "";
 		std::string genAccRawNumber = "";
-		int currID = currency.GetMainTradeCurrencyID(ormasDal, errorMessage);
+		int currID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
 		if (0 != currID)
 		{
 			Status status;
-			if (!status.GetStatusByName(ormasDal, "OPEN" , errorMessage))
+			if (!status.GetStatusByName(globalVar, ormasDal, "OPEN" , errorMessage))
 				return false;
-			if (!currency.GetCurrencyByID(ormasDal, currID, errorMessage))
+			if (!currency.GetCurrencyByID(globalVar, ormasDal, currID, errorMessage))
 				return false;
 			Subaccount subaccount;
 			Account account;
 			Role roleClient;
 			Role rolePurveyor;
-			if (roleID == roleClient.GetRoleIDByName(ormasDal, "CLIENT", errorMessage))
+			if (roleID == roleClient.GetRoleIDByName(globalVar, ormasDal, "CLIENT", errorMessage))
 			{
 				account.Clear();
-				if (account.GetAccountByNumber(ormasDal,"10410",errorMessage))
+				if (account.GetAccountByNumber(globalVar, ormasDal,"10410",errorMessage))
 					number = std::to_string(10410);
 			}
-			else if (roleID == rolePurveyor.GetRoleIDByName(ormasDal, "PURVEYOR", errorMessage))
+			else if (roleID == rolePurveyor.GetRoleIDByName(globalVar, ormasDal, "PURVEYOR", errorMessage))
 			{
 				account.Clear();
-				if (account.GetAccountByNumber(ormasDal, "22010", errorMessage))
+				if (account.GetAccountByNumber(globalVar, ormasDal, "22010", errorMessage))
 					number = std::to_string(22010);
 			}
 			else
 			{
 				account.Clear();
-				if (account.GetAccountByNumber(ormasDal, "22210", errorMessage))
+				if (account.GetAccountByNumber(globalVar, ormasDal, "22210", errorMessage))
 					number = std::to_string(22210);
 			}
 			if (number.empty())
 				return false;
 		
 			number.append(std::to_string(currency.GetCode()));
-			genAccRawNumber = subaccount.GenerateRawNumber(ormasDal, errorMessage);
+			genAccRawNumber = subaccount.GenerateRawNumber(globalVar, ormasDal, errorMessage);
 			if (genAccRawNumber.empty())
 				return false;
 			number.append(genAccRawNumber);
@@ -469,44 +469,44 @@ namespace BusinessLayer
 			subaccount.SetClosedDate("");
 			subaccount.SetDetails("Generated by system");
 
-			if (!subaccount.CreateSubaccount(ormasDal, errorMessage))
+			if (!subaccount.CreateSubaccount(globalVar, ormasDal, errorMessage))
 				return false;
 			Balance balance;
 			balance.SetUserID(id);
 			balance.SetSubaccountID(subaccount.GetID());
-			if (balance.CreateBalance(ormasDal, errorMessage))
+			if (balance.CreateBalance(globalVar, ormasDal, errorMessage))
 				return true;
 		}
 		return false;
 	}
 
-	bool User::CreateBalanceForAccountable(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool User::CreateBalanceForAccountable(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		User user;
-		if (!user.GetUserByID(ormasDal, uID, errorMessage))
+		if (!user.GetUserByID(globalVar, ormasDal, uID, errorMessage))
 			return false;
 		Currency currency;
 		std::string number = "";
 		std::string genAccRawNumber = "";
-		int currID = currency.GetMainTradeCurrencyID(ormasDal, errorMessage);
+		int currID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
 		if (0 != currID)
 		{
 			Status status;
-			if (!status.GetStatusByName(ormasDal, "OPEN", errorMessage))
+			if (!status.GetStatusByName(globalVar, ormasDal, "OPEN", errorMessage))
 				return false;
-			if (!currency.GetCurrencyByID(ormasDal, currID, errorMessage))
+			if (!currency.GetCurrencyByID(globalVar, ormasDal, currID, errorMessage))
 				return false;
 			Subaccount subaccount;
 			Account account;
 			
 			account.Clear();
-			if (account.GetAccountByNumber(ormasDal, "10520", errorMessage))
+			if (account.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 				number = std::to_string(10520);
 			if (number.empty())
 				return false;
 
 			number.append(std::to_string(currency.GetCode()));
-			genAccRawNumber = subaccount.GenerateRawNumber(ormasDal, errorMessage);
+			genAccRawNumber = subaccount.GenerateRawNumber(globalVar, ormasDal, errorMessage);
 			if (genAccRawNumber.empty())
 				return false;
 			number.append(genAccRawNumber);
@@ -526,44 +526,44 @@ namespace BusinessLayer
 			subaccount.SetClosedDate("");
 			subaccount.SetDetails(owner);
 
-			if (!subaccount.CreateSubaccount(ormasDal, errorMessage))
+			if (!subaccount.CreateSubaccount(globalVar, ormasDal, errorMessage))
 				return false;
 			Balance balance;
 			balance.SetUserID(user.GetID());
 			balance.SetSubaccountID(subaccount.GetID());
-			if (balance.CreateBalance(ormasDal, errorMessage))
+			if (balance.CreateBalance(globalVar, ormasDal, errorMessage))
 				return true;
 		}
 		return false;
 	}
 
-	bool User::CreateBalanceForBorrower(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool User::CreateBalanceForBorrower(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		User user;
-		if (!user.GetUserByID(ormasDal, uID, errorMessage))
+		if (!user.GetUserByID(globalVar, ormasDal, uID, errorMessage))
 			return false;
 		Currency currency;
 		std::string number = "";
 		std::string genAccRawNumber = "";
-		int currID = currency.GetMainTradeCurrencyID(ormasDal, errorMessage);
+		int currID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
 		if (0 != currID)
 		{
 			Status status;
-			if (!status.GetStatusByName(ormasDal, "OPEN", errorMessage))
+			if (!status.GetStatusByName(globalVar, ormasDal, "OPEN", errorMessage))
 				return false;
-			if (!currency.GetCurrencyByID(ormasDal, currID, errorMessage))
+			if (!currency.GetCurrencyByID(globalVar, ormasDal, currID, errorMessage))
 				return false;
 			Subaccount subaccount;
 			Account account;
 
 			account.Clear();
-			if (account.GetAccountByNumber(ormasDal, "11620", errorMessage))
+			if (account.GetAccountByNumber(globalVar, ormasDal, "11620", errorMessage))
 				number = std::to_string(11620);
 			if (number.empty())
 				return false;
 
 			number.append(std::to_string(currency.GetCode()));
-			genAccRawNumber = subaccount.GenerateRawNumber(ormasDal, errorMessage);
+			genAccRawNumber = subaccount.GenerateRawNumber(globalVar, ormasDal, errorMessage);
 			if (genAccRawNumber.empty())
 				return false;
 			number.append(genAccRawNumber);
@@ -583,44 +583,44 @@ namespace BusinessLayer
 			subaccount.SetClosedDate("");
 			subaccount.SetDetails(owner);
 
-			if (!subaccount.CreateSubaccount(ormasDal, errorMessage))
+			if (!subaccount.CreateSubaccount(globalVar, ormasDal, errorMessage))
 				return false;
 			Balance balance;
 			balance.SetUserID(user.GetID());
 			balance.SetSubaccountID(subaccount.GetID());
-			if (balance.CreateBalance(ormasDal, errorMessage))
+			if (balance.CreateBalance(globalVar, ormasDal, errorMessage))
 				return true;
 		}
 		return false;
 	}
 
-	bool User::CreateBalanceForShareholder(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool User::CreateBalanceForShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		User user;
-		if (!user.GetUserByID(ormasDal, uID, errorMessage))
+		if (!user.GetUserByID(globalVar, ormasDal, uID, errorMessage))
 			return false;
 		Currency currency;
 		std::string number = "";
 		std::string genAccRawNumber = "";
-		int currID = currency.GetMainTradeCurrencyID(ormasDal, errorMessage);
+		int currID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
 		if (0 != currID)
 		{
 			Status status;
-			if (!status.GetStatusByName(ormasDal, "OPEN", errorMessage))
+			if (!status.GetStatusByName(globalVar, ormasDal, "OPEN", errorMessage))
 				return false;
-			if (!currency.GetCurrencyByID(ormasDal, currID, errorMessage))
+			if (!currency.GetCurrencyByID(globalVar, ormasDal, currID, errorMessage))
 				return false;
 			Subaccount subaccount;
 			Account account;
 
 			account.Clear();
-			if (account.GetAccountByNumber(ormasDal, "33010", errorMessage))
+			if (account.GetAccountByNumber(globalVar, ormasDal, "33010", errorMessage))
 				number = std::to_string(33010);
 			if (number.empty())
 				return false;
 
 			number.append(std::to_string(currency.GetCode()));
-			genAccRawNumber = subaccount.GenerateRawNumber(ormasDal, errorMessage);
+			genAccRawNumber = subaccount.GenerateRawNumber(globalVar, ormasDal, errorMessage);
 			if (genAccRawNumber.empty())
 				return false;
 			number.append(genAccRawNumber);
@@ -640,29 +640,29 @@ namespace BusinessLayer
 			subaccount.SetClosedDate("");
 			subaccount.SetDetails(owner);
 
-			if (!subaccount.CreateSubaccount(ormasDal, errorMessage))
+			if (!subaccount.CreateSubaccount(globalVar, ormasDal, errorMessage))
 				return false;
 			Balance balance;
 			balance.SetUserID(user.GetID());
 			balance.SetSubaccountID(subaccount.GetID());
-			if (balance.CreateBalance(ormasDal, errorMessage))
+			if (balance.CreateBalance(globalVar, ormasDal, errorMessage))
 				return true;
 		}
 		return false;
 	}
 
-	int User::GetUserBalanceID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	int User::GetUserBalanceID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		Balance balance;
-		if (balance.GetBalanceByUserID(ormasDal, cID, errorMessage))
+		if (balance.GetBalanceByUserID(globalVar, ormasDal, cID, errorMessage))
 			return balance.GetID();
 		return 0;
 	}
 
-	std::string User::GetCurrentPhone(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	std::string User::GetCurrentPhone(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		User user;
-		if (user.GetUserByID(ormasDal, uID, errorMessage))
+		if (user.GetUserByID(globalVar, ormasDal, uID, errorMessage))
 			return user.GetPhone();
 		return 0;
 	}

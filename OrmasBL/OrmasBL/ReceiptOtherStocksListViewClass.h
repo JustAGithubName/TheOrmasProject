@@ -18,6 +18,7 @@ namespace BusinessLayer
 		ReceiptOtherStocksListView(DataLayer::receiptOtherStocksListViewCollection);
 		ReceiptOtherStocksListView(){};
 		~ReceiptOtherStocksListView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		//ReceiptOtherStocksListView class Accessors
 		std::string GetOtherStocksName();
@@ -27,6 +28,15 @@ namespace BusinessLayer
 		std::string GetMeasureName();
 		std::string GetSumCurrencyName();
 		std::string GetStatusName();
+
+
+		void SetOtherStocksName(std::string);
+		void SetPrice(double);
+		void SetCurrencyName(std::string);
+		void SetVolume(double);
+		void SetMeasureName(std::string);
+		void SetSumCurrencyName(std::string);
+		void SetStatusName(std::string);
 	};
 }
 #endif //ReceiptOtherStocksLISTVIEWCLASS_H

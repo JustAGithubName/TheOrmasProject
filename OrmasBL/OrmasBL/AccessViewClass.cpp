@@ -29,4 +29,30 @@ namespace BusinessLayer{
 	{
 		return division;
 	}
+
+	void AccessView::SetRoleName(std::string aRoleName)
+	{
+		roleName = aRoleName;
+	}
+	void AccessView::SetAccessItemEng(std::string aAccItemEng)
+	{
+		accessItemEng = aAccItemEng;
+	}
+	void AccessView::SetAccessItemRu(std::string aAccItemRu)
+	{
+		accessItemRu = aAccItemRu;
+	}
+	void AccessView::SetDivision(std::string aDiv)
+	{
+		division=aDiv;
+	}
+
+	std::string AccessView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !roleName.empty() || !accessItemEng.empty() || !accessItemRu.empty() || !division.empty() || 0 != roleID || 0 != accessItemID)
+		{
+			return ormasDal.GetFilterForAccessView(id, roleName, accessItemEng, accessItemRu, division,   roleID, accessItemID);
+		}
+		return "";
+	}
 }

@@ -28,22 +28,22 @@ namespace BusinessLayer{
 		void SetProductID(int);
 
 		// Create, delete and update Access
-		bool CreateProductBranchRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteProductBranchRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateProductBranchRelation(DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage);
-		bool UpdateProductBranchRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateProductBranchRelation(DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage);
+		bool CreateProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage);
+		bool UpdateProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetProductBranchByID(DataLayer::OrmasDal& ormasDal, int pbID, std::string& errorMessage);
-		std::vector<int> GetAllProductByBranchID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage);
-		std::vector<int> GetAllBranchByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetProductBranchByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pbID, std::string& errorMessage);
+		std::vector<int> GetAllProductByBranchID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage);
+		std::vector<int> GetAllBranchByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int bID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

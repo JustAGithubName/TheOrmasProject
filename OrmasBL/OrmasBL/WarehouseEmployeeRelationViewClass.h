@@ -16,6 +16,7 @@ namespace BusinessLayer{
 		WarehouseEmployeeRelationView(DataLayer::warehouseEmployeeViewCollection);
 		WarehouseEmployeeRelationView(){};
 		~WarehouseEmployeeRelationView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// WarehouseEmployeeRelationView class WarehouseEmployeeRelationors
 		std::string GetUsername();
@@ -24,6 +25,13 @@ namespace BusinessLayer{
 		std::string GetRoleName();
 		std::string GetWarehouseName();
 		std::string GetSubaccountNumber();
+
+		void SetUsername(std::string);
+		void SetUserSurname(std::string);
+		void SetUserPhone(std::string);
+		void SetRoleName(std::string);
+		void SetWarehouseName(std::string);
+		void SetSubaccountNumber(std::string);
 	};
 }
 #endif

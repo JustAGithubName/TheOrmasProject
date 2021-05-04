@@ -14,4 +14,18 @@ namespace BusinessLayer{
 	{
 		return statusName;
 	}
+
+	void StatusRuleView::SetStatusName(std::string aStatusName)
+	{
+		statusName = aStatusName;
+	}
+
+	std::string StatusRuleView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !operation.empty() || !statusName.empty() || 0 != statusID)
+		{
+			return ormasDal.GetFilterForStatusRuleView(id, operation, statusName, statusID);
+		}
+		return "";
+	}
 }

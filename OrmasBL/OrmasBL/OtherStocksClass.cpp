@@ -2,8 +2,7 @@
 #include "OtherStocksClass.h"
 #include <boost/algorithm/string.hpp>
 #include "PriceClass.h"
-#include "SpecificationClass.h"
-#include "StockClass.h"
+#include "LowValueStockClass.h"
 
 namespace BusinessLayer
 {
@@ -97,10 +96,10 @@ namespace BusinessLayer
 		otherStocksTypeID = pOtherStocksTypeID;
 	}
 
-	bool OtherStocks::CreateOtherStocks(DataLayer::OrmasDal& ormasDal, int cID, std::string pName, double vol, int mID, double pri,
+	bool OtherStocks::CreateOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string pName, double vol, int mID, double pri,
 		int currID, int ostID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, cID, pName, vol, mID, price, currID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, cID, pName, vol, mID, price, currID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(pName);
@@ -112,9 +111,10 @@ namespace BusinessLayer
 		currencyID = currID;
 		otherStocksTypeID = ostID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateOtherStocks(id, companyID, name, volume, measureID, price, currencyID, ostID, errorMessage))
 		{
-			//if (AddPriceData(ormasDal, id, price, currencyID, errorMessage))
+			//if (AddPriceData(globalVar, ormasDal, id, price, currencyID, errorMessage))
 			//{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -123,15 +123,16 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool OtherStocks::CreateOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OtherStocks::CreateOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateOtherStocks(id, companyID, name, volume, measureID, price,  currencyID, otherStocksTypeID, errorMessage))
 		{
-			//if (AddPriceData(ormasDal, id, price, currencyID, errorMessage))
+			//if (AddPriceData(globalVar, ormasDal, id, price, currencyID, errorMessage))
 			//{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -140,7 +141,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool OtherStocks::DeleteOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OtherStocks::DeleteOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteOtherStocks(id, errorMessage))
 		{
@@ -149,7 +150,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OtherStocks::UpdateOtherStocks(DataLayer::OrmasDal& ormasDal, int cID, std::string pName, double vol, int mID, double pri,
+	bool OtherStocks::UpdateOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string pName, double vol, int mID, double pri,
 		 int pCurrencyID, int ostID, std::string& errorMessage)
 	{
 		TrimStrings(pName);
@@ -160,18 +161,19 @@ namespace BusinessLayer
 		price = pri;
 		currencyID = pCurrencyID;
 		otherStocksTypeID = ostID;
-		oldPrice = GetCurrentPrice(ormasDal, id, errorMessage);
+		oldPrice = GetCurrentPrice(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateOtherStocks(id, companyID, name, volume, measureID, price,  currencyID, ostID, errorMessage))
 		{
-			//if (!AddPriceData(ormasDal, id, price, currencyID, errorMessage))
+			//if (!AddPriceData(globalVar, ormasDal, id, price, currencyID, errorMessage))
 			//{
 				//ormasDal.CancelTransaction(errorMessage);
 			//	return false;
 			//}
 			if (oldPrice != price)
 			{
-				if (!RecalculateStock(ormasDal, id, oldPrice, price, errorMessage))
+				if (!RecalculateStock(globalVar, ormasDal, id, oldPrice, price, errorMessage))
 				{
 					//ormasDal.CancelTransaction(errorMessage);
 					return false;
@@ -187,20 +189,21 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool OtherStocks::UpdateOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OtherStocks::UpdateOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		oldPrice = GetCurrentPrice(ormasDal, id, errorMessage);
+		oldPrice = GetCurrentPrice(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateOtherStocks(id, companyID, name, volume, measureID, price, currencyID, otherStocksTypeID, errorMessage))
 		{
-			//if (!AddPriceData(ormasDal, id, price, currencyID, errorMessage))
+			//if (!AddPriceData(globalVar, ormasDal, id, price, currencyID, errorMessage))
 			//{
 				//ormasDal.CancelTransaction(errorMessage);
 			//	return false;
 			//}
 			if (oldPrice != price)
 			{
-				if (!RecalculateStock(ormasDal, id, oldPrice, price, errorMessage))
+				if (!RecalculateStock(globalVar, ormasDal, id, oldPrice, price, errorMessage))
 				{
 					//ormasDal.CancelTransaction(errorMessage);
 					return false;
@@ -226,7 +229,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	std::string OtherStocks::GenerateINFilter(DataLayer::OrmasDal& ormasDal, std::vector<int> othSIDList)
+	std::string OtherStocks::GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> othSIDList)
 	{
 		if (othSIDList.size()>0)
 		{
@@ -235,7 +238,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	std::string OtherStocks::GenerateLikeFilter(DataLayer::OrmasDal& ormasDal, std::string searchKey)
+	std::string OtherStocks::GenerateLikeFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string searchKey)
 	{
 		if (!searchKey.empty())
 		{
@@ -244,7 +247,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool OtherStocks::GetOtherStocksByID(DataLayer::OrmasDal& ormasDal, int otsID, std::string& errorMessage)
+	bool OtherStocks::GetOtherStocksByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int otsID, std::string& errorMessage)
 	{
 		if (otsID <= 0)
 			return false;
@@ -296,7 +299,7 @@ namespace BusinessLayer
 			boost::trim(pName);
 	}
 
-	bool OtherStocks::IsDuplicate(DataLayer::OrmasDal& ormasDal, int cID, std::string pName, double vol, int mID, double price,
+	bool OtherStocks::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string pName, double vol, int mID, double price,
 		int curID, std::string& errorMessage)
 	{
 		OtherStocks otherStocks;
@@ -320,7 +323,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool OtherStocks::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OtherStocks::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		OtherStocks otherStocks;
 		otherStocks.Clear();
@@ -343,30 +346,30 @@ namespace BusinessLayer
 		return true;
 	}
 
-	/*bool OtherStocks::AddPriceData(DataLayer::OrmasDal& ormasDal, int pID, double pPrice, int curID, std::string& errorMessage)
+	/*bool OtherStocks::AddPriceData(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double pPrice, int curID, std::string& errorMessage)
 	{
 		Price pri;
 		pri.SetDate(ormasDal.GetSystemDateTime());
 		pri.SetValue(pPrice);
 		pri.SetCurrencyID(curID);
 		pri.SetOtherStocksID(pID);
-		if (pri.CreatePrice(ormasDal, errorMessage))
+		if (pri.CreatePrice(globalVar, ormasDal, errorMessage))
 			return true;
 		return false;
 	}*/
 
-	double OtherStocks::GetCurrentPrice(DataLayer::OrmasDal& ormasDal, int osID, std::string& errorMessage)
+	double OtherStocks::GetCurrentPrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, std::string& errorMessage)
 	{
 		OtherStocks otherStocks;
-		if (otherStocks.GetOtherStocksByID(ormasDal, osID, errorMessage))
+		if (otherStocks.GetOtherStocksByID(globalVar, ormasDal, osID, errorMessage))
 			return otherStocks.GetPrice();
 		return 0;
 	}
 
-	bool OtherStocks::RecalculateStock(DataLayer::OrmasDal& ormasDal, int osID, double oldPrice, double newPrice, std::string& errorMessage)
+	bool OtherStocks::RecalculateStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, double oldPrice, double newPrice, std::string& errorMessage)
 	{
-		OtherStocks otherStocks;
-		if (otherStocks.RecalculateStock(ormasDal, osID, oldPrice, newPrice, errorMessage))
+		LowValueStock stocks;
+		if (stocks.RecalculateLowValueStock(globalVar, ormasDal, osID, oldPrice, newPrice, errorMessage))
 			return true;
 		return false;
 	}

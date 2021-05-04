@@ -56,9 +56,9 @@ namespace BusinessLayer{
 		date = tDate;
 	}
 	
-	bool Timesheet::CreateTimesheet(DataLayer::OrmasDal &ormasDal, int sID, double tWorkedTime, std::string tDate, std::string& errorMessage)
+	bool Timesheet::CreateTimesheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, double tWorkedTime, std::string tDate, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, sID, tWorkedTime, tDate , errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, sID, tWorkedTime, tDate , errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		salaryID = sID;
@@ -74,9 +74,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Timesheet::CreateTimesheet(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Timesheet::CreateTimesheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateTimesheet(id, salaryID, workedTime, date, errorMessage))
@@ -89,9 +89,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Timesheet::DeleteTimesheet(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Timesheet::DeleteTimesheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (!this->GetTimesheetByID(ormasDal, id, errorMessage))
+		if (!this->GetTimesheetByID(globalVar, ormasDal, id, errorMessage))
 			return false;
 		if (ormasDal.DeleteTimesheet(id, errorMessage))
 		{
@@ -105,7 +105,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Timesheet::UpdateTimesheet(DataLayer::OrmasDal &ormasDal, int sID, double tWorkedTime, std::string tDate, std::string& errorMessage)
+	bool Timesheet::UpdateTimesheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, double tWorkedTime, std::string tDate, std::string& errorMessage)
 	{
 		salaryID = sID;
 		workedTime = tWorkedTime;
@@ -120,7 +120,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Timesheet::UpdateTimesheet(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Timesheet::UpdateTimesheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateTimesheet(id, salaryID, workedTime, date, errorMessage))
 		{
@@ -142,7 +142,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::string Timesheet::GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string fromDate, std::string tilDate)
+	std::string Timesheet::GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string tilDate)
 	{
 		if (!fromDate.empty() && !tilDate.empty())
 		{
@@ -151,7 +151,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Timesheet::GetTimesheetByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Timesheet::GetTimesheetByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -188,7 +188,7 @@ namespace BusinessLayer{
 		date.clear();
 	}
 
-	bool Timesheet::IsDuplicate(DataLayer::OrmasDal& ormasDal, int sID, double tWorkedTime, std::string tDate, std::string& errorMessage)
+	bool Timesheet::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, double tWorkedTime, std::string tDate, std::string& errorMessage)
 	{
 		Timesheet timesheet;
 		timesheet.Clear();
@@ -208,7 +208,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Timesheet::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Timesheet::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Timesheet timesheet;
 		timesheet.Clear();

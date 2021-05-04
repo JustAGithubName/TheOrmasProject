@@ -51,7 +51,7 @@ void CreateBlcDlg::SetID(int ID, QString childName)
 			{
 				userEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					namePh->setText(user.GetName().c_str());
 					surnamePh->setText(user.GetSurname().c_str());
@@ -73,7 +73,7 @@ void CreateBlcDlg::FillEditElements(int bUserID, int bAccountID)
 {
 	userEdit->setText(QString::number(bUserID));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), bUserID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), bUserID, errorMessage))
 	{
 		namePh->setText(user.GetName().c_str());
 		surnamePh->setText(user.GetSurname().c_str());
@@ -104,7 +104,7 @@ void CreateBlcDlg::CreateBalance()
 	errorMessage.clear();
 	if (0 != userEdit->text().toInt())
 	{
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		int subaccountID = CreateSubaccount();
 		if (0 == subaccountID)
 		{
@@ -128,9 +128,9 @@ void CreateBlcDlg::CreateBalance()
 					BusinessLayer::User *user = new BusinessLayer::User();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 					BusinessLayer::Subaccount *subaccount = new BusinessLayer::Subaccount;
-					if (!user->GetUserByID(dialogBL->GetOrmasDal(), balance->GetUserID(), errorMessage) ||
-						subaccount->GetSubaccountByID(dialogBL->GetOrmasDal(), balance->GetSubaccountID(), errorMessage) ||
-						currency->GetCurrencyByID(dialogBL->GetOrmasDal(), subaccount->GetCurrencyID(), errorMessage))
+					if (!user->GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance->GetUserID(), errorMessage) ||
+						subaccount->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance->GetSubaccountID(), errorMessage) ||
+						currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subaccount->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -171,7 +171,13 @@ void CreateBlcDlg::CreateBalance()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -203,7 +209,7 @@ void CreateBlcDlg::EditBalance()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetBalanceParams(userEdit->text().toInt(), balance->GetSubaccountID(), balance->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateBalance(balance, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -213,9 +219,9 @@ void CreateBlcDlg::EditBalance()
 						BusinessLayer::User *user = new BusinessLayer::User();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 						BusinessLayer::Subaccount *subaccount = new BusinessLayer::Subaccount;
-						if (!user->GetUserByID(dialogBL->GetOrmasDal(), balance->GetUserID(), errorMessage) ||
-							subaccount->GetSubaccountByID(dialogBL->GetOrmasDal(), balance->GetSubaccountID(), errorMessage) ||
-							currency->GetCurrencyByID(dialogBL->GetOrmasDal(), subaccount->GetCurrencyID(), errorMessage))
+						if (!user->GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance->GetUserID(), errorMessage) ||
+							subaccount->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance->GetSubaccountID(), errorMessage) ||
+							currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subaccount->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -251,7 +257,13 @@ void CreateBlcDlg::EditBalance()
 						delete subaccount;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}
@@ -307,7 +319,7 @@ void CreateBlcDlg::OpenUserDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -331,23 +343,23 @@ int CreateBlcDlg::CreateSubaccount()
 	BusinessLayer::Currency currency;
 	std::string number = "";
 	std::string genAccRawNumber = "";
-	int currID = currency.GetMainTradeCurrencyID(dialogBL->GetOrmasDal(), errorMessage);
+	int currID = currency.GetMainTradeCurrencyID(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (0 != currID)
 	{
 		BusinessLayer::Status status;
-		if (!status.GetStatusByName(dialogBL->GetOrmasDal(), "OPEN", errorMessage))
+		if (!status.GetStatusByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "OPEN", errorMessage))
 			return 0;
-		if (!currency.GetCurrencyByID(dialogBL->GetOrmasDal(), currID, errorMessage))
+		if (!currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currID, errorMessage))
 			return 0;
 		BusinessLayer::Subaccount subaccount;
 		BusinessLayer::Account account;
-		if (!account.GetAccountByNumber(dialogBL->GetOrmasDal(), std::to_string(10410), errorMessage))
+		if (!account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), std::to_string(10410), errorMessage))
 		{
 			return 0;
 		}
 		number = std::to_string(10410);
 		number.append(std::to_string(currency.GetCode()));
-		genAccRawNumber = subaccount.GenerateRawNumber(dialogBL->GetOrmasDal(), errorMessage);
+		genAccRawNumber = subaccount.GenerateRawNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 		if (genAccRawNumber.empty())
 			return 0;
 		number.append(genAccRawNumber);
@@ -361,7 +373,7 @@ int CreateBlcDlg::CreateSubaccount()
 		subaccount.SetClosedDate("");
 		subaccount.SetDetails("Generated by system");
 
-		if (!subaccount.CreateSubaccount(dialogBL->GetOrmasDal(), errorMessage))
+		if (!subaccount.CreateSubaccount(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage))
 			return 0;
 		return subaccount.GetID();
 	}

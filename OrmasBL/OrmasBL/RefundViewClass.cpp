@@ -16,4 +16,21 @@ namespace BusinessLayer{
 	{
 		return currencyName;
 	}
+
+
+	void RefundView::SetCurrencyName(std::string rCurrencyName)
+	{
+		currencyName = rCurrencyName;
+	}
+
+
+	std::string RefundView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || date.empty() || currencyName.empty() || 0 != userID || 0 != currencyID || 0 != value)
+		{
+			return ormasDal.GetFilterForRefundsView(id, date, value, currencyName, userID, currencyID);
+		}
+		return "";
+	}
+
 }

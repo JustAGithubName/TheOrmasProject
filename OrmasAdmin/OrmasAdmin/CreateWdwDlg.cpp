@@ -27,6 +27,9 @@ CreateWdwDlg::CreateWdwDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWi
 	}
 	else
 	{
+		subAccBtn->setDisabled(true);
+		accBtn->setDisabled(true);
+		userBtn->setDisabled(true);
 		dateEdit->setDateTime(QDateTime::currentDateTime());
 
 		BusinessLayer::Status *status = new BusinessLayer::Status();
@@ -83,7 +86,7 @@ void CreateWdwDlg::SetID(int ID, QString childName)
 			{
 				userEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					namePh->setText(user.GetName().c_str());
 					surnamePh->setText(user.GetSurname().c_str());
@@ -102,7 +105,7 @@ void CreateWdwDlg::SetID(int ID, QString childName)
 					for each (auto item in balanceVector)
 					{
 						subaccount.Clear();
-						if (subaccount.GetSubaccountByID(dialogBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
+						if (subaccount.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
 						{
 							if (subaccount.GetParentAccountID() == GetAccountIDFromCmb())
 							{
@@ -112,13 +115,13 @@ void CreateWdwDlg::SetID(int ID, QString childName)
 					}
 				}
 				subaccount.Clear();
-				if (subaccount.GetSubaccountByID(dialogBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
+				if (subaccount.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
 				{
 					saIDEdit->setText(QString::number(subaccount.GetID()));
 					saNumberEdit->setReadOnly(true);
 					saNumberEdit->setText(subaccount.GetNumber().c_str());
 					balanceEdit->setText(QString::number(subaccount.GetCurrentBalance()));
-					if (currency.GetCurrencyByID(dialogBL->GetOrmasDal(), subaccount.GetCurrencyID(), errorMessage))
+					if (currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subaccount.GetCurrencyID(), errorMessage))
 					{
 						currencyNameEdit->setText(currency.GetName().c_str());
 					}
@@ -129,7 +132,7 @@ void CreateWdwDlg::SetID(int ID, QString childName)
 			{
 				saIDEdit->setText(QString::number(ID));
 				BusinessLayer::Subaccount subaccount;
-				if (subaccount.GetSubaccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (subaccount.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					saNumberEdit->setReadOnly(true);
 					saNumberEdit->setText(subaccount.GetNumber().c_str());
@@ -143,7 +146,7 @@ void CreateWdwDlg::SetID(int ID, QString childName)
 			{
 				accIDEdit->setText(QString::number(ID));
 				BusinessLayer::Account account;
-				if (account.GetAccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					accNumberEdit->setReadOnly(true);
 					accNumberEdit->setText(account.GetNumber().c_str());
@@ -157,7 +160,7 @@ void CreateWdwDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -196,24 +199,24 @@ void CreateWdwDlg::FillEditElements(QString wDate, double wValue, int wUserID, i
 	accIDEdit->setText(QString::number(wAccountID));
 	statusEdit->setText(QString::number(wStatusID));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), wUserID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wUserID, errorMessage))
 	{
 		namePh->setText(user.GetName().c_str());
 		surnamePh->setText(user.GetSurname().c_str());
 		phonePh->setText(user.GetPhone().c_str());
 	}
 	BusinessLayer::Subaccount sub;
-	if (sub.GetSubaccountByID(dialogBL->GetOrmasDal(), wSubAccId, errorMessage))
+	if (sub.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wSubAccId, errorMessage))
 	{
 		saNumberEdit->setText(sub.GetNumber().c_str());
 	}
 	BusinessLayer::Account acc;
-	if (acc.GetAccountByID(dialogBL->GetOrmasDal(), wAccountID, errorMessage))
+	if (acc.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wAccountID, errorMessage))
 	{
 		accNumberEdit->setText(acc.GetNumber().c_str());
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), wStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -271,7 +274,7 @@ void CreateWdwDlg::CreateWithdrawal()
 		}
 		SetWithdrawalParams(dateEdit->text(), valueEdit->text().toDouble(), userEdit->text().toInt(), saIDEdit->text().toInt(),
 			targetEdit->text(), currencyCmb->currentData().toInt(), statusEdit->text().toInt(), accIDEdit->text().toInt(), whoEdit->text(), cashboxAccID);
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateWithdrawal(withdrawal, errorMessage))
 		{
 			if (!CrateCashboxTransaction(withdrawal->GetID()))
@@ -288,7 +291,7 @@ void CreateWdwDlg::CreateWithdrawal()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Currency currency;
-					if (!currency.GetCurrencyByID(dialogBL->GetOrmasDal(), withdrawal->GetCurrencyID(), errorMessage))
+					if (!currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -300,7 +303,7 @@ void CreateWdwDlg::CreateWithdrawal()
 					BusinessLayer::User user;
 					if (userEdit->text().toInt() >0)
 					{
-						if (!user.GetUserByID(dialogBL->GetOrmasDal(), withdrawal->GetUserID(), errorMessage))
+						if (!user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetUserID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -313,7 +316,7 @@ void CreateWdwDlg::CreateWithdrawal()
 					BusinessLayer::Subaccount subacc;
 					if (saIDEdit->text().toInt() > 0)
 					{
-						if (!subacc.GetSubaccountByID(dialogBL->GetOrmasDal(), withdrawal->GetSubaccountID(), errorMessage))
+						if (!subacc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetSubaccountID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -327,7 +330,7 @@ void CreateWdwDlg::CreateWithdrawal()
 					if (accIDEdit->text().toInt() > 0)
 					{
 						
-						if (!account.GetAccountByID(dialogBL->GetOrmasDal(), withdrawal->GetAccountID(), errorMessage))
+						if (!account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetAccountID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -338,7 +341,7 @@ void CreateWdwDlg::CreateWithdrawal()
 						}
 					}
 					BusinessLayer::Status status;
-					if (!status.GetStatusByID(dialogBL->GetOrmasDal(), withdrawal->GetStatusID(), errorMessage))
+					if (!status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -393,7 +396,13 @@ void CreateWdwDlg::CreateWithdrawal()
 					itemModel->appendRow(withdrawalItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -429,7 +438,7 @@ void CreateWdwDlg::EditWithdrawal()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetWithdrawalParams(dateEdit->text(), valueEdit->text().toDouble(), userEdit->text().toInt(), saIDEdit->text().toInt(), targetEdit->text(), 
 				currencyCmb->currentData().toInt(), statusEdit->text().toInt(), accIDEdit->text().toInt(), whoEdit->text(), withdrawal->GetCashboxAccountID(), withdrawal->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateWithdrawal(withdrawal, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -437,7 +446,7 @@ void CreateWdwDlg::EditWithdrawal()
 					if (!parentDataForm->IsClosed())
 					{
 						BusinessLayer::Currency currency;
-						if (!currency.GetCurrencyByID(dialogBL->GetOrmasDal(), withdrawal->GetCurrencyID(), errorMessage))
+						if (!currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -449,7 +458,7 @@ void CreateWdwDlg::EditWithdrawal()
 						BusinessLayer::User user;
 						if (userEdit->text().toInt() >0)
 						{
-							if (!user.GetUserByID(dialogBL->GetOrmasDal(), withdrawal->GetUserID(), errorMessage))
+							if (!user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetUserID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -462,7 +471,7 @@ void CreateWdwDlg::EditWithdrawal()
 						BusinessLayer::Subaccount subacc;
 						if (saIDEdit->text().toInt() > 0)
 						{
-							if (!subacc.GetSubaccountByID(dialogBL->GetOrmasDal(), withdrawal->GetSubaccountID(), errorMessage))
+							if (!subacc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetSubaccountID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -476,7 +485,7 @@ void CreateWdwDlg::EditWithdrawal()
 						if (accIDEdit->text().toInt() > 0)
 						{
 
-							if (!account.GetAccountByID(dialogBL->GetOrmasDal(), withdrawal->GetAccountID(), errorMessage))
+							if (!account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetAccountID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -487,7 +496,7 @@ void CreateWdwDlg::EditWithdrawal()
 							}
 						}
 						BusinessLayer::Status status;
-						if (!status.GetStatusByID(dialogBL->GetOrmasDal(), withdrawal->GetStatusID(), errorMessage))
+						if (!status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetStatusID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -539,7 +548,13 @@ void CreateWdwDlg::EditWithdrawal()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}
@@ -582,12 +597,41 @@ void CreateWdwDlg::OpenUserDlg()
 	dForm->setWindowTitle(tr("Users"));
 	dForm->hide();
 	dForm->setWindowModality(Qt::WindowModal);
-	dForm->FillTable<BusinessLayer::UserView>(errorMessage);
+
+	std::string branchFilter = "";
+	BusinessLayer::Account account10520;
+	BusinessLayer::Account account11620;
+	BusinessLayer::Account account22210;
+	if (!account10520.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10520", errorMessage))
+		return;
+	if (!account11620.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "11620", errorMessage))
+		return;
+	if (!account22210.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "22210", errorMessage))
+		return;
+
+	BusinessLayer::EntryRouting entryRouting;
+	if (!entryRouting.GetEntryRoutingByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
+		return;
+
+	if (account10520.GetID() == entryRouting.GetCreditAccountID() || account10520.GetID() == entryRouting.GetCreditAccountID()
+		|| account10520.GetID() == entryRouting.GetCreditAccountID())
+	{
+		BusinessLayer::Branch branch;
+		BusinessLayer::CompanyEmployeeRelation ceRel;
+		int branchID = ceRel.GetBranchByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mainForm->GetLoggedUser()->GetID(), errorMessage);
+		if (0 < branchID)
+		{
+			branch.SetID(branchID);
+			branchFilter = branch.GenerateFilter(dialogBL->GetOrmasDal());
+		}
+	}
+
+	dForm->FillTable<BusinessLayer::UserExtendedView>(errorMessage, branchFilter);
 	if (errorMessage.empty())
 	{
 		dForm->parentDialog = this;
 		dForm->setObjectName("userForm");
-		dForm->QtConnect<BusinessLayer::UserView>();
+		dForm->QtConnect<BusinessLayer::UserExtendedView>();
 		QMdiSubWindow *userWindow = new QMdiSubWindow;
 		userWindow->setWidget(dForm);
 		userWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -596,7 +640,7 @@ void CreateWdwDlg::OpenUserDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		SortTable(dForm->tableView);
 		dForm->show();
 		dForm->raise();
@@ -630,7 +674,7 @@ void CreateWdwDlg::OpenSAccDlg()
 	std::string filter = "";
 	BusinessLayer::Subaccount sabaccount;
 	BusinessLayer::EntryRouting entryRouting;
-	if (entryRouting.GetEntryRoutingByID(dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
+	if (entryRouting.GetEntryRoutingByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
 	{
 		sabaccount.SetParentAccountID(entryRouting.GetDebitAccountID());
 		filter = sabaccount.GenerateFilter(dialogBL->GetOrmasDal());
@@ -649,6 +693,7 @@ void CreateWdwDlg::OpenSAccDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
+		dForm->SetDecoration();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -682,7 +727,7 @@ void CreateWdwDlg::InitComboBox()
 	BusinessLayer::Account account;
 	BusinessLayer::Account account10110;
 	BusinessLayer::EntryRouting entryRouting;
-	if (account.GetAccountByNumber(dialogBL->GetOrmasDal(), "10110", errorMessage))
+	if (account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10110", errorMessage))
 	{
 		std::string comboText = "";
 		entryRouting.SetCreditAccountID(account.GetID());
@@ -694,10 +739,10 @@ void CreateWdwDlg::InitComboBox()
 			for (unsigned int i = 0; i < entRoutVec.size(); i++)
 			{
 				account.Clear();
-				if (!account.GetAccountByID(dialogBL->GetOrmasDal(), entRoutVec[i].GetDebitAccountID(), errorMessage))
+				if (!account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entRoutVec[i].GetDebitAccountID(), errorMessage))
 					continue;
 				coAcc.Clear();
-				if (!coAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), account.GetNumber(), errorMessage))
+				if (!coAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), account.GetNumber(), errorMessage))
 					continue;
 				comboText = "";
 				comboText += account.GetNumber();
@@ -733,8 +778,11 @@ void CreateWdwDlg::AccountIsChenged()
 	}
 	else
 	{
+		subAccBtn->setEnabled(true);
+		accBtn->setEnabled(true);
+		userBtn->setEnabled(true);
 		BusinessLayer::EntryRouting entRouting;
-		if (entRouting.GetEntryRoutingByID(dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
+		if (entRouting.GetEntryRoutingByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
 		{
 			targetEdit->setText(entRouting.GetOperation().c_str());
 		}
@@ -759,7 +807,7 @@ void CreateWdwDlg::OpenAccDlg()
 	std::string filter = "";
 	BusinessLayer::Account account;
 	BusinessLayer::EntryRouting entryRouting;
-	if (entryRouting.GetEntryRoutingByID(dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
+	if (entryRouting.GetEntryRoutingByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
 	{
 		account.SetID(entryRouting.GetDebitAccountID());
 		filter = account.GenerateFilter(dialogBL->GetOrmasDal());
@@ -848,7 +896,7 @@ void CreateWdwDlg::AccTextChanged()
 	if (accNumberEdit->text().length() == 5)
 	{
 		BusinessLayer::Account account;
-		if (account.GetAccountByNumber(dialogBL->GetOrmasDal(), accNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), accNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			accIDEdit->setText(QString::number(account.GetID()));
 		}
@@ -863,7 +911,7 @@ void CreateWdwDlg::SATextChanged()
 	if (saNumberEdit->text().length() == 5 || saNumberEdit->text().length() == 6)
 	{
 		BusinessLayer::Account account;
-		if (account.GetAccountByNumber(dialogBL->GetOrmasDal(), saNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), saNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			saIDEdit->setText(QString::number(account.GetID()));
 		}
@@ -875,7 +923,7 @@ void CreateWdwDlg::SATextChanged()
 	else if (saNumberEdit->text().length() == 15)
 	{
 		BusinessLayer::Subaccount subaccount;
-		if (subaccount.GetSubaccountByNumber(dialogBL->GetOrmasDal(), saNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (subaccount.GetSubaccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), saNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			saIDEdit->setText(QString::number(subaccount.GetID()));
 		}
@@ -894,7 +942,7 @@ int CreateWdwDlg::GetAccountIDFromCmb()
 {
 	BusinessLayer::Account account;
 	BusinessLayer::EntryRouting entryRouting;
-	if (entryRouting.GetEntryRoutingByID(dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
+	if (entryRouting.GetEntryRoutingByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
 	{
 		return entryRouting.GetDebitAccountID();
 	}
@@ -908,9 +956,9 @@ void CreateWdwDlg::UserIsChanged()
 {
 	BusinessLayer::Balance balance;
 	BusinessLayer::Subaccount suba;
-	if (balance.GetBalanceByUserID(dialogBL->GetOrmasDal(), userEdit->text().toInt(), errorMessage))
+	if (balance.GetBalanceByUserID(dialogBL->globalVar, dialogBL->GetOrmasDal(), userEdit->text().toInt(), errorMessage))
 	{
-		if (suba.GetSubaccountByID(dialogBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
+		if (suba.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
 		{
 			saIDEdit->setText(QString::number(suba.GetID()));
 			saNumberEdit->setText(suba.GetNumber().c_str());
@@ -920,37 +968,20 @@ void CreateWdwDlg::UserIsChanged()
 
 void CreateWdwDlg::SortTable(QTableView *table)
 {
-	BusinessLayer::Balance balance;
-	BusinessLayer::Subaccount subAccount;
 	BusinessLayer::EntryRouting entryRouting;
+	if (!entryRouting.GetEntryRoutingByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
+		return;
 	for (int i = 0; i < table->model()->rowCount(); i++)
 	{
-		balance.Clear();
-		subAccount.Clear();
-		entryRouting.Clear();
-		QModelIndex index = table->model()->index(i, 0);
-		balance.SetUserID(index.data().toInt());
-		std::string filter = balance.GenerateFilter(dialogBL->GetOrmasDal());
-		std::vector<BusinessLayer::BalanceView> balanceVector = dialogBL->GetAllDataForClass<BusinessLayer::BalanceView>(errorMessage, filter);
-		if (0 < balanceVector.size())
+		QModelIndex index = table->model()->index(i, 11);
+		if (index.data().toInt() == entryRouting.GetDebitAccountID())
 		{
-			if (!entryRouting.GetEntryRoutingByID(dialogBL->GetOrmasDal(), accountCmb->currentData().toInt(), errorMessage))
-				continue;
-			for each (auto item in balanceVector)
-			{
-				subAccount.Clear();
-				if (!subAccount.GetSubaccountByID(dialogBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
-					continue;
-				if (subAccount.GetParentAccountID() == entryRouting.GetDebitAccountID())
-				{
-					table->showRow(i);
-					break;
-				}
-				else
-				{
-					table->hideRow(i);
-				}
-			}
+			table->showRow(i);
+			continue;
+		}
+		else
+		{
+			table->hideRow(i);
 		}
 	}
 	errorMessage = "";
@@ -958,11 +989,11 @@ void CreateWdwDlg::SortTable(QTableView *table)
 
 bool CreateWdwDlg::CheckAccess()
 {
-	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (0 == rolesMap.size())
 		return false;
 	BusinessLayer::Status *status = new BusinessLayer::Status;
-	if (!status->GetStatusByID(dialogBL->GetOrmasDal(), withdrawal->GetStatusID(), errorMessage))
+	if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), withdrawal->GetStatusID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr(errorMessage.c_str())),
@@ -975,8 +1006,7 @@ bool CreateWdwDlg::CheckAccess()
 	if (0 == status->GetName().compare("EXECUTED"))
 	{
 		if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("ACCOUNTANT")->second)
+			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
 		{
 			return true;
 		}
@@ -1008,9 +1038,9 @@ int CreateWdwDlg::GetCashboxAccountID()
 {
 	BusinessLayer::Cashbox cashbox;
 	BusinessLayer::CashboxEmployeeRelation ceRelation;
-	if (ceRelation.GetCashboxEmployeeByEmployeeID(dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage))
+	if (ceRelation.GetCashboxEmployeeByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage))
 	{
-		if (cashbox.GetCashboxByID(dialogBL->GetOrmasDal(), ceRelation.GetCashboxID(), errorMessage))
+		if (cashbox.GetCashboxByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ceRelation.GetCashboxID(), errorMessage))
 		{
 			return cashbox.GetSubaccountID();
 		}
@@ -1022,15 +1052,15 @@ bool CreateWdwDlg::CrateCashboxTransaction(int withdrawalID)
 {
 	BusinessLayer::Cashbox cashbox;
 	BusinessLayer::CashboxEmployeeRelation ceRelation;
-	if (ceRelation.GetCashboxEmployeeByEmployeeID(dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage))
+	if (ceRelation.GetCashboxEmployeeByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage))
 	{
-		if (cashbox.GetCashboxByID(dialogBL->GetOrmasDal(), ceRelation.GetCashboxID(), errorMessage))
+		if (cashbox.GetCashboxByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ceRelation.GetCashboxID(), errorMessage))
 		{
 			BusinessLayer::Employee accountant;
 			BusinessLayer::Employee owner;
 			BusinessLayer::Role role;
 
-			if (0 == role.GetRoleIDByName(dialogBL->GetOrmasDal(), "CHIEF ACCOUNTANT", errorMessage))
+			if (0 == role.GetRoleIDByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "CHIEF ACCOUNTANT", errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr("Connot find 'CHIEF ACCOUNTANT' role!")),
@@ -1056,7 +1086,7 @@ bool CreateWdwDlg::CrateCashboxTransaction(int withdrawalID)
 			}
 
 			role.Clear();
-			if (0 == role.GetRoleIDByName(dialogBL->GetOrmasDal(), "DIRECTOR", errorMessage))
+			if (0 == role.GetRoleIDByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "DIRECTOR", errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr("Connot find 'OWNER' role!")),
@@ -1082,7 +1112,7 @@ bool CreateWdwDlg::CrateCashboxTransaction(int withdrawalID)
 			}
 
 			BusinessLayer::CashboxTransaction cTransaction;
-			if (cTransaction.CreateCashboxTransaction(dialogBL->GetOrmasDal(), cashbox.GetID(), dialogBL->loggedUser->GetID(), accountant.GetID(), owner.GetID(), 0, withdrawalID, errorMessage))
+			if (cTransaction.CreateCashboxTransaction(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashbox.GetID(), dialogBL->loggedUser->GetID(), accountant.GetID(), owner.GetID(), 0, withdrawalID, errorMessage))
 				return true;
 		}
 	}

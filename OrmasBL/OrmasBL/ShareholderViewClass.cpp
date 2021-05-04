@@ -29,4 +29,30 @@ namespace BusinessLayer{
 	{
 		return userAddress;
 	}
+
+	void ShareholderView::SetUsername(std::string sUserName)
+	{
+		userName = sUserName;
+	}
+	void ShareholderView::SetUserSurname(std::string sUserSurname)
+	{
+		userSurname = sUserSurname;
+	}
+	void ShareholderView::SetUserPhone(std::string sUserPhone)
+	{
+		userPhone = sUserPhone;
+	}
+	void ShareholderView::SetUserAddress(std::string sUserAddress)
+	{
+		userAddress = sUserAddress;
+	}
+
+	std::string ShareholderView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !userName.empty() || !userSurname.empty() || !userPhone.empty() || !userAddress.empty() || !information.empty() || 0 != countOfStock || 0 != userID)
+		{
+			return ormasDal.GetFilterForShareholderView(id, userName, userSurname, userPhone, userAddress, countOfStock, information);
+		}
+		return "";
+	}
 }

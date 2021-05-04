@@ -44,9 +44,9 @@ namespace BusinessLayer{
 		branchID = bID;
 	}
 
-	bool ProductBranchRelation::CreateProductBranchRelation(DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage)
+	bool ProductBranchRelation::CreateProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pID, bID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pID, bID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		branchID = bID;
@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool ProductBranchRelation::CreateProductBranchRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductBranchRelation::CreateProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateProductBranch(id, productID, branchID, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool ProductBranchRelation::DeleteProductBranchRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductBranchRelation::DeleteProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteProductBranch(productID, branchID, errorMessage))
 		{
@@ -91,9 +91,9 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool ProductBranchRelation::UpdateProductBranchRelation(DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage)
+	bool ProductBranchRelation::UpdateProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pID, bID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pID, bID, errorMessage))
 			return false;
 		branchID = bID;
 		productID = pID;
@@ -107,9 +107,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool ProductBranchRelation::UpdateProductBranchRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductBranchRelation::UpdateProductBranchRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		if (ormasDal.UpdateProductBranch(id, productID, branchID, errorMessage))
 		{
@@ -131,7 +131,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool ProductBranchRelation::GetProductBranchByID(DataLayer::OrmasDal& ormasDal, int pbID, std::string& errorMessage)
+	bool ProductBranchRelation::GetProductBranchByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pbID, std::string& errorMessage)
 	{
 		if (pbID <= 0)
 			return false;
@@ -147,7 +147,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	std::vector<int> ProductBranchRelation::GetAllBranchByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	std::vector<int> ProductBranchRelation::GetAllBranchByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		std::vector<int> branchIDVector;
 		ProductBranchRelation aeRelation;
@@ -165,7 +165,7 @@ namespace BusinessLayer{
 		return branchIDVector;
 	}
 
-	std::vector<int> ProductBranchRelation::GetAllProductByBranchID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	std::vector<int> ProductBranchRelation::GetAllProductByBranchID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		std::vector<int> productIDVector;
 		ProductBranchRelation aeRelation;
@@ -198,7 +198,7 @@ namespace BusinessLayer{
 		productID = 0;
 	}
 
-	bool ProductBranchRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int bID, std::string& errorMessage)
+	bool ProductBranchRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int bID, std::string& errorMessage)
 	{
 		ProductBranchRelation apRelation;
 		apRelation.Clear();
@@ -217,7 +217,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool ProductBranchRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductBranchRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ProductBranchRelation apRelation;
 		apRelation.Clear();

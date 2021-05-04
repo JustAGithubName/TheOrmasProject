@@ -84,12 +84,12 @@ namespace BusinessLayer
 		currencyID = pCurrencyID;
 	}
 
-	bool ProductionPlan::CreateProductionPlan(DataLayer::OrmasDal& ormasDal, std::string pDate, int eID, double pCount,
+	bool ProductionPlan::CreateProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, int eID, double pCount,
 		double pSum, int sID, int cID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pDate, pCount, pSum, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pDate, pCount, pSum, cID, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		date = pDate;
@@ -112,11 +112,11 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ProductionPlan::CreateProductionPlan(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionPlan::CreateProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
@@ -132,7 +132,7 @@ namespace BusinessLayer
 		//ormasDal.StartTransaction(errorMessage);
 		return false;
 	}
-	bool ProductionPlan::DeleteProductionPlan(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionPlan::DeleteProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -159,10 +159,10 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionPlan::UpdateProductionPlan(DataLayer::OrmasDal& ormasDal, std::string pDate, int eID, double pCount,
+	bool ProductionPlan::UpdateProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, int eID, double pCount,
 		double pSum, int sID, int cID, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		date = pDate;
@@ -184,9 +184,9 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool ProductionPlan::UpdateProductionPlan(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionPlan::UpdateProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
@@ -212,7 +212,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ProductionPlan::GetProductionPlanByID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool ProductionPlan::GetProductionPlanByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		if (oID <= 0)
 			return false;
@@ -240,8 +240,8 @@ namespace BusinessLayer
 	bool ProductionPlan::IsEmpty()
 	{
 		if (0 == id && date == "" && 0 == count && 0 == sum && 0 == employeeID && 0 == statusID && 0 == currencyID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void ProductionPlan::Clear()
@@ -255,7 +255,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ProductionPlan::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pDate, double pCount, double pSum,
+	bool ProductionPlan::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pCount, double pSum,
 		int cID, std::string& errorMessage)
 	{
 		ProductionPlan productionPlan;
@@ -277,7 +277,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ProductionPlan::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionPlan::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ProductionPlan productionPlan;
 		productionPlan.Clear();

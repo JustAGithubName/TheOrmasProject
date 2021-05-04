@@ -49,34 +49,34 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, int pID, std::string oDate, std::string oExecDate, int eID,
+		bool CreateReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, std::string oExecDate, int eID,
 			double oCount, double oSum, int sID, int cID, std::string& errorMessage);
-		bool UpdateReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, int pID, std::string oDate, std::string oExecDate, int eID,
+		bool UpdateReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, std::string oExecDate, int eID,
 			double oCount, double oSum, int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string formDate, std::string toDate);
-		bool GetReceiptOtherStocksByID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string formDate, std::string toDate);
+		bool GetReceiptOtherStocksByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		double previousSum = 0.0;
 		int previousStatusID = 0;
 		double previousCount = 0;
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, std::string oDate, int eID, double oCount, double oSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, int eID, double oCount, double oSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		double GetCurrentSum(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		int GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		bool ChangesAtStock(DataLayer::OrmasDal& ormasDal, int rrID, int empID, std::string& errorMessage);
-		bool ChangesAtStockReverse(DataLayer::OrmasDal& ormasDal, int rrID, int empID, std::string& errorMessage);
-		bool ChangesAtStock(DataLayer::OrmasDal& ormasDal, int rID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
-		double GetCurrentCount(DataLayer::OrmasDal& ormasDal, int rrID, std::string& errorMessage);
-		std::map<int, double> GetOtherStocksCount(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		double GetCurrentSum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		int GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		bool ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, std::string& errorMessage);
+		bool ChangesAtStockReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, std::string& errorMessage);
+		bool ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		double GetCurrentCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, std::string& errorMessage);
+		std::map<int, double> GetOtherStocksCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
 		bool CheckDocumentCorrectness(DataLayer::OrmasDal& ormasDal);
 	};
 }

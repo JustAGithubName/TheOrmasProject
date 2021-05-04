@@ -66,7 +66,7 @@ void CreateAmTypeDlg::CreateAmortizeType()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetAmortizeTypeParams(nameEdit->text(),codeEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateAmortizeType(amortizeType, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -81,7 +81,13 @@ void CreateAmTypeDlg::CreateAmortizeType()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -112,7 +118,7 @@ void CreateAmTypeDlg::EditAmortizeType()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetAmortizeTypeParams(nameEdit->text(), codeEdit->text(),amortizeType->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateAmortizeType(amortizeType, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -125,7 +131,13 @@ void CreateAmTypeDlg::EditAmortizeType()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

@@ -52,7 +52,7 @@ namespace BusinessLayer{
 		relationTypeID = rtID;
 	}
 
-	bool Relation::CreateRelation(DataLayer::OrmasDal &ormasDal, int u1ID, int u2ID, int rtID, std::string& errorMessage)
+	bool Relation::CreateRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int u1ID, int u2ID, int rtID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		user1ID = u1ID;
@@ -69,7 +69,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Relation::CreateRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Relation::CreateRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateRelation(id, user1ID, user2ID, relationTypeID, errorMessage))
@@ -82,7 +82,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Relation::DeleteRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Relation::DeleteRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteRelation(id, errorMessage))
 		{
@@ -96,7 +96,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Relation::UpdateRelation(DataLayer::OrmasDal &ormasDal, int u1ID, int u2ID, int rtID, std::string& errorMessage)
+	bool Relation::UpdateRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int u1ID, int u2ID, int rtID, std::string& errorMessage)
 	{
 		user1ID = u1ID;
 		user2ID = u2ID;
@@ -111,7 +111,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Relation::UpdateRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Relation::UpdateRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateRelation(id, user1ID, user2ID, relationTypeID, errorMessage))
 		{
@@ -133,7 +133,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Relation::GetRelationByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Relation::GetRelationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -153,6 +153,42 @@ namespace BusinessLayer{
 			errorMessage = "Cannot find Relation with this id";
 		}
 		return false;
+	}
+
+	std::vector<int> Relation::GetUser2IDByUser1ID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int u1ID, std::string& errorMessage)
+	{
+		std::vector<int> user2IDVector;
+		Relation relation;
+		relation.SetUser1ID(u1ID);
+		relation.SetUser2ID(0);
+		std::string filter = relation.GenerateFilter(ormasDal);
+		std::vector<DataLayer::relationsViewCollection> relVector = ormasDal.GetRelations(errorMessage, filter);
+		if (0 != relVector.size())
+		{
+			for each (auto item in relVector)
+			{
+				user2IDVector.push_back(std::get<9>(item));
+			}
+		}
+		return user2IDVector;
+	}
+
+	std::vector<int> Relation::GetUser1IDByUser2ID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int u2ID, std::string& errorMessage)
+	{
+		std::vector<int> user1IDVector;
+		Relation relation;
+		relation.SetUser1ID(0);
+		relation.SetUser2ID(u2ID);
+		std::string filter = relation.GenerateFilter(ormasDal);
+		std::vector<DataLayer::relationsViewCollection> relVector = ormasDal.GetRelations(errorMessage, filter);
+		if (0 != relVector.size())
+		{
+			for each (auto item in relVector)
+			{
+				user1IDVector.push_back(std::get<8>(item));
+			}
+		}
+		return user1IDVector;
 	}
 
 	bool Relation::IsEmpty()

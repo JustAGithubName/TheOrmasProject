@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>1059</width>
+    <height>824</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -49,8 +49,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>21</height>
+     <width>1059</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuUsers">
@@ -68,6 +68,8 @@
     <addaction name="actionBorrowers"/>
     <addaction name="actionCreditors"/>
     <addaction name="actionShareholders"/>
+    <addaction name="actionGroup"/>
+    <addaction name="actionUserGroup"/>
     <addaction name="separator"/>
     <addaction name="actionCompanyEmployees"/>
     <addaction name="actionCashboxEmployees"/>
@@ -136,6 +138,7 @@
     </property>
     <addaction name="actionProduction"/>
     <addaction name="actionProductionList"/>
+    <addaction name="actionProductionStock"/>
     <addaction name="actionProductionConsumeRaws"/>
     <addaction name="actionProductionPlan"/>
     <addaction name="actionProductionPlanList"/>
@@ -161,6 +164,7 @@
     <addaction name="actionBalances"/>
     <addaction name="actionAccounts"/>
     <addaction name="actionSubaccounts"/>
+    <addaction name="actionSubaccountLimit"/>
     <addaction name="actionGenerateOneAccount"/>
     <addaction name="actionGenerateAccounts"/>
     <addaction name="separator"/>
@@ -169,11 +173,13 @@
     <addaction name="actionPayroll"/>
     <addaction name="separator"/>
     <addaction name="actionAccountType"/>
+    <addaction name="actionBranchSubaccounts"/>
     <addaction name="actionDivisionAccounts"/>
     <addaction name="actionChartOfAccounts"/>
     <addaction name="actionCompanyAccounts"/>
     <addaction name="actionEntry"/>
     <addaction name="actionEntryRouting"/>
+    <addaction name="actionAccountableReport"/>
     <addaction name="actionCloseOfMonth"/>
     <addaction name="separator"/>
     <addaction name="actionWarehouse"/>
@@ -197,6 +203,7 @@
     <addaction name="actionLowValueStock"/>
     <addaction name="actionConsumeOthSt"/>
     <addaction name="actionReceiptOthSt"/>
+    <addaction name="actionStockLimit"/>
    </widget>
    <widget class="QMenu" name="menuCash">
     <property name="title">
@@ -216,11 +223,18 @@
     <addaction name="actionCompanyBalanceInfo"/>
     <addaction name="actionFinancialReport"/>
     <addaction name="actionCompanyBalance"/>
+    <addaction name="separator"/>
     <addaction name="actionSpecificationReport"/>
     <addaction name="actionProfitability"/>
     <addaction name="actionSalesReport"/>
     <addaction name="actionAccountCard"/>
     <addaction name="actionWarehouseTurnover"/>
+    <addaction name="actionDailySalesReport"/>
+    <addaction name="actionCommonReport"/>
+    <addaction name="actionAgentReport"/>
+    <addaction name="separator"/>
+    <addaction name="actionFixedAssetsReport"/>
+    <addaction name="actionWarehouseReport"/>
    </widget>
    <widget class="QMenu" name="menuFixedAssets">
     <property name="title">
@@ -231,6 +245,15 @@
     <addaction name="actionInventory"/>
     <addaction name="actionAmortizeGroup"/>
     <addaction name="actionAmortizeType"/>
+   </widget>
+   <widget class="QMenu" name="menuAnalysis">
+    <property name="title">
+     <string>Analysis</string>
+    </property>
+    <addaction name="actionABCAnalysis"/>
+    <addaction name="actionProductAlalysis"/>
+    <addaction name="actionRawMaterialsAnalysis"/>
+    <addaction name="actionCash_analysis"/>
    </widget>
    <addaction name="menuUsers"/>
    <addaction name="menuProducts"/>
@@ -244,6 +267,7 @@
    <addaction name="menuStock"/>
    <addaction name="menuReports"/>
    <addaction name="menuReferences"/>
+   <addaction name="menuAnalysis"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -795,6 +819,86 @@
   <action name="actionReceiptOthSt">
    <property name="text">
     <string>Receipt other stocks</string>
+   </property>
+  </action>
+  <action name="actionGroup">
+   <property name="text">
+    <string>Group</string>
+   </property>
+  </action>
+  <action name="actionUserGroup">
+   <property name="text">
+    <string>User group relation</string>
+   </property>
+  </action>
+  <action name="actionStockLimit">
+   <property name="text">
+    <string>Stock limit</string>
+   </property>
+  </action>
+  <action name="actionSubaccountLimit">
+   <property name="text">
+    <string>Subaccount limit</string>
+   </property>
+  </action>
+  <action name="actionDailySalesReport">
+   <property name="text">
+    <string>Daily sales report</string>
+   </property>
+  </action>
+  <action name="actionAccountableReport">
+   <property name="text">
+    <string>Accountable report</string>
+   </property>
+  </action>
+  <action name="actionBranchSubaccounts">
+   <property name="text">
+    <string>Branch subaccounts</string>
+   </property>
+  </action>
+  <action name="actionCommonReport">
+   <property name="text">
+    <string>Common report</string>
+   </property>
+  </action>
+  <action name="actionAgentReport">
+   <property name="text">
+    <string>Agent report</string>
+   </property>
+  </action>
+  <action name="actionDailyAgentReport">
+   <property name="text">
+    <string>Daily agent report</string>
+   </property>
+  </action>
+  <action name="actionABCAnalysis">
+   <property name="text">
+    <string>ABC analysis</string>
+   </property>
+  </action>
+  <action name="actionProductAlalysis">
+   <property name="text">
+    <string>Product and Net cost alalysis</string>
+   </property>
+  </action>
+  <action name="actionRawMaterialsAnalysis">
+   <property name="text">
+    <string>Raw materials analysis</string>
+   </property>
+  </action>
+  <action name="actionCash_analysis">
+   <property name="text">
+    <string>Cash analysis</string>
+   </property>
+  </action>
+  <action name="actionFixedAssetsReport">
+   <property name="text">
+    <string>Fixed assets report</string>
+   </property>
+  </action>
+  <action name="actionWarehouseReport">
+   <property name="text">
+    <string>Warehouse report</string>
    </property>
   </action>
  </widget>

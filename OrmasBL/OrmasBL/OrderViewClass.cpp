@@ -72,5 +72,65 @@ namespace BusinessLayer
 		return currencyName;
 	}
 
+	void OrderView::SetStatusCode(std::string cStatusCode)
+	{
+		statusCode = cStatusCode;
+	}
+	void OrderView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void OrderView::SetEmployeeName(std::string cEmployeeName)
+	{
+		employeeName = cEmployeeName;
+	}
+	void OrderView::SetEmployeeSurname(std::string cEmployeeSurname)
+	{
+		employeeSurname = cEmployeeSurname;
+	}
+	void OrderView::SetEmployeePhone(std::string cEmployeePhone)
+	{
+		employeePhone = cEmployeePhone;
+	}
+	
+	void OrderView::SetClientName(std::string oClientName)
+	{
+		clientName = oClientName;
+	}
+	void OrderView::SetClientSurname(std::string oClientSurname)
+	{
+		clientSurname = oClientSurname;
+	}
+	void OrderView::SetClientPhone(std::string oClientPhone)
+	{
+		clientPhone = oClientPhone;
+	}
+	void OrderView::SetClientAddress(std::string oClientAddres)
+	{
+		clientAddres = oClientAddres;
+	}
+	void OrderView::SetClientFirm(std::string oClientFirm)
+	{
+		clientFirm = oClientFirm;
+	}
+
+	void OrderView::SetCurrencyName(std::string eCurrencyName)
+	{
+		currencyName = eCurrencyName;
+	}
+
+	std::string OrderView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !executionDate.empty() || !statusCode.empty() || !statusName.empty() || !employeeName.empty() || !employeeSurname.empty()
+			|| !employeePhone.empty() || !clientName.empty() || !clientSurname.empty() || !clientPhone.empty()
+			|| !clientAddres.empty() || !clientFirm.empty() || 0 != count || 0 != sum || !currencyName.empty() ||
+			0 != clientID || 0 != employeeID || 0 != statusID || currencyID)
+		{
+			return ormasDal.GetFilterForOrderView(id, date, executionDate, statusCode, statusName, clientName,
+				clientSurname, clientPhone, clientAddres, clientFirm, employeeName, employeeSurname, employeePhone, count, sum, currencyName, employeeID,
+				clientID, statusID, currencyID);
+		}
+		return "";
+	}
 }
 

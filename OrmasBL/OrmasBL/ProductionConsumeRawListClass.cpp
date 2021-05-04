@@ -82,7 +82,7 @@ namespace BusinessLayer
 		currencyID = cCurrencyID;
 	}
 
-	bool ProductionConsumeRawList::CreateProductionConsumeRawList(DataLayer::OrmasDal& ormasDal, int crID, int pID, double crlCount, double crlSum,
+	bool ProductionConsumeRawList::CreateProductionConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int pID, double crlCount, double crlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -92,12 +92,12 @@ namespace BusinessLayer
 		sum = crlSum;
 		statusID = sID;
 		currencyID = cID;
-		double middlePrice = CalculateMiddleSum(ormasDal, stockEmployeeID, pID, errorMessage);
+		double middlePrice = CalculateMiddleSum(globalVar, ormasDal, stockEmployeeID, pID, errorMessage);
 		if (0 == middlePrice)
 			return false;
 		sum = crlCount * middlePrice;
 		Product product;
-		if (!product.GetProductByID(ormasDal, pID, errorMessage))
+		if (!product.GetProductByID(globalVar, ormasDal, pID, errorMessage))
 			return false;
 		/*if (sum> count *product.GetPrice()*1.25 || sum < count *product.GetPrice()*0.75)
 		{
@@ -111,15 +111,15 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionConsumeRawList::CreateProductionConsumeRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionConsumeRawList::CreateProductionConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		double middlePrice = CalculateMiddleSum(ormasDal, stockEmployeeID, productID, errorMessage);
+		double middlePrice = CalculateMiddleSum(globalVar, ormasDal, stockEmployeeID, productID, errorMessage);
 		if (0 == middlePrice)
 			return false;
 		sum = count * middlePrice;
 		id = ormasDal.GenerateID();
 		Product product;
-		if (!product.GetProductByID(ormasDal, productID, errorMessage))
+		if (!product.GetProductByID(globalVar, ormasDal, productID, errorMessage))
 			return false;
 		/*if (sum> count *product.GetPrice()*1.25 || sum < count *product.GetPrice()*0.75)
 		{
@@ -133,7 +133,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionConsumeRawList::DeleteProductionConsumeRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionConsumeRawList::DeleteProductionConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInProductionConsumeRawList(id, errorMessage))
 		{
@@ -142,7 +142,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionConsumeRawList::DeleteListByProductionConsumeRawID(DataLayer::OrmasDal& ormasDal, int crID, std::string& errorMessage)
+	bool ProductionConsumeRawList::DeleteListByProductionConsumeRawID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, std::string& errorMessage)
 	{
 		productionConsumeRawID = crID;
 		if (ormasDal.DeleteListByProductionConsumeRawID(productionConsumeRawID, errorMessage))
@@ -153,7 +153,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ProductionConsumeRawList::UpdateProductionConsumeRawList(DataLayer::OrmasDal& ormasDal, int crID, int pID, double crlCount, double crlSum,
+	bool ProductionConsumeRawList::UpdateProductionConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int pID, double crlCount, double crlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		productionConsumeRawID = crID;
@@ -162,7 +162,7 @@ namespace BusinessLayer
 		sum = crlSum;
 		statusID = sID;
 		currencyID = cID;
-		double middlePrice = CalculateMiddleSum(ormasDal, stockEmployeeID, pID, errorMessage);
+		double middlePrice = CalculateMiddleSum(globalVar, ormasDal, stockEmployeeID, pID, errorMessage);
 		if (0 == middlePrice)
 			return false;
 		sum = crlCount * middlePrice;
@@ -172,9 +172,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionConsumeRawList::UpdateProductionConsumeRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionConsumeRawList::UpdateProductionConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		double middlePrice = CalculateMiddleSum(ormasDal, stockEmployeeID, productID, errorMessage);
+		double middlePrice = CalculateMiddleSum(globalVar, ormasDal, stockEmployeeID, productID, errorMessage);
 		if (0 == middlePrice)
 			return false;
 		sum = count * middlePrice;
@@ -194,7 +194,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ProductionConsumeRawList::GetProductionConsumeRawListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool ProductionConsumeRawList::GetProductionConsumeRawListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -237,7 +237,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ProductionConsumeRawList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int crID, int pID, double crlCount, double crlSum,
+	bool ProductionConsumeRawList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int pID, double crlCount, double crlSum,
 		int cID, std::string& errorMessage)
 	{
 		ProductionConsumeRawList productionConsumeRawList;
@@ -260,7 +260,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ProductionConsumeRawList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionConsumeRawList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ProductionConsumeRawList productionConsumeRawList;
 		productionConsumeRawList.Clear();
@@ -281,14 +281,14 @@ namespace BusinessLayer
 		errorMessage = "Production consume raw list with this parameters are already exist! Please avoid the duplication!";
 		return true;
 	}
-	double ProductionConsumeRawList::CalculateMiddleSum(DataLayer::OrmasDal& ormasDal, int seID, int pID, std::string& errorMessage)
+	double ProductionConsumeRawList::CalculateMiddleSum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int seID, int pID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Stock stock;
 		double mPrice;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, seID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, seID, errorMessage))
 			return 0;
-		if (!stock.GetStockByProductAndWarehouseID(ormasDal, pID, weRel.GetWarehouseID(), errorMessage))
+		if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, pID, weRel.GetWarehouseID(), errorMessage))
 		{
 			return 0;
 		}

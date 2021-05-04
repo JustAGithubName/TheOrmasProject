@@ -55,7 +55,7 @@ void CreateEmpPrdDlg::SetID(int ID, QString childName)
 				userEdit->setText(QString::number(ID));
 			}
 			BusinessLayer::User user;
-			if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+			if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 			{
 				namePh->setText(user.GetName().c_str());
 				surnamePh->setText(user.GetSurname().c_str());
@@ -66,7 +66,7 @@ void CreateEmpPrdDlg::SetID(int ID, QString childName)
 				productEdit->setText(QString::number(ID));
 			}
 			BusinessLayer::Product product;
-			if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+			if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 			{
 				productNamePh->setText(product.GetName().c_str());
 				pricePh->setText(QString::number(product.GetPrice(),'f', 2));
@@ -88,14 +88,14 @@ void CreateEmpPrdDlg::FillEditElements(int eEmployeeID, int eProductID)
 	userEdit->setText(QString::number(eEmployeeID));
 	productEdit->setText(QString::number(eProductID));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), eEmployeeID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), eEmployeeID, errorMessage))
 	{
 		namePh->setText(user.GetName().c_str());
 		surnamePh->setText(user.GetSurname().c_str());
 		phonePh->setText(user.GetPhone().c_str());
 	}
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), eProductID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), eProductID, errorMessage))
 	{
 		productNamePh->setText(product.GetName().c_str());
 		pricePh->setText(QString::number(product.GetPrice(),'f',2));
@@ -127,7 +127,7 @@ void CreateEmpPrdDlg::CreateEmployeeProduct()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetEmployeeProductParams(userEdit->text().toInt(), productEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateEmployeeProductRelation(employeeProduct, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -136,8 +136,8 @@ void CreateEmpPrdDlg::CreateEmployeeProduct()
 				{
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 					BusinessLayer::Product *product = new BusinessLayer::Product();
-					if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), employeeProduct->GetEmployeeID(), errorMessage)
-						|| !product->GetProductByID(dialogBL->GetOrmasDal(), employeeProduct->GetProductID(), errorMessage))
+					if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeProduct->GetEmployeeID(), errorMessage)
+						|| !product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeProduct->GetProductID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -165,7 +165,13 @@ void CreateEmpPrdDlg::CreateEmployeeProduct()
 					delete employee;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 
 			Close();
@@ -198,7 +204,7 @@ void CreateEmpPrdDlg::EditEmployeeProduct()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetEmployeeProductParams(userEdit->text().toInt(), productEdit->text().toInt(), employeeProduct->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateEmployeeProductRelation(employeeProduct, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -207,8 +213,8 @@ void CreateEmpPrdDlg::EditEmployeeProduct()
 					{
 						BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 						BusinessLayer::Product *product = new BusinessLayer::Product();
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), employeeProduct->GetEmployeeID(), errorMessage)
-							|| !product->GetProductByID(dialogBL->GetOrmasDal(), employeeProduct->GetProductID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeProduct->GetEmployeeID(), errorMessage)
+							|| !product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeProduct->GetProductID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -233,7 +239,13 @@ void CreateEmpPrdDlg::EditEmployeeProduct()
 						delete product;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				Close();
 			}
@@ -323,7 +335,7 @@ void CreateEmpPrdDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

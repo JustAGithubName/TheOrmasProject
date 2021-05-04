@@ -44,9 +44,9 @@ namespace BusinessLayer
 		name = stName;
 	}
 	
-	bool SalaryType::CreateSalaryType(DataLayer::OrmasDal& ormasDal, std::string stCode, std::string stName, std::string& errorMessage)
+	bool SalaryType::CreateSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string stCode, std::string stName, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, stCode, stName, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, stCode, stName, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(stCode, stName);
@@ -62,9 +62,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SalaryType::CreateSalaryType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SalaryType::CreateSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateSalaryType(id, code, name, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SalaryType::DeleteSalaryType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SalaryType::DeleteSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteSalaryType(id, errorMessage))
 		{
@@ -90,7 +90,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SalaryType::UpdateSalaryType(DataLayer::OrmasDal& ormasDal, std::string stCode, std::string stName, std::string& errorMessage)
+	bool SalaryType::UpdateSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string stCode, std::string stName, std::string& errorMessage)
 	{
 		TrimStrings(stCode, stName);
 		code = stCode;
@@ -105,7 +105,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SalaryType::UpdateSalaryType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SalaryType::UpdateSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateSalaryType(id, code, name, errorMessage))
 		{
@@ -127,7 +127,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool SalaryType::GetSalaryTypeByID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage)
+	bool SalaryType::GetSalaryTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage)
 	{
 		if (rID <= 0)
 			return false;
@@ -170,7 +170,7 @@ namespace BusinessLayer
 			boost::trim(stName);
 	}
 
-	bool SalaryType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string stCode, std::string stName, std::string& errorMessage)
+	bool SalaryType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string stCode, std::string stName, std::string& errorMessage)
 	{
 		SalaryType salaryType;
 		salaryType.Clear();
@@ -189,7 +189,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool SalaryType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SalaryType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		SalaryType salaryType;
 		salaryType.Clear();
@@ -208,7 +208,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	std::map<std::string, int> SalaryType::GetSalaryTypesAsMap(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	std::map<std::string, int> SalaryType::GetSalaryTypesAsMap(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::map<std::string, int> salaryTypeMap;
 		std::vector<DataLayer::salaryTypeCollection> salaryTypeVector = ormasDal.GetSalaryType(errorMessage);

@@ -44,9 +44,9 @@ namespace BusinessLayer{
 		entryID = eID;
 	}
 
-	bool EntrySubaccountRelation::CreateEntrySubaccountRelation(DataLayer::OrmasDal &ormasDal, int eID, int sID, std::string& errorMessage)
+	bool EntrySubaccountRelation::CreateEntrySubaccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int sID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, eID, sID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, eID, sID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		subaccountID = sID;
@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EntrySubaccountRelation::CreateEntrySubaccountRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntrySubaccountRelation::CreateEntrySubaccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateEntrySubaccount(id, entryID, subaccountID, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EntrySubaccountRelation::DeleteEntrySubaccountRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntrySubaccountRelation::DeleteEntrySubaccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteEntrySubaccount(entryID, subaccountID, errorMessage))
 		{
@@ -102,7 +102,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::vector<int> EntrySubaccountRelation::GetAllEntryBySubaccountID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	std::vector<int> EntrySubaccountRelation::GetAllEntryBySubaccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		std::vector<int> entryIDVector;
 		EntrySubaccountRelation aeRelation;
@@ -120,7 +120,7 @@ namespace BusinessLayer{
 		return entryIDVector;
 	}
 
-	std::vector<int> EntrySubaccountRelation::GetAllSubaccountByEntryID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	std::vector<int> EntrySubaccountRelation::GetAllSubaccountByEntryID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		std::vector<int> subaccountIDVector;
 		EntrySubaccountRelation aeRelation;
@@ -153,7 +153,7 @@ namespace BusinessLayer{
 		entryID = 0;
 	}
 
-	bool EntrySubaccountRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, int sID, std::string& errorMessage)
+	bool EntrySubaccountRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int sID, std::string& errorMessage)
 	{
 		EntrySubaccountRelation aeRelation;
 		aeRelation.Clear();
@@ -172,7 +172,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool EntrySubaccountRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntrySubaccountRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		EntrySubaccountRelation aeRelation;
 		aeRelation.Clear();

@@ -66,7 +66,7 @@ void CreateEmpDlg::SetID(int ID, QString childName)
 			{
 				roleEdit->setText(QString::number(ID));
 				BusinessLayer::Role role;
-				if (role.GetRoleByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (role.GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					roleNamePh->setText(role.GetName().c_str());
 				}
@@ -75,7 +75,7 @@ void CreateEmpDlg::SetID(int ID, QString childName)
 			{
 				positionEdit->setText(QString::number(ID));
 				BusinessLayer::Position position;
-				if (position.GetPositionByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (position.GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					positionNamePh->setText(position.GetName().c_str());
 				}
@@ -125,12 +125,12 @@ void CreateEmpDlg::FillEditElements(QString eEmail, QString eName, QString eSurn
 	birthDateEdit->setDate(QDate::fromString(eBirthDate, "dd.MM.yyyy"));
 	hireDateEdit->setDate(QDate::fromString(eHireNumber, "dd.MM.yyyy"));
 	BusinessLayer::Role role;
-	if (role.GetRoleByID(dialogBL->GetOrmasDal(), eRoleID, errorMessage))
+	if (role.GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), eRoleID, errorMessage))
 	{
 		roleNamePh->setText(role.GetName().c_str());
 	}
 	BusinessLayer::Position position;
-	if (position.GetPositionByID(dialogBL->GetOrmasDal(), ePositionID, errorMessage))
+	if (position.GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ePositionID, errorMessage))
 	{
 		positionNamePh->setText(position.GetName().c_str());
 	}
@@ -224,12 +224,12 @@ void CreateEmpDlg::CreateEmployee()
 		SetEmployeeParams(emailEdit->text(), nameEdit->text(), surnameEdit->text(), phoneEdit->text(), addressEdit->text(),
 			roleEdit->text().toInt(), passwordEdit->text(), activatedCmbBox->currentText(), positionEdit->text().toInt(),
 			birthDateEdit->date().toString("dd.MM.yyyy"), hireDateEdit->date().toString("dd.MM.yyyy"));
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateEmployee(employee, errorMessage))
 		{
 			//division section
 			SetDivisionEmployeeParams(divisionCmbBox->currentData().toInt(), employee->GetID(), isContractChkBox->isChecked()? "true" : "false");
-			if (!employee->CreateDivisionEmployeeRelation(dialogBL->GetOrmasDal(), *divisionEmployee, errorMessage))
+			if (!employee->CreateDivisionEmployeeRelation(dialogBL->globalVar, dialogBL->GetOrmasDal(), *divisionEmployee, errorMessage))
 			{
 				dialogBL->CancelTransaction(errorMessage);
 				if (errorMessage.empty())
@@ -253,8 +253,8 @@ void CreateEmpDlg::CreateEmployee()
 
 					BusinessLayer::Role *role = new BusinessLayer::Role();
 					BusinessLayer::Position *position = new BusinessLayer::Position();
-					if (!role->GetRoleByID(dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage)
-						|| !position->GetPositionByID(dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
+					if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage)
+						|| !position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -293,7 +293,13 @@ void CreateEmpDlg::CreateEmployee()
 			}
 			
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -361,14 +367,14 @@ void CreateEmpDlg::EditEmployee()
 			SetEmployeeParams(emailEdit->text(), nameEdit->text(), surnameEdit->text(), phoneEdit->text(), addressEdit->text(),
 				roleEdit->text().toInt(), passwordEdit->text(), activatedCmbBox->currentText(), positionEdit->text().toInt(),
 				birthDateEdit->date().toString("dd.MM.yyyy"), hireDateEdit->date().toString("dd.MM.yyyy"), employee->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateEmployee(employee, errorMessage))
 			{
 				SetDivisionEmployeeParams(divisionCmbBox->currentData().toInt(), employee->GetID(), isContractChkBox->isChecked() ? "true" : "false", divisionEmployee->GetID());
 				if (divisionEmployee->GetDivisionID() != divisionCmbBox->currentData().toInt())
 				{
 
-					if (!employee->UpdateDivisionEmployeeRelation(dialogBL->GetOrmasDal(), *divisionEmployee, errorMessage))
+					if (!employee->UpdateDivisionEmployeeRelation(dialogBL->globalVar, dialogBL->GetOrmasDal(), *divisionEmployee, errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						if (errorMessage.empty())
@@ -402,8 +408,8 @@ void CreateEmpDlg::EditEmployee()
 						//if role of Employee is changed, then update location data fields
 						BusinessLayer::Role *role = new BusinessLayer::Role();
 
-						if (!role->GetRoleByID(dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage)
-							|| !position->GetPositionByID(dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
+						if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage)
+							|| !position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -436,7 +442,13 @@ void CreateEmpDlg::EditEmployee()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 
 			}

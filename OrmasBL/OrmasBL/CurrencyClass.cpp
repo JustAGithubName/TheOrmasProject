@@ -73,16 +73,16 @@ namespace BusinessLayer
 		mainTrade = cMainTrade;
 	}
 
-	bool Currency::CreateCurrency(DataLayer::OrmasDal& ormasDal, int cCode, std::string cShortName, std::string cName, int cUnit,
+	bool Currency::CreateCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cCode, std::string cShortName, std::string cName, int cUnit,
 		bool cMainTrade, std::string& errorMessage)
 	{
-		if (0 < GetMainTradeCurrencyID(ormasDal, errorMessage) && cMainTrade == true)
+		if (0 < GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage) && cMainTrade == true)
 		{
 			errorMessage = "System already have the main trade currency! Please delete or update it first, \
 						   						   before adding a new currency which will be a main trade currency!";
 			return false;
 		}
-		if (IsDuplicate(ormasDal, cShortName, cName, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, cShortName, cName, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(cShortName, cName);
@@ -101,15 +101,15 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Currency::CreateCurrency(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Currency::CreateCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (0 < GetMainTradeCurrencyID(ormasDal, errorMessage) && mainTrade == true)
+		if (0 < GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage) && mainTrade == true)
 		{
 			errorMessage = "System already have the main trade currency! Please delete or update it first, \
 						   						   before adding a new currency which will be a main trade currency!";
 			return false;
 		}
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateCurrency(id, code, shortName, name, unit, mainTrade, errorMessage))
@@ -122,7 +122,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Currency::DeleteCurrency(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Currency::DeleteCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteCurrency(id, errorMessage))
 		{
@@ -135,11 +135,11 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Currency::UpdateCurrency(DataLayer::OrmasDal& ormasDal, int cCode, std::string cShortName, std::string cName, int cUnit,
+	bool Currency::UpdateCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cCode, std::string cShortName, std::string cName, int cUnit,
 		bool cMainTrade, std::string& errorMessage)
 	{
 		int mainTradeID = 0;
-		mainTradeID = GetMainTradeCurrencyID(ormasDal, errorMessage);
+		mainTradeID = GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
 		if (mainTradeID != id)
 		{
 			if (0 < mainTradeID && cMainTrade == true)
@@ -165,10 +165,10 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Currency::UpdateCurrency(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Currency::UpdateCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		int mainTradeID = 0;
-		mainTradeID = GetMainTradeCurrencyID(ormasDal, errorMessage);
+		mainTradeID = GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
 		if (mainTradeID != id)
 		{
 			if (0 < mainTradeID && mainTrade == true)
@@ -198,7 +198,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Currency::GetCurrencyByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool Currency::GetCurrencyByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -247,7 +247,7 @@ namespace BusinessLayer
 			boost::trim(cName);
 	}
 
-	bool Currency::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cShortName, std::string cName, std::string& errorMessage)
+	bool Currency::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cShortName, std::string cName, std::string& errorMessage)
 	{
 		Currency currency;
 		currency.Clear();
@@ -266,7 +266,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Currency::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Currency::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Currency currency;
 		currency.Clear();
@@ -285,7 +285,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	int Currency::GetMainTradeCurrencyID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	int Currency::GetMainTradeCurrencyID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::vector<DataLayer::currenciesCollection> currencyVector = ormasDal.GetCurrencies(errorMessage);
 		if (0 != currencyVector.size())

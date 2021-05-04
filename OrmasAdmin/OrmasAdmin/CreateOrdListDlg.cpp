@@ -71,12 +71,12 @@ void CreateOrdListDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
@@ -90,7 +90,7 @@ void CreateOrdListDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -119,18 +119,18 @@ void CreateOrdListDlg::FillEditElements(int pOrderID, int pProductID, double pCo
 	statusEdit->setText(QString::number(pStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(pCurrencyID)));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), pProductID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pProductID, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), pStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -191,7 +191,7 @@ void CreateOrdListDlg::AddProductToList()
 		BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 		BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
 
-		if (!product->GetProductByID(dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
+		if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr(errorMessage.c_str())),
@@ -204,9 +204,9 @@ void CreateOrdListDlg::AddProductToList()
 		}
 		else
 		{
-			if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-				|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
-				|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
+			if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
+				|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
+				|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -286,7 +286,7 @@ void CreateOrdListDlg::EditProductInList()
 			|| statusEdit->text().toInt() != orderList->GetStatusID() || currencyCmb->currentData().toInt() != orderList->GetCurrencyID())
 		{
 			BusinessLayer::Product *product = new BusinessLayer::Product();
-			if (!product->GetProductByID(dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
+			if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -314,10 +314,10 @@ void CreateOrdListDlg::EditProductInList()
 						BusinessLayer::Status *status = new BusinessLayer::Status();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
-						if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
-							|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
+						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
+							|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Warning")),
 								QString(tr(errorMessage.c_str())),
@@ -473,12 +473,12 @@ void CreateOrdListDlg::OpenProdDlg()
 
 	BusinessLayer::EmployeeProductRelation epRelation;
 	std::vector<int> prodIDList;
-	prodIDList = epRelation.GetAllProductByEmployeeID(dialogBL->GetOrmasDal(), employeeID, errorMessage);
+	prodIDList = epRelation.GetAllProductByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeID, errorMessage);
 	std::string filterIN ="";
 	if (prodIDList.size() > 0)
 	{
 		std::vector<std::string> filterList;
-		filterIN = product->GenerateINFilter(dialogBL->GetOrmasDal(), prodIDList);
+		filterIN = product->GenerateINFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), prodIDList);
 		filterList.push_back(productFilter);
 		filterList.push_back(filterIN);
 		productFilter = dialogBL->ConcatenateFilters(filterList);

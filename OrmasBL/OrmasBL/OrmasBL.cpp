@@ -20,6 +20,13 @@ namespace BusinessLayer{
 	
 	OrmasBL::~OrmasBL()
 	{
+		delete loggedUser;
+		delete globalVar;
+	}
+
+	void OrmasBL::SetGlobalVariables(BusinessLayer::GlobalVariable* glVar)
+	{
+		globalVar = glVar;
 	}
 
 	bool OrmasBL::ConnectToDB(std::string dbname, std::string username, std::string password, std::string host, int port)
@@ -54,6 +61,10 @@ namespace BusinessLayer{
 	bool OrmasBL::StartTransaction(std::string& errorMessage)
 	{
 		return ormasDal.StartTransaction(errorMessage);
+	}
+	bool OrmasBL::StartIsolatedTransaction(std::string& errorMessage)
+	{
+		return ormasDal.StartIsolatedTransaction(errorMessage);
 	}
 	bool OrmasBL::CommitTransaction(std::string& errorMessage)
 	{
@@ -158,25 +169,91 @@ namespace BusinessLayer{
 	}
 
 	template<>
-	std::vector<AccountableTransaction> OrmasBL::GetAllDataForClass<AccountableTransaction>(std::string& errorMessage, std::string filter)
+	std::vector<AccountableDocument> OrmasBL::GetAllDataForClass<AccountableDocument>(std::string& errorMessage, std::string filter)
 	{
-		std::vector<AccountableTransaction> vecForAccountableTr;
-		std::vector<DataLayer::accountableTransactionCollection> dataCollection;
+		std::vector<AccountableDocument> vecForAccountableDoc;
+		std::vector<DataLayer::accountableDocumentCollection> dataCollection;
 		if (filter.empty())
 		{
-			dataCollection = ormasDal.GetAccountableTransaction(errorMessage);
+			dataCollection = ormasDal.GetAccountableDocument(errorMessage);
 		}
 		else
 		{
-			dataCollection = ormasDal.GetAccountableTransaction(errorMessage, filter);
+			dataCollection = ormasDal.GetAccountableDocument(errorMessage, filter);
 		}
 		if (!dataCollection.empty()){
 			for (auto data : dataCollection)
 			{
-				vecForAccountableTr.push_back(AccountableTransaction(data));
+				vecForAccountableDoc.push_back(AccountableDocument(data));
 			}
 		}
-		return vecForAccountableTr;
+		return vecForAccountableDoc;
+	}
+
+	template<>
+	std::vector<AccountableEntry> OrmasBL::GetAllDataForClass<AccountableEntry>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountableEntry> vecForAccountableEtr;
+		std::vector<DataLayer::accountableEntryCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountableEntry(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountableEntry(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountableEtr.push_back(AccountableEntry(data));
+			}
+		}
+		return vecForAccountableEtr;
+	}
+
+	template<>
+	std::vector<AccountablePaymentRelation> OrmasBL::GetAllDataForClass<AccountablePaymentRelation>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountablePaymentRelation> vecForAccountablePay;
+		std::vector<DataLayer::accountablePaymentCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountablePayment(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountablePayment(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountablePay.push_back(AccountablePaymentRelation(data));
+			}
+		}
+		return vecForAccountablePay;
+	}
+
+	template<>
+	std::vector<AccountableWithdrawalRelation> OrmasBL::GetAllDataForClass<AccountableWithdrawalRelation>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountableWithdrawalRelation> vecForAccountableWith;
+		std::vector<DataLayer::accountableWithdrawalCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountableWithdrawal(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountableWithdrawal(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountableWith.push_back(AccountableWithdrawalRelation(data));
+			}
+		}
+		return vecForAccountableWith;
 	}
 
 	template<>
@@ -199,6 +276,28 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForAccountHis;
+	}
+
+	template<>
+	std::vector<AccountChangeLog> OrmasBL::GetAllDataForClass<AccountChangeLog>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountChangeLog> vecForAccountLog;
+		std::vector<DataLayer::accountChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountChangeLog(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountChangeLog(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountLog.push_back(AccountChangeLog(data));
+			}
+		}
+		return vecForAccountLog;
 	}
 
 
@@ -310,6 +409,28 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForBranch;
+	}
+
+	template<>
+	std::vector<BranchSubaccountRelationView> OrmasBL::GetAllDataForClass<BranchSubaccountRelationView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<BranchSubaccountRelationView> vecForBranchSub;
+		std::vector<DataLayer::branchSubaccountViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetBranchSubaccount(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetBranchSubaccount(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForBranchSub.push_back(BranchSubaccountRelationView(data));
+			}
+		}
+		return vecForBranchSub;
 	}
 
 	template<>
@@ -842,6 +963,28 @@ namespace BusinessLayer{
 	}
 
 	template<>
+	std::vector<FullExtendedEntryView> OrmasBL::GetAllDataForClass<FullExtendedEntryView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<FullExtendedEntryView> vecForEntry;
+		std::vector<DataLayer::entriesFullJoinViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetFullExtendedEntries(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetFullExtendedEntries(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForEntry.push_back(FullExtendedEntryView(data));
+			}
+		}
+		return vecForEntry;
+	}
+
+	template<>
 	std::vector<EntryRouting> OrmasBL::GetAllDataForClass<EntryRouting>(std::string& errorMessage, std::string filter)
 	{
 		std::vector<EntryRouting> vecForEntryRouting;
@@ -861,6 +1004,28 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForEntryRouting;
+	}
+
+	template<>
+	std::vector<ExpenseDocument> OrmasBL::GetAllDataForClass<ExpenseDocument>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<ExpenseDocument> vecForExpenseDoc;
+		std::vector<DataLayer::expenseDocumentCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetExpenseDocument(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetExpenseDocument(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForExpenseDoc.push_back(ExpenseDocument(data));
+			}
+		}
+		return vecForExpenseDoc;
 	}
 
 	template<>
@@ -1015,6 +1180,28 @@ namespace BusinessLayer{
 			}
 		}
 		return vecFixedAssSpecRep;
+	}
+
+	template<>
+	std::vector<Group> OrmasBL::GetAllDataForClass<Group>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<Group> vecGroup;
+		std::vector<DataLayer::groupsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetGroups(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetGroups(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecGroup.push_back(Group(data));
+			}
+		}
+		return vecGroup;
 	}
 
 	template<>
@@ -1213,6 +1400,28 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForLVStockHistory;
+	}
+
+	template<>
+	std::vector<LowValueStockChangeLog> OrmasBL::GetAllDataForClass<LowValueStockChangeLog>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<LowValueStockChangeLog> vecForLVStockLog;
+		std::vector<DataLayer::lowValueStockChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetLowValueStockChangeLog(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetLowValueStockChangeLog(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForLVStockLog.push_back(LowValueStockChangeLog(data));
+			}
+		}
+		return vecForLVStockLog;
 	}
 
 	template<>
@@ -2166,6 +2375,28 @@ namespace BusinessLayer{
 	}
 
 	template<>
+	std::vector<SpecificationChangeLog> OrmasBL::GetAllDataForClass<SpecificationChangeLog>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<SpecificationChangeLog> vecForSpecificationLog;
+		std::vector<DataLayer::specificationChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSpecificationChangeLog(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSpecificationChangeLog(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSpecificationLog.push_back(SpecificationChangeLog(data));
+			}
+		}
+		return vecForSpecificationLog;
+	}
+
+	template<>
 	std::vector<SpecificationView> OrmasBL::GetAllDataForClass<SpecificationView>(std::string& errorMessage, std::string filter)
 	{
 		std::vector<SpecificationView> vecForSpecification;
@@ -2320,6 +2551,28 @@ namespace BusinessLayer{
 	}
 
 	template<>
+	std::vector<StockLimitView> OrmasBL::GetAllDataForClass<StockLimitView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<StockLimitView> vecForStockLimit;
+		std::vector<DataLayer::stockLimitViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStockLimit(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStockLimit(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStockLimit.push_back(StockLimitView(data));
+			}
+		}
+		return vecForStockLimit;
+	}
+
+	template<>
 	std::vector<StockHistoryView> OrmasBL::GetAllDataForClass<StockHistoryView>(std::string& errorMessage, std::string filter)
 	{
 		std::vector<StockHistoryView> vecForStockHistory;
@@ -2342,6 +2595,28 @@ namespace BusinessLayer{
 	}
 
 	template<>
+	std::vector<StockChangeLog> OrmasBL::GetAllDataForClass<StockChangeLog>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<StockChangeLog> vecForStockLog;
+		std::vector<DataLayer::stockChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStockChangeLog(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStockChangeLog(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStockLog.push_back(StockChangeLog(data));
+			}
+		}
+		return vecForStockLog;
+	}
+
+	template<>
 	std::vector<SubaccountView> OrmasBL::GetAllDataForClass<SubaccountView>(std::string& errorMessage, std::string filter)
 	{
 		std::vector<SubaccountView> vecForSubaccount;
@@ -2361,6 +2636,50 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForSubaccount;
+	}
+
+	template<>
+	std::vector<SubaccountLimitView> OrmasBL::GetAllDataForClass<SubaccountLimitView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<SubaccountLimitView> vecForSubaccountLimit;
+		std::vector<DataLayer::subaccountLimitViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSubaccountLimit(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSubaccountLimit(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSubaccountLimit.push_back(SubaccountLimitView(data));
+			}
+		}
+		return vecForSubaccountLimit;
+	}
+
+	template<>
+	std::vector<SubaccountChangeLog> OrmasBL::GetAllDataForClass<SubaccountChangeLog>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<SubaccountChangeLog> vecForSubaccountLog;
+		std::vector<DataLayer::subaccountChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSubaccountChangeLog(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSubaccountChangeLog(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSubaccountLog.push_back(SubaccountChangeLog(data));
+			}
+		}
+		return vecForSubaccountLog;
 	}
 
 	template<>
@@ -2475,6 +2794,28 @@ namespace BusinessLayer{
 	}
 
 	template<>
+	std::vector<TransportChangeLog> OrmasBL::GetAllDataForClass<TransportChangeLog>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<TransportChangeLog> vecForTransportLog;
+		std::vector<DataLayer::transportChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetTransportChangeLog(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetTransportChangeLog(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForTransportLog.push_back(TransportChangeLog(data));
+			}
+		}
+		return vecForTransportLog;
+	}
+
+	template<>
 	std::vector<TransportListView> OrmasBL::GetAllDataForClass<TransportListView>(std::string& errorMessage, std::string filter)
 	{
 		std::vector<TransportListView> vecForTransportList;
@@ -2516,6 +2857,50 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForUser;
+	}
+
+	template<>
+	std::vector<UserExtendedView> OrmasBL::GetAllDataForClass<UserExtendedView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<UserExtendedView> vecForUser;
+		std::vector<DataLayer::userExtendedViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetUserExtended(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetUserExtended(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForUser.push_back(UserExtendedView(data));
+			}
+		}
+		return vecForUser;
+	}
+
+	template<>
+	std::vector<UserGroupRelationView> OrmasBL::GetAllDataForClass<UserGroupRelationView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<UserGroupRelationView> vecForUserGroup;
+		std::vector<DataLayer::userGroupViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetUserGroup(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetUserGroup(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForUserGroup.push_back(UserGroupRelationView(data));
+			}
+		}
+		return vecForUserGroup;
 	}
 	
 	template<>
@@ -2707,7 +3092,7 @@ namespace BusinessLayer{
 		{
 			if (0 != access->GetRoleID() && 0 != access->GetAccessItemID())
 			{
-				return access->CreateAccess(ormasDal, errorMessage);
+				return access->CreateAccess(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2727,7 +3112,7 @@ namespace BusinessLayer{
 		{
 			if (0 != access->GetRoleID() && 0 != access->GetAccessItemID())
 			{
-				return access->UpdateAccess(ormasDal, errorMessage);
+				return access->UpdateAccess(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2747,7 +3132,7 @@ namespace BusinessLayer{
 		{
 			if (0 != access->GetID())
 			{
-				return access->DeleteAccess(ormasDal, errorMessage);
+				return access->DeleteAccess(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2767,7 +3152,7 @@ namespace BusinessLayer{
 		{
 			if (!accessItem->GetNameEng().empty() && !accessItem->GetNameRu().empty() && !accessItem->GetDivision().empty())
 			{
-				return accessItem->CreateAccessItem(ormasDal, errorMessage);
+				return accessItem->CreateAccessItem(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2787,7 +3172,7 @@ namespace BusinessLayer{
 		{
 			if (!accessItem->GetNameEng().empty() && !accessItem->GetNameRu().empty() && !accessItem->GetDivision().empty())
 			{
-				return accessItem->UpdateAccessItem(ormasDal, errorMessage);
+				return accessItem->UpdateAccessItem(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2807,7 +3192,7 @@ namespace BusinessLayer{
 		{
 			if (0 != accessItem->GetID())
 			{
-				return accessItem->DeleteAccessItem(ormasDal, errorMessage);
+				return accessItem->DeleteAccessItem(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2827,7 +3212,7 @@ namespace BusinessLayer{
 		{
 			if (!account->GetNumber().empty())
 			{
-				return account->CreateAccount(ormasDal, errorMessage);
+				return account->CreateAccount(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2847,7 +3232,7 @@ namespace BusinessLayer{
 		{
 			if (!account->GetNumber().empty())
 			{
-				return account->UpdateAccount(ormasDal, errorMessage);
+				return account->UpdateAccount(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2867,7 +3252,7 @@ namespace BusinessLayer{
 		{
 			if (0 != account->GetID())
 			{
-				return account->DeleteAccount(ormasDal, errorMessage);
+				return account->DeleteAccount(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2887,7 +3272,7 @@ namespace BusinessLayer{
 		{
 			if (0 != accountable->GetEmployeeID())
 			{
-				return accountable->CreateAccountable(ormasDal, errorMessage);
+				return accountable->CreateAccountable(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2907,7 +3292,7 @@ namespace BusinessLayer{
 		{
 			if (0 != accountable->GetEmployeeID())
 			{
-				return accountable->UpdateAccountable(ormasDal, errorMessage);
+				return accountable->UpdateAccountable(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2927,7 +3312,7 @@ namespace BusinessLayer{
 		{
 			if (0 != accountable->GetID())
 			{
-				return accountable->DeleteAccountable(ormasDal, errorMessage);
+				return accountable->DeleteAccountable(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2941,14 +3326,75 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool OrmasBL::CreateAccountableTransaction(BusinessLayer::AccountableTransaction* accountableTransaction, std::string& errorMessage)
+
+	bool OrmasBL::CreateAccountableUnionDocument(BusinessLayer::AccountableUnionDocument* aUnionDoc, std::string& errorMessage)
+	{
+		try
+		{
+			if (!aUnionDoc->IsEmpty())
+			{
+				return aUnionDoc->CreateAccountableUnionDocument(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateAccountableUnionDocument(BusinessLayer::AccountableUnionDocument* aUnionDoc, std::string& errorMessage)
+	{
+		try
+		{
+			if (!aUnionDoc->IsEmpty())
+			{
+				return aUnionDoc->UpdateAccountableUnionDocument(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteAccountableUnionDocument(BusinessLayer::AccountableUnionDocument* aUnionDoc, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != aUnionDoc->GetAccountableDocument()->GetID())
+			{
+				return aUnionDoc->DeleteAccountableUnionDocument(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Accountable item ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	/*bool OrmasBL::CreateAccountableTransaction(BusinessLayer::AccountableTransaction* accountableTransaction, std::string& errorMessage)
 	{
 		try
 		{
 			if (0 != accountableTransaction->GetAccountableID() && 0 != accountableTransaction->GetStartValue() &&
 				accountableTransaction->GetEndValue() && 0 != accountableTransaction->GetOperationID())
 			{
-				return accountableTransaction->CreateAccountableTransaction(ormasDal, errorMessage);
+				return accountableTransaction->CreateAccountableTransaction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2969,7 +3415,7 @@ namespace BusinessLayer{
 			if (0 != accountableTransaction->GetAccountableID() && 0 != accountableTransaction->GetStartValue() &&
 				accountableTransaction->GetEndValue() && 0 != accountableTransaction->GetOperationID())
 			{
-				return accountableTransaction->UpdateAccountableTransaction(ormasDal, errorMessage);
+				return accountableTransaction->UpdateAccountableTransaction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -2989,7 +3435,7 @@ namespace BusinessLayer{
 		{
 			if (0 != accountableTransaction->GetID())
 			{
-				return accountableTransaction->DeleteAccountableTransaction(ormasDal, errorMessage);
+				return accountableTransaction->DeleteAccountableTransaction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3001,7 +3447,7 @@ namespace BusinessLayer{
 			errorMessage = "Fatal error! Please contact with application provider.";
 		}
 		return false;
-	}
+	}*/
 
 	bool OrmasBL::CreateAccountHistory(BusinessLayer::AccountHistory* accountHis, std::string& errorMessage)
 	{
@@ -3010,7 +3456,7 @@ namespace BusinessLayer{
 			if (!accountHis->GetNumber().empty() && !accountHis->GetFromDate().empty()
 				&& !accountHis->GetTillDate().empty())
 			{
-				return accountHis->CreateAccountHistory(ormasDal, errorMessage);
+				return accountHis->CreateAccountHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3031,7 +3477,7 @@ namespace BusinessLayer{
 			if (!accountHis->GetNumber().empty() && !accountHis->GetFromDate().empty()
 				&& !accountHis->GetTillDate().empty())
 			{
-				return accountHis->UpdateAccountHistory(ormasDal, errorMessage);
+				return accountHis->UpdateAccountHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3051,11 +3497,71 @@ namespace BusinessLayer{
 		{
 			if (0 != accountHis->GetID())
 			{
-				return accountHis->DeleteAccountHistory(ormasDal, errorMessage);
+				return accountHis->DeleteAccountHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
 				errorMessage = "Error! Account history item ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateAccountChangeLog(BusinessLayer::AccountChangeLog* accountLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (!accountLog->GetAccountID() != 0 && !accountLog->GetLogDate().empty())
+			{
+				return accountLog->CreateAccountChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateAccountChangeLog(BusinessLayer::AccountChangeLog* accountLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (!accountLog->GetAccountID() != 0 && !accountLog->GetLogDate().empty())
+			{
+				return accountLog->UpdateAccountChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteAccountChangeLog(BusinessLayer::AccountChangeLog* accountLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != accountLog->GetID())
+			{
+				return accountLog->DeleteAccountChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Account change log item ID is 0. Some thing goes wrong!";
 			}
 		}
 		catch (...)
@@ -3071,7 +3577,7 @@ namespace BusinessLayer{
 		{
 			if (!accountType->GetName().empty() && 0 != accountType->GetNumber())
 			{
-				return accountType->CreateAccountType(ormasDal, errorMessage);
+				return accountType->CreateAccountType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3091,7 +3597,7 @@ namespace BusinessLayer{
 		{
 			if (!accountType->GetName().empty() && 0 != accountType->GetNumber())
 			{
-				return accountType->UpdateAccountType(ormasDal, errorMessage);
+				return accountType->UpdateAccountType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3111,7 +3617,7 @@ namespace BusinessLayer{
 		{
 			if (0 != accountType->GetID())
 			{
-				return accountType->DeleteAccountType(ormasDal, errorMessage);
+				return accountType->DeleteAccountType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3131,7 +3637,7 @@ namespace BusinessLayer{
 		{
 			if (0 != amortizeGroup->GetGroupNumber() && 0 != amortizeGroup->GetFromMonth() && 0 != amortizeGroup->GetToMonth())
 			{
-				return amortizeGroup->CreateAmortizeGroup(ormasDal, errorMessage);
+				return amortizeGroup->CreateAmortizeGroup(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3151,7 +3657,7 @@ namespace BusinessLayer{
 		{
 			if (0 != amortizeGroup->GetGroupNumber() && 0 != amortizeGroup->GetFromMonth() && 0 != amortizeGroup->GetToMonth())
 			{
-				return amortizeGroup->UpdateAmortizeGroup(ormasDal, errorMessage);
+				return amortizeGroup->UpdateAmortizeGroup(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3171,7 +3677,7 @@ namespace BusinessLayer{
 		{
 			if (0 != amortizeGroup->GetID())
 			{
-				return amortizeGroup->DeleteAmortizeGroup(ormasDal, errorMessage);
+				return amortizeGroup->DeleteAmortizeGroup(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3191,7 +3697,7 @@ namespace BusinessLayer{
 		{
 			if (!amortizeType->GetName().empty() && !amortizeType->GetCode().empty())
 			{
-				return amortizeType->CreateAmortizeType(ormasDal, errorMessage);
+				return amortizeType->CreateAmortizeType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3211,7 +3717,7 @@ namespace BusinessLayer{
 		{
 			if (!amortizeType->GetName().empty() && !amortizeType->GetCode().empty())
 			{
-				return amortizeType->UpdateAmortizeType(ormasDal, errorMessage);
+				return amortizeType->UpdateAmortizeType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3231,7 +3737,7 @@ namespace BusinessLayer{
 		{
 			if (0 != amortizeType->GetID())
 			{
-				return amortizeType->DeleteAmortizeType(ormasDal, errorMessage);
+				return amortizeType->DeleteAmortizeType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3251,7 +3757,7 @@ namespace BusinessLayer{
 		{
 			if (0 != balance->GetUserID() && 0 != balance->GetSubaccountID())
 			{
-				return balance->CreateBalance(ormasDal, errorMessage);
+				return balance->CreateBalance(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3271,7 +3777,7 @@ namespace BusinessLayer{
 		{
 			if (0 != balance->GetUserID() && 0 != balance->GetSubaccountID())
 			{
-				return balance->UpdateBalance(ormasDal, errorMessage);
+				return balance->UpdateBalance(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3291,7 +3797,7 @@ namespace BusinessLayer{
 		{
 			if (0 != balance->GetID())
 			{
-				return balance->DeleteBalance(ormasDal, errorMessage);
+				return balance->DeleteBalance(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3311,7 +3817,7 @@ namespace BusinessLayer{
 		{
 			if (!branch->GetName().empty() && !branch->GetAddress().empty() && !branch->GetPhone().empty())
 			{
-				return branch->CreateBranch(ormasDal, errorMessage);
+				return branch->CreateBranch(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3331,7 +3837,7 @@ namespace BusinessLayer{
 		{
 			if (!branch->GetName().empty() && !branch->GetAddress().empty() && !branch->GetPhone().empty())
 			{
-				return branch->UpdateBranch(ormasDal, errorMessage);
+				return branch->UpdateBranch(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3351,7 +3857,7 @@ namespace BusinessLayer{
 		{
 			if (0 != branch->GetID())
 			{
-				return branch->DeleteBranch(ormasDal, errorMessage);
+				return branch->DeleteBranch(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3365,6 +3871,65 @@ namespace BusinessLayer{
 		return false;
 	}
 
+	bool OrmasBL::CreateBranchSubaccount(BusinessLayer::BranchSubaccountRelation* branchSubaccount, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != branchSubaccount->GetBranchID() && 0 != branchSubaccount->GetSubaccountID())
+			{
+				return branchSubaccount->CreateBranchSubaccountRelation(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Branch-Subaccount relation branch ID and subaccount ID  must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateBranchSubaccount(BusinessLayer::BranchSubaccountRelation* branchSubaccount, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != branchSubaccount->GetBranchID() && 0 != branchSubaccount->GetSubaccountID())
+			{
+				return branchSubaccount->UpdateBranchSubaccountRelation(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Branch-Subaccount relation branch ID and subaccount ID  must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteBranchSubaccount(BusinessLayer::BranchSubaccountRelation* branchSubaccount, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != branchSubaccount->GetID())
+			{
+				return branchSubaccount->DeleteBranchSubaccountRelation(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Branch-Subaccount  relation ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
 
 	bool OrmasBL::CreateBorrower(BusinessLayer::Borrower* borrower, std::string& errorMessage)
 	{
@@ -3372,7 +3937,7 @@ namespace BusinessLayer{
 		{
 			if (0 != borrower->GetUserID() || (!borrower->GetName().empty() && !borrower->GetAddress().empty() && !borrower->GetPhone().empty()))
 			{
-				return borrower->CreateBorrower(ormasDal, errorMessage);
+				return borrower->CreateBorrower(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3392,7 +3957,7 @@ namespace BusinessLayer{
 		{
 			if (0 != borrower->GetUserID() || (!borrower->GetName().empty() && !borrower->GetAddress().empty() && !borrower->GetPhone().empty()))
 			{
-				return borrower->UpdateBorrower(ormasDal, errorMessage);
+				return borrower->UpdateBorrower(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3412,7 +3977,7 @@ namespace BusinessLayer{
 		{
 			if (0 != borrower->GetID())
 			{
-				return borrower->DeleteBorrower(ormasDal, errorMessage);
+				return borrower->DeleteBorrower(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3432,7 +3997,7 @@ namespace BusinessLayer{
 		{
 			if (0 != cashbox->GetSubaccountID() && !cashbox->GetAddress().empty())
 			{
-				return cashbox->CreateCashbox(ormasDal, errorMessage);
+				return cashbox->CreateCashbox(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3452,7 +4017,7 @@ namespace BusinessLayer{
 		{
 			if (0 != cashbox->GetSubaccountID() && !cashbox->GetAddress().empty())
 			{
-				return cashbox->UpdateCashbox(ormasDal, errorMessage);
+				return cashbox->UpdateCashbox(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3472,7 +4037,7 @@ namespace BusinessLayer{
 		{
 			if (0 != cashbox->GetID())
 			{
-				return cashbox->DeleteCashbox(ormasDal, errorMessage);
+				return cashbox->DeleteCashbox(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3493,7 +4058,7 @@ namespace BusinessLayer{
 			if (0 != cashboxTransaction->GetAccountantID() && 0 != cashboxTransaction->GetCashboxID()
 				&& 0 != cashboxTransaction->GetCashierID() && 0 != cashboxTransaction->GetOwnerID())
 			{
-				return cashboxTransaction->CreateCashboxTransaction(ormasDal, errorMessage);
+				return cashboxTransaction->CreateCashboxTransaction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3514,7 +4079,7 @@ namespace BusinessLayer{
 			if (0 != cashboxTransaction->GetAccountantID() && 0 != cashboxTransaction->GetCashboxID()
 				&& 0 != cashboxTransaction->GetCashierID() && 0 != cashboxTransaction->GetOwnerID())
 			{
-				return cashboxTransaction->UpdateCashboxTransaction(ormasDal, errorMessage);
+				return cashboxTransaction->UpdateCashboxTransaction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3534,7 +4099,7 @@ namespace BusinessLayer{
 		{
 			if (0 != cashboxTransaction->GetID())
 			{
-				return cashboxTransaction->DeleteCashboxTransaction(ormasDal, errorMessage);
+				return cashboxTransaction->DeleteCashboxTransaction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3554,7 +4119,7 @@ namespace BusinessLayer{
 		{
 			if (0 != ceRelation->GetCashboxID() && 0 != ceRelation->GetEmployeeID())
 			{
-				return ceRelation->CreateCashboxEmployeeRelation(ormasDal, errorMessage);
+				return ceRelation->CreateCashboxEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3574,7 +4139,7 @@ namespace BusinessLayer{
 		{
 			if (0 != ceRelation->GetCashboxID() && 0 != ceRelation->GetEmployeeID())
 			{
-				return ceRelation->UpdateCashboxEmployeeRelation(ormasDal, errorMessage);
+				return ceRelation->UpdateCashboxEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3594,7 +4159,7 @@ namespace BusinessLayer{
 		{
 			if (0 != ceRelation->GetCashboxID() && 0 != ceRelation->GetEmployeeID())
 			{
-				return ceRelation->DeleteCashboxEmployeeRelation(ormasDal, errorMessage);
+				return ceRelation->DeleteCashboxEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3614,7 +4179,7 @@ namespace BusinessLayer{
 		{
 			if (!chartOfAccounts->GetNumber().empty() && 0 != chartOfAccounts->GetAccountTypeID() && !chartOfAccounts->GetName().empty())
 			{
-				return chartOfAccounts->CreateChartOfAccounts(ormasDal, errorMessage);
+				return chartOfAccounts->CreateChartOfAccounts(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3634,7 +4199,7 @@ namespace BusinessLayer{
 		{
 			if (!chartOfAccounts->GetNumber().empty() && 0 != chartOfAccounts->GetAccountTypeID() && !chartOfAccounts->GetName().empty())
 			{
-				return chartOfAccounts->UpdateChartOfAccounts(ormasDal, errorMessage);
+				return chartOfAccounts->UpdateChartOfAccounts(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3654,7 +4219,7 @@ namespace BusinessLayer{
 		{
 			if (0 != chartOfAccounts->GetID())
 			{
-				return chartOfAccounts->DeleteChartOfAccounts(ormasDal, errorMessage);
+				return chartOfAccounts->DeleteChartOfAccounts(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3676,7 +4241,7 @@ namespace BusinessLayer{
 				&& !client->GetAddress().empty() && !client->GetPassword().empty() && 0 != client->GetRoleID() && !client->GetFirm().empty()
 				&& 0 != client->GetLocationID())
 			{
-				return client->CreateClient(ormasDal, errorMessage);
+				return client->CreateClient(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3698,7 +4263,7 @@ namespace BusinessLayer{
 				&& !client->GetAddress().empty() && !client->GetPassword().empty() && 0 != client->GetRoleID() && !client->GetFirm().empty()
 				&& 0 != client->GetLocationID())
 			{
-				return client->UpdateClient(ormasDal, errorMessage);
+				return client->UpdateClient(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3718,7 +4283,7 @@ namespace BusinessLayer{
 		{
 			if (0 != client->GetID())
 			{
-				return client->DeleteClient(ormasDal, errorMessage);
+				return client->DeleteClient(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3738,7 +4303,7 @@ namespace BusinessLayer{
 		{
 			if (0 != caRelation->GetCompanyID() && 0 != caRelation->GetAccountID())
 			{
-				return caRelation->CreateCompanyAccountRelation(ormasDal, errorMessage);
+				return caRelation->CreateCompanyAccountRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3758,7 +4323,7 @@ namespace BusinessLayer{
 		{
 			if (0 != caRelation->GetAccountID() && 0 != caRelation->GetCompanyID())
 			{
-				return caRelation->UpdateCompanyAccountRelation(ormasDal, errorMessage);
+				return caRelation->UpdateCompanyAccountRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3778,7 +4343,7 @@ namespace BusinessLayer{
 		{
 			if (0 != caRelation->GetCompanyID() && 0 != caRelation->GetAccountID())
 			{
-				return caRelation->DeleteCompanyAccountRelation(ormasDal, errorMessage);
+				return caRelation->DeleteCompanyAccountRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3805,7 +4370,7 @@ namespace BusinessLayer{
 		{
 			if (!company->GetName().empty() && !company->GetAddress().empty() && !company->GetPhone().empty())
 			{
-				return company->CreateCompany(ormasDal, errorMessage);
+				return company->CreateCompany(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3825,7 +4390,7 @@ namespace BusinessLayer{
 		{
 			if (!company->GetName().empty() && !company->GetAddress().empty() && !company->GetPhone().empty())
 			{
-				return company->UpdateCompany(ormasDal, errorMessage);
+				return company->UpdateCompany(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3845,7 +4410,7 @@ namespace BusinessLayer{
 		{
 			if (0 != company->GetID())
 			{
-				return company->DeleteCompany(ormasDal, errorMessage);
+				return company->DeleteCompany(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3865,7 +4430,7 @@ namespace BusinessLayer{
 		{
 			if (0 != ceRelation->GetEmployeeID() && 0 != ceRelation->GetCompanyID())
 			{
-				return ceRelation->CreateCompanyEmployeeRelation(ormasDal, errorMessage);
+				return ceRelation->CreateCompanyEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3885,7 +4450,7 @@ namespace BusinessLayer{
 		{
 			if (0 != ceRelation->GetEmployeeID() && 0 != ceRelation->GetCompanyID())
 			{
-				return ceRelation->UpdateCompanyEmployeeRelation(ormasDal, errorMessage);
+				return ceRelation->UpdateCompanyEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3905,7 +4470,7 @@ namespace BusinessLayer{
 		{
 			if (0 != ceRelation->GetEmployeeID() && 0 != ceRelation->GetCompanyID())
 			{
-				return ceRelation->DeleteCompanyEmployeeRelation(ormasDal, errorMessage);
+				return ceRelation->DeleteCompanyEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3929,7 +4494,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, consumeProduct->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, consumeProduct->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(consumeProduct->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -3939,7 +4504,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				consumeProduct->SetSum(roundSum);
-				return consumeProduct->CreateConsumeProduct(ormasDal, errorMessage);
+				return consumeProduct->CreateConsumeProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3963,7 +4528,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, consumeProduct->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, consumeProduct->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(consumeProduct->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -3973,7 +4538,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				consumeProduct->SetSum(roundSum);
-				return consumeProduct->UpdateConsumeProduct(ormasDal, errorMessage);
+				return consumeProduct->UpdateConsumeProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -3993,7 +4558,7 @@ namespace BusinessLayer{
 		{
 			if (0 != consumeProduct->GetID())
 			{
-				return consumeProduct->DeleteConsumeProduct(ormasDal, errorMessage);
+				return consumeProduct->DeleteConsumeProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4015,7 +4580,7 @@ namespace BusinessLayer{
 				&& 0 != consumeProductList->GetCount() && 0 != consumeProductList->GetSum() && 0 != consumeProductList->GetStatusID()
 				&& 0 != consumeProductList->GetCurrencyID())
 			{
-				return consumeProductList->CreateConsumeProductList(ormasDal, errorMessage);
+				return consumeProductList->CreateConsumeProductList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4037,7 +4602,7 @@ namespace BusinessLayer{
 				&& 0 != consumeProductList->GetCount() && 0 != consumeProductList->GetSum() && 0 != consumeProductList->GetStatusID()
 				&& 0 != consumeProductList->GetCurrencyID())
 			{
-				return consumeProductList->UpdateConsumeProductList(ormasDal, errorMessage);
+				return consumeProductList->UpdateConsumeProductList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4057,7 +4622,7 @@ namespace BusinessLayer{
 		{
 			if (0 != consumeProductList->GetID())
 			{
-				return consumeProductList->DeleteConsumeProductList(ormasDal, errorMessage);
+				return consumeProductList->DeleteConsumeProductList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4081,7 +4646,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, consumeRaw->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, consumeRaw->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(consumeRaw->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -4091,7 +4656,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				consumeRaw->SetSum(roundSum);
-				return consumeRaw->CreateConsumeRaw(ormasDal, errorMessage);
+				return consumeRaw->CreateConsumeRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4115,7 +4680,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, consumeRaw->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, consumeRaw->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(consumeRaw->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -4125,7 +4690,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				consumeRaw->SetSum(roundSum);
-				return consumeRaw->UpdateConsumeRaw(ormasDal, errorMessage);
+				return consumeRaw->UpdateConsumeRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4145,7 +4710,7 @@ namespace BusinessLayer{
 		{
 			if (0 != consumeRaw->GetID())
 			{
-				return consumeRaw->DeleteConsumeRaw(ormasDal, errorMessage);
+				return consumeRaw->DeleteConsumeRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4167,7 +4732,7 @@ namespace BusinessLayer{
 				&& 0 != consumeRawList->GetCount() && 0 != consumeRawList->GetSum() && 0 != consumeRawList->GetStatusID()
 				&& 0 != consumeRawList->GetCurrencyID())
 			{
-				return consumeRawList->CreateConsumeRawList(ormasDal, errorMessage);
+				return consumeRawList->CreateConsumeRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4189,7 +4754,7 @@ namespace BusinessLayer{
 				&& 0 != consumeRawList->GetCount() && 0 != consumeRawList->GetSum() && 0 != consumeRawList->GetStatusID()
 				&& 0 != consumeRawList->GetCurrencyID())
 			{
-				return consumeRawList->UpdateConsumeRawList(ormasDal, errorMessage);
+				return consumeRawList->UpdateConsumeRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4209,7 +4774,7 @@ namespace BusinessLayer{
 		{
 			if (0 != consumeRawList->GetID())
 			{
-				return consumeRawList->DeleteConsumeRawList(ormasDal, errorMessage);
+				return consumeRawList->DeleteConsumeRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4229,7 +4794,7 @@ namespace BusinessLayer{
 		{
 			if (0 != currency->GetCode() && !currency->GetName().empty() && !currency->GetShortName().empty() && 0 != currency->GetUnit())
 			{
-				return currency->CreateCurrency(ormasDal, errorMessage);
+				return currency->CreateCurrency(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4253,7 +4818,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, consumeOthS->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, consumeOthS->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(consumeOthS->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -4263,7 +4828,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				consumeOthS->SetSum(roundSum);
-				return consumeOthS->CreateConsumeOtherStocks(ormasDal, errorMessage);
+				return consumeOthS->CreateConsumeOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4287,7 +4852,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, consumeOthS->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, consumeOthS->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(consumeOthS->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -4297,7 +4862,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				consumeOthS->SetSum(roundSum);
-				return consumeOthS->UpdateConsumeOtherStocks(ormasDal, errorMessage);
+				return consumeOthS->UpdateConsumeOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4317,7 +4882,7 @@ namespace BusinessLayer{
 		{
 			if (0 != consumeOthS->GetID())
 			{
-				return consumeOthS->DeleteConsumeOtherStocks(ormasDal, errorMessage);
+				return consumeOthS->DeleteConsumeOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4339,7 +4904,7 @@ namespace BusinessLayer{
 				&& 0 != consumeOthSList->GetCount() && 0 != consumeOthSList->GetSum() && 0 != consumeOthSList->GetStatusID()
 				&& 0 != consumeOthSList->GetCurrencyID())
 			{
-				return consumeOthSList->CreateConsumeOtherStocksList(ormasDal, errorMessage);
+				return consumeOthSList->CreateConsumeOtherStocksList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4361,7 +4926,7 @@ namespace BusinessLayer{
 				&& 0 != consumeOthSList->GetCount() && 0 != consumeOthSList->GetSum() && 0 != consumeOthSList->GetStatusID()
 				&& 0 != consumeOthSList->GetCurrencyID())
 			{
-				return consumeOthSList->UpdateConsumeOtherStocksList(ormasDal, errorMessage);
+				return consumeOthSList->UpdateConsumeOtherStocksList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4381,7 +4946,7 @@ namespace BusinessLayer{
 		{
 			if (0 != consumeOthSList->GetID())
 			{
-				return consumeOthSList->DeleteConsumeOtherStocksList(ormasDal, errorMessage);
+				return consumeOthSList->DeleteConsumeOtherStocksList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4402,7 +4967,7 @@ namespace BusinessLayer{
 		{
 			if (0 != currency->GetCode() && !currency->GetName().empty() && !currency->GetShortName().empty() && 0 != currency->GetUnit())
 			{
-				return currency->UpdateCurrency(ormasDal, errorMessage);
+				return currency->UpdateCurrency(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4422,7 +4987,7 @@ namespace BusinessLayer{
 		{
 			if (0 != currency->GetID())
 			{
-				return currency->DeleteCurrency(ormasDal, errorMessage);
+				return currency->DeleteCurrency(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4442,7 +5007,7 @@ namespace BusinessLayer{
 		{
 			if (!creditor->GetName().empty() && !creditor->GetAddress().empty() && !creditor->GetPhone().empty())
 			{
-				return creditor->CreateCreditor(ormasDal, errorMessage);
+				return creditor->CreateCreditor(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4462,7 +5027,7 @@ namespace BusinessLayer{
 		{
 			if (!creditor->GetName().empty() && !creditor->GetAddress().empty() && !creditor->GetPhone().empty())
 			{
-				return creditor->UpdateCreditor(ormasDal, errorMessage);
+				return creditor->UpdateCreditor(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4482,7 +5047,7 @@ namespace BusinessLayer{
 		{
 			if (0 != creditor->GetID())
 			{
-				return creditor->DeleteCreditor(ormasDal, errorMessage);
+				return creditor->DeleteCreditor(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4502,7 +5067,7 @@ namespace BusinessLayer{
 		{
 			if (0 != divisionAccountReletion->GetDivisionID() && 0 != divisionAccountReletion->GetAccountID() && !divisionAccountReletion->GetCode().empty())
 			{
-				return divisionAccountReletion->CreateDivisionAccountRelation(ormasDal, errorMessage);
+				return divisionAccountReletion->CreateDivisionAccountRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4522,7 +5087,7 @@ namespace BusinessLayer{
 		{
 			if (0 != divisionAccountReletion->GetDivisionID() && 0 != divisionAccountReletion->GetAccountID() && !divisionAccountReletion->GetCode().empty())
 			{
-				return divisionAccountReletion->UpdateDivisionAccountRelation(ormasDal, errorMessage);
+				return divisionAccountReletion->UpdateDivisionAccountRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4542,7 +5107,7 @@ namespace BusinessLayer{
 		{
 			if (0 != divisionAccountReletion->GetID())
 			{
-				return divisionAccountReletion->DeleteDivisionAccountRelation(ormasDal, errorMessage);
+				return divisionAccountReletion->DeleteDivisionAccountRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4562,7 +5127,7 @@ namespace BusinessLayer{
 		{
 			if (0 != divisionEmployeeRelation->GetDivisionID() && 0 != divisionEmployeeRelation->GetEmployeeID())
 			{
-				return divisionEmployeeRelation->CreateDivisionEmployeeRelation(ormasDal, errorMessage);
+				return divisionEmployeeRelation->CreateDivisionEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4582,7 +5147,7 @@ namespace BusinessLayer{
 		{
 			if (0 != divisionEmployeeRelation->GetDivisionID() && 0 != divisionEmployeeRelation->GetEmployeeID())
 			{
-				return divisionEmployeeRelation->UpdateDivisionEmployeeRelation(ormasDal, errorMessage);
+				return divisionEmployeeRelation->UpdateDivisionEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4602,7 +5167,7 @@ namespace BusinessLayer{
 		{
 			if (0 != divisionEmployeeReletion->GetID())
 			{
-				return divisionEmployeeReletion->DeleteDivisionEmployeeRelation(ormasDal, errorMessage);
+				return divisionEmployeeReletion->DeleteDivisionEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4622,7 +5187,7 @@ namespace BusinessLayer{
 		{
 			if (!division->GetCode().empty() && !division->GetName().empty())
 			{
-				return division->CreateDivision(ormasDal, errorMessage);
+				return division->CreateDivision(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4642,7 +5207,7 @@ namespace BusinessLayer{
 		{
 			if (!division->GetCode().empty() && !division->GetName().empty())
 			{
-				return division->UpdateDivision(ormasDal, errorMessage);
+				return division->UpdateDivision(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4662,7 +5227,7 @@ namespace BusinessLayer{
 		{
 			if (0 != division->GetID())
 			{
-				return division->DeleteDivision(ormasDal, errorMessage);
+				return division->DeleteDivision(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4684,7 +5249,7 @@ namespace BusinessLayer{
 				&& !employee->GetAddress().empty() && !employee->GetPassword().empty() && 0 != employee->GetRoleID() 
 				&& !employee->GetBirthDate().empty() && !employee->GetHireDate().empty() && 0 != employee->GetPositionID())
 			{
-				return employee->CreateEmployee(ormasDal, errorMessage);
+				return employee->CreateEmployee(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4706,7 +5271,7 @@ namespace BusinessLayer{
 				&& !employee->GetAddress().empty() && !employee->GetPassword().empty() && 0 != employee->GetRoleID()
 				&& !employee->GetBirthDate().empty() && !employee->GetHireDate().empty() && 0 != employee->GetPositionID())
 			{
-				return employee->UpdateEmployee(ormasDal, errorMessage);
+				return employee->UpdateEmployee(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4726,7 +5291,7 @@ namespace BusinessLayer{
 		{
 			if (0 != employee->GetID())
 			{
-				return employee->DeleteEmployee(ormasDal, errorMessage);
+				return employee->DeleteEmployee(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4746,7 +5311,7 @@ namespace BusinessLayer{
 		{
 			if (0 != employeeProduct->GetEmployeeID() && 0 != employeeProduct->GetProductID())
 			{
-				return employeeProduct->CreateEmployeeProductRelation(ormasDal, errorMessage);
+				return employeeProduct->CreateEmployeeProductRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4766,7 +5331,7 @@ namespace BusinessLayer{
 		{
 			if (0 != employeeProduct->GetEmployeeID() && 0 != employeeProduct->GetProductID())
 			{
-				return employeeProduct->UpdateEmployeeProductRelation(ormasDal, errorMessage);
+				return employeeProduct->UpdateEmployeeProductRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4786,7 +5351,7 @@ namespace BusinessLayer{
 		{
 			if (0 != employeeProduct->GetID())
 			{
-				return employeeProduct->DeleteEmployeeProductRelation(ormasDal, errorMessage);
+				return employeeProduct->DeleteEmployeeProductRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4807,7 +5372,7 @@ namespace BusinessLayer{
 			if (0 != entry->GetCreditingAccountID() && 0 != entry->GetDebitingAccountID() && !entry->GetDate().empty() 
 				&& 0 != entry->GetValue())
 			{
-				return entry->CreateEntry(ormasDal, errorMessage);
+				return entry->CreateEntry(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4828,7 +5393,7 @@ namespace BusinessLayer{
 			if (0 != entry->GetCreditingAccountID() && 0 != entry->GetDebitingAccountID() && !entry->GetDate().empty()
 				&& 0 != entry->GetValue())
 			{
-				return entry->UpdateEntry(ormasDal, errorMessage);
+				return entry->UpdateEntry(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4848,7 +5413,7 @@ namespace BusinessLayer{
 		{
 			if (0 != entry->GetID())
 			{
-				return entry->DeleteEntry(ormasDal, errorMessage);
+				return entry->DeleteEntry(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4868,7 +5433,7 @@ namespace BusinessLayer{
 		{
 			if (0 != entryRouting->GetCreditAccountID() && 0 != entryRouting->GetDebitAccountID() && !entryRouting->GetOperation().empty())
 			{
-				return entryRouting->CreateEntryRouting(ormasDal, errorMessage);
+				return entryRouting->CreateEntryRouting(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4888,7 +5453,7 @@ namespace BusinessLayer{
 		{
 			if (0 != entryRouting->GetCreditAccountID() && 0 != entryRouting->GetDebitAccountID() && !entryRouting->GetOperation().empty())
 			{
-				return entryRouting->UpdateEntryRouting(ormasDal, errorMessage);
+				return entryRouting->UpdateEntryRouting(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4908,7 +5473,7 @@ namespace BusinessLayer{
 		{
 			if (0 != entryRouting->GetID())
 			{
-				return entryRouting->DeleteEntryRouting(ormasDal, errorMessage);
+				return entryRouting->DeleteEntryRouting(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4929,7 +5494,7 @@ namespace BusinessLayer{
 			if (0 != finRep->GetAccount44010() && 0 != finRep->GetAccount55010() && !finRep->GetFromDate().empty()
 				&& !finRep->GetTillDate().empty())
 			{
-				return finRep->CreateFinancialReport(ormasDal, errorMessage);
+				return finRep->CreateFinancialReport(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4950,7 +5515,7 @@ namespace BusinessLayer{
 			if (0 != finRep->GetAccount44010() && 0 != finRep->GetAccount55010() && !finRep->GetFromDate().empty()
 				&& !finRep->GetTillDate().empty())
 			{
-				return finRep->UpdateFinancialReport(ormasDal, errorMessage);
+				return finRep->UpdateFinancialReport(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4970,7 +5535,7 @@ namespace BusinessLayer{
 		{
 			if (0 != finRep->GetID())
 			{
-				return finRep->DeleteFinancialReport(ormasDal, errorMessage);
+				return finRep->DeleteFinancialReport(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -4991,7 +5556,7 @@ namespace BusinessLayer{
 			if (0 != fixedAssets->GetSpecificationID() && 0 != fixedAssets->GetPrimaryCost() && !fixedAssets->GetBuyDate().empty()
 				&& 0 != fixedAssets->GetServiceLife() && 0 != fixedAssets->GetStatusID())
 			{
-				return fixedAssets->CreateFixedAssets(ormasDal, errorMessage);
+				return fixedAssets->CreateFixedAssets(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5012,7 +5577,7 @@ namespace BusinessLayer{
 			if (0 != fixedAssets->GetSpecificationID() && 0 != fixedAssets->GetPrimaryCost() && !fixedAssets->GetBuyDate().empty()
 				&& 0 != fixedAssets->GetServiceLife() && 0 != fixedAssets->GetStatusID())
 			{
-				return fixedAssets->UpdateFixedAssets(ormasDal, errorMessage);
+				return fixedAssets->UpdateFixedAssets(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5032,7 +5597,7 @@ namespace BusinessLayer{
 		{
 			if (0 != fixedAssets->GetID())
 			{
-				return fixedAssets->DeleteFixedAssets(ormasDal, errorMessage);
+				return fixedAssets->DeleteFixedAssets(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5053,7 +5618,7 @@ namespace BusinessLayer{
 			if (0 != fixedAssetsUnion->GetFixedAssets()->GetPrimaryCost() && 0 != fixedAssetsUnion->GetFixedAssetsDetails()->GetAmortizeValue() &&
 				!fixedAssetsUnion->GetFixedAssetsSpecification()->GetName().empty())
 			{
-				return fixedAssetsUnion->CreateFixedAssetsUnion(ormasDal, errorMessage);
+				return fixedAssetsUnion->CreateFixedAssetsUnion(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5074,7 +5639,7 @@ namespace BusinessLayer{
 			if (0 != fixedAssetsUnion->GetFixedAssets()->GetPrimaryCost() && 0 != fixedAssetsUnion->GetFixedAssetsDetails()->GetAmortizeValue() &&
 				!fixedAssetsUnion->GetFixedAssetsSpecification()->GetName().empty())
 			{
-				return fixedAssetsUnion->UpdateFixedAssetsUnion(ormasDal, errorMessage);
+				return fixedAssetsUnion->UpdateFixedAssetsUnion(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5095,7 +5660,67 @@ namespace BusinessLayer{
 			if (!fixedAssetsUnion->GetFixedAssets()->IsEmpty() && !fixedAssetsUnion->GetFixedAssetsDetails()->IsEmpty() &&
 				!fixedAssetsUnion->GetFixedAssetsSpecification()->IsEmpty())
 			{
-				return fixedAssetsUnion->DeleteFixedAssetsUnion(ormasDal, errorMessage);
+				return fixedAssetsUnion->DeleteFixedAssetsUnion(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fienlds name must not be empty. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateGroup(BusinessLayer::Group* group, std::string& errorMessage)
+	{
+		try
+		{
+			if (!group->GetName().empty() && !group->GetDefenition().empty())
+			{
+				return group->CreateGroup(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fienlds must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateGroup(BusinessLayer::Group* group, std::string& errorMessage)
+	{
+		try
+		{
+			if (!group->GetName().empty() && !group->GetDefenition().empty())
+			{
+				return group->UpdateGroup(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fienlds name must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteGroup(BusinessLayer::Group* group, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != group->GetID())
+			{
+				return group->DeleteGroup(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5116,7 +5741,7 @@ namespace BusinessLayer{
 			if (0 != fixedAssetsDetails->GetAmortizeGroupID() && 0 != fixedAssetsDetails->GetAmortizeAccountID()
 				&& 0 != fixedAssetsDetails->GetDepartmentID() && 0 != fixedAssetsDetails->GetPrimaryCostAccountID() && 0 != fixedAssetsDetails->GetAmortizeAccountID())
 			{
-				return fixedAssetsDetails->CreateFixedAssetsDetails(ormasDal, errorMessage);
+				return fixedAssetsDetails->CreateFixedAssetsDetails(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5138,7 +5763,7 @@ namespace BusinessLayer{
 				0 != fixedAssetsDetails->GetAmortizeTypeID() && 0 != fixedAssetsDetails->GetDepartmentID() &&
 				0 != fixedAssetsDetails->GetPrimaryCostAccountID() && 0 != fixedAssetsDetails->GetAmortizeAccountID())
 			{
-				return fixedAssetsDetails->UpdateFixedAssetsDetails(ormasDal, errorMessage);
+				return fixedAssetsDetails->UpdateFixedAssetsDetails(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5160,7 +5785,7 @@ namespace BusinessLayer{
 				0 != fixedAssetsDetails->GetAmortizeTypeID() && 0 != fixedAssetsDetails->GetDepartmentID() &&
 				0 != fixedAssetsDetails->GetPrimaryCostAccountID() && 0 != fixedAssetsDetails->GetAmortizeAccountID())
 			{
-				return fixedAssetsDetails->DeleteFixedAssetsDetails(ormasDal, errorMessage);
+				return fixedAssetsDetails->DeleteFixedAssetsDetails(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5181,7 +5806,7 @@ namespace BusinessLayer{
 			if (!fixedAssetsOperation->GetDate().empty() && !fixedAssetsOperation->GetName().empty() 
 				&& 0 != fixedAssetsOperation->GetValue() && 0 != fixedAssetsOperation->GetFixedAssetsID())
 			{
-				return fixedAssetsOperation->CreateFixedAssetsOperations(ormasDal, errorMessage);
+				return fixedAssetsOperation->CreateFixedAssetsOperations(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5202,7 +5827,7 @@ namespace BusinessLayer{
 			if (!fixedAssetsOperation->GetDate().empty() && !fixedAssetsOperation->GetName().empty()
 				&& 0 != fixedAssetsOperation->GetValue() && 0 != fixedAssetsOperation->GetFixedAssetsID())
 			{
-				return fixedAssetsOperation->UpdateFixedAssetsOperations(ormasDal, errorMessage);
+				return fixedAssetsOperation->UpdateFixedAssetsOperations(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5222,7 +5847,7 @@ namespace BusinessLayer{
 		{
 			if (0 != fixedAssetsOperation->GetID())
 			{
-				return fixedAssetsOperation->DeleteFixedAssetsOperations(ormasDal, errorMessage);
+				return fixedAssetsOperation->DeleteFixedAssetsOperations(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5242,7 +5867,7 @@ namespace BusinessLayer{
 		{
 			if (!fixedAssetsSpecification->GetName().empty())
 			{
-				return fixedAssetsSpecification->CreateFixedAssetsSpecification(ormasDal, errorMessage);
+				return fixedAssetsSpecification->CreateFixedAssetsSpecification(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5262,7 +5887,7 @@ namespace BusinessLayer{
 		{
 			if (!fixedAssetsSpecification->GetName().empty())
 			{
-				return fixedAssetsSpecification->UpdateFixedAssetsSpecification(ormasDal, errorMessage);
+				return fixedAssetsSpecification->UpdateFixedAssetsSpecification(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5282,7 +5907,7 @@ namespace BusinessLayer{
 		{
 			if (0 != fixedAssetsSpecification->GetID())
 			{
-				return fixedAssetsSpecification->DeleteFixedAssetsSpecification(ormasDal, errorMessage);
+				return fixedAssetsSpecification->DeleteFixedAssetsSpecification(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5306,7 +5931,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, inventorization->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, inventorization->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(inventorization->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -5316,7 +5941,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				inventorization->SetSum(roundSum);
-				return inventorization->CreateInventorization(ormasDal, errorMessage);
+				return inventorization->CreateInventorization(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5340,7 +5965,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, inventorization->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, inventorization->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(inventorization->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -5350,7 +5975,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				inventorization->SetSum(roundSum);
-				return inventorization->UpdateInventorization(ormasDal, errorMessage);
+				return inventorization->UpdateInventorization(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5370,7 +5995,7 @@ namespace BusinessLayer{
 		{
 			if (0 != inventorization->GetID())
 			{
-				return inventorization->DeleteInventorization(ormasDal, errorMessage);
+				return inventorization->DeleteInventorization(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5392,7 +6017,7 @@ namespace BusinessLayer{
 				&& 0 != inventorizationList->GetCount() && 0 != inventorizationList->GetSum() && 0 != inventorizationList->GetStatusID()
 				&& 0 != inventorizationList->GetCurrencyID())
 			{
-				return inventorizationList->CreateInventorizationList(ormasDal, errorMessage);
+				return inventorizationList->CreateInventorizationList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5414,7 +6039,7 @@ namespace BusinessLayer{
 				&& 0 != inventorizationList->GetCount() && 0 != inventorizationList->GetSum() && 0 != inventorizationList->GetStatusID()
 				&& 0 != inventorizationList->GetCurrencyID())
 			{
-				return inventorizationList->UpdateInventorizationList(ormasDal, errorMessage);
+				return inventorizationList->UpdateInventorizationList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5434,7 +6059,7 @@ namespace BusinessLayer{
 		{
 			if (0 != inventorizationList->GetID())
 			{
-				return inventorizationList->DeleteInventorizationList(ormasDal, errorMessage);
+				return inventorizationList->DeleteInventorizationList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5455,7 +6080,7 @@ namespace BusinessLayer{
 			if (!inventory->GetName().empty() && 0 != inventory->GetCost() && 0 != inventory->GetDepartmentID()
 				&& 0 != inventory->GetStatusID())
 			{
-				return inventory->CreateInventory(ormasDal, errorMessage);
+				return inventory->CreateInventory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5476,7 +6101,7 @@ namespace BusinessLayer{
 			if (!inventory->GetName().empty() && 0 != inventory->GetCost() && 0 != inventory->GetDepartmentID()
 				&& 0 != inventory->GetStatusID())
 			{
-				return inventory->UpdateInventory(ormasDal, errorMessage);
+				return inventory->UpdateInventory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5496,7 +6121,7 @@ namespace BusinessLayer{
 		{
 			if (0 != inventory->GetID())
 			{
-				return inventory->DeleteInventory(ormasDal, errorMessage);
+				return inventory->DeleteInventory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5517,7 +6142,7 @@ namespace BusinessLayer{
 			if (0 != inventoryUnion->GetInventory()->GetCost() && 
 				!inventoryUnion->GetInventory()->GetName().empty())
 			{
-				return inventoryUnion->CreateInventoryUnion(ormasDal, errorMessage);
+				return inventoryUnion->CreateInventoryUnion(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5539,7 +6164,7 @@ namespace BusinessLayer{
 				!inventoryUnion->GetInventory()->GetName().empty())
 			{
 
-				return inventoryUnion->UpdateInventoryUnion(ormasDal, errorMessage);
+				return inventoryUnion->UpdateInventoryUnion(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5559,7 +6184,7 @@ namespace BusinessLayer{
 		{
 			if (!inventoryUnion->GetInventory()->IsEmpty())
 			{
-				return inventoryUnion->DeleteInventoryUnion(ormasDal, errorMessage);
+				return inventoryUnion->DeleteInventoryUnion(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5580,7 +6205,7 @@ namespace BusinessLayer{
 		{
 			if (!inventoryHistory->GetChangeDate().empty() && 0 != inventoryHistory->GetInventoryID())
 			{
-				return inventoryHistory->CreateInventoryHistory(ormasDal, errorMessage);
+				return inventoryHistory->CreateInventoryHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5600,7 +6225,7 @@ namespace BusinessLayer{
 		{
 			if (!inventoryHistory->GetChangeDate().empty() && 0 != inventoryHistory->GetInventoryID())
 			{
-				return inventoryHistory->UpdateInventoryHistory(ormasDal, errorMessage);
+				return inventoryHistory->UpdateInventoryHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5620,7 +6245,7 @@ namespace BusinessLayer{
 		{
 			if (0 != inventoryHistory->GetID())
 			{
-				return inventoryHistory->DeleteInventoryHistory(ormasDal, errorMessage);
+				return inventoryHistory->DeleteInventoryHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5641,7 +6266,7 @@ namespace BusinessLayer{
 			if (0 != jobprice->GetProductID() && 0.0 != jobprice->GetValue() && 0 != jobprice->GetCurrencyID() && 
 				0.0 != jobprice->GetVolume() && 0 != jobprice->GetMeasureID() && 0 != jobprice->GetPositionID())
 			{
-				return jobprice->CreateJobprice(ormasDal, errorMessage);
+				return jobprice->CreateJobprice(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5662,7 +6287,7 @@ namespace BusinessLayer{
 			if (0 != jobprice->GetProductID() && 0.0 != jobprice->GetValue() && 0 != jobprice->GetCurrencyID() &&
 				0.0 != jobprice->GetVolume() && 0 != jobprice->GetMeasureID() && 0 != jobprice->GetPositionID())
 			{
-				return jobprice->UpdateJobprice(ormasDal, errorMessage);
+				return jobprice->UpdateJobprice(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5682,7 +6307,7 @@ namespace BusinessLayer{
 		{
 			if (0 != jobprice->GetID())
 			{
-				return jobprice->DeleteJobprice(ormasDal, errorMessage);
+				return jobprice->DeleteJobprice(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5702,7 +6327,7 @@ namespace BusinessLayer{
 		{
 			if (!jobsheet->GetDate().empty() && 0.0 != jobsheet->GetCount() && 0 != jobsheet->GetProductID() && 0 != jobsheet->GetEmployeeID())
 			{
-				return jobsheet->CreateJobsheet(ormasDal, errorMessage);
+				return jobsheet->CreateJobsheet(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5722,7 +6347,7 @@ namespace BusinessLayer{
 		{
 			if (!jobsheet->GetDate().empty() && 0.0 != jobsheet->GetCount() && 0 != jobsheet->GetProductID() && 0 != jobsheet->GetEmployeeID())
 			{
-				return jobsheet->UpdateJobsheet(ormasDal, errorMessage);
+				return jobsheet->UpdateJobsheet(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5742,7 +6367,7 @@ namespace BusinessLayer{
 		{
 			if (0 != jobsheet->GetID())
 			{
-				return jobsheet->DeleteJobsheet(ormasDal, errorMessage);
+				return jobsheet->DeleteJobsheet(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5763,7 +6388,7 @@ namespace BusinessLayer{
 			if (!location->GetCountryName().empty() && !location->GetCountryCode().empty() && !location->GetRegionName().empty()
 				&& !location->GetCityName().empty())
 			{
-				return location->CreateLocation(ormasDal, errorMessage);
+				return location->CreateLocation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5784,7 +6409,7 @@ namespace BusinessLayer{
 			if (!location->GetCountryName().empty() && !location->GetCountryCode().empty() && !location->GetRegionName().empty()
 				&& !location->GetCityName().empty())
 			{
-				return location->UpdateLocation(ormasDal, errorMessage);
+				return location->UpdateLocation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5804,7 +6429,7 @@ namespace BusinessLayer{
 		{
 			if (0 != location->GetID())
 			{
-				return location->DeleteLocation(ormasDal, errorMessage);
+				return location->DeleteLocation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5824,7 +6449,7 @@ namespace BusinessLayer{
 		{
 			if (!measure->GetName().empty() && !measure->GetShortName().empty() && 0 != measure->GetUnit())
 			{
-				return measure->CreateMeasure(ormasDal, errorMessage);
+				return measure->CreateMeasure(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5844,7 +6469,7 @@ namespace BusinessLayer{
 		{
 			if (!measure->GetName().empty() && !measure->GetShortName().empty() && 0 != measure->GetUnit())
 			{
-				return measure->UpdateMeasure(ormasDal, errorMessage);
+				return measure->UpdateMeasure(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5865,7 +6490,7 @@ namespace BusinessLayer{
 			if (0 != stock->GetOtherStocksID() && 0 != stock->GetCount() &&
 				0 != stock->GetSum() && 0 != stock->GetStatusID() && 0 != stock->GetCurrencyID())
 			{
-				return stock->CreateLowValueStock(ormasDal, errorMessage);
+				return stock->CreateLowValueStock(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5886,7 +6511,7 @@ namespace BusinessLayer{
 			if (0 != stock->GetOtherStocksID() && 0 != stock->GetCount() &&
 				0 != stock->GetSum() && 0 != stock->GetStatusID() && 0 != stock->GetCurrencyID())
 			{
-				return stock->UpdateLowValueStock(ormasDal, errorMessage);
+				return stock->UpdateLowValueStock(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5906,7 +6531,7 @@ namespace BusinessLayer{
 		{
 			if (0 != stock->GetID())
 			{
-				return stock->DeleteLowValueStock(ormasDal, errorMessage);
+				return stock->DeleteLowValueStock(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5928,7 +6553,7 @@ namespace BusinessLayer{
 				0 != stockHistory->GetSum() && 0 != stockHistory->GetStatusID() && 0 != stockHistory->GetCurrencyID()
 				&& !stockHistory->GetHistoryDate().empty())
 			{
-				return stockHistory->CreateLowValueStockHistory(ormasDal, errorMessage);
+				return stockHistory->CreateLowValueStockHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5950,7 +6575,7 @@ namespace BusinessLayer{
 				0 != stockHistory->GetSum() && 0 != stockHistory->GetStatusID() && 0 != stockHistory->GetCurrencyID()
 				&& !stockHistory->GetHistoryDate().empty())
 			{
-				return stockHistory->UpdateLowValueStockHistory(ormasDal, errorMessage);
+				return stockHistory->UpdateLowValueStockHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -5970,11 +6595,71 @@ namespace BusinessLayer{
 		{
 			if (0 != stockHistory->GetID())
 			{
-				return stockHistory->DeleteLowValueStockHistory(ormasDal, errorMessage);
+				return stockHistory->DeleteLowValueStockHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
 				errorMessage = "Error!Low value stock history ID is 0. Something goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog* stockChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockChangeLog->GetLowValueStockID() && !stockChangeLog->GetLogDate().empty())
+			{
+				return stockChangeLog->CreateLowValueStockChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog* stockChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockChangeLog->GetLowValueStockID() && !stockChangeLog->GetLogDate().empty())
+			{
+				return stockChangeLog->UpdateLowValueStockChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog* stockChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockChangeLog->GetID())
+			{
+				return stockChangeLog->DeleteLowValueStockChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error!Low value stock change log ID is 0. Something goes wrong!";
 			}
 		}
 		catch (...)
@@ -5990,7 +6675,7 @@ namespace BusinessLayer{
 		{
 			if (0 != measure->GetID())
 			{
-				return measure->DeleteMeasure(ormasDal, errorMessage);
+				return measure->DeleteMeasure(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6010,7 +6695,7 @@ namespace BusinessLayer{
 		{
 			if (0 != netCost->GetProductID() && 0.0 != netCost->GetValue() && 0 != netCost->GetCurrencyID() && !netCost->GetDate().empty())
 			{
-				return netCost->CreateNetCost(ormasDal, errorMessage);
+				return netCost->CreateNetCost(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6030,7 +6715,7 @@ namespace BusinessLayer{
 		{
 			if (0 != netCost->GetProductID() && 0.0 != netCost->GetValue() && 0 != netCost->GetCurrencyID() && !netCost->GetDate().empty())
 			{
-				return netCost->UpdateNetCost(ormasDal, errorMessage);
+				return netCost->UpdateNetCost(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6050,7 +6735,7 @@ namespace BusinessLayer{
 		{
 			if (0 != netCost->GetID())
 			{
-				return netCost->DeleteNetCost(ormasDal, errorMessage);
+				return netCost->DeleteNetCost(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6073,7 +6758,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, order->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, order->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(order->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -6083,7 +6768,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				order->SetSum(order->GetSum());
-				return order->CreateOrder(ormasDal, errorMessage);
+				return order->CreateOrder(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6106,7 +6791,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, order->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, order->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(order->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -6116,7 +6801,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				order->SetSum(order->GetSum());
-				return order->UpdateOrder(ormasDal, errorMessage);
+				return order->UpdateOrder(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6136,7 +6821,7 @@ namespace BusinessLayer{
 		{
 			if (0 != order->GetID())
 			{
-				return order->DeleteOrder(ormasDal, errorMessage);
+				return order->DeleteOrder(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6159,7 +6844,7 @@ namespace BusinessLayer{
 				&& 0 != orderList->GetCount() && 0 != orderList->GetSum() && 0 != orderList->GetStatusID()
 				&& 0 != orderList->GetCurrencyID())
 			{
-				return orderList->CreateOrderList(ormasDal, errorMessage);
+				return orderList->CreateOrderList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6181,7 +6866,7 @@ namespace BusinessLayer{
 				&& 0 != orderList->GetCount() && 0 != orderList->GetSum() && 0 != orderList->GetStatusID()
 				&& 0 != orderList->GetCurrencyID())
 			{
-				return orderList->UpdateOrderList(ormasDal, errorMessage);
+				return orderList->UpdateOrderList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6201,7 +6886,7 @@ namespace BusinessLayer{
 		{
 			if (0 != orderList->GetID())
 			{
-				return orderList->DeleteOrderList(ormasDal, errorMessage);
+				return orderList->DeleteOrderList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6225,7 +6910,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, orderRaw->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, orderRaw->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(orderRaw->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -6235,7 +6920,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				orderRaw->SetSum(roundSum);
-				return orderRaw->CreateOrderRaw(ormasDal, errorMessage);
+				return orderRaw->CreateOrderRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6259,7 +6944,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, orderRaw->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, orderRaw->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(orderRaw->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -6269,7 +6954,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				orderRaw->SetSum(roundSum);
-				return orderRaw->UpdateOrderRaw(ormasDal, errorMessage);
+				return orderRaw->UpdateOrderRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6289,7 +6974,7 @@ namespace BusinessLayer{
 		{
 			if (0 != orderRaw->GetID())
 			{
-				return orderRaw->DeleteOrderRaw(ormasDal, errorMessage);
+				return orderRaw->DeleteOrderRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6311,7 +6996,7 @@ namespace BusinessLayer{
 				&& 0 != orderRawList->GetCount() && 0 != orderRawList->GetSum() && 0 != orderRawList->GetStatusID()
 				&& 0 != orderRawList->GetCurrencyID())
 			{
-				return orderRawList->CreateOrderRawList(ormasDal, errorMessage);
+				return orderRawList->CreateOrderRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6333,7 +7018,7 @@ namespace BusinessLayer{
 				&& 0 != orderRawList->GetCount() && 0 != orderRawList->GetSum() && 0 != orderRawList->GetStatusID()
 				&& 0 != orderRawList->GetCurrencyID())
 			{
-				return orderRawList->UpdateOrderRawList(ormasDal, errorMessage);
+				return orderRawList->UpdateOrderRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6353,7 +7038,7 @@ namespace BusinessLayer{
 		{
 			if (0 != orderRawList->GetID())
 			{
-				return orderRawList->DeleteOrderRawList(ormasDal, errorMessage);
+				return orderRawList->DeleteOrderRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6375,7 +7060,7 @@ namespace BusinessLayer{
 			if (0.0 != payment->GetValue() && 0 != payment->GetCurrencyID() && !payment->GetDate().empty() && !payment->GetWho().empty()
 				&& 0 != payment->GetStatusID())
 			{
-				return payment->CreatePayment(ormasDal, errorMessage);
+				return payment->CreatePayment(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6396,7 +7081,7 @@ namespace BusinessLayer{
 			if (0 != otherStocks->GetCompanyID() && !otherStocks->GetName().empty() && 0 != otherStocks->GetVolume() && 0 != otherStocks->GetMeasureID()
 				&& 0 != otherStocks->GetPrice() && 0 != otherStocks->GetCurrencyID() && 0 != otherStocks->GetOtherStocksTypeID())
 			{
-				return otherStocks->CreateOtherStocks(ormasDal, errorMessage);
+				return otherStocks->CreateOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6417,7 +7102,7 @@ namespace BusinessLayer{
 			if (0 != otherStocks->GetCompanyID() && !otherStocks->GetName().empty() && 0 != otherStocks->GetVolume() && 0 != otherStocks->GetMeasureID()
 				&& 0 != otherStocks->GetPrice() && 0 != otherStocks->GetCurrencyID() && 0 != otherStocks->GetOtherStocksTypeID())
 			{
-				return otherStocks->UpdateOtherStocks(ormasDal, errorMessage);
+				return otherStocks->UpdateOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6437,7 +7122,7 @@ namespace BusinessLayer{
 		{
 			if (0 != otherStocks->GetID())
 			{
-				return otherStocks->DeleteOtherStocks(ormasDal, errorMessage);
+				return otherStocks->DeleteOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6459,7 +7144,7 @@ namespace BusinessLayer{
 			if (0 != otherStocksType->GetID() && !otherStocksType->GetName().empty() && !otherStocksType->GetCode().empty()
 				&& !otherStocksType->GetShortName().empty())
 			{
-				return otherStocksType->CreateOtherStocksType(ormasDal, errorMessage);
+				return otherStocksType->CreateOtherStocksType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6480,7 +7165,7 @@ namespace BusinessLayer{
 			if (0 != otherStocksType->GetID() && !otherStocksType->GetName().empty() && !otherStocksType->GetCode().empty()
 				&& !otherStocksType->GetShortName().empty())
 			{
-				return otherStocksType->UpdateOtherStocksType(ormasDal, errorMessage);
+				return otherStocksType->UpdateOtherStocksType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6500,7 +7185,7 @@ namespace BusinessLayer{
 		{
 			if (0 != otherStocksType->GetID())
 			{
-				return otherStocksType->DeleteOtherStocksType(ormasDal, errorMessage);
+				return otherStocksType->DeleteOtherStocksType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6522,7 +7207,7 @@ namespace BusinessLayer{
 			if (0.0 != payment->GetValue() && 0 != payment->GetCurrencyID() && !payment->GetDate().empty() && !payment->GetWho().empty()
 				&& 0 != payment->GetStatusID())
 			{
-				return payment->UpdatePayment(ormasDal, errorMessage);
+				return payment->UpdatePayment(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6543,7 +7228,7 @@ namespace BusinessLayer{
 		{
 			if (0 != payment->GetID())
 			{
-				return payment->DeletePayment(ormasDal, errorMessage);
+				return payment->DeletePayment(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6563,7 +7248,7 @@ namespace BusinessLayer{
 		{
 			if (0 != payslip->GetSalaryID() && 0.0 != payslip->GetValue() && 0 != payslip->GetCurrencyID() && !payslip->GetDate().empty())
 			{
-				return payslip->CreatePayslip(ormasDal, errorMessage);
+				return payslip->CreatePayslip(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6583,7 +7268,7 @@ namespace BusinessLayer{
 		{
 			if (0 != payslip->GetSalaryID() && 0.0 != payslip->GetValue() && 0 != payslip->GetCurrencyID() && !payslip->GetDate().empty())
 			{
-				return payslip->UpdatePayslip(ormasDal, errorMessage);
+				return payslip->UpdatePayslip(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6603,7 +7288,7 @@ namespace BusinessLayer{
 		{
 			if (0 != payslip->GetID())
 			{
-				return payslip->DeletePayslip(ormasDal, errorMessage);
+				return payslip->DeletePayslip(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6623,7 +7308,7 @@ namespace BusinessLayer{
 		{
 			if ((0.0 != percentRate->GetValue() || 0 != percentRate->GetPositionID()) && !percentRate->GetCondition().empty())
 			{
-				return percentRate->CreatePercentRate(ormasDal, errorMessage);
+				return percentRate->CreatePercentRate(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6643,7 +7328,7 @@ namespace BusinessLayer{
 		{
 			if ((0.0 != percentRate->GetValue() || 0 != percentRate->GetPositionID()) && !percentRate->GetCondition().empty())
 			{
-				return percentRate->UpdatePercentRate(ormasDal, errorMessage);
+				return percentRate->UpdatePercentRate(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6663,7 +7348,7 @@ namespace BusinessLayer{
 		{
 			if (0 != percentRate->GetID())
 			{
-				return percentRate->DeletePercentRate(ormasDal, errorMessage);
+				return percentRate->DeletePercentRate(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6683,7 +7368,7 @@ namespace BusinessLayer{
 		{
 			if ((0 != photo->GetUserID() || 0 != photo->GetProductID()) && !photo->GetSource().empty())
 			{
-				return photo->CreatePhoto(ormasDal, errorMessage);
+				return photo->CreatePhoto(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6703,7 +7388,7 @@ namespace BusinessLayer{
 		{
 			if ((0 != photo->GetUserID() || 0 != photo->GetProductID()) && !photo->GetSource().empty())
 			{
-				return photo->UpdatePhoto(ormasDal, errorMessage);
+				return photo->UpdatePhoto(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6723,7 +7408,7 @@ namespace BusinessLayer{
 		{
 			if (0 != photo->GetID())
 			{
-				return photo->DeletePhoto(ormasDal, errorMessage);
+				return photo->DeletePhoto(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6743,7 +7428,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pfAssets->GetFixedAssetsID() || 0 != pfAssets->GetInventoryID())
 			{
-				return pfAssets->CreatePostingFixedAssets(ormasDal, errorMessage);
+				return pfAssets->CreatePostingFixedAssets(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6763,7 +7448,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pfAssets->GetFixedAssetsID() || 0 != pfAssets->GetInventoryID())
 			{
-				return pfAssets->UpdatePostingFixedAssets(ormasDal, errorMessage);
+				return pfAssets->UpdatePostingFixedAssets(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6783,7 +7468,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pfAssets->GetID())
 			{
-				return pfAssets->DeletePostingFixedAssets(ormasDal, errorMessage);
+				return pfAssets->DeletePostingFixedAssets(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6803,7 +7488,7 @@ namespace BusinessLayer{
 		{
 			if (!position->GetName().empty())
 			{
-				return position->CreatePosition(ormasDal, errorMessage);
+				return position->CreatePosition(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6823,7 +7508,7 @@ namespace BusinessLayer{
 		{
 			if (!position->GetName().empty())
 			{
-				return position->UpdatePosition(ormasDal, errorMessage);
+				return position->UpdatePosition(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6843,7 +7528,7 @@ namespace BusinessLayer{
 		{
 			if (0 != position->GetID())
 			{
-				return position->DeletePosition(ormasDal, errorMessage);
+				return position->DeletePosition(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6863,7 +7548,7 @@ namespace BusinessLayer{
 		{
 			if (0 != price->GetProductID() && 0.0 != price->GetValue() && 0 != price->GetCurrencyID() && !price->GetDate().empty())
 			{
-				return price->CreatePrice(ormasDal, errorMessage);
+				return price->CreatePrice(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6883,7 +7568,7 @@ namespace BusinessLayer{
 		{
 			if (0 != price->GetProductID() && 0.0 != price->GetValue() && 0 != price->GetCurrencyID() && !price->GetDate().empty())
 			{
-				return price->UpdatePrice(ormasDal, errorMessage);
+				return price->UpdatePrice(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6903,7 +7588,7 @@ namespace BusinessLayer{
 		{
 			if (0 != price->GetID())
 			{
-				return price->DeletePrice(ormasDal, errorMessage);
+				return price->DeletePrice(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6924,7 +7609,7 @@ namespace BusinessLayer{
 			if (0 != product->GetCompanyID() && !product->GetName().empty() && 0 != product->GetVolume() && 0 != product->GetMeasureID()
 				&& 0 != product->GetPrice() && 0 != product->GetProductTypeID() && 0 != product->GetShelfLife() && 0 != product->GetCurrencyID())
 			{
-				return product->CreateProduct(ormasDal, errorMessage);
+				return product->CreateProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6945,7 +7630,7 @@ namespace BusinessLayer{
 			if (0 != product->GetCompanyID() && !product->GetName().empty() && 0 != product->GetVolume() && 0 != product->GetMeasureID()
 				&& 0 != product->GetPrice() && 0 != product->GetProductTypeID() && 0 != product->GetShelfLife() && 0 != product->GetCurrencyID())
 			{
-				return product->UpdateProduct(ormasDal, errorMessage);
+				return product->UpdateProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6965,7 +7650,7 @@ namespace BusinessLayer{
 		{
 			if (0 != product->GetID())
 			{
-				return product->DeleteProduct(ormasDal, errorMessage);
+				return product->DeleteProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -6985,7 +7670,7 @@ namespace BusinessLayer{
 		{
 			if (0 != prodcutBranch->GetBranchID() && 0 != prodcutBranch->GetProductID())
 			{
-				return prodcutBranch->CreateProductBranchRelation(ormasDal, errorMessage);
+				return prodcutBranch->CreateProductBranchRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7005,7 +7690,7 @@ namespace BusinessLayer{
 		{
 			if (0 != employeeProduct->GetBranchID() && 0 != employeeProduct->GetProductID())
 			{
-				return employeeProduct->UpdateProductBranchRelation(ormasDal, errorMessage);
+				return employeeProduct->UpdateProductBranchRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7025,7 +7710,7 @@ namespace BusinessLayer{
 		{
 			if (0 != employeeProduct->GetID())
 			{
-				return employeeProduct->DeleteProductBranchRelation(ormasDal, errorMessage);
+				return employeeProduct->DeleteProductBranchRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7046,7 +7731,7 @@ namespace BusinessLayer{
 			if (!production->GetProductionDate().empty() && !production->GetExpiryDate().empty() && !production->GetSessionStart().empty()
 				&& !production->GetSessionEnd().empty())
 			{
-				return production->CreateProduction(ormasDal, errorMessage);
+				return production->CreateProduction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7067,7 +7752,7 @@ namespace BusinessLayer{
 			if (!production->GetProductionDate().empty() && !production->GetExpiryDate().empty() && !production->GetSessionStart().empty()
 				&& !production->GetSessionEnd().empty())
 			{
-				return production->UpdateProduction(ormasDal, errorMessage);
+				return production->UpdateProduction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7087,7 +7772,7 @@ namespace BusinessLayer{
 		{
 			if (0 != production->GetID())
 			{
-				return production->DeleteProduction(ormasDal, errorMessage);
+				return production->DeleteProduction(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7110,7 +7795,7 @@ namespace BusinessLayer{
 				&& 0 != productionList->GetCount() && 0 != productionList->GetSum() && 0 != productionList->GetStatusID()
 				&& 0 != productionList->GetCurrencyID())
 			{
-				return productionList->CreateProductionList(ormasDal, errorMessage);
+				return productionList->CreateProductionList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7132,7 +7817,7 @@ namespace BusinessLayer{
 				&& 0 != productionList->GetCount() && 0 != productionList->GetSum() && 0 != productionList->GetStatusID()
 				&& 0 != productionList->GetCurrencyID())
 			{
-				return productionList->UpdateProductionList(ormasDal, errorMessage);
+				return productionList->UpdateProductionList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7152,7 +7837,7 @@ namespace BusinessLayer{
 		{
 			if (0 != productionList->GetID())
 			{
-				return productionList->DeleteProductionList(ormasDal, errorMessage);
+				return productionList->DeleteProductionList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7176,7 +7861,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, pConsumeRaw->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, pConsumeRaw->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(pConsumeRaw->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7186,7 +7871,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				pConsumeRaw->SetSum(roundSum);
-				return pConsumeRaw->CreateProductionConsumeRaw(ormasDal, errorMessage);
+				return pConsumeRaw->CreateProductionConsumeRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7210,7 +7895,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, pConsumeRaw->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, pConsumeRaw->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(pConsumeRaw->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7220,7 +7905,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				pConsumeRaw->SetSum(roundSum);
-				return pConsumeRaw->UpdateProductionConsumeRaw(ormasDal, errorMessage);
+				return pConsumeRaw->UpdateProductionConsumeRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7240,7 +7925,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pConsumeRaw->GetID())
 			{
-				return pConsumeRaw->DeleteProductionConsumeRaw(ormasDal, errorMessage);
+				return pConsumeRaw->DeleteProductionConsumeRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7262,7 +7947,7 @@ namespace BusinessLayer{
 				&& 0 != pConsumeRawList->GetCount() && 0 != pConsumeRawList->GetSum() && 0 != pConsumeRawList->GetStatusID()
 				&& 0 != pConsumeRawList->GetCurrencyID())
 			{
-				return pConsumeRawList->CreateProductionConsumeRawList(ormasDal, errorMessage);
+				return pConsumeRawList->CreateProductionConsumeRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7284,7 +7969,7 @@ namespace BusinessLayer{
 				&& 0 != pConsumeRawList->GetCount() && 0 != pConsumeRawList->GetSum() && 0 != pConsumeRawList->GetStatusID()
 				&& 0 != pConsumeRawList->GetCurrencyID())
 			{
-				return pConsumeRawList->UpdateProductionConsumeRawList(ormasDal, errorMessage);
+				return pConsumeRawList->UpdateProductionConsumeRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7304,7 +7989,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pConsumeRawList->GetID())
 			{
-				return pConsumeRawList->DeleteProductionConsumeRawList(ormasDal, errorMessage);
+				return pConsumeRawList->DeleteProductionConsumeRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7327,7 +8012,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, pPlan->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, pPlan->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(pPlan->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7337,7 +8022,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				pPlan->SetSum(roundSum);
-				return pPlan->CreateProductionPlan(ormasDal, errorMessage);
+				return pPlan->CreateProductionPlan(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7360,7 +8045,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, pPlan->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, pPlan->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(pPlan->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7370,7 +8055,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				pPlan->SetSum(roundSum);
-				return pPlan->UpdateProductionPlan(ormasDal, errorMessage);
+				return pPlan->UpdateProductionPlan(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7390,7 +8075,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pPlan->GetID())
 			{
-				return pPlan->DeleteProductionPlan(ormasDal, errorMessage);
+				return pPlan->DeleteProductionPlan(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7413,7 +8098,7 @@ namespace BusinessLayer{
 				&& 0 != pPlanList->GetCount() && 0 != pPlanList->GetSum() && 0 != pPlanList->GetStatusID()
 				&& 0 != pPlanList->GetCurrencyID())
 			{
-				return pPlanList->CreateProductionPlanList(ormasDal, errorMessage);
+				return pPlanList->CreateProductionPlanList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7435,7 +8120,7 @@ namespace BusinessLayer{
 				&& 0 != pPlanList->GetCount() && 0 != pPlanList->GetSum() && 0 != pPlanList->GetStatusID()
 				&& 0 != pPlanList->GetCurrencyID())
 			{
-				return pPlanList->UpdateProductionPlanList(ormasDal, errorMessage);
+				return pPlanList->UpdateProductionPlanList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7455,7 +8140,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pPlanList->GetID())
 			{
-				return pPlanList->DeleteProductionPlanList(ormasDal, errorMessage);
+				return pPlanList->DeleteProductionPlanList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7476,7 +8161,7 @@ namespace BusinessLayer{
 			if (0 != pStock->GetProductID() && 0 != pStock->GetCount() &&
 				0 != pStock->GetSum() && 0 != pStock->GetStatusID() && 0 != pStock->GetCurrencyID())
 			{
-				return pStock->CreateProductionStock(ormasDal, errorMessage);
+				return pStock->CreateProductionStock(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7497,7 +8182,7 @@ namespace BusinessLayer{
 			if (0 != pStock->GetProductID() && 0 != pStock->GetCount() &&
 				0 != pStock->GetSum() && 0 != pStock->GetStatusID() && 0 != pStock->GetCurrencyID())
 			{
-				return pStock->UpdateProductionStock(ormasDal, errorMessage);
+				return pStock->UpdateProductionStock(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7517,7 +8202,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pStock->GetID())
 			{
-				return pStock->DeleteProductionStock(ormasDal, errorMessage);
+				return pStock->DeleteProductionStock(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7537,7 +8222,7 @@ namespace BusinessLayer{
 		{
 			if (!pType->GetName().empty() && !pType->GetShortName().empty() && !pType->GetCode().empty())
 			{
-				return pType->CreateProductType(ormasDal, errorMessage);
+				return pType->CreateProductType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7557,7 +8242,7 @@ namespace BusinessLayer{
 		{
 			if (!pType->GetName().empty() && !pType->GetShortName().empty() && !pType->GetCode().empty())
 			{
-				return pType->UpdateProductType(ormasDal, errorMessage);
+				return pType->UpdateProductType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7577,7 +8262,7 @@ namespace BusinessLayer{
 		{
 			if (0 != pType->GetID())
 			{
-				return pType->DeleteProductType(ormasDal, errorMessage);
+				return pType->DeleteProductType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7599,7 +8284,7 @@ namespace BusinessLayer{
 				&& !purveyor->GetAddress().empty() && !purveyor->GetPassword().empty() && 0 != purveyor->GetRoleID()
 				&& !purveyor->GetCompanyName().empty() && 0 != purveyor->GetLocationID())
 			{
-				return purveyor->CreatePurveyor(ormasDal, errorMessage);
+				return purveyor->CreatePurveyor(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7621,7 +8306,7 @@ namespace BusinessLayer{
 				&& !purveyor->GetAddress().empty() && !purveyor->GetPassword().empty() && 0 != purveyor->GetRoleID()
 				&& !purveyor->GetCompanyName().empty() && 0 != purveyor->GetLocationID())
 			{
-				return purveyor->UpdatePurveyor(ormasDal, errorMessage);
+				return purveyor->UpdatePurveyor(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7641,7 +8326,7 @@ namespace BusinessLayer{
 		{
 			if (0 != purveyor->GetID())
 			{
-				return purveyor->DeletePurveyor(ormasDal, errorMessage);
+				return purveyor->DeletePurveyor(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7665,7 +8350,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, receiptProduct->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, receiptProduct->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(receiptProduct->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7675,7 +8360,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				receiptProduct->SetSum(roundSum);
-				return receiptProduct->CreateReceiptProduct(ormasDal, errorMessage);
+				return receiptProduct->CreateReceiptProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7699,7 +8384,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, receiptProduct->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, receiptProduct->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(receiptProduct->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7709,7 +8394,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				receiptProduct->SetSum(roundSum);
-				return receiptProduct->UpdateReceiptProduct(ormasDal, errorMessage);
+				return receiptProduct->UpdateReceiptProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7729,7 +8414,7 @@ namespace BusinessLayer{
 		{
 			if (0 != receiptProduct->GetID())
 			{
-				return receiptProduct->DeleteReceiptProduct(ormasDal, errorMessage);
+				return receiptProduct->DeleteReceiptProduct(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7751,7 +8436,7 @@ namespace BusinessLayer{
 				&& 0 != receiptProductList->GetCount() && 0 != receiptProductList->GetSum() && 0 != receiptProductList->GetStatusID()
 				&& 0 != receiptProductList->GetCurrencyID())
 			{
-				return receiptProductList->CreateReceiptProductList(ormasDal, errorMessage);
+				return receiptProductList->CreateReceiptProductList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7773,7 +8458,7 @@ namespace BusinessLayer{
 				&& 0 != receiptProductList->GetCount() && 0 != receiptProductList->GetSum() && 0 != receiptProductList->GetStatusID()
 				&& 0 != receiptProductList->GetCurrencyID())
 			{
-				return receiptProductList->UpdateReceiptProductList(ormasDal, errorMessage);
+				return receiptProductList->UpdateReceiptProductList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7793,7 +8478,7 @@ namespace BusinessLayer{
 		{
 			if (0 != receiptProductList->GetID())
 			{
-				return receiptProductList->DeleteReceiptProductList(ormasDal, errorMessage);
+				return receiptProductList->DeleteReceiptProductList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7817,7 +8502,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, receiptOthS->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, receiptOthS->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(receiptOthS->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7827,7 +8512,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				receiptOthS->SetSum(roundSum);
-				return receiptOthS->CreateReceiptOtherStocks(ormasDal, errorMessage);
+				return receiptOthS->CreateReceiptOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7851,7 +8536,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, receiptOthS->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, receiptOthS->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(receiptOthS->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7861,7 +8546,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				receiptOthS->SetSum(roundSum);
-				return receiptOthS->UpdateReceiptOtherStocks(ormasDal, errorMessage);
+				return receiptOthS->UpdateReceiptOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7881,7 +8566,7 @@ namespace BusinessLayer{
 		{
 			if (0 != receiptOthS->GetID())
 			{
-				return receiptOthS->DeleteReceiptOtherStocks(ormasDal, errorMessage);
+				return receiptOthS->DeleteReceiptOtherStocks(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7903,7 +8588,7 @@ namespace BusinessLayer{
 				&& 0 != receiptOthSList->GetCount() && 0 != receiptOthSList->GetSum() && 0 != receiptOthSList->GetStatusID()
 				&& 0 != receiptOthSList->GetCurrencyID())
 			{
-				return receiptOthSList->CreateReceiptOtherStocksList(ormasDal, errorMessage);
+				return receiptOthSList->CreateReceiptOtherStocksList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7925,7 +8610,7 @@ namespace BusinessLayer{
 				&& 0 != receiptOthSList->GetCount() && 0 != receiptOthSList->GetSum() && 0 != receiptOthSList->GetStatusID()
 				&& 0 != receiptOthSList->GetCurrencyID())
 			{
-				return receiptOthSList->UpdateReceiptOtherStocksList(ormasDal, errorMessage);
+				return receiptOthSList->UpdateReceiptOtherStocksList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7945,7 +8630,7 @@ namespace BusinessLayer{
 		{
 			if (0 != receiptOthSList->GetID())
 			{
-				return receiptOthSList->DeleteReceiptOtherStocksList(ormasDal, errorMessage);
+				return receiptOthSList->DeleteReceiptOtherStocksList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -7969,7 +8654,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, stockTransfer->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, stockTransfer->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(stockTransfer->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -7979,7 +8664,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				stockTransfer->SetSum(roundSum);
-				return stockTransfer->CreateStockTransfer(ormasDal, errorMessage);
+				return stockTransfer->CreateStockTransfer(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8003,7 +8688,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, stockTransfer->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, stockTransfer->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(stockTransfer->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -8013,7 +8698,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				stockTransfer->SetSum(roundSum);
-				return stockTransfer->UpdateStockTransfer(ormasDal, errorMessage);
+				return stockTransfer->UpdateStockTransfer(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8033,7 +8718,7 @@ namespace BusinessLayer{
 		{
 			if (0 != stockTransfer->GetID())
 			{
-				return stockTransfer->DeleteStockTransfer(ormasDal, errorMessage);
+				return stockTransfer->DeleteStockTransfer(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8055,7 +8740,7 @@ namespace BusinessLayer{
 				&& 0 != stockTransferList->GetCount() && 0 != stockTransferList->GetSum() && 0 != stockTransferList->GetStatusID()
 				&& 0 != stockTransferList->GetCurrencyID())
 			{
-				return stockTransferList->CreateStockTransferList(ormasDal, errorMessage);
+				return stockTransferList->CreateStockTransferList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8077,7 +8762,7 @@ namespace BusinessLayer{
 				&& 0 != stockTransferList->GetCount() && 0 != stockTransferList->GetSum() && 0 != stockTransferList->GetStatusID()
 				&& 0 != stockTransferList->GetCurrencyID())
 			{
-				return stockTransferList->UpdateStockTransferList(ormasDal, errorMessage);
+				return stockTransferList->UpdateStockTransferList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8097,71 +8782,7 @@ namespace BusinessLayer{
 		{
 			if (0 != stockTransferList->GetID())
 			{
-				return stockTransferList->DeleteStockTransferList(ormasDal, errorMessage);
-			}
-			else
-			{
-				errorMessage = "Error! Stock transfer list ID is 0. Something goes wrong!";
-			}
-		}
-		catch (...)
-		{
-			errorMessage = "Fatal error! Please contact with application provider.";
-		}
-		return false;
-	}
-
-	bool OrmasBL::CreateTransportHistory(BusinessLayer::TransportHistory* transportHistory, std::string& errorMessage)
-	{
-		try
-		{
-			if (0 != transportHistory->GetTransportID() && 0 != transportHistory->GetProductID()
-				&& 0 != transportHistory->GetCount() && 0 != transportHistory->GetSum() && 0 != transportHistory->GetStatusID()
-				&& 0 != transportHistory->GetCurrencyID())
-			{
-				return transportHistory->CreateTransportHistory(ormasDal, errorMessage);
-			}
-			else
-			{
-				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
-			}
-		}
-		catch (...)
-		{
-			errorMessage = "Fatal error! Please contact with application provider.";
-		}
-		return false;
-	}
-
-	bool OrmasBL::UpdateTransportHistory(BusinessLayer::TransportHistory* transportHistory, std::string& errorMessage)
-	{
-		try
-		{
-			if (0 != transportHistory->GetTransportID() && 0 != transportHistory->GetProductID()
-				&& 0 != transportHistory->GetCount() && 0 != transportHistory->GetSum() && 0 != transportHistory->GetStatusID()
-				&& 0 != transportHistory->GetCurrencyID())
-			{
-				return transportHistory->UpdateTransportHistory(ormasDal, errorMessage);
-			}
-			else
-			{
-				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
-			}
-		}
-		catch (...)
-		{
-			errorMessage = "Fatal error! Please contact with application provider.";
-		}
-		return false;
-	}
-
-	bool OrmasBL::DeleteTransportHistory(BusinessLayer::TransportHistory* transportHistory, std::string& errorMessage)
-	{
-		try
-		{
-			if (0 != transportHistory->GetID())
-			{
-				return transportHistory->DeleteTransportHistory(ormasDal, errorMessage);
+				return stockTransferList->DeleteStockTransferList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8182,7 +8803,7 @@ namespace BusinessLayer{
 		{
 			if (0 != refund->GetUserID() && 0.0 != refund->GetValue() && 0 != refund->GetCurrencyID() && !refund->GetDate().empty())
 			{
-				return refund->CreateRefund(ormasDal, errorMessage);
+				return refund->CreateRefund(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8204,7 +8825,7 @@ namespace BusinessLayer{
 		{
 			if (0 != refund->GetUserID() && 0.0 != refund->GetValue() && 0 != refund->GetCurrencyID() && !refund->GetDate().empty())
 			{
-				return refund->UpdateRefund(ormasDal, errorMessage);
+				return refund->UpdateRefund(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8225,7 +8846,7 @@ namespace BusinessLayer{
 		{
 			if (0 != refund->GetID())
 			{
-				return refund->DeleteRefund(ormasDal, errorMessage);
+				return refund->DeleteRefund(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8245,7 +8866,7 @@ namespace BusinessLayer{
 		{
 			if (0 != relation->GetUser1ID() && 0.0 != relation->GetUser2ID() && 0 != relation->GetRelationTypeID())
 			{
-				return relation->CreateRelation(ormasDal, errorMessage);
+				return relation->CreateRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8265,7 +8886,7 @@ namespace BusinessLayer{
 		{
 			if (0 != relation->GetUser1ID() && 0.0 != relation->GetUser2ID() && 0 != relation->GetRelationTypeID())
 			{
-				return relation->UpdateRelation(ormasDal, errorMessage);
+				return relation->UpdateRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8285,7 +8906,7 @@ namespace BusinessLayer{
 		{
 			if (0 != relation->GetID())
 			{
-				return relation->DeleteRelation(ormasDal, errorMessage);
+				return relation->DeleteRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8305,7 +8926,7 @@ namespace BusinessLayer{
 		{
 			if (!relationType->GetName().empty())
 			{
-				return relationType->CreateRelationType(ormasDal, errorMessage);
+				return relationType->CreateRelationType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8325,7 +8946,7 @@ namespace BusinessLayer{
 		{
 			if (!relationType->GetName().empty())
 			{
-				return relationType->UpdateRelationType(ormasDal, errorMessage);
+				return relationType->UpdateRelationType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8345,7 +8966,7 @@ namespace BusinessLayer{
 		{
 			if (0 != relationType->GetID())
 			{
-				return relationType->DeleteRelationType(ormasDal, errorMessage);
+				return relationType->DeleteRelationType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8368,7 +8989,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, ret->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, ret->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(ret->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -8378,7 +8999,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				ret->SetSum(roundSum);
-				return ret->CreateReturn(ormasDal, errorMessage);
+				return ret->CreateReturn(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8401,7 +9022,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, ret->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, ret->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(ret->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -8411,7 +9032,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				ret->SetSum(roundSum);
-				return ret->UpdateReturn(ormasDal, errorMessage);
+				return ret->UpdateReturn(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8431,7 +9052,7 @@ namespace BusinessLayer{
 		{
 			if (0 != ret->GetID())
 			{
-				return ret->DeleteReturn(ormasDal, errorMessage);
+				return ret->DeleteReturn(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8453,7 +9074,7 @@ namespace BusinessLayer{
 				&& 0 != returnList->GetCount() && 0 != returnList->GetSum() && 0 != returnList->GetStatusID()
 				&& 0 != returnList->GetCurrencyID())
 			{
-				return returnList->CreateReturnList(ormasDal, errorMessage);
+				return returnList->CreateReturnList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8475,7 +9096,7 @@ namespace BusinessLayer{
 				&& 0 != returnList->GetCount() && 0 != returnList->GetSum() && 0 != returnList->GetStatusID()
 				&& 0 != returnList->GetCurrencyID())
 			{
-				return returnList->UpdateReturnList(ormasDal, errorMessage);
+				return returnList->UpdateReturnList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8495,7 +9116,7 @@ namespace BusinessLayer{
 		{
 			if (0 != returnList->GetID())
 			{
-				return returnList->DeleteReturnList(ormasDal, errorMessage);
+				return returnList->DeleteReturnList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8515,7 +9136,7 @@ namespace BusinessLayer{
 		{
 			if (!role->GetCode().empty() && !role->GetName().empty())
 			{
-				return role->CreateRole(ormasDal, errorMessage);
+				return role->CreateRole(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8535,7 +9156,7 @@ namespace BusinessLayer{
 		{
 			if (!role->GetCode().empty() && !role->GetName().empty())
 			{
-				return role->UpdateRole(ormasDal, errorMessage);
+				return role->UpdateRole(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8555,7 +9176,7 @@ namespace BusinessLayer{
 		{
 			if (0 != role->GetID())
 			{
-				return role->DeleteRole(ormasDal, errorMessage);
+				return role->DeleteRole(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8576,7 +9197,7 @@ namespace BusinessLayer{
 			if (0 != salary->GetEmployeeID() && 0.0 != salary->GetValue() && 0 != salary->GetCurrencyID() && 0 != salary->GetSalaryTypeID()
 				&& !salary->GetDate().empty())
 			{
-				return salary->CreateSalary(ormasDal, errorMessage);
+				return salary->CreateSalary(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8597,7 +9218,7 @@ namespace BusinessLayer{
 			if (0 != salary->GetEmployeeID() && 0.0 != salary->GetValue() && 0 != salary->GetCurrencyID() && 0 != salary->GetSalaryTypeID()
 				&& !salary->GetDate().empty())
 			{
-				return salary->UpdateSalary(ormasDal, errorMessage);
+				return salary->UpdateSalary(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8617,7 +9238,7 @@ namespace BusinessLayer{
 		{
 			if (0 != salary->GetID())
 			{
-				return salary->DeleteSalary(ormasDal, errorMessage);
+				return salary->DeleteSalary(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8637,7 +9258,7 @@ namespace BusinessLayer{
 		{
 			if (!salaryType->GetCode().empty() && !salaryType->GetName().empty())
 			{
-				return salaryType->CreateSalaryType(ormasDal, errorMessage);
+				return salaryType->CreateSalaryType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8657,7 +9278,7 @@ namespace BusinessLayer{
 		{
 			if (!salaryType->GetCode().empty() && !salaryType->GetName().empty())
 			{
-				return salaryType->UpdateSalaryType(ormasDal, errorMessage);
+				return salaryType->UpdateSalaryType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8677,7 +9298,7 @@ namespace BusinessLayer{
 		{
 			if (0 != salaryType->GetID())
 			{
-				return salaryType->DeleteSalaryType(ormasDal, errorMessage);
+				return salaryType->DeleteSalaryType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8697,7 +9318,7 @@ namespace BusinessLayer{
 		{
 			if (0 != shareholder->GetUserID() || (!shareholder->GetName().empty() && !shareholder->GetAddress().empty() && !shareholder->GetPhone().empty()))
 			{
-				return shareholder->CreateShareholder(ormasDal, errorMessage);
+				return shareholder->CreateShareholder(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8717,7 +9338,7 @@ namespace BusinessLayer{
 		{
 			if (0 != shareholder->GetUserID() || (!shareholder->GetName().empty() && !shareholder->GetAddress().empty() && !shareholder->GetPhone().empty()))
 			{
-				return shareholder->UpdateShareholder(ormasDal, errorMessage);
+				return shareholder->UpdateShareholder(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8737,7 +9358,7 @@ namespace BusinessLayer{
 		{
 			if (0 != shareholder->GetID())
 			{
-				return shareholder->DeleteShareholder(ormasDal, errorMessage);
+				return shareholder->DeleteShareholder(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8758,7 +9379,7 @@ namespace BusinessLayer{
 			if (0 != specification->GetProductID() && 0 != specification->GetSum() && 0 != specification->GetCurrencyID()
 				&& 0 != specification->GetEmployeeID() && !specification->GetDate().empty())
 			{
-				return specification->CreateSpecification(ormasDal, errorMessage);
+				return specification->CreateSpecification(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8779,7 +9400,7 @@ namespace BusinessLayer{
 			if (0 != specification->GetProductID() && 0 != specification->GetSum() && 0 != specification->GetCurrencyID()
 				&& 0 != specification->GetEmployeeID() && !specification->GetDate().empty())
 			{
-				return specification->UpdateSpecification(ormasDal, errorMessage);
+				return specification->UpdateSpecification(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8799,7 +9420,7 @@ namespace BusinessLayer{
 		{
 			if (0 != specification->GetID())
 			{
-				return specification->DeleteSpecification(ormasDal, errorMessage);
+				return specification->DeleteSpecification(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8820,7 +9441,7 @@ namespace BusinessLayer{
 			if (0 != specificationList->GetSpecificationID() && 0 != specificationList->GetProductID()
 				&& 0 != specificationList->GetCount())
 			{
-				return specificationList->CreateSpecificationList(ormasDal, errorMessage);
+				return specificationList->CreateSpecificationList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8841,7 +9462,7 @@ namespace BusinessLayer{
 			if (0 != specificationList->GetSpecificationID() && 0 != specificationList->GetProductID()
 				&& 0.0 != specificationList->GetCount())
 			{
-				return specificationList->UpdateSpecificationList(ormasDal, errorMessage);
+				return specificationList->UpdateSpecificationList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8861,11 +9482,71 @@ namespace BusinessLayer{
 		{
 			if (0 != specificationList->GetID())
 			{
-				return specificationList->DeleteSpecificationList(ormasDal, errorMessage);
+				return specificationList->DeleteSpecificationList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
 				errorMessage = "Error! Specification list ID is 0. Something goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateSpecificationChangeLog(BusinessLayer::SpecificationChangeLog* specificationChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != specificationChangeLog->GetSpecificationID() && !specificationChangeLog->GetLogDate().empty())
+			{
+				return specificationChangeLog->CreateSpecificationChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateSpecificationChangeLog(BusinessLayer::SpecificationChangeLog* specificationChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != specificationChangeLog->GetSpecificationID() && !specificationChangeLog->GetLogDate().empty())
+			{
+				return specificationChangeLog->UpdateSpecificationChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteSpecificationChangeLog(BusinessLayer::SpecificationChangeLog* specificationChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != specificationChangeLog->GetID())
+			{
+				return specificationChangeLog->DeleteSpecificationChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Specification change log ID is 0. Something goes wrong!";
 			}
 		}
 		catch (...)
@@ -8884,7 +9565,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, spoilage->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, spoilage->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(spoilage->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -8894,7 +9575,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				spoilage->SetSum(roundSum);
-				return spoilage->CreateSpoilage(ormasDal, errorMessage);
+				return spoilage->CreateSpoilage(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8917,7 +9598,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, spoilage->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, spoilage->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(spoilage->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -8927,7 +9608,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				spoilage->SetSum(roundSum);
-				return spoilage->UpdateSpoilage(ormasDal, errorMessage);
+				return spoilage->UpdateSpoilage(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8947,7 +9628,7 @@ namespace BusinessLayer{
 		{
 			if (0 != spoilage->GetID())
 			{
-				return spoilage->DeleteSpoilage(ormasDal, errorMessage);
+				return spoilage->DeleteSpoilage(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8970,7 +9651,7 @@ namespace BusinessLayer{
 				&& 0 != spoilageList->GetCount() && 0 != spoilageList->GetSum() && 0 != spoilageList->GetStatusID()
 				&& 0 != spoilageList->GetCurrencyID())
 			{
-				return spoilageList->CreateSpoilageList(ormasDal, errorMessage);
+				return spoilageList->CreateSpoilageList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -8992,7 +9673,7 @@ namespace BusinessLayer{
 				&& 0 != spoilageList->GetCount() && 0 != spoilageList->GetSum() && 0 != spoilageList->GetStatusID()
 				&& 0 != spoilageList->GetCurrencyID())
 			{
-				return spoilageList->UpdateSpoilageList(ormasDal, errorMessage);
+				return spoilageList->UpdateSpoilageList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9012,7 +9693,7 @@ namespace BusinessLayer{
 		{
 			if (0 != spoilageList->GetID())
 			{
-				return spoilageList->DeleteSpoilageList(ormasDal, errorMessage);
+				return spoilageList->DeleteSpoilageList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9032,7 +9713,7 @@ namespace BusinessLayer{
 		{
 			if (0 != state->GetUniversalID() && 0 != state->GetStatusID() && !state->GetLastChange().empty())
 			{
-				return state->CreateState(ormasDal, errorMessage);
+				return state->CreateState(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9052,7 +9733,7 @@ namespace BusinessLayer{
 		{
 			if (0 != state->GetUniversalID() && 0 != state->GetStatusID() && !state->GetLastChange().empty())
 			{
-				return state->UpdateState(ormasDal, errorMessage);
+				return state->UpdateState(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9072,7 +9753,7 @@ namespace BusinessLayer{
 		{
 			if (0 != state->GetID())
 			{
-				return state->DeleteState(ormasDal, errorMessage);
+				return state->DeleteState(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9092,7 +9773,7 @@ namespace BusinessLayer{
 		{
 			if (!status->GetCode().empty() && !status->GetName().empty())
 			{
-				return status->CreateStatus(ormasDal, errorMessage);
+				return status->CreateStatus(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9112,7 +9793,7 @@ namespace BusinessLayer{
 		{
 			if (!status->GetCode().empty() && !status->GetName().empty())
 			{
-				return status->UpdateStatus(ormasDal, errorMessage);
+				return status->UpdateStatus(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9132,7 +9813,7 @@ namespace BusinessLayer{
 		{
 			if (0 != status->GetID())
 			{
-				return status->DeleteStatus(ormasDal, errorMessage);
+				return status->DeleteStatus(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9152,7 +9833,7 @@ namespace BusinessLayer{
 		{
 			if (!statusRule->GetOperation().empty() && 0 != statusRule->GetStatusID())
 			{
-				return statusRule->CreateStatusRule(ormasDal, errorMessage);
+				return statusRule->CreateStatusRule(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9172,7 +9853,7 @@ namespace BusinessLayer{
 		{
 			if (!statusRule->GetOperation().empty() && 0 != statusRule->GetStatusID())
 			{
-				return statusRule->UpdateStatusRule(ormasDal, errorMessage);
+				return statusRule->UpdateStatusRule(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9192,7 +9873,7 @@ namespace BusinessLayer{
 		{
 			if (0 != statusRule->GetID())
 			{
-				return statusRule->DeleteStatusRule(ormasDal, errorMessage);
+				return statusRule->DeleteStatusRule(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9213,7 +9894,7 @@ namespace BusinessLayer{
 			if (0 != stock->GetProductID() && 0 != stock->GetCount() &&
 				0 != stock->GetSum() && 0 != stock->GetStatusID() && 0 != stock->GetCurrencyID())
 			{
-				return stock->CreateStock(ormasDal, errorMessage);
+				return stock->CreateStock(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9234,7 +9915,7 @@ namespace BusinessLayer{
 			if (0 != stock->GetProductID() && 0 != stock->GetCount() &&
 				0 != stock->GetSum() && 0 != stock->GetStatusID() && 0 != stock->GetCurrencyID())
 			{
-				return stock->UpdateStock(ormasDal, errorMessage);
+				return stock->UpdateStock(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9254,7 +9935,69 @@ namespace BusinessLayer{
 		{
 			if (0 != stock->GetID())
 			{
-				return stock->DeleteStock(ormasDal, errorMessage);
+				return stock->DeleteStock(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Stock ID is 0. Something goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateStockLimit(BusinessLayer::StockLimit* stockLimit, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockLimit->GetProductID() && 0 <= stockLimit->GetMinValue() &&
+				0 <= stockLimit->GetMaxValue() && 0 != stockLimit->GetStockID())
+			{
+				return stockLimit->CreateStockLimit(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateStockLimit(BusinessLayer::StockLimit* stockLimit, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockLimit->GetProductID() && 0 <= stockLimit->GetMinValue() &&
+				0 <= stockLimit->GetMaxValue() && 0 != stockLimit->GetStockID())
+			{
+				return stockLimit->UpdateStockLimit(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteStockLimit(BusinessLayer::StockLimit* stockLimit, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockLimit->GetID())
+			{
+				return stockLimit->DeleteStockLimit(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9276,7 +10019,7 @@ namespace BusinessLayer{
 				0 != stockHistory->GetSum() && 0 != stockHistory->GetStatusID() && 0 != stockHistory->GetCurrencyID()
 				&& !stockHistory->GetHistoryDate().empty())
 			{
-				return stockHistory->CreateStockHistory(ormasDal, errorMessage);
+				return stockHistory->CreateStockHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9298,7 +10041,7 @@ namespace BusinessLayer{
 				0 != stockHistory->GetSum() && 0 != stockHistory->GetStatusID() && 0 != stockHistory->GetCurrencyID()
 				&& !stockHistory->GetHistoryDate().empty())
 			{
-				return stockHistory->UpdateStockHistory(ormasDal, errorMessage);
+				return stockHistory->UpdateStockHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9318,11 +10061,71 @@ namespace BusinessLayer{
 		{
 			if (0 != stockHistory->GetID())
 			{
-				return stockHistory->DeleteStockHistory(ormasDal, errorMessage);
+				return stockHistory->DeleteStockHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
 				errorMessage = "Error! Stock history ID is 0. Something goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateStockChangeLog(BusinessLayer::StockChangeLog* stockChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockChangeLog->GetStockID() && !stockChangeLog->GetLogDate().empty())
+			{
+				return stockChangeLog->CreateStockChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateStockChangeLog(BusinessLayer::StockChangeLog* stockChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockChangeLog->GetStockID() && !stockChangeLog->GetLogDate().empty())
+			{
+				return stockChangeLog->UpdateStockChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteStockChangeLog(BusinessLayer::StockChangeLog* stockChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != stockChangeLog->GetID())
+			{
+				return stockChangeLog->DeleteStockChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Stock change log ID is 0. Something goes wrong!";
 			}
 		}
 		catch (...)
@@ -9339,7 +10142,7 @@ namespace BusinessLayer{
 			if (0 != subaccount->GetParentAccountID() && !subaccount->GetNumber().empty() && 0 != subaccount->GetCurrencyID() 
 				&& !subaccount->GetOpenedDate().empty() && 0 != subaccount->GetStatusID())
 			{
-				return subaccount->CreateSubaccount(ormasDal, errorMessage);
+				return subaccount->CreateSubaccount(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9360,7 +10163,7 @@ namespace BusinessLayer{
 			if (0 != subaccount->GetParentAccountID() && !subaccount->GetNumber().empty() && 0 != subaccount->GetCurrencyID()
 				&& !subaccount->GetOpenedDate().empty() && 0 != subaccount->GetStatusID())
 			{
-				return subaccount->UpdateSubaccount(ormasDal, errorMessage);
+				return subaccount->UpdateSubaccount(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9380,7 +10183,67 @@ namespace BusinessLayer{
 		{
 			if (0 != subaccount->GetID())
 			{
-				return subaccount->DeleteSubaccount(ormasDal, errorMessage);
+				return subaccount->DeleteSubaccount(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Subaccount item ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateSubaccountLimit(BusinessLayer::SubaccountLimit* subaccountLimit, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != subaccountLimit->GetSubaccountID())
+			{
+				return subaccountLimit->CreateSubaccountLimit(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateSubaccountLimit(BusinessLayer::SubaccountLimit* subaccountLimit, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != subaccountLimit->GetSubaccountID())
+			{
+				return subaccountLimit->UpdateSubaccountLimit(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteSubaccountLimit(BusinessLayer::SubaccountLimit* subaccountLimit, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != subaccountLimit->GetID())
+			{
+				return subaccountLimit->DeleteSubaccountLimit(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9400,7 +10263,7 @@ namespace BusinessLayer{
 		{
 			if (!subaccountHis->GetFromDate().empty() && !subaccountHis->GetTillDate().empty())
 			{
-				return subaccountHis->CreateSubaccountHistory(ormasDal, errorMessage);
+				return subaccountHis->CreateSubaccountHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9420,7 +10283,7 @@ namespace BusinessLayer{
 		{
 			if (!subaccountHis->GetFromDate().empty() && !subaccountHis->GetTillDate().empty())
 			{
-				return subaccountHis->UpdateSubaccountHistory(ormasDal, errorMessage);
+				return subaccountHis->UpdateSubaccountHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9440,11 +10303,71 @@ namespace BusinessLayer{
 		{
 			if (0 != subaccountHis->GetID())
 			{
-				return subaccountHis->DeleteSubaccountHistory(ormasDal, errorMessage);
+				return subaccountHis->DeleteSubaccountHistory(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
 				errorMessage = "Error! Subaccount history item ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateSubaccountChangeLog(BusinessLayer::SubaccountChangeLog* subaccountChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (!subaccountChangeLog->GetLogDate().empty() && 0 != subaccountChangeLog->GetSubaccountID())
+			{
+				return subaccountChangeLog->CreateSubaccountChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateSubaccountChangeLog(BusinessLayer::SubaccountChangeLog* subaccountChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (!subaccountChangeLog->GetLogDate().empty() && 0 != subaccountChangeLog->GetSubaccountID())
+			{
+				return subaccountChangeLog->UpdateSubaccountChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteSubaccountChangeLog(BusinessLayer::SubaccountChangeLog* subaccountChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != subaccountChangeLog->GetID())
+			{
+				return subaccountChangeLog->DeleteSubaccountChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Subaccount change log item ID is 0. Some thing goes wrong!";
 			}
 		}
 		catch (...)
@@ -9460,7 +10383,7 @@ namespace BusinessLayer{
 		{
 			if (!tax->GetName().empty() && !tax->GetCode().empty())
 			{
-				return tax->CreateTax(ormasDal, errorMessage);
+				return tax->CreateTax(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9480,7 +10403,7 @@ namespace BusinessLayer{
 		{
 			if (!tax->GetName().empty() && !tax->GetCode().empty())
 			{
-				return tax->UpdateTax(ormasDal, errorMessage);
+				return tax->UpdateTax(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9500,7 +10423,7 @@ namespace BusinessLayer{
 		{
 			if (0 != tax->GetID())
 			{
-				return tax->DeleteTax(ormasDal, errorMessage);
+				return tax->DeleteTax(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9520,7 +10443,7 @@ namespace BusinessLayer{
 		{
 			if (0 != timesheet->GetSalaryID() && 0 != timesheet->GetWorkedTime() && !timesheet->GetDate().empty())
 			{
-				return timesheet->CreateTimesheet(ormasDal, errorMessage);
+				return timesheet->CreateTimesheet(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9540,7 +10463,7 @@ namespace BusinessLayer{
 		{
 			if (0 != timesheet->GetSalaryID() && 0 != timesheet->GetWorkedTime() && !timesheet->GetDate().empty())
 			{
-				return timesheet->UpdateTimesheet(ormasDal, errorMessage);
+				return timesheet->UpdateTimesheet(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9560,7 +10483,7 @@ namespace BusinessLayer{
 		{
 			if (0 != timesheet->GetID())
 			{
-				return timesheet->DeleteTimesheet(ormasDal, errorMessage);
+				return timesheet->DeleteTimesheet(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9584,7 +10507,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, transport->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, transport->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(transport->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -9594,7 +10517,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				transport->SetSum(roundSum);
-				return transport->CreateTransport(ormasDal, errorMessage);
+				return transport->CreateTransport(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9618,7 +10541,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, transport->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, transport->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(transport->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -9628,7 +10551,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				transport->SetSum(roundSum);
-				return transport->UpdateTransport(ormasDal, errorMessage);
+				return transport->UpdateTransport(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9648,11 +10571,135 @@ namespace BusinessLayer{
 		{
 			if (0 != transport->GetID())
 			{
-				return transport->DeleteTransport(ormasDal, errorMessage);
+				return transport->DeleteTransport(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
 				errorMessage = "Error! Transport ID is 0. Something goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateTransportHistory(BusinessLayer::TransportHistory* transportHistory, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != transportHistory->GetTransportID() && 0 != transportHistory->GetProductID()
+				&& 0 != transportHistory->GetCount() && 0 != transportHistory->GetSum() && 0 != transportHistory->GetStatusID()
+				&& 0 != transportHistory->GetCurrencyID())
+			{
+				return transportHistory->CreateTransportHistory(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateTransportHistory(BusinessLayer::TransportHistory* transportHistory, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != transportHistory->GetTransportID() && 0 != transportHistory->GetProductID()
+				&& 0 != transportHistory->GetCount() && 0 != transportHistory->GetSum() && 0 != transportHistory->GetStatusID()
+				&& 0 != transportHistory->GetCurrencyID())
+			{
+				return transportHistory->UpdateTransportHistory(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteTransportHistory(BusinessLayer::TransportHistory* transportHistory, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != transportHistory->GetID())
+			{
+				return transportHistory->DeleteTransportHistory(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Stock transfer list ID is 0. Something goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateTransportChangeLog(BusinessLayer::TransportChangeLog* transportChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != transportChangeLog->GetTransportID() && !transportChangeLog->GetLogDate().empty())
+			{
+				return transportChangeLog->CreateTransportChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateTransportChangeLog(BusinessLayer::TransportChangeLog* transportChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != transportChangeLog->GetTransportID() && !transportChangeLog->GetLogDate().empty())
+			{
+				return transportChangeLog->UpdateTransportChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteTransportChangeLog(BusinessLayer::TransportChangeLog* transportChangeLog, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != transportChangeLog->GetID())
+			{
+				return transportChangeLog->DeleteTransportChangeLog(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Stock transfer change log ID is 0. Something goes wrong!";
 			}
 		}
 		catch (...)
@@ -9670,7 +10717,7 @@ namespace BusinessLayer{
 				&& 0 != transportList->GetCount() && 0 != transportList->GetSum() && 0 != transportList->GetStatusID()
 				&& 0 != transportList->GetCurrencyID())
 			{
-				return transportList->CreateTransportList(ormasDal, errorMessage);
+				return transportList->CreateTransportList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9692,7 +10739,7 @@ namespace BusinessLayer{
 				&& 0 != transportList->GetCount() && 0 != transportList->GetSum() && 0 != transportList->GetStatusID()
 				&& 0 != transportList->GetCurrencyID())
 			{
-				return transportList->UpdateTransportList(ormasDal, errorMessage);
+				return transportList->UpdateTransportList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9712,7 +10759,7 @@ namespace BusinessLayer{
 		{
 			if (0 != transportList->GetID())
 			{
-				return transportList->DeleteTransportList(ormasDal, errorMessage);
+				return transportList->DeleteTransportList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9733,7 +10780,7 @@ namespace BusinessLayer{
 			if (!user->GetName().empty() && !user->GetSurname().empty() && !user->GetPhone().empty() && !user->GetAddress().empty()
 				&& !user->GetPassword().empty() && 0 != user->GetRoleID())
 			{
-				return user->CreateUser(ormasDal, errorMessage);
+				return user->CreateUser(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9754,7 +10801,7 @@ namespace BusinessLayer{
 			if (!user->GetName().empty() && !user->GetSurname().empty() && !user->GetPhone().empty() && !user->GetAddress().empty()
 				&& !user->GetPassword().empty()  && 0 != user->GetRoleID())
 			{
-				return user->UpdateUser(ormasDal, errorMessage);
+				return user->UpdateUser(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9774,7 +10821,67 @@ namespace BusinessLayer{
 		{
 			if (0 != user->GetID())
 			{
-				return user->DeleteUser(ormasDal, errorMessage);
+				return user->DeleteUser(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! User ID is 0. Something goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateUserGroupRelation(BusinessLayer::UserGroupRelation* userGroup, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != userGroup->GetGroupID() && 0 != userGroup->GetUserID())
+			{
+				return userGroup->CreateUserGroupRelation(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateUserGroupRelation(BusinessLayer::UserGroupRelation* userGroup, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != userGroup->GetGroupID() && 0 != userGroup->GetUserID())
+			{
+				return userGroup->UpdateUserGroupRelation(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteUserGroupRelation(BusinessLayer::UserGroupRelation* userGroup, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != userGroup->GetID())
+			{
+				return userGroup->DeleteUserGroupRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9795,7 +10902,7 @@ namespace BusinessLayer{
 			if (0 != warehouse->GetSubaccountID() && 0 != warehouse->GetWarehouseTypeID() && !warehouse->GetName().empty() 
 				&& !warehouse->GetAddress().empty() && !warehouse->GetPhone().empty())
 			{
-				return warehouse->CreateWarehouse(ormasDal, errorMessage);
+				return warehouse->CreateWarehouse(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9816,7 +10923,7 @@ namespace BusinessLayer{
 			if (0 != warehouse->GetSubaccountID() && 0 != warehouse->GetWarehouseTypeID() && !warehouse->GetName().empty()
 				&& !warehouse->GetAddress().empty() && !warehouse->GetPhone().empty())
 			{
-				return warehouse->UpdateWarehouse(ormasDal, errorMessage);
+				return warehouse->UpdateWarehouse(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9836,7 +10943,7 @@ namespace BusinessLayer{
 		{
 			if (0 != warehouse->GetID())
 			{
-				return warehouse->DeleteWarehouse(ormasDal, errorMessage);
+				return warehouse->DeleteWarehouse(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9856,7 +10963,7 @@ namespace BusinessLayer{
 		{
 			if (!warehouseType->GetName().empty() && !warehouseType->GetCode().empty() && !warehouseType->GetPurpose().empty())
 			{
-				return warehouseType->CreateWarehouseType(ormasDal, errorMessage);
+				return warehouseType->CreateWarehouseType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9876,7 +10983,7 @@ namespace BusinessLayer{
 		{
 			if (!warehouseType->GetName().empty() && !warehouseType->GetCode().empty() && !warehouseType->GetPurpose().empty())
 			{
-				return warehouseType->UpdateWarehouseType(ormasDal, errorMessage);
+				return warehouseType->UpdateWarehouseType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9896,7 +11003,7 @@ namespace BusinessLayer{
 		{
 			if (0 != warehouseType->GetID())
 			{
-				return warehouseType->DeleteWarehouseType(ormasDal, errorMessage);
+				return warehouseType->DeleteWarehouseType(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9916,7 +11023,7 @@ namespace BusinessLayer{
 		{
 			if (0 != weRelation->GetWarehouseID() && 0 != weRelation->GetEmployeeID())
 			{
-				return weRelation->CreateWarehouseEmployeeRelation(ormasDal, errorMessage);
+				return weRelation->CreateWarehouseEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9936,7 +11043,7 @@ namespace BusinessLayer{
 		{
 			if (0 != weRelation->GetWarehouseID() && 0 != weRelation->GetEmployeeID())
 			{
-				return weRelation->UpdateWarehouseEmployeeRelation(ormasDal, errorMessage);
+				return weRelation->UpdateWarehouseEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9956,7 +11063,7 @@ namespace BusinessLayer{
 		{
 			if (0 != weRelation->GetWarehouseID() && 0 != weRelation->GetEmployeeID())
 			{
-				return weRelation->DeleteWarehouseEmployeeRelation(ormasDal, errorMessage);
+				return weRelation->DeleteWarehouseEmployeeRelation(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9977,7 +11084,7 @@ namespace BusinessLayer{
 		{
 			if (0.0 != withdrawal->GetValue() && 0 != withdrawal->GetCurrencyID() && !withdrawal->GetDate().empty() && !withdrawal->GetWho().empty())
 			{
-				return withdrawal->CreateWithdrawal(ormasDal, errorMessage);
+				return withdrawal->CreateWithdrawal(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -9998,7 +11105,7 @@ namespace BusinessLayer{
 		{
 			if (0.0 != withdrawal->GetValue() && 0 != withdrawal->GetCurrencyID() && !withdrawal->GetDate().empty() && !withdrawal->GetWho().empty())
 			{
-				return withdrawal->UpdateWithdrawal(ormasDal, errorMessage);
+				return withdrawal->UpdateWithdrawal(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10019,7 +11126,7 @@ namespace BusinessLayer{
 		{
 			if (0 != withdrawal->GetID())
 			{
-				return withdrawal->DeleteWithdrawal(ormasDal, errorMessage);
+				return withdrawal->DeleteWithdrawal(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10042,7 +11149,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, writeOff->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, writeOff->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(writeOff->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -10052,7 +11159,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				writeOff->SetSum(roundSum);
-				return writeOff->CreateWriteOff(ormasDal, errorMessage);
+				return writeOff->CreateWriteOff(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10075,7 +11182,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, writeOff->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, writeOff->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(writeOff->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -10085,7 +11192,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				writeOff->SetSum(roundSum);
-				return writeOff->UpdateWriteOff(ormasDal, errorMessage);
+				return writeOff->UpdateWriteOff(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10105,7 +11212,7 @@ namespace BusinessLayer{
 		{
 			if (0 != writeOff->GetID())
 			{
-				return writeOff->DeleteWriteOff(ormasDal, errorMessage);
+				return writeOff->DeleteWriteOff(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10127,7 +11234,7 @@ namespace BusinessLayer{
 				&& 0 != writeOffList->GetCount() && 0 != writeOffList->GetSum() && 0 != writeOffList->GetStatusID()
 				&& 0 != writeOffList->GetCurrencyID())
 			{
-				return writeOffList->CreateWriteOffList(ormasDal, errorMessage);
+				return writeOffList->CreateWriteOffList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10149,7 +11256,7 @@ namespace BusinessLayer{
 				&& 0 != writeOffList->GetCount() && 0 != writeOffList->GetSum() && 0 != writeOffList->GetStatusID()
 				&& 0 != writeOffList->GetCurrencyID())
 			{
-				return writeOffList->UpdateWriteOffList(ormasDal, errorMessage);
+				return writeOffList->UpdateWriteOffList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10169,7 +11276,7 @@ namespace BusinessLayer{
 		{
 			if (0 != writeOffList->GetID())
 			{
-				return writeOffList->DeleteWriteOffList(ormasDal, errorMessage);
+				return writeOffList->DeleteWriteOffList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10193,7 +11300,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, writeOffRaw->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, writeOffRaw->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(writeOffRaw->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -10203,7 +11310,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				writeOffRaw->SetSum(roundSum);
-				return writeOffRaw->CreateWriteOffRaw(ormasDal, errorMessage);
+				return writeOffRaw->CreateWriteOffRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10227,7 +11334,7 @@ namespace BusinessLayer{
 			{
 				double roundSum = 0;
 				Currency *cur = new Currency();
-				if (cur->GetCurrencyByID(ormasDal, writeOffRaw->GetCurrencyID(), errorMessage))
+				if (cur->GetCurrencyByID(globalVar, ormasDal, writeOffRaw->GetCurrencyID(), errorMessage))
 				{
 					roundSum = round(writeOffRaw->GetSum() * cur->GetUnit()) / cur->GetUnit();
 				}
@@ -10237,7 +11344,7 @@ namespace BusinessLayer{
 				}
 				delete cur;
 				writeOffRaw->SetSum(roundSum);
-				return writeOffRaw->UpdateWriteOffRaw(ormasDal, errorMessage);
+				return writeOffRaw->UpdateWriteOffRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10257,7 +11364,7 @@ namespace BusinessLayer{
 		{
 			if (0 != writeOffRaw->GetID())
 			{
-				return writeOffRaw->DeleteWriteOffRaw(ormasDal, errorMessage);
+				return writeOffRaw->DeleteWriteOffRaw(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10279,7 +11386,7 @@ namespace BusinessLayer{
 				&& 0 != writeOffRawList->GetCount() && 0 != writeOffRawList->GetSum() && 0 != writeOffRawList->GetStatusID()
 				&& 0 != writeOffRawList->GetCurrencyID())
 			{
-				return writeOffRawList->CreateWriteOffRawList(ormasDal, errorMessage);
+				return writeOffRawList->CreateWriteOffRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10301,7 +11408,7 @@ namespace BusinessLayer{
 				&& 0 != writeOffRawList->GetCount() && 0 != writeOffRawList->GetSum() && 0 != writeOffRawList->GetStatusID()
 				&& 0 != writeOffRawList->GetCurrencyID())
 			{
-				return writeOffRawList->UpdateWriteOffRawList(ormasDal, errorMessage);
+				return writeOffRawList->UpdateWriteOffRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10321,7 +11428,7 @@ namespace BusinessLayer{
 		{
 			if (0 != writeOffRawList->GetID())
 			{
-				return writeOffRawList->DeleteWriteOffRawList(ormasDal, errorMessage);
+				return writeOffRawList->DeleteWriteOffRawList(globalVar, ormasDal, errorMessage);
 			}
 			else
 			{
@@ -10358,6 +11465,11 @@ namespace BusinessLayer{
 			return false;
 		}
 		if (!CalculateTax(fromDate, tillDate))
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (!CalculateAmortization(fromDate, tillDate))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -10439,7 +11551,7 @@ namespace BusinessLayer{
 				accHis.SetCurrentBalance(item.GetCurrentBalance());
 				accHis.SetFromDate(fromDate);
 				accHis.SetTillDate(fromDate);
-				if (!accHis.CreateAccountHistory(ormasDal, errorMessage))
+				if (!accHis.CreateAccountHistory(globalVar, ormasDal, errorMessage))
 					return false;
 			}
 
@@ -10463,7 +11575,7 @@ namespace BusinessLayer{
 				saccHis.SetCurrentBalance(item.GetCurrentBalance());
 				saccHis.SetFromDate(fromDate);
 				saccHis.SetTillDate(fromDate);
-				if (!saccHis.CreateSubaccountHistory(ormasDal, errorMessage))
+				if (!saccHis.CreateSubaccountHistory(globalVar, ormasDal, errorMessage))
 					return false;
 			}
 		}
@@ -10490,7 +11602,7 @@ namespace BusinessLayer{
 				accHis.SetCurrentBalance(item.GetCurrentBalance());
 				accHis.SetFromDate(tillDate);
 				accHis.SetTillDate(tillDate);
-				if (!accHis.CreateAccountHistory(ormasDal, errorMessage))
+				if (!accHis.CreateAccountHistory(globalVar, ormasDal, errorMessage))
 					return false;
 			}
 
@@ -10514,7 +11626,7 @@ namespace BusinessLayer{
 				saccHis.SetCurrentBalance(item.GetCurrentBalance());
 				saccHis.SetFromDate(tillDate);
 				saccHis.SetTillDate(tillDate);
-				if (!saccHis.CreateSubaccountHistory(ormasDal, errorMessage))
+				if (!saccHis.CreateSubaccountHistory(globalVar, ormasDal, errorMessage))
 					return false;
 			}
 		}
@@ -10545,7 +11657,7 @@ namespace BusinessLayer{
 			stockHis.SetCurrencyID(item.GetCurrencyID());
 			stockHis.SetWarehouseID(item.GetWarehouseID());
 			stockHis.SetHistoryDate(tillDate);
-			if (!stockHis.CreateStockHistory(ormasDal, errorMessage))
+			if (!stockHis.CreateStockHistory(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		return true;
@@ -10558,8 +11670,9 @@ namespace BusinessLayer{
 		std::vector<TransportListView> vecForTransportList;
 		std::vector<DataLayer::transportListViewCollection> transportListCollection;
 		transportListCollection = ormasDal.GetTransportList(errorMessage);
-		if (!transportListCollection.empty()){
-			for (auto data : vecForTransportList)
+		if (!transportListCollection.empty())
+		{
+			for each (auto data in transportListCollection)
 			{
 				vecForTransportList.push_back(TransportListView(data));
 			}
@@ -10574,8 +11687,9 @@ namespace BusinessLayer{
 			tranHis.SetSum(item.GetSum());
 			tranHis.SetCurrencyID(item.GetCurrencyID());
 			tranHis.SetTransportID(item.GetTransportID());
-			tranHis.SetHistoryDate(tillDate);
-			if (!tranHis.CreateTransportHistory(ormasDal, errorMessage))
+			tranHis.SetFromDate(tillDate);
+			tranHis.SetTillDate(tillDate);
+			if (!tranHis.CreateTransportHistory(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		return true;
@@ -10592,8 +11706,8 @@ namespace BusinessLayer{
 			Salary salary;
 			std::string salaryFilter;
 			std::vector<SalaryView> salaryVector;
-			std::map<std::string, int> salaryTypeMap = SalaryType::GetSalaryTypesAsMap(ormasDal, errorMessage);
-			std::map<std::string, int> statusMap = Status::GetStatusesAsMap(ormasDal, errorMessage);
+			std::map<std::string, int> salaryTypeMap = SalaryType::GetSalaryTypesAsMap(globalVar, ormasDal, errorMessage);
+			std::map<std::string, int> statusMap = Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 			Payslip payslip;
 			Order order;
 			Timesheet timesheet;
@@ -10637,7 +11751,7 @@ namespace BusinessLayer{
 												payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 												payslip.SetValue(salaryItem.GetValue());
 
-												if (!payslip.CreatePayslip(ormasDal, errorMessage))
+												if (!payslip.CreatePayslip(globalVar, ormasDal, errorMessage))
 													return false;
 											}
 											if (salaryItem.GetSalaryTypeID() == salaryTypeMap.find("PERCENT")->second)
@@ -10646,7 +11760,7 @@ namespace BusinessLayer{
 												order.SetEmployeeID(salary.GetEmployeeID());
 												order.SetStatusID(statusMap.find("EXECUTED")->second);
 												orderFilter.clear();
-												orderFilter = order.GenerateFilterForPeriod(ormasDal, fromDate, tillDate);
+												orderFilter = order.GenerateFilterForPeriod(globalVar, ormasDal, fromDate, tillDate);
 												orderVector.clear();
 												orderVector = this->GetAllDataForClass<OrderView>(errorMessage, orderFilter);
 												sum = 0;
@@ -10664,7 +11778,7 @@ namespace BusinessLayer{
 													payslip.SetSalaryID(salaryItem.GetID());
 													payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 													payslip.SetValue(sum * salaryItem.GetValue() / 1000);
-													if (!payslip.CreatePayslip(ormasDal, errorMessage))
+													if (!payslip.CreatePayslip(globalVar, ormasDal, errorMessage))
 														return false;
 												}
 											}
@@ -10673,7 +11787,7 @@ namespace BusinessLayer{
 												timesheet.Clear();
 												timesheet.SetSalaryID(salary.GetID());
 												timesheetFilter.clear();
-												timesheetFilter = timesheet.GenerateFilterForPeriod(ormasDal, fromDate, tillDate);
+												timesheetFilter = timesheet.GenerateFilterForPeriod(globalVar, ormasDal, fromDate, tillDate);
 												timesheetVector.clear();
 												timesheetVector = this->GetAllDataForClass<TimesheetView>(errorMessage, timesheetFilter);
 												count = 0;
@@ -10691,7 +11805,7 @@ namespace BusinessLayer{
 													payslip.SetSalaryID(salaryItem.GetID());
 													payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 													payslip.SetValue(std::round(salaryItem.GetValue()* count * 100) / 100);
-													if (!payslip.CreatePayslip(ormasDal, errorMessage))
+													if (!payslip.CreatePayslip(globalVar, ormasDal, errorMessage))
 														return false;
 												}
 											}
@@ -10702,7 +11816,7 @@ namespace BusinessLayer{
 												payslip.SetSalaryID(salaryItem.GetID());
 												payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 												payslip.SetValue(salaryItem.GetValue());
-												if (!payslip.CreatePayslip(ormasDal, errorMessage))
+												if (!payslip.CreatePayslip(globalVar, ormasDal, errorMessage))
 												return false;*/
 											}
 											if (salaryItem.GetSalaryTypeID() == salaryTypeMap.find("PIECE")->second)
@@ -10710,7 +11824,7 @@ namespace BusinessLayer{
 												jobsheet.Clear();
 												jobsheet.SetEmployeeID(salary.GetEmployeeID());
 												jobsheetFilter.clear();
-												jobsheetFilter = jobsheet.GenerateFilterForPeriod(ormasDal, fromDate, tillDate);
+												jobsheetFilter = jobsheet.GenerateFilterForPeriod(globalVar, ormasDal, fromDate, tillDate);
 												jobsheetVector.clear();
 												jobsheetVector = this->GetAllDataForClass<JobsheetView>(errorMessage, timesheetFilter);
 												if (jobsheetVector.size() > 0)
@@ -10733,7 +11847,7 @@ namespace BusinessLayer{
 													for each (auto workedPieceItem in workedPieceMap)
 													{
 														jobprice.Clear();
-														if (!jobprice.GetJobpriceByID(ormasDal, workedPieceItem.first, errorMessage))
+														if (!jobprice.GetJobpriceByID(globalVar, ormasDal, workedPieceItem.first, errorMessage))
 															return false;
 														sum += std::round(jobprice.GetValue() * workedPieceItem.second * 100) / 100;
 													}
@@ -10743,7 +11857,7 @@ namespace BusinessLayer{
 												payslip.SetSalaryID(salaryItem.GetID());
 												payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 												payslip.SetValue(sum);
-												if (!payslip.CreatePayslip(ormasDal, errorMessage))
+												if (!payslip.CreatePayslip(globalVar, ormasDal, errorMessage))
 													return false;
 											}
 										}
@@ -10776,9 +11890,9 @@ namespace BusinessLayer{
 		std::string errorMessage;
 		Account account10730;
 		Account account55020;
-		if (!account10730.GetAccountByNumber(ormasDal, "10730", errorMessage))
+		if (!account10730.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
 			return false;
-		if (!account55020.GetAccountByNumber(ormasDal, "55020", errorMessage))
+		if (!account55020.GetAccountByNumber(globalVar, ormasDal, "55020", errorMessage))
 			return false;
 		double correctingValue = 0;
 		double correctingStockValue = 0;
@@ -10788,8 +11902,8 @@ namespace BusinessLayer{
 		Entry entry;
 		CompanyAccountRelation cAccRel;
 		Company company;
-		int companyID = company.GetCompanyID(ormasDal, errorMessage);
-		int acc55010 = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "55010", errorMessage);
+		int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
+		int acc55010 = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55010", errorMessage);
 		int acc55020 = account55020.GetID();
 
 		if (correctingValue > 0)
@@ -10801,7 +11915,7 @@ namespace BusinessLayer{
 			entry.SetCreditingAccountID(account10730.GetID());
 			entry.SetDate(ormasDal.GetSystemDateTime());
 			entry.SetDescription(wstring_to_utf8(L"Обнуление счета расходы 10730 через счет 55020"));
-			if (!entry.CreateEntry(ormasDal, errorMessage))
+			if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		else if (correctingValue < 0)
@@ -10813,11 +11927,11 @@ namespace BusinessLayer{
 			entry.SetCreditingAccountID(acc55020);
 			entry.SetDate(ormasDal.GetSystemDateTime());
 			entry.SetDescription(wstring_to_utf8(L"Обнуление счета расходы 10730 через счет 55020"));
-			if (!entry.CreateEntry(ormasDal, errorMessage))
+			if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		account55020.Clear();
-		if (!account55020.GetAccountByNumber(ormasDal, "55020", errorMessage))
+		if (!account55020.GetAccountByNumber(globalVar, ormasDal, "55020", errorMessage))
 			return false;
 		correctingStockValue = account55020.GetCurrentBalance();
 		if (correctingStockValue > 0)
@@ -10829,7 +11943,7 @@ namespace BusinessLayer{
 			entry.SetCreditingAccountID(account55020.GetID());
 			entry.SetDate(ormasDal.GetSystemDateTime());
 			entry.SetDescription(wstring_to_utf8(L"Коррекция счета 55010 при закрытии месяца, счет 55020 корректирует переоценку"));
-			if (!entry.CreateEntry(ormasDal, errorMessage))
+			if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		else if (correctingStockValue < 0)
@@ -10841,8 +11955,121 @@ namespace BusinessLayer{
 			entry.SetCreditingAccountID(acc55010);
 			entry.SetDate(ormasDal.GetSystemDateTime());
 			entry.SetDescription(wstring_to_utf8(L"Коррекция счета 55010 при закрытии месяца, счет 55020 корректирует переоценку"));
-			if (!entry.CreateEntry(ormasDal, errorMessage))
+			if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 				return false;
+		}
+		return true;
+	}
+
+	bool OrmasBL::CalculateAmortization(std::string fromDate, std::string tillDate)
+	{
+		std::string errorMessage = "";
+		FixedAssets fixedAst;
+		FixedAssetsDetails faDetails;
+		Subaccount primeAcc;
+		Subaccount amortizeAcc;
+		ChartOfAccounts cao;
+		Account account;
+		Account debitAcc;
+		Account creditAcc;
+		double amortizeValue = 0;
+		std::string entryText="";
+		Entry entry;
+		Division division;
+		std::vector<FixedAssetsView> astVect = this->GetAllDataForClass<FixedAssetsView>(errorMessage);
+		for each (auto fa in astVect)
+		{
+			if (fa.GetIsAmortize() == true)
+			{
+				cao.Clear();
+				account.Clear();
+				faDetails.Clear();
+				primeAcc.Clear();
+				amortizeAcc.Clear();
+				amortizeValue = 0;
+				entry.Clear(); 
+				division.Clear();
+				debitAcc.Clear();
+				creditAcc.Clear();
+				if (!faDetails.GetFixedAssetsDetailsByID(globalVar, ormasDal, fa.GetFixedAssetsDetailsID(), errorMessage))
+					return false;
+				if (!primeAcc.GetSubaccountByID(globalVar, ormasDal, faDetails.GetPrimaryCostAccountID(), errorMessage))
+					return false;
+				if (!amortizeAcc.GetSubaccountByID(globalVar, ormasDal, faDetails.GetAmortizeAccountID(), errorMessage))
+					return false;
+				if (amortizeAcc.GetCurrentBalance() == primeAcc.GetCurrentBalance())
+					continue;
+				amortizeValue = (primeAcc.GetCurrentBalance() * faDetails.GetAmortizeValue()) / 12 / 100;
+				if (primeAcc.GetCurrentBalance() + amortizeAcc.GetCurrentBalance() < amortizeValue)
+					amortizeValue = primeAcc.GetCurrentBalance() + amortizeAcc.GetCurrentBalance();
+				amortizeValue = std::round(amortizeValue * 1000) / 1000;
+				if (!account.GetAccountByID(globalVar, ormasDal, primeAcc.GetParentAccountID(), errorMessage))
+					return false;
+				if (!cao.GetChartOfAccountsByNumber(globalVar, ormasDal, account.GetNumber(), errorMessage))
+					return false;
+				if (!division.GetDivisionByID(globalVar, ormasDal, faDetails.GetDepartmentID(), errorMessage))
+					return false;
+				entryText = wstring_to_utf8(L"Начисление амортизации ");
+				entryText += cao.GetName();
+				entryText += wstring_to_utf8(L", ID = ");
+				entryText += std::to_string(fa.GetID());
+
+				entry.SetDate(ormasDal.GetSystemDateTime());
+				entry.SetDescription(entryText);
+				entry.SetValue(amortizeValue);
+				if (amortizeValue > 0)
+				{
+					if (division.GetCode() == "PRODUCTION")
+					{
+						if (!debitAcc.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
+							return false;
+						entry.SetDebitingAccountID(debitAcc.GetID());
+					}
+					if (division.GetCode() == "RELEASE")
+					{
+						if (!debitAcc.GetAccountByNumber(globalVar, ormasDal, "55270", errorMessage))
+							return false;
+						entry.SetDebitingAccountID(debitAcc.GetID());
+					}
+					if (division.GetCode() == "ADMINISTRATION")
+					{
+						if (!debitAcc.GetAccountByNumber(globalVar, ormasDal, "55321", errorMessage))
+							return false;
+						entry.SetDebitingAccountID(debitAcc.GetID());
+					}
+					if (entry.GetDebitingAccountID() == 0)
+						return false;
+					entry.SetCreditingAccountID(amortizeAcc.GetID());
+				}
+				else
+				{
+					entry.SetDebitingAccountID(amortizeAcc.GetID());
+					if (division.GetCode() == "PRODUCTION")
+					{
+						if (!creditAcc.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
+							return false;
+						entry.SetCreditingAccountID(creditAcc.GetID());
+					}
+					if (division.GetCode() == "RELEASE")
+					{
+						if (!creditAcc.GetAccountByNumber(globalVar, ormasDal, "55270", errorMessage))
+							return false;
+						entry.SetCreditingAccountID(creditAcc.GetID());
+					}
+					if (division.GetCode() == "ADMINISTRATION")
+					{
+						if (!creditAcc.GetAccountByNumber(globalVar, ormasDal, "55321", errorMessage))
+							return false;
+						entry.SetCreditingAccountID(creditAcc.GetID());
+					}
+					
+					if (entry.GetCreditingAccountID() == 0)
+						return false;
+				}
+				if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
+					return false;
+			}
+
 		}
 		return true;
 	}
@@ -10860,7 +12087,7 @@ namespace BusinessLayer{
 		std::vector<Production> vecForProd;
 		std::vector<DataLayer::productionCollection> pCollection;
 		Production production;
-		std::string filter = production.GenerateFilterForPeriod(ormasDal, fromDate, tillDate);
+		std::string filter = production.GenerateFilterForPeriod(globalVar, ormasDal, fromDate, tillDate);
 		pCollection = ormasDal.GetProduction(errorMessage, filter);
 		if (!pCollection.empty()){
 			for (auto data : pCollection)
@@ -10907,14 +12134,14 @@ namespace BusinessLayer{
 			std::map<int, double>::iterator it = mapProducedProducts.find(item.GetProductID());
 			if (it != mapProducedProducts.end())
 			{
-				if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+				if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 					return false;
 				it->second += item.GetCount();
 				totalSum += item.GetCount()*nCost.GetValue();
 			}
 			else
 			{
-				if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+				if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 					return false;
 				mapProducedProducts.insert(std::make_pair(item.GetProductID(), item.GetCount()));
 				totalSum += item.GetCount()*nCost.GetValue();
@@ -10967,7 +12194,7 @@ namespace BusinessLayer{
 		}
 
 		Account account10730;
-		if (!account10730.GetAccountByNumber(ormasDal, "10730", errorMessage))
+		if (!account10730.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
 			return false;
 
 		double totalConsumptionSum = 0;
@@ -10982,11 +12209,11 @@ namespace BusinessLayer{
 		for each (auto item in mapProducedProducts)
 		{
 			netCost.Clear();
-			if (!netCost.GetNetCostByProductID(ormasDal, item.first, errorMessage))
+			if (!netCost.GetNetCostByProductID(globalVar, ormasDal, item.first, errorMessage))
 				return false;
 			if (coif.find(item.first) != coif.end())
 				netCost.SetValue(std::round(totalNetCost * coif.find(item.first)->second * 100) / 100);
-			if (!netCost.UpdateNetCost(ormasDal, errorMessage))
+			if (!netCost.UpdateNetCost(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 
@@ -10999,10 +12226,14 @@ namespace BusinessLayer{
 		std::vector<StockView> stockVector = this->GetAllDataForClass<StockView>(errorMessage);
 		if (stockVector.size() > 0)
 		{
+			Account account;
+			if (!account.GetAccountByNumber(globalVar, ormasDal, "10740", errorMessage))
+				return false;
 			Product product;
 			Warehouse warehouse;
 			ProductType pType;
 			NetCost nCost;
+			Subaccount subaccount;
 			int companyID = 0;
 			double difference = 0;
 			for each (auto stockItem in stockVector)
@@ -11011,6 +12242,7 @@ namespace BusinessLayer{
 				pType.Clear();
 				nCost.Clear();
 				warehouse.Clear();
+				subaccount.Clear();
 				difference = 0;
 				if (!stockItem.IsEmpty())
 				{
@@ -11021,49 +12253,55 @@ namespace BusinessLayer{
 					}
 					else
 					{
-						if (!product.GetProductByID(ormasDal, stockItem.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, stockItem.GetProductID(), errorMessage))
 							return false;
-						if (!pType.GetProductTypeByCode(ormasDal, "PRODUCT", errorMessage))
+						if (!pType.GetProductTypeByCode(globalVar, ormasDal, "PRODUCT", errorMessage))
 							return false;
 						if (product.GetProductTypeID() == pType.GetID())
 						{
-							if (!nCost.GetNetCostByProductID(ormasDal, stockItem.GetProductID(), errorMessage))
+							if (!nCost.GetNetCostByProductID(globalVar, ormasDal, stockItem.GetProductID(), errorMessage))
 								return false;
-							if (!warehouse.GetWarehouseByID(ormasDal, stockItem.GetWarehouseID(), errorMessage))
+							if (!warehouse.GetWarehouseByID(globalVar, ormasDal, stockItem.GetWarehouseID(), errorMessage))
 								return false;
-							companyID = product.GetCompanyID();
-							difference = stockItem.GetCount()*nCost.GetValue() - stockItem.GetSum();
-							if (difference > 0 && difference != 0)
+							if (!subaccount.GetSubaccountByID(globalVar, ormasDal, warehouse.GetSubaccountID(), errorMessage))
+								return false;
+							if (subaccount.GetParentAccountID() == account.GetID())
 							{
-								CompanyAccountRelation caRel;
-								int debAccID = warehouse.GetSubaccountID();
-								int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
-								if (0 == debAccID || 0 == credAccID)
+
+								companyID = product.GetCompanyID();
+								difference = stockItem.GetCount()*nCost.GetValue() - stockItem.GetSum();
+								if (difference > 0 && difference != 0)
 								{
-									return false;
+									CompanyAccountRelation caRel;
+									int debAccID = warehouse.GetSubaccountID();
+									int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
+									if (0 == debAccID || 0 == credAccID)
+									{
+										return false;
+									}
+									if (!stockItem.CreateCorrectongEntry(globalVar, ormasDal, product.GetID(), debAccID, difference, credAccID, errorMessage))
+									{
+										return false;
+									}
 								}
-								if (!stockItem.CreateCorrectongEntry(ormasDal, product.GetID(), debAccID, difference, credAccID, errorMessage))
+								if (difference < 0 && difference != 0)
 								{
-									return false;
+									CompanyAccountRelation caRel;
+									int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
+									int credAccID = warehouse.GetSubaccountID();
+									if (0 == debAccID || 0 == credAccID)
+									{
+										return false;
+									}
+									if (!stockItem.CreateCorrectongEntry(globalVar, ormasDal, product.GetID(), debAccID, difference * (-1), credAccID, errorMessage))
+									{
+										return false;
+									}
 								}
+								stockItem.SetSum(stockItem.GetCount()*nCost.GetValue());
+								if (!stockItem.UpdateStock(globalVar, ormasDal, errorMessage))
+									return false;
 							}
-							if (difference < 0 && difference != 0)
-							{
-								CompanyAccountRelation caRel;
-								int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
-								int credAccID = warehouse.GetSubaccountID(); 
-								if (0 == debAccID || 0 == credAccID)
-								{
-									return false;
-								}
-								if (!stockItem.CreateCorrectongEntry(ormasDal, product.GetID(), debAccID, difference * (-1), credAccID, errorMessage))
-								{
-									return false;
-								}
-							}
-							stockItem.SetSum(stockItem.GetCount()*nCost.GetValue());
-							if (!stockItem.UpdateStock(ormasDal, errorMessage))
-								return false;
 						}
 					}
 				}
@@ -11098,26 +12336,26 @@ namespace BusinessLayer{
 					}
 					else
 					{
-						if (!product.GetProductByID(ormasDal, listItem.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, listItem.GetProductID(), errorMessage))
 							return false;
-						if (!pType.GetProductTypeByCode(ormasDal, "PRODUCT", errorMessage))
+						if (!pType.GetProductTypeByCode(globalVar, ormasDal, "PRODUCT", errorMessage))
 							return false;
 						if (product.GetProductTypeID() == pType.GetID())
 						{
-							if (!nCost.GetNetCostByProductID(ormasDal, listItem.GetProductID(), errorMessage))
+							if (!nCost.GetNetCostByProductID(globalVar, ormasDal, listItem.GetProductID(), errorMessage))
 								return false;
 							companyID = product.GetCompanyID();
 							difference = listItem.GetCount()*nCost.GetValue() - listItem.GetSum();
 							if (difference > 0 && difference != 0)
 							{
 								CompanyAccountRelation caRel;
-								int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10742", errorMessage);
-								int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+								int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
+								int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 								if (0 == debAccID || 0 == credAccID)
 								{
 									return false;
 								}
-								if (!listItem.CreateEntry(ormasDal, debAccID, difference, credAccID, errorMessage))
+								if (!listItem.CreateEntry(globalVar, ormasDal, debAccID, difference, credAccID, errorMessage))
 								{
 									return false;
 								}
@@ -11125,19 +12363,19 @@ namespace BusinessLayer{
 							if (difference < 0 && difference != 0)
 							{
 								CompanyAccountRelation caRel;
-								int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
-								int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10742", errorMessage);
+								int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
+								int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
 								if (0 == debAccID || 0 == credAccID)
 								{
 									return false;
 								}
-								if (!listItem.CreateEntry(ormasDal, debAccID, difference * (-1), credAccID, errorMessage))
+								if (!listItem.CreateEntry(globalVar, ormasDal, debAccID, difference * (-1), credAccID, errorMessage))
 								{
 									return false;
 								}
 							}
 							listItem.SetSum(listItem.GetCount()*nCost.GetValue());
-							if (!listItem.UpdateTransportList(ormasDal, errorMessage))
+							if (!listItem.UpdateTransportList(globalVar, ormasDal, errorMessage))
 								return false;
 						}
 
@@ -11174,30 +12412,30 @@ namespace BusinessLayer{
 		double account66160 = 0;
 		double account66170 = 0;
 		double account66130 = 0;
-		int companyID = company.GetCompanyID(ormasDal, errorMessage);
+		int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
 		account44010.Clear();
-		if (!account44010.GetAccountByNumber(ormasDal, "44010", errorMessage))
+		if (!account44010.GetAccountByNumber(globalVar, ormasDal, "44010", errorMessage))
 			return false;
 		account55010.Clear();
-		if (!account55010.GetAccountByNumber(ormasDal, "55010", errorMessage))
+		if (!account55010.GetAccountByNumber(globalVar, ormasDal, "55010", errorMessage))
 			return false;
 		account55200.Clear();
-		if (!account55200.GetAccountByNumber(ormasDal, "55200", errorMessage))
+		if (!account55200.GetAccountByNumber(globalVar, ormasDal, "55200", errorMessage))
 			return false;
 		account55300.Clear();
-		if (!account55300.GetAccountByNumber(ormasDal, "55300", errorMessage))
+		if (!account55300.GetAccountByNumber(globalVar, ormasDal, "55300", errorMessage))
 			return false;
 		account55270.Clear();
-		if (!account55270.GetAccountByNumber(ormasDal, "55270", errorMessage))
+		if (!account55270.GetAccountByNumber(globalVar, ormasDal, "55270", errorMessage))
 			return false;
 		account55321.Clear();
-		if (!account55321.GetAccountByNumber(ormasDal, "55321", errorMessage))
+		if (!account55321.GetAccountByNumber(globalVar, ormasDal, "55321", errorMessage))
 			return false;
 		account44020.Clear();
-		if (!account44020.GetAccountByNumber(ormasDal, "44020", errorMessage))
+		if (!account44020.GetAccountByNumber(globalVar, ormasDal, "44020", errorMessage))
 			return false;
 		account44090.Clear();
-		if (!account44090.GetAccountByNumber(ormasDal, "44090", errorMessage))
+		if (!account44090.GetAccountByNumber(globalVar, ormasDal, "44090", errorMessage))
 			return false;
 
 		std::vector<Account> vecForAccount;
@@ -11258,7 +12496,7 @@ namespace BusinessLayer{
 		fReport.SetAccount66070_66170(std::round((account66070 + account66170) * 1000) / 1000);
 		fReport.SetFromDate(fromDate);
 		fReport.SetTillDate(tillDate);
-		if (!fReport.CreateFinancialReport(ormasDal, errorMessage))
+		if (!fReport.CreateFinancialReport(globalVar, ormasDal, errorMessage))
 			return false;
 		return true;
 	}
@@ -11273,8 +12511,8 @@ namespace BusinessLayer{
 		Entry entry;
 		CompanyAccountRelation cAccRel;
 		Company company;
-		int companyID = company.GetCompanyID(ormasDal, errorMessage);
-		int acc70000 = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "70000", errorMessage);
+		int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
+		int acc70000 = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "70000", errorMessage);
 		if (!accCollection.empty()){
 			for (auto data : accCollection)
 			{
@@ -11303,7 +12541,7 @@ namespace BusinessLayer{
 						entry.SetCreditingAccountID(item.GetID());
 						entry.SetDate(ormasDal.GetSystemDateTime());
 						entry.SetDescription(wstring_to_utf8(L"Закрытие счетов на конец месяца"));
-						if (!entry.CreateEntry(ormasDal, errorMessage))
+						if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 							return false;
 					}
 					else if (item.GetCurrentBalance() < 0)
@@ -11315,7 +12553,7 @@ namespace BusinessLayer{
 						entry.SetCreditingAccountID(acc70000);
 						entry.SetDate(ormasDal.GetSystemDateTime());
 						entry.SetDescription(wstring_to_utf8(L"Закрытие счетов на конец месяца"));
-						if (!entry.CreateEntry(ormasDal, errorMessage))
+						if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 							return false;
 					}
 				}
@@ -11328,7 +12566,7 @@ namespace BusinessLayer{
 				else
 				{
 					item.SetStartBalance(item.GetCurrentBalance());
-					if (!item.UpdateAccount(ormasDal, errorMessage))
+					if (!item.UpdateAccount(globalVar, ormasDal, errorMessage))
 						return false;
 				}
 			}
@@ -11346,7 +12584,7 @@ namespace BusinessLayer{
 		for each (auto item in vecForSubaccountHis)
 		{
 			item.SetStartBalance(item.GetCurrentBalance());
-			if (!item.UpdateSubaccount(ormasDal, errorMessage))
+			if (!item.UpdateSubaccount(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		return true;
@@ -11356,14 +12594,14 @@ namespace BusinessLayer{
 	{
 		std::string errorMessage = "";
 		Account account70000;
-		if (!account70000.GetAccountByNumber(ormasDal, "70000", errorMessage))
+		if (!account70000.GetAccountByNumber(globalVar, ormasDal, "70000", errorMessage))
 			return false;
 		Account account33210;
-		if (!account33210.GetAccountByNumber(ormasDal, "33210", errorMessage))
+		if (!account33210.GetAccountByNumber(globalVar, ormasDal, "33210", errorMessage))
 			return false;
 		
 		account33210.SetStartBalance(account33210.GetCurrentBalance());
-		if (!account33210.UpdateAccount(ormasDal, errorMessage))
+		if (!account33210.UpdateAccount(globalVar, ormasDal, errorMessage))
 			return false;
 		
 		double correctingValue = 0;
@@ -11372,7 +12610,7 @@ namespace BusinessLayer{
 		Entry entry;
 		CompanyAccountRelation cAccRel;
 		Company company;
-		int companyID = company.GetCompanyID(ormasDal, errorMessage);
+		int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
 		
 		if (correctingValue > 0)
 		{
@@ -11383,7 +12621,7 @@ namespace BusinessLayer{
 			entry.SetCreditingAccountID(account33210.GetID());
 			entry.SetDate(ormasDal.GetSystemDateTime());
 			entry.SetDescription(wstring_to_utf8(L"Операция закрытие счета 70000"));
-			if (!entry.CreateEntry(ormasDal, errorMessage))
+			if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		else if (correctingValue < 0)
@@ -11395,7 +12633,7 @@ namespace BusinessLayer{
 			entry.SetCreditingAccountID(account70000.GetID());
 			entry.SetDate(ormasDal.GetSystemDateTime());
 			entry.SetDescription(wstring_to_utf8(L"Операция закрытие счета 70000"));
-			if (!entry.CreateEntry(ormasDal, errorMessage))
+			if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		return true;

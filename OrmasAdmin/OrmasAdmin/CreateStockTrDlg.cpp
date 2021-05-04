@@ -109,21 +109,21 @@ void CreateStockTrDlg::FillEditElements(int rEmployeeID, QString rDate, QString 
 	statusEdit->setText(QString::number(rStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(rCurrencyID)));
 	BusinessLayer::User user1;
-	if (user1.GetUserByID(dialogBL->GetOrmasDal(), rEmployeeID, errorMessage))
+	if (user1.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), rEmployeeID, errorMessage))
 	{
 		empNamePh->setText(user1.GetName().c_str());
 		empSurnamePh->setText(user1.GetSurname().c_str());
 		empPhonePh->setText(user1.GetPhone().c_str());
 	}
 	BusinessLayer::User user2;
-	if (user2.GetUserByID(dialogBL->GetOrmasDal(), rStockEmployeeID, errorMessage))
+	if (user2.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), rStockEmployeeID, errorMessage))
 	{
 		empStockNamePh->setText(user2.GetName().c_str());
 		empStockSurnamePh->setText(user2.GetSurname().c_str());
 		empStockPhonePh->setText(user2.GetPhone().c_str());
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), rStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), rStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -145,7 +145,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 			if (childName == QString("employeeForm"))
 			{
 				BusinessLayer::WarehouseEmployeeRelation weRel;
-				if (!weRel.GetWarehouseEmployeeByEmployeeID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (!weRel.GetWarehouseEmployeeByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("This user isn't warehouse employee!")),
@@ -154,7 +154,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 					return;
 				}
 				BusinessLayer::Warehouse warehouse;
-				if (!warehouse.GetWarehouseByID(dialogBL->GetOrmasDal(), weRel.GetWarehouseID(), errorMessage))
+				if (!warehouse.GetWarehouseByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), weRel.GetWarehouseID(), errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("Cannot find warehouse!")),
@@ -163,7 +163,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 					return;
 				}
 				BusinessLayer::WarehouseType warehouseType;
-				if (!warehouseType.GetWarehouseTypeByCode(dialogBL->GetOrmasDal(), "PRODUCT", errorMessage))
+				if (!warehouseType.GetWarehouseTypeByCode(dialogBL->globalVar, dialogBL->GetOrmasDal(), "PRODUCT", errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("Cannot find warehouse type!")),
@@ -181,7 +181,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 				}
 				fromStkEmpEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(user.GetName().c_str());
 					empSurnamePh->setText(user.GetSurname().c_str());
@@ -192,7 +192,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -200,7 +200,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 			if (childName == QString("stockEmployeeForm"))
 			{
 				BusinessLayer::WarehouseEmployeeRelation weRel;
-				if (!weRel.GetWarehouseEmployeeByEmployeeID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (!weRel.GetWarehouseEmployeeByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("This user isn't warehouse employee!")),
@@ -209,7 +209,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 					return;
 				}
 				BusinessLayer::Warehouse warehouse;
-				if (!warehouse.GetWarehouseByID(dialogBL->GetOrmasDal(), weRel.GetWarehouseID(), errorMessage))
+				if (!warehouse.GetWarehouseByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), weRel.GetWarehouseID(), errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("Cannot find warehouse!")),
@@ -218,7 +218,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 					return;
 				}
 				BusinessLayer::WarehouseType warehouseType;
-				if (!warehouseType.GetWarehouseTypeByCode(dialogBL->GetOrmasDal(), "PRODUCT", errorMessage))
+				if (!warehouseType.GetWarehouseTypeByCode(dialogBL->globalVar, dialogBL->GetOrmasDal(), "PRODUCT", errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("Cannot find warehouse type!")),
@@ -236,7 +236,7 @@ void CreateStockTrDlg::SetID(int ID, QString childName)
 				}
 				toStkEmpEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empStockNamePh->setText(user.GetName().c_str());
 					empStockSurnamePh->setText(user.GetSurname().c_str());
@@ -296,7 +296,7 @@ void CreateStockTrDlg::CreateStockTransfer()
 				sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), stockTransfer->GetID());
 		}
 		
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateStockTransfer(stockTransfer, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -304,7 +304,7 @@ void CreateStockTrDlg::CreateStockTransfer()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), stockTransfer->GetStatusID(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -325,8 +325,8 @@ void CreateStockTrDlg::CreateStockTransfer()
 					BusinessLayer::Employee *stockEmployee = new BusinessLayer::Employee();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 
-					if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), stockTransfer->GetEmployeeID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), stockTransfer->GetCurrencyID(), errorMessage))
+					if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetEmployeeID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -341,7 +341,7 @@ void CreateStockTrDlg::CreateStockTransfer()
 
 					if (stockTransfer->GetStockEmployeeID() > 0)
 					{
-						if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), stockTransfer->GetStockEmployeeID(), errorMessage))
+						if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetStockEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -356,7 +356,7 @@ void CreateStockTrDlg::CreateStockTransfer()
 					if (0 != stockTransfer->GetEmployeeID())
 					{
 						BusinessLayer::Position *ePosition = new BusinessLayer::Position();
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), stockTransfer->GetEmployeeID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -381,7 +381,7 @@ void CreateStockTrDlg::CreateStockTransfer()
 					if (0 != stockTransfer->GetStockEmployeeID())
 					{
 						BusinessLayer::Position *sePosition = new BusinessLayer::Position();
-						if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), stockTransfer->GetStockEmployeeID(), errorMessage))
+						if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetStockEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -420,7 +420,13 @@ void CreateStockTrDlg::CreateStockTransfer()
 					delete status;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 		
 			Close();
 		}
@@ -465,7 +471,7 @@ void CreateStockTrDlg::EditStockTransfer()
 				SetStockTransferParams(fromStkEmpEdit->text().toInt(), dateEdit->text(), execDateEdit->text(), toStkEmpEdit->text().toInt(), prodCountEdit->text().toDouble(),
 					sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), stockTransfer->GetID());
 			}
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateStockTransfer(stockTransfer, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -482,9 +488,9 @@ void CreateStockTrDlg::EditStockTransfer()
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Status *status = new BusinessLayer::Status;
 
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), stockTransfer->GetEmployeeID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), stockTransfer->GetCurrencyID(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), stockTransfer->GetStatusID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetEmployeeID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetCurrencyID(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetStatusID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -499,7 +505,7 @@ void CreateStockTrDlg::EditStockTransfer()
 						}
 						if (stockTransfer->GetStockEmployeeID() > 0)
 						{
-							if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), stockTransfer->GetStockEmployeeID(), errorMessage))
+							if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetStockEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -515,7 +521,7 @@ void CreateStockTrDlg::EditStockTransfer()
 						if (stockTransfer->GetEmployeeID() > 0)
 						{
 							BusinessLayer::Position *ePosition = new BusinessLayer::Position();
-							if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), stockTransfer->GetEmployeeID(), errorMessage))
+							if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -540,7 +546,7 @@ void CreateStockTrDlg::EditStockTransfer()
 						if (stockTransfer->GetStockEmployeeID() > 0)
 						{
 							BusinessLayer::Position *sePosition = new BusinessLayer::Position();
-							if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), stockTransfer->GetStockEmployeeID(), errorMessage))
+							if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetStockEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -578,7 +584,13 @@ void CreateStockTrDlg::EditStockTransfer()
 						delete status;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				
 				Close();
@@ -679,7 +691,7 @@ void CreateStockTrDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -766,7 +778,7 @@ void CreateStockTrDlg::OpenSkEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -899,7 +911,7 @@ void CreateStockTrDlg::OpenStockTrListDlg()
 void CreateStockTrDlg::StatusWasChenged()
 {
 	errorMessage = "";
-	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (statusEdit->text().toInt() == statusMap.find("EXECUTED")->second
 		|| statusEdit->text().toInt() == statusMap.find("RETURN")->second
 		|| statusEdit->text().toInt() == statusMap.find("ERROR")->second)
@@ -948,11 +960,11 @@ void CreateStockTrDlg::TextEditChanged()
 
 bool CreateStockTrDlg::CheckAccess()
 {
-	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (0 == rolesMap.size())
 		return false;
 	BusinessLayer::Status *status = new BusinessLayer::Status;
-	if (!status->GetStatusByID(dialogBL->GetOrmasDal(), stockTransfer->GetStatusID(), errorMessage))
+	if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), stockTransfer->GetStatusID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr(errorMessage.c_str())),
@@ -965,8 +977,7 @@ bool CreateStockTrDlg::CheckAccess()
 	if (0 == status->GetName().compare("EXECUTED"))
 	{
 		if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("ACCOUNTANT")->second)
+			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
 		{
 			return true;
 		}

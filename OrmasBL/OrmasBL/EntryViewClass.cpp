@@ -24,4 +24,22 @@ namespace BusinessLayer{
 		return creditingAccountNumber;
 	}
 
+	void EntryView::SetDebitingAccountNumber(std::string eDebitingAccountNumber)
+	{
+		debitingAccountNumber = eDebitingAccountNumber;
+	}
+
+	void EntryView::SetCreditingAccountNumber(std::string eCreditingAccountNumber)
+	{
+		creditingAccountNumber = eCreditingAccountNumber;
+	}
+
+	std::string EntryView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !debitingAccountNumber.empty() || 0.0 != value || !creditingAccountNumber.empty() || 0 != debitingAccountID || 0 != creditingAccountID || !description.empty())
+		{
+			return ormasDal.GetFilterForEntryView(id, date, debitingAccountNumber, value, creditingAccountNumber, debitingAccountID, creditingAccountID, description);
+		}
+		return "";
+	}
 }

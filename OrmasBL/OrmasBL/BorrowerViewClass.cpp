@@ -23,4 +23,18 @@ namespace BusinessLayer{
 		return roleName;
 	}
 
+	void BorrowerView::SetRoleName(std::string bRoleName)
+	{
+		roleName=bRoleName;
+	}
+
+	std::string BorrowerView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != userID || !name.empty() || !surname.empty() || !comment.empty() || !phone.empty() || !address.empty()
+			|| !roleName.empty() || !password.empty() || !email.empty() || 0 != roleID)
+		{
+			return ormasDal.GetFilterForBorrowersView(userID, name, surname, comment, phone, address, roleName, password, email, roleID);
+		}
+		return "";
+	}
 }

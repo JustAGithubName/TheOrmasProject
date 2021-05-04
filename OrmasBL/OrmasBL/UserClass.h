@@ -19,15 +19,15 @@ namespace BusinessLayer
 		bool activated = false;
 
 		void TrimStrings(std::string&, std::string&, std::string&, std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string uName, std::string uSurname, std::string uPhone,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uName, std::string uSurname, std::string uPhone,
 			std::string uAddress, int uRoleID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool IsUnique(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string& errorMessage);
-		bool IsUnique(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateBalance(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateBalanceForAccountable(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
-		bool CreateBalanceForBorrower(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
-		bool CreateBalanceForShareholder(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool IsUnique(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string& errorMessage);
+		bool IsUnique(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateBalanceForAccountable(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
+		bool CreateBalanceForBorrower(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
+		bool CreateBalanceForShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
 	public:
 		User(int uID, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone, std::string uAddress, 
 			int uRoleID, std::string uPassword, bool uActivated) :id(uID), email(uEmail), name(uName), phone(uPhone), surname(uSurname)
@@ -59,23 +59,23 @@ namespace BusinessLayer
 		void SetActivated(bool);
 		
 		//Create, delete, update methods
-		bool CreateUser(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateUser(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteUser(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateUser(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+		bool CreateUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 			std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string& errorMessage);
-		bool UpdateUser(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone, 
+		bool UpdateUser(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone, 
 			std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateINFilter(DataLayer::OrmasDal& ormasDal, std::vector<int> userIDList);
-		bool GetUserByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
-		bool GetUserByCredentials(DataLayer::OrmasDal& ormasDal, std::string uPhoneOrEmail, std::string uPassword);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> userIDList);
+		bool GetUserByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
+		bool GetUserByCredentials(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhoneOrEmail, std::string uPassword);
 		bool IsEmpty();
 		void Clear();
-		int GetUserBalanceID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		std::string GetCurrentPhone(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
+		int GetUserBalanceID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		std::string GetCurrentPhone(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
 	};
 }
 #endif //USERCLASS_H

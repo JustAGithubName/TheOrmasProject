@@ -120,21 +120,21 @@ void CreateProdConRDlg::FillEditElements(int cEmployeeID, QString cDate, QString
 	statusEdit->setText(QString::number(cStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(cCurrencyID)));
 	BusinessLayer::User user1;
-	/*if (user1.GetUserByID(dialogBL->GetOrmasDal(), cEmployeeID, errorMessage))
+	/*if (user1.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cEmployeeID, errorMessage))
 	{
 		empNamePh->setText(user1.GetName().c_str());
 		empSurnamePh->setText(user1.GetSurname().c_str());
 		empPhonePh->setText(user1.GetPhone().c_str());
 	}*/
 	BusinessLayer::User user2;
-	if (user2.GetUserByID(dialogBL->GetOrmasDal(), cStockEmployeeID, errorMessage))
+	if (user2.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cStockEmployeeID, errorMessage))
 	{
 		empStockNamePh->setText(user2.GetName().c_str());
 		empStockSurnamePh->setText(user2.GetSurname().c_str());
 		empStockPhonePh->setText(user2.GetPhone().c_str());
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), cStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -157,7 +157,7 @@ void CreateProdConRDlg::SetID(int ID, QString childName)
 			{
 				employeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(user.GetName().c_str());
 					empSurnamePh->setText(user.GetSurname().c_str());
@@ -168,7 +168,7 @@ void CreateProdConRDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -176,7 +176,7 @@ void CreateProdConRDlg::SetID(int ID, QString childName)
 			if (childName == QString("stockEmployeeForm"))
 			{
 				BusinessLayer::WarehouseEmployeeRelation weRel;
-				if (!weRel.GetWarehouseEmployeeByEmployeeID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (!weRel.GetWarehouseEmployeeByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("This user isn't warehouse employee!")),
@@ -185,7 +185,7 @@ void CreateProdConRDlg::SetID(int ID, QString childName)
 					return;
 				}
 				BusinessLayer::Warehouse warehouse;
-				if (!warehouse.GetWarehouseByID(dialogBL->GetOrmasDal(), weRel.GetWarehouseID(), errorMessage))
+				if (!warehouse.GetWarehouseByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), weRel.GetWarehouseID(), errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("Cannot find warehouse!")),
@@ -194,7 +194,7 @@ void CreateProdConRDlg::SetID(int ID, QString childName)
 					return;
 				}
 				BusinessLayer::WarehouseType warehouseType;
-				if (!warehouseType.GetWarehouseTypeByCode(dialogBL->GetOrmasDal(), "PRODUCTION", errorMessage))
+				if (!warehouseType.GetWarehouseTypeByCode(dialogBL->globalVar, dialogBL->GetOrmasDal(), "PRODUCTION", errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr("Cannot find warehouse type!")),
@@ -212,7 +212,7 @@ void CreateProdConRDlg::SetID(int ID, QString childName)
 				}
 				stockEmployeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empStockNamePh->setText(user.GetName().c_str());
 					empStockSurnamePh->setText(user.GetSurname().c_str());
@@ -271,7 +271,7 @@ void CreateProdConRDlg::CreateConsumeRaw()
 			SetConsumeRawParams(employeeEdit->text().toInt(), dateEdit->text(), execDateEdit->text(), stockEmployeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 				sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), pConsumeRaw->GetID());
 		}
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateProductionConsumeRaw(pConsumeRaw, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -279,7 +279,7 @@ void CreateProdConRDlg::CreateConsumeRaw()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetStatusID(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -300,7 +300,7 @@ void CreateProdConRDlg::CreateConsumeRaw()
 					BusinessLayer::Employee *stockEmployee = new BusinessLayer::Employee();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 
-					if (!currency->GetCurrencyByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetCurrencyID(), errorMessage))
+					if (!currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -314,7 +314,7 @@ void CreateProdConRDlg::CreateConsumeRaw()
 
 					if (pConsumeRaw->GetStockEmployeeID() > 0)
 					{
-						if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetStockEmployeeID(), errorMessage))
+						if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetStockEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -329,7 +329,7 @@ void CreateProdConRDlg::CreateConsumeRaw()
 					if (0 != pConsumeRaw->GetEmployeeID())
 					{
 						BusinessLayer::Position *ePosition = new BusinessLayer::Position();
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetEmployeeID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -354,7 +354,7 @@ void CreateProdConRDlg::CreateConsumeRaw()
 					if (0 != pConsumeRaw->GetStockEmployeeID())
 					{
 						BusinessLayer::Position *sePosition = new BusinessLayer::Position();
-						if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetStockEmployeeID(), errorMessage))
+						if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetStockEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -394,7 +394,13 @@ void CreateProdConRDlg::CreateConsumeRaw()
 					delete status;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -439,7 +445,7 @@ void CreateProdConRDlg::EditConsumeRaw()
 				SetConsumeRawParams(employeeEdit->text().toInt(), dateEdit->text(), execDateEdit->text(), stockEmployeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 					sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), pConsumeRaw->GetID());
 			}
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateProductionConsumeRaw(pConsumeRaw, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -456,8 +462,8 @@ void CreateProdConRDlg::EditConsumeRaw()
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Status *status = new BusinessLayer::Status;
 
-						if (!currency->GetCurrencyByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetCurrencyID(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetStatusID(), errorMessage))
+						if (!currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetCurrencyID(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetStatusID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -471,7 +477,7 @@ void CreateProdConRDlg::EditConsumeRaw()
 						}
 						if (pConsumeRaw->GetStockEmployeeID() > 0)
 						{
-							if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetStockEmployeeID(), errorMessage))
+							if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetStockEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -487,7 +493,7 @@ void CreateProdConRDlg::EditConsumeRaw()
 						if (pConsumeRaw->GetEmployeeID() > 0)
 						{
 							BusinessLayer::Position *ePosition = new BusinessLayer::Position();
-							if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetEmployeeID(), errorMessage))
+							if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -512,7 +518,7 @@ void CreateProdConRDlg::EditConsumeRaw()
 						if (pConsumeRaw->GetStockEmployeeID() > 0)
 						{
 							BusinessLayer::Position *sePosition = new BusinessLayer::Position();
-							if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetStockEmployeeID(), errorMessage))
+							if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetStockEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -551,7 +557,13 @@ void CreateProdConRDlg::EditConsumeRaw()
 						delete status;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 			
 				Close();
@@ -643,7 +655,7 @@ void CreateProdConRDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -730,7 +742,7 @@ void CreateProdConRDlg::OpenSkEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -855,7 +867,7 @@ void CreateProdConRDlg::OpenProdConRListDlg()
 void CreateProdConRDlg::StatusWasChenged()
 {
 	errorMessage = "";
-	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (statusEdit->text().toInt() == statusMap.find("EXECUTED")->second
 		|| statusEdit->text().toInt() == statusMap.find("RETURN")->second
 		|| statusEdit->text().toInt() == statusMap.find("ERROR")->second)
@@ -904,11 +916,11 @@ void CreateProdConRDlg::TextEditChanged()
 
 bool CreateProdConRDlg::CheckAccess()
 {
-	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (0 == rolesMap.size())
 		return false;
 	BusinessLayer::Status *status = new BusinessLayer::Status;
-	if (!status->GetStatusByID(dialogBL->GetOrmasDal(), pConsumeRaw->GetStatusID(), errorMessage))
+	if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pConsumeRaw->GetStatusID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr(errorMessage.c_str())),
@@ -921,8 +933,7 @@ bool CreateProdConRDlg::CheckAccess()
 	if (0 == status->GetName().compare("EXECUTED"))
 	{
 		if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("ACCOUNTANT")->second)
+			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
 		{
 			return true;
 		}
@@ -940,8 +951,7 @@ bool CreateProdConRDlg::CheckAccess()
 	if (0 == status->GetName().compare("RETURN"))
 	{
 		if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("ACCOUNTANT")->second)
+			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
 		{
 			return true;
 		}

@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = iCurrencyID;
 	}
 
-	bool InventorizationList::CreateInventorizationList(DataLayer::OrmasDal& ormasDal, int iID, int pID, double ilCount, double ilSum,
+	bool InventorizationList::CreateInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, int pID, double ilCount, double ilSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool InventorizationList::CreateInventorizationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventorizationList::CreateInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateInventorizationList(id, inventorizationID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool InventorizationList::DeleteInventorizationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventorizationList::DeleteInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInInventorizationList(id, errorMessage))
 		{
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool InventorizationList::DeleteListByInventorizationID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage)
+	bool InventorizationList::DeleteListByInventorizationID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage)
 	{
 		inventorizationID = iID;
 		if (ormasDal.DeleteListByInventorizationID(inventorizationID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool InventorizationList::UpdateInventorizationList(DataLayer::OrmasDal& ormasDal, int iID, int pID, double ilCount, double ilSum,
+	bool InventorizationList::UpdateInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, int pID, double ilCount, double ilSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		inventorizationID = iID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool InventorizationList::UpdateInventorizationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventorizationList::UpdateInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateInventorizationList(id, inventorizationID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool InventorizationList::GetInventorizationListByID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage)
+	bool InventorizationList::GetInventorizationListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage)
 	{
 		if (iID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool InventorizationList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int iID, int pID, double ilCount, double ilSum,
+	bool InventorizationList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, int pID, double ilCount, double ilSum,
 		int cID, std::string& errorMessage)
 	{
 		InventorizationList inventorizationList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool InventorizationList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventorizationList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		InventorizationList inventorizationList;
 		inventorizationList.Clear();

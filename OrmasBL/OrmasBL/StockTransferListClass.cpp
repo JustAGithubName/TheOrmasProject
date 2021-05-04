@@ -11,7 +11,7 @@ namespace BusinessLayer
 	StockTransferList::StockTransferList(DataLayer::stockTransferListCollection rListCollection)
 	{
 		id = std::get<0>(rListCollection);
-		StockTransferID = std::get<1>(rListCollection);
+		stockTransferID = std::get<1>(rListCollection);
 		productID = std::get<2>(rListCollection);
 		count = std::get<3>(rListCollection);
 		sum = std::get<4>(rListCollection);
@@ -26,7 +26,7 @@ namespace BusinessLayer
 
 	int StockTransferList::GetStockTransferID()
 	{
-		return StockTransferID;
+		return stockTransferID;
 	}
 
 	int StockTransferList::GetProductID()
@@ -58,9 +58,9 @@ namespace BusinessLayer
 	{
 		id = rID;
 	}
-	void StockTransferList::SetStockTransferID(int rStockTransferID)
+	void StockTransferList::SetStockTransferID(int rstockTransferID)
 	{
-		StockTransferID = rStockTransferID;
+		stockTransferID = rstockTransferID;
 	}
 	void StockTransferList::SetProductID(int rProductID)
 	{
@@ -83,32 +83,32 @@ namespace BusinessLayer
 		currencyID = rCurrencyID;
 	}
 
-	bool StockTransferList::CreateStockTransferList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+	bool StockTransferList::CreateStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
-		StockTransferID = rID;
+		stockTransferID = rID;
 		productID = pID;
 		count = rlCount;
 		sum = rlSum;
 		statusID = sID;
 		currencyID = cID;
-		if (0 != id && ormasDal.CreateStockTransferList(id, StockTransferID, productID, count, sum, statusID, currencyID, errorMessage))
+		if (0 != id && ormasDal.CreateStockTransferList(id, stockTransferID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
-	bool StockTransferList::CreateStockTransferList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool StockTransferList::CreateStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
-		if (0 != id && ormasDal.CreateStockTransferList(id, StockTransferID, productID, count, sum, statusID, currencyID, errorMessage))
+		if (0 != id && ormasDal.CreateStockTransferList(id, stockTransferID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
-	bool StockTransferList::DeleteStockTransferList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool StockTransferList::DeleteStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInStockTransferList(id, errorMessage))
 		{
@@ -117,10 +117,10 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool StockTransferList::DeleteListByStockTransferID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool StockTransferList::DeleteListByStockTransferID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
-		StockTransferID = oID;
-		if (ormasDal.DeleteListByStockTransferID(StockTransferID, errorMessage))
+		stockTransferID = oID;
+		if (ormasDal.DeleteListByStockTransferID(stockTransferID, errorMessage))
 		{
 			Clear();
 			return true;
@@ -128,24 +128,24 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool StockTransferList::UpdateStockTransferList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+	bool StockTransferList::UpdateStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
-		StockTransferID = rID;
+		stockTransferID = rID;
 		productID = pID;
 		count = rlCount;
 		sum = rlSum;
 		statusID = sID;
 		currencyID = cID;
-		if (0 != id && ormasDal.UpdateStockTransferList(id, StockTransferID, productID, count, sum, statusID, currencyID, errorMessage))
+		if (0 != id && ormasDal.UpdateStockTransferList(id, stockTransferID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
-	bool StockTransferList::UpdateStockTransferList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool StockTransferList::UpdateStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (0 != id && ormasDal.UpdateStockTransferList(id, StockTransferID, productID, count, sum, statusID, currencyID, errorMessage))
+		if (0 != id && ormasDal.UpdateStockTransferList(id, stockTransferID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
 			return true;
 		}
@@ -154,14 +154,14 @@ namespace BusinessLayer
 
 	std::string StockTransferList::GenerateFilter(DataLayer::OrmasDal& ormasDal)
 	{
-		if (0 != id || 0 != StockTransferID || 0 != productID || 0 != count || 0 != sum || 0 != statusID)
+		if (0 != id || 0 != stockTransferID || 0 != productID || 0 != count || 0 != sum || 0 != statusID)
 		{
-			return ormasDal.GetFilterForStockTransferList(id, StockTransferID, productID, count, sum, statusID, currencyID);
+			return ormasDal.GetFilterForStockTransferList(id, stockTransferID, productID, count, sum, statusID, currencyID);
 		}
 		return "";
 	}
 
-	bool StockTransferList::GetStockTransferListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool StockTransferList::GetStockTransferListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -172,7 +172,7 @@ namespace BusinessLayer
 		{
 
 			id = std::get<0>(stockTransferListVector.at(0));
-			StockTransferID = std::get<1>(stockTransferListVector.at(0));
+			stockTransferID = std::get<1>(stockTransferListVector.at(0));
 			count = std::get<7>(stockTransferListVector.at(0));
 			sum = std::get<8>(stockTransferListVector.at(0));
 			productID = std::get<11>(stockTransferListVector.at(0));
@@ -189,7 +189,7 @@ namespace BusinessLayer
 
 	bool StockTransferList::IsEmpty()
 	{
-		if (0 == id && 0 == StockTransferID && 0 == count && 0 == sum && 0 == productID && 0 == statusID && 0 == currencyID)
+		if (0 == id && 0 == stockTransferID && 0 == count && 0 == sum && 0 == productID && 0 == statusID && 0 == currencyID)
 			return true;
 		return false;
 	}
@@ -197,7 +197,7 @@ namespace BusinessLayer
 	void StockTransferList::Clear()
 	{
 		id = 0;
-		StockTransferID = 0;
+		stockTransferID = 0;
 		count = 0;
 		sum = 0;
 		productID = 0;
@@ -205,7 +205,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool StockTransferList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+	bool StockTransferList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 		int cID, std::string& errorMessage)
 	{
 		StockTransferList stockTransferList;
@@ -228,12 +228,12 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool StockTransferList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool StockTransferList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		StockTransferList stockTransferList;
 		stockTransferList.Clear();
 		errorMessage.clear();
-		stockTransferList.SetStockTransferID(StockTransferID);
+		stockTransferList.SetStockTransferID(stockTransferID);
 		stockTransferList.SetProductID(productID);
 		stockTransferList.SetCount(count);
 		stockTransferList.SetSum(sum);

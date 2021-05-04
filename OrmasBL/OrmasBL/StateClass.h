@@ -32,23 +32,23 @@ namespace BusinessLayer
 		void SetLastChange(std::string);
 
 		//Create, delete, update methods
-		bool CreateState(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateState(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteState(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateState(DataLayer::OrmasDal& ormasDal, int uID, int stsID, std::string sLastChange,
+		bool CreateState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int stsID, std::string sLastChange,
 			std::string& errorMessage);
-		bool UpdateState(DataLayer::OrmasDal& ormasDal, int uID, int stsID, std::string sLastChange,
+		bool UpdateState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int stsID, std::string sLastChange,
 			std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetStateByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool GetStateByUniversalID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
+		bool GetStateByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool GetStateByUniversalID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, int stsID, std::string sLastChange, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int stsID, std::string sLastChange, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif // StateCLASS_H

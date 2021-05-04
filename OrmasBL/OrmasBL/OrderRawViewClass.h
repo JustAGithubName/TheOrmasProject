@@ -22,6 +22,7 @@ namespace BusinessLayer
 		OrderRawView(DataLayer::orderRawsViewCollection);
 		OrderRawView(){};
 		~OrderRawView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// OrderView class Accessors
 		std::string GetStatusCode();
@@ -35,6 +36,18 @@ namespace BusinessLayer
 		std::string GetEmployeePhone();
 		std::string GetEmployeePosition();
 		std::string GetCurrencyName();
+
+		void SetStatusCode(std::string);
+		void SetStatusName(std::string);
+		void SetPurveyorName(std::string);
+		void SetPurveyorSurname(std::string);
+		void SetPurveyorPhone(std::string);
+		void SetPurveyorCompanyName(std::string);
+		void SetEmployeeName(std::string);
+		void SetEmployeeSurname(std::string);
+		void SetEmployeePhone(std::string);
+		void SetEmployeePosition(std::string);
+		void SetCurrencyName(std::string);
 
 	};
 }

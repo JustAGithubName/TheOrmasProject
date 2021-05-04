@@ -74,7 +74,7 @@ void CreateEtrRtDlg::CreateEntryRouting()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetEntryRoutingParams(operationEdit->text(), dAccCmb->currentData().toInt(), cAccCmb->currentData().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateEntryRouting(entryRouting, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -91,7 +91,13 @@ void CreateEtrRtDlg::CreateEntryRouting()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -124,7 +130,7 @@ void CreateEtrRtDlg::EditEntryRouting()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetEntryRoutingParams(operationEdit->text(), dAccCmb->currentData().toInt(), cAccCmb->currentData().toInt(), entryRouting->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateEntryRouting(entryRouting, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -138,7 +144,13 @@ void CreateEtrRtDlg::EditEntryRouting()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else
@@ -179,7 +191,7 @@ void CreateEtrRtDlg::InitComboBox()
 		for (unsigned int i = 0; i < accountVec.size(); i++)
 		{
 			coAcc.Clear();
-			if (!coAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), accountVec[i].GetNumber(), errorMessage))
+			if (!coAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), accountVec[i].GetNumber(), errorMessage))
 				continue;
 			comboText = "";
 			comboText += accountVec[i].GetNumber();

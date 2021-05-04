@@ -29,4 +29,31 @@ namespace BusinessLayer{
 	{
 		return price;
 	}
+
+	void ProductBranchRelationView::SetBranchName(std::string pBranchName)
+	{
+		branchName = pBranchName;
+	}
+	void ProductBranchRelationView::SetBranchAddress(std::string pBranchAddress)
+	{
+		branchAddress = pBranchAddress;
+	}
+	void ProductBranchRelationView::SetProductName(std::string pProductName)
+	{
+		productName = pProductName;
+	}
+	void ProductBranchRelationView::SetPrice(double pPrice)
+	{
+		price = pPrice;
+	}
+
+	std::string ProductBranchRelationView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+
+		if (0 != id || !branchName.empty() || !branchAddress.empty() || !productName.empty() || 0 != price || 0 != branchID || 0 != productID)
+		{
+			return ormasDal.GetFilterForProductBranchView(id, branchName, branchAddress, productName, price, branchID, productID);
+		}
+		return "";
+	}
 }

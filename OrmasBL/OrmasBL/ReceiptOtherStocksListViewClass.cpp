@@ -50,4 +50,43 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+	void ReceiptOtherStocksListView::SetOtherStocksName(std::string cOtherStocksName)
+	{
+		otherStocksName = cOtherStocksName;
+	}
+	void ReceiptOtherStocksListView::SetPrice(double cPrice)
+	{
+		price = cPrice;
+	}
+	void  ReceiptOtherStocksListView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+	void ReceiptOtherStocksListView::SetVolume(double cVolume)
+	{
+		volume = cVolume;
+	}
+	void ReceiptOtherStocksListView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void ReceiptOtherStocksListView::SetSumCurrencyName(std::string cSumCurrencyName)
+	{
+		sumCurrencyName = cSumCurrencyName;
+	}
+	void ReceiptOtherStocksListView::SetMeasureName(std::string cMeasureName)
+	{
+		measureName = cMeasureName;
+	}
+
+	std::string ReceiptOtherStocksListView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != receiptOtherStocksID || !otherStocksName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty()
+			|| 0 != count || 0 != sum || !sumCurrencyName.empty() || !statusName.empty() || 0 != otherStocksID || 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForRcpOthStListView(id, receiptOtherStocksID, otherStocksName, price, currencyName, volume, measureName, count, sum,
+				sumCurrencyName, statusName, otherStocksID, statusID, currencyID);
+		}
+		return "";
+	}
 }

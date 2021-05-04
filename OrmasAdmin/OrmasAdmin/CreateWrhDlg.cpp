@@ -50,15 +50,15 @@ void CreateWrhDlg::FillEditElements(QString wName, QString wAddress, QString wPh
 	phoneEdit->setText(wPhone);
 	wTypeCmb->setCurrentIndex(wTypeCmb->findData(QVariant(wtID)));
 	BusinessLayer::Subaccount subacc;
-	if (subacc.GetSubaccountByID(dialogBL->GetOrmasDal(), subID, errorMessage))
+	if (subacc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subID, errorMessage))
 	{
 		numberEdit->setText(subacc.GetNumber().c_str());
 	}
 	BusinessLayer::Account acc;
 	BusinessLayer::ChartOfAccounts aoSAcc;
-	if (acc.GetAccountByID(dialogBL->GetOrmasDal(), subacc.GetParentAccountID(), errorMessage))
+	if (acc.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subacc.GetParentAccountID(), errorMessage))
 	{
-		if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), acc.GetNumber(), errorMessage))
+		if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), acc.GetNumber(), errorMessage))
 		{
 			accNamePh->setText(aoSAcc.GetName().c_str());
 		}
@@ -97,7 +97,7 @@ void CreateWrhDlg::CreateWarehouse()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		//create subacc section
 		BusinessLayer::Currency curr;
 		std::string filter;
@@ -114,7 +114,7 @@ void CreateWrhDlg::CreateWarehouse()
 			errorMessage.clear();
 		}
 		BusinessLayer::Status status;
-		if (!status.GetStatusByName(dialogBL->GetOrmasDal(), "OPEN", errorMessage))
+		if (!status.GetStatusByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "OPEN", errorMessage))
 		{
 			dialogBL->CancelTransaction(errorMessage);
 			QMessageBox::information(NULL, QString(tr("Warning")),
@@ -130,7 +130,7 @@ void CreateWrhDlg::CreateWarehouse()
 		subaccount->SetCurrencyID(curVec.at(0).GetID());
 		subaccount->SetStatusID(status.GetID());
 
-		if (!subaccount->CreateSubaccount(dialogBL->GetOrmasDal(), errorMessage))
+		if (!subaccount->CreateSubaccount(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage))
 		{
 			dialogBL->CancelTransaction(errorMessage);
 			QMessageBox::information(NULL, QString(tr("Warning")),
@@ -162,7 +162,13 @@ void CreateWrhDlg::CreateWarehouse()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -193,8 +199,8 @@ void CreateWrhDlg::EditWarehouse()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetWarehouseParams(nameEdit->text(), addressEdit->text(), phoneEdit->text(), wTypeCmb->currentData().toInt(), warehouse->GetSubaccountID(), warehouse->GetID());
-			dialogBL->StartTransaction(errorMessage);
-			if (!subaccount->GetSubaccountByID(dialogBL->GetOrmasDal(), warehouse->GetSubaccountID(), errorMessage))
+			dialogBL->StartIsolatedTransaction(errorMessage);
+			if (!subaccount->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouse->GetSubaccountID(), errorMessage))
 			{
 				dialogBL->CancelTransaction(errorMessage);
 				QMessageBox::information(NULL, QString(tr("Warning")),
@@ -222,7 +228,13 @@ void CreateWrhDlg::EditWarehouse()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else
@@ -286,7 +298,7 @@ void CreateWrhDlg::GenerateSubaccount()
 	BusinessLayer::Currency curr;
 	BusinessLayer::WarehouseType wType;
 	wType.SetCode("PRODUCT");
-	int wTypeID = wType.GetWarehouseTypeID(dialogBL->GetOrmasDal(), errorMessage);
+	int wTypeID = wType.GetWarehouseTypeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	std::string filter;
 	curr.SetShortName("TJS");
 	filter = curr.GenerateFilter(dialogBL->GetOrmasDal());
@@ -309,9 +321,9 @@ void CreateWrhDlg::GenerateSubaccount()
 			number += genNumber;
 			subaccount->SetNumber(number);
 			numberEdit->setText(subaccount->GetNumber().c_str());
-			if (acc.GetAccountByNumber(dialogBL->GetOrmasDal(), "10740", errorMessage))
+			if (acc.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10740", errorMessage))
 			{
-				if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), "10740", errorMessage))
+				if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10740", errorMessage))
 				{
 					accNamePh->setText(aoSAcc.GetName().c_str());
 				}
@@ -333,9 +345,9 @@ void CreateWrhDlg::GenerateSubaccount()
 			number += genNumber;
 			subaccount->SetNumber(number);
 			numberEdit->setText(subaccount->GetNumber().c_str());
-			if (acc.GetAccountByNumber(dialogBL->GetOrmasDal(), "10720", errorMessage))
+			if (acc.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10720", errorMessage))
 			{
-				if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), "10720", errorMessage))
+				if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10720", errorMessage))
 				{
 					accNamePh->setText(aoSAcc.GetName().c_str());
 				}

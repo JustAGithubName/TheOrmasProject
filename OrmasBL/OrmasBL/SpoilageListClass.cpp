@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = sCurrencyID;
 	}
 
-	bool SpoilageList::CreateSpoilageList(DataLayer::OrmasDal& ormasDal, int sID, int pID, double slCount, double slSum,
+	bool SpoilageList::CreateSpoilageList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, double slSum,
 		int stsID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SpoilageList::CreateSpoilageList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SpoilageList::CreateSpoilageList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateSpoilageList(id, spoilageID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SpoilageList::DeleteSpoilageList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SpoilageList::DeleteSpoilageList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInSpoilageList(id, errorMessage))
 		{
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SpoilageList::DeleteListBySpoilageID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool SpoilageList::DeleteListBySpoilageID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		spoilageID = sID;
 		if (ormasDal.DeleteListBySpoilageID(spoilageID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool SpoilageList::UpdateSpoilageList(DataLayer::OrmasDal& ormasDal, int sID, int pID, double slCount, double slSum,
+	bool SpoilageList::UpdateSpoilageList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, double slSum,
 		int stsID, int cID, std::string& errorMessage)
 	{
 		spoilageID = sID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SpoilageList::UpdateSpoilageList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SpoilageList::UpdateSpoilageList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateSpoilageList(id, spoilageID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool SpoilageList::GetSpoilageListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool SpoilageList::GetSpoilageListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool SpoilageList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int sID, int pID, int slCount, double slSum,
+	bool SpoilageList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, int slCount, double slSum,
 		int cID, std::string& errorMessage)
 	{
 		SpoilageList spoilageList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool SpoilageList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SpoilageList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		SpoilageList spoilageList;
 		spoilageList.Clear();

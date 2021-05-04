@@ -38,23 +38,23 @@ namespace BusinessLayer{
 		void SetUserID(int);
 
 		// Create, delete and update Creditor
-		bool CreateCreditor(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateCreditor(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteCreditor(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateCreditor(DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, int bID, int uID, std::string& errorMessage);
-		bool UpdateCreditor(DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, int bID, int uID, std::string& errorMessage);
+		bool CreateCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, int bID, int uID, std::string& errorMessage);
+		bool UpdateCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, int bID, int uID, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateINFilter(DataLayer::OrmasDal& ormasDal, std::vector<int> creditorIDList);
-		bool GetCreditorByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage);
+		std::string GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> creditorIDList);
+		bool GetCreditorByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int bID, int uID, std::string& errorMessage){};
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage){};
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int uID, std::string& errorMessage){};
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage){};
 		void TrimStrings(std::string&, std::string&, std::string&);
-		bool CreateBalanceForCreditor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool CreateBalanceForCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //CreditorCLASS_H

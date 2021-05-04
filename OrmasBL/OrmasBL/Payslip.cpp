@@ -82,10 +82,10 @@ namespace BusinessLayer{
 		currencyID = cID;
 	}
 
-	bool Payslip::CreatePayslip(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
+	bool Payslip::CreatePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
 		std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pDate, pValue, sID, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pDate, pValue, sID, cID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		date = pDate;
@@ -93,9 +93,10 @@ namespace BusinessLayer{
 		salaryID = sID;
 		currencyID = cID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreatePayslip(id, date, value, salaryID, currencyID, errorMessage))
 		{
-			if (Payout(ormasDal, salaryID, currencyID, errorMessage))
+			if (Payout(globalVar, ormasDal, salaryID, currencyID, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -108,15 +109,16 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Payslip::CreatePayslip(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Payslip::CreatePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreatePayslip(id, date, value, salaryID, currencyID, errorMessage))
 		{
-			if (Payout(ormasDal, salaryID, currencyID, errorMessage))
+			if (Payout(globalVar, ormasDal, salaryID, currencyID, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -129,13 +131,13 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Payslip::DeletePayslip(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Payslip::DeletePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (!this->GetPayslipByID(ormasDal, id, errorMessage))
+		if (!this->GetPayslipByID(globalVar, ormasDal, id, errorMessage))
 			return false;
 		if (ormasDal.DeletePayslip(id, errorMessage))
 		{
-			if (CancelPayslip(ormasDal, salaryID, currencyID, errorMessage))
+			if (CancelPayslip(globalVar, ormasDal, salaryID, currencyID, errorMessage))
 			{
 				Clear();
 				return true;
@@ -148,18 +150,19 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Payslip::UpdatePayslip(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
+	bool Payslip::UpdatePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
 		std::string& errorMessage)
 	{
 		date = pDate;
 		value = pValue;
 		salaryID = sID;
 		currencyID = cID;
-		currentValue = GetCurrentValue(ormasDal, id, errorMessage);
+		currentValue = GetCurrentValue(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdatePayslip(id, date, value, salaryID, currencyID, errorMessage))
 		{
-			if (Payout(ormasDal, salaryID, currencyID, currentValue, errorMessage))
+			if (Payout(globalVar, ormasDal, salaryID, currencyID, currentValue, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				currentValue = 0.0;
@@ -173,13 +176,14 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Payslip::UpdatePayslip(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Payslip::UpdatePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		currentValue = GetCurrentValue(ormasDal, id, errorMessage);
+		currentValue = GetCurrentValue(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdatePayslip(id, date, value, salaryID, currencyID, errorMessage))
 		{
-			if (Payout(ormasDal, salaryID, currencyID, currentValue, errorMessage))
+			if (Payout(globalVar, ormasDal, salaryID, currencyID, currentValue, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				currentValue = 0.0;
@@ -203,7 +207,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Payslip::GetPayslipByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Payslip::GetPayslipByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -242,7 +246,7 @@ namespace BusinessLayer{
 		currencyID = 0;
 	}
 
-	bool Payslip::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pDate, double pValue, int uID, int cID,
+	bool Payslip::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
 		std::string& errorMessage)
 	{
 		Payslip payslip;
@@ -264,7 +268,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Payslip::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Payslip::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Payslip payslip;
 		payslip.Clear();
@@ -286,7 +290,7 @@ namespace BusinessLayer{
 	}
 
 
-	bool Payslip::Payout(DataLayer::OrmasDal& ormasDal, int sID, int cID, std::string& errorMessage)
+	bool Payslip::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cID, std::string& errorMessage)
 	{
 		CompanyAccountRelation cAccRel;
 		CompanyEmployeeRelation cEmpRel;
@@ -300,11 +304,11 @@ namespace BusinessLayer{
 		Role role;
 		Subaccount sub;
 		Account acc;
-		if (!acc.GetAccountByNumber(ormasDal, "22210", errorMessage))
+		if (!acc.GetAccountByNumber(globalVar, ormasDal, "22210", errorMessage))
 		{
 			return false;
 		}
-		if (!salary.GetSalaryByID(ormasDal, sID, errorMessage))
+		if (!salary.GetSalaryByID(globalVar, ormasDal, sID, errorMessage))
 		{
 			if (errorMessage.empty())
 				errorMessage = "Cannot find salary with this ID!";
@@ -320,9 +324,9 @@ namespace BusinessLayer{
 			{
 				sub.Clear();
 				tempBalance.Clear();
-				if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+				if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 					return false;
-				if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+				if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 				{
 					if (sub.GetParentAccountID() == acc.GetID())
 					{
@@ -337,48 +341,48 @@ namespace BusinessLayer{
 		}
 		if (balance.GetSubaccountID() <= 0)
 			return false;
-		if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+		if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 		{
-			int companyID = company.GetCompanyID(ormasDal, errorMessage);
-			if (!user.GetUserByID(ormasDal, salary.GetEmployeeID(), errorMessage))
+			int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
+			if (!user.GetUserByID(globalVar, ormasDal, salary.GetEmployeeID(), errorMessage))
 				return false;
-			if (!role.GetRoleByID(ormasDal, user.GetRoleID(), errorMessage))
+			if (!role.GetRoleByID(globalVar, ormasDal, user.GetRoleID(), errorMessage))
 				return false;
-			if (!deRel.GetDivisionEmployeeRelationByEmployeeID(ormasDal, user.GetID(), errorMessage))
+			if (!deRel.GetDivisionEmployeeRelationByEmployeeID(globalVar, ormasDal, user.GetID(), errorMessage))
 				return false;
-			if (!division.GetDivisionByID(ormasDal, deRel.GetDivisionID(), errorMessage))
+			if (!division.GetDivisionByID(globalVar, ormasDal, deRel.GetDivisionID(), errorMessage))
 				return false;
 			int debAccID = 0;
 			if (0 == division.GetCode().compare("RELEASE"))
 			{
-				debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "55220", errorMessage);
+				debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55220", errorMessage);
 			}
 			else if (0 == division.GetCode().compare("ADMINISTRATION"))
 			{
-				debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "55310", errorMessage);
+				debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55310", errorMessage);
 			}
 			else if (0 == division.GetCode().compare("PRODUCTION"))
 			{
-				debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+				debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 			}
 			int credAccID = balance.GetSubaccountID(); 
 			if (0 == debAccID || 0 == credAccID || 0 == companyID)
 			{
 				return false;
 			}
-			if (this->CreateEntry(ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
 			{
 				BalancePayslipRelation bpRelation;
 				bpRelation.SetBalanceID(balance.GetID());
 				bpRelation.SetPayslipID(this->id);
-				if (bpRelation.CreateBalancePayslipRelation(ormasDal, errorMessage))
+				if (bpRelation.CreateBalancePayslipRelation(globalVar, ormasDal, errorMessage))
 					return true;
 			}
 		}
 		return false;
 	}
 
-	bool Payslip::Payout(DataLayer::OrmasDal& ormasDal, int sID, int cID, double previousValue, std::string& errorMessage)
+	bool Payslip::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cID, double previousValue, std::string& errorMessage)
 	{
 		CompanyAccountRelation cAccRel;
 		CompanyEmployeeRelation cEmpRel;
@@ -392,11 +396,11 @@ namespace BusinessLayer{
 		Role role;
 		Subaccount sub;
 		Account acc;
-		if (!acc.GetAccountByNumber(ormasDal, "22210", errorMessage))
+		if (!acc.GetAccountByNumber(globalVar, ormasDal, "22210", errorMessage))
 		{
 			return false;
 		}
-		if (!salary.GetSalaryByID(ormasDal, sID, errorMessage))
+		if (!salary.GetSalaryByID(globalVar, ormasDal, sID, errorMessage))
 		{
 			if (errorMessage.empty())
 				errorMessage = "Cannot find salary with this ID!";
@@ -412,9 +416,9 @@ namespace BusinessLayer{
 			{
 				sub.Clear();
 				tempBalance.Clear();
-				if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+				if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 					return false;
-				if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+				if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 				{
 					if (sub.GetParentAccountID() == acc.GetID())
 					{
@@ -429,36 +433,36 @@ namespace BusinessLayer{
 		}
 		if (balance.GetSubaccountID() <= 0)
 			return false;
-		if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+		if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 		{
-			int companyID = company.GetCompanyID(ormasDal, errorMessage);
-			if (!user.GetUserByID(ormasDal, salary.GetEmployeeID(), errorMessage))
+			int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
+			if (!user.GetUserByID(globalVar, ormasDal, salary.GetEmployeeID(), errorMessage))
 				return false;
-			if (!role.GetRoleByID(ormasDal, user.GetRoleID(), errorMessage))
+			if (!role.GetRoleByID(globalVar, ormasDal, user.GetRoleID(), errorMessage))
 				return false;
-			if (!deRel.GetDivisionEmployeeRelationByEmployeeID(ormasDal, user.GetID(), errorMessage))
+			if (!deRel.GetDivisionEmployeeRelationByEmployeeID(globalVar, ormasDal, user.GetID(), errorMessage))
 				return false;
-			if (!division.GetDivisionByID(ormasDal, deRel.GetDivisionID(), errorMessage))
+			if (!division.GetDivisionByID(globalVar, ormasDal, deRel.GetDivisionID(), errorMessage))
 				return false;
 			int debAccID = 0;
 			if (0 == division.GetCode().compare("RELEASE"))
 			{
-				debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "55220", errorMessage);
+				debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55220", errorMessage);
 			}
 			else if (0 == division.GetCode().compare("ADMINISTRATION"))
 			{
-				debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "55310", errorMessage);
+				debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55310", errorMessage);
 			}
 			else if (0 == division.GetCode().compare("PRODUCTION"))
 			{
-				debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+				debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 			}
 			int credAccID = balance.GetSubaccountID();
 			if (0 == debAccID || 0 == credAccID || 0 == companyID)
 			{
 				return false;
 			}
-			if (this->CreateEntry(ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
 			{
 				return true;
 			}
@@ -466,15 +470,15 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	double Payslip::GetCurrentValue(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	double Payslip::GetCurrentValue(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		Payslip payslip;
-		if (payslip.GetPayslipByID(ormasDal, pID, errorMessage))
+		if (payslip.GetPayslipByID(globalVar, ormasDal, pID, errorMessage))
 			return payslip.GetValue();
 		return 0;
 	}
 
-	bool Payslip::CancelPayslip(DataLayer::OrmasDal& ormasDal, int sID, int cID, std::string& errorMessage)
+	bool Payslip::CancelPayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cID, std::string& errorMessage)
 	{
 		CompanyAccountRelation cAccRel;
 		CompanyEmployeeRelation cEmpRel;
@@ -488,11 +492,11 @@ namespace BusinessLayer{
 		Role role;
 		Subaccount sub;
 		Account acc;
-		if (!acc.GetAccountByNumber(ormasDal, "22210", errorMessage))
+		if (!acc.GetAccountByNumber(globalVar, ormasDal, "22210", errorMessage))
 		{
 			return false;
 		}
-		if (!salary.GetSalaryByID(ormasDal, sID, errorMessage))
+		if (!salary.GetSalaryByID(globalVar, ormasDal, sID, errorMessage))
 		{
 			if (errorMessage.empty())
 				errorMessage = "Cannot find salary with this ID!";
@@ -508,9 +512,9 @@ namespace BusinessLayer{
 			{
 				sub.Clear();
 				tempBalance.Clear();
-				if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+				if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 					return false;
-				if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+				if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 				{
 					if (sub.GetParentAccountID() == acc.GetID())
 					{
@@ -525,28 +529,28 @@ namespace BusinessLayer{
 		}
 		if (balance.GetSubaccountID() <= 0)
 			return false;
-		if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+		if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 		{
-			int companyID = company.GetCompanyID(ormasDal, errorMessage);
-			int debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+			int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
+			int debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 			int credAccID = balance.GetSubaccountID();
 			if (0 == debAccID || 0 == credAccID || 0 == companyID)
 			{
 				return false;
 			}
-			if (this->CorrectingEntry(ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			if (this->CorrectingEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
 			{
 				BalancePayslipRelation bpRelation;
 				bpRelation.SetBalanceID(balance.GetID());
 				bpRelation.SetPayslipID(this->id);
-				if (bpRelation.DeleteBalancePayslipRelation(ormasDal, errorMessage))
+				if (bpRelation.DeleteBalancePayslipRelation(globalVar, ormasDal, errorMessage))
 					return true;
 			}
 		}
 		return false;
 	}
 
-	bool Payslip::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Payslip::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -555,11 +559,11 @@ namespace BusinessLayer{
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Операция начисление заработной платы"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -570,7 +574,7 @@ namespace BusinessLayer{
 		}
 		return true;
 	}
-	bool Payslip::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage)
+	bool Payslip::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -579,11 +583,11 @@ namespace BusinessLayer{
 		entry.SetValue(previousSum);
 		entry.SetCreditingAccountID(debAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена начисление заработной платы, для коррекции"));
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -599,11 +603,11 @@ namespace BusinessLayer{
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Операция начисление заработной платы"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -614,7 +618,7 @@ namespace BusinessLayer{
 		}
 		return true;
 	}
-	bool Payslip::CorrectingEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Payslip::CorrectingEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -623,11 +627,11 @@ namespace BusinessLayer{
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(debAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена начисление заработной платы"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}

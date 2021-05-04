@@ -54,7 +54,7 @@ void CreateWERDlg::SetID(int ID, QString childName)
 				employeeEdit->setText(QString::number(ID));
 			}
 			BusinessLayer::User user;
-			if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+			if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 			{
 				empNamePh->setText(user.GetName().c_str());
 				empSurnamePh->setText(user.GetSurname().c_str());
@@ -77,7 +77,7 @@ void CreateWERDlg::FillEditElements(int ceWarehouseID, int ceEmployeeID)
 	employeeEdit->setText(QString::number(ceEmployeeID));
 	warehouseCmb->setCurrentIndex(warehouseCmb->findData(QVariant(ceWarehouseID)));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), ceEmployeeID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ceEmployeeID, errorMessage))
 	{
 		empNamePh->setText(user.GetName().c_str());
 		empSurnamePh->setText(user.GetSurname().c_str());
@@ -110,7 +110,7 @@ void CreateWERDlg::CreateWarehouseEmployee()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetWarehouseEmployeeParams(warehouseCmb->currentData().toInt(), employeeEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateWarehouseEmployeeRelation(warehouseEmployee, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -119,8 +119,8 @@ void CreateWERDlg::CreateWarehouseEmployee()
 				{
 					BusinessLayer::Warehouse *warehouse = new BusinessLayer::Warehouse();
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
-					if (!warehouse->GetWarehouseByID(dialogBL->GetOrmasDal(), warehouseEmployee->GetWarehouseID(), errorMessage)
-						|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), warehouseEmployee->GetEmployeeID(), errorMessage))
+					if (!warehouse->GetWarehouseByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouseEmployee->GetWarehouseID(), errorMessage)
+						|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouseEmployee->GetEmployeeID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -134,7 +134,7 @@ void CreateWERDlg::CreateWarehouseEmployee()
 						return;
 					}
 					BusinessLayer::Subaccount *subacc = new BusinessLayer::Subaccount();
-					if (!subacc->GetSubaccountByID(dialogBL->GetOrmasDal(), warehouse->GetSubaccountID(), errorMessage))
+					if (!subacc->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouse->GetSubaccountID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -149,7 +149,7 @@ void CreateWERDlg::CreateWarehouseEmployee()
 						return;
 					}
 					BusinessLayer::Role *role = new BusinessLayer::Role();
-					if (!role->GetRoleByID(dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage))
+					if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -183,7 +183,13 @@ void CreateWERDlg::CreateWarehouseEmployee()
 					delete role;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 
 			Close();
@@ -216,7 +222,7 @@ void CreateWERDlg::EditWarehouseEmployee()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetWarehouseEmployeeParams(warehouseCmb->currentData().toInt(), employeeEdit->text().toInt(), warehouseEmployee->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateWarehouseEmployeeRelation(warehouseEmployee, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -225,8 +231,8 @@ void CreateWERDlg::EditWarehouseEmployee()
 					{
 						BusinessLayer::Warehouse *warehouse = new BusinessLayer::Warehouse();
 						BusinessLayer::Employee *employee = new BusinessLayer::Employee();
-						if (!warehouse->GetWarehouseByID(dialogBL->GetOrmasDal(), warehouseEmployee->GetWarehouseID(), errorMessage)
-							|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), warehouseEmployee->GetEmployeeID(), errorMessage))
+						if (!warehouse->GetWarehouseByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouseEmployee->GetWarehouseID(), errorMessage)
+							|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouseEmployee->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -240,7 +246,7 @@ void CreateWERDlg::EditWarehouseEmployee()
 							return;
 						}
 						BusinessLayer::Subaccount *subacc = new BusinessLayer::Subaccount();
-						if (!subacc->GetSubaccountByID(dialogBL->GetOrmasDal(), warehouse->GetSubaccountID(), errorMessage))
+						if (!subacc->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouse->GetSubaccountID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -255,7 +261,7 @@ void CreateWERDlg::EditWarehouseEmployee()
 							return;
 						}
 						BusinessLayer::Role *role = new BusinessLayer::Role();
-						if (!role->GetRoleByID(dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage))
+						if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -286,7 +292,13 @@ void CreateWERDlg::EditWarehouseEmployee()
 						delete role;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				Close();
 			}
@@ -342,7 +354,7 @@ void CreateWERDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

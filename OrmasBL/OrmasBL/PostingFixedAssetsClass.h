@@ -40,25 +40,25 @@ namespace BusinessLayer
 
 
 		//Create, delete, update methods
-		bool CreatePostingFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdatePostingFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeletePostingFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreatePostingFixedAssets(DataLayer::OrmasDal& ormasDal, int uID, int sID, int aID, int faID, int iID, std::string& errorMessage);
-		bool UpdatePostingFixedAssets(DataLayer::OrmasDal& ormasDal, int uID, int sID, int aID, int faID, int iID, std::string& errorMessage);
+		bool CreatePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdatePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeletePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreatePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int sID, int aID, int faID, int iID, std::string& errorMessage);
+		bool UpdatePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int sID, int aID, int faID, int iID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetPostingFixedAssetsByID(DataLayer::OrmasDal& ormasDal, int fID, std::string& errorMessage);
-		bool GetPostingFixedAssetsByUserID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
-		bool GetPostingFixedAssetsByAccountID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage);
-		bool GetPostingFixedAssetsBySubaccountID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool GetPostingFixedAssetsByFixedAssetsID(DataLayer::OrmasDal& ormasDal, int faID, std::string& errorMessage);
-		bool GetPostingFixedAssetsByInventoryID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetPostingFixedAssetsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fID, std::string& errorMessage);
+		bool GetPostingFixedAssetsByUserID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
+		bool GetPostingFixedAssetsByAccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage);
+		bool GetPostingFixedAssetsBySubaccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool GetPostingFixedAssetsByFixedAssetsID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int faID, std::string& errorMessage);
+		bool GetPostingFixedAssetsByInventoryID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, int sID, int aID, int fID, int iID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int sID, int aID, int fID, int iID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //PostingFixedAssetsCLASS_H

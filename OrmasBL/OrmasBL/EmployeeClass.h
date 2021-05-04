@@ -39,33 +39,33 @@ namespace BusinessLayer{
 		
 
 		//Create, delete, update methods
-		bool CreateEmployee(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateEmployee(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteEmployee(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateEmployee(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+		bool CreateEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 			std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, int pID, std::string eBirthDate,
 			std::string eHireDate, std::string& errorMessage);
-		bool UpdateEmployee(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+		bool UpdateEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 			std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, int pID, std::string eBirthDate,
 			std::string eHireDate, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateINFilterForEmployee(DataLayer::OrmasDal& ormasDal, std::vector<int> empIDList);
-		std::string GenerateINFilterForStockEmployee(DataLayer::OrmasDal& ormasDal, std::vector<int> empIDList);
-		bool GetEmployeeByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
-		bool GetEmployeeByCredentials(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string uEmail, std::string uPassword);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateINFilterForEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> empIDList);
+		std::string GenerateINFilterForStockEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> empIDList);
+		bool GetEmployeeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
+		bool GetEmployeeByCredentials(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string uEmail, std::string uPassword);
 		bool IsEmpty();
 		void Clear();
-		bool CreateDivisionEmployeeRelation(DataLayer::OrmasDal& ormasDal, DivisionEmployeeRelation deRelation, std::string& errorMessage);
-		bool UpdateDivisionEmployeeRelation(DataLayer::OrmasDal& ormasDal, DivisionEmployeeRelation deRelation, std::string& errorMessage);
-		bool CreateCompanyEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool CreateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, DivisionEmployeeRelation deRelation, std::string& errorMessage);
+		bool UpdateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, DivisionEmployeeRelation deRelation, std::string& errorMessage);
+		bool CreateCompanyEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&, std::string&, std::string&, std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string uName, std::string uSurname, std::string uPhone,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uName, std::string uSurname, std::string uPhone,
 			int uRoleID, std::string eBirthDate, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		std::string GetCurrentPhone(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		std::string GetCurrentPhone(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
 	};
 }
 

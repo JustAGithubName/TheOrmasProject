@@ -41,9 +41,9 @@ namespace BusinessLayer{
 		information = aInformation;
 	}
 
-	bool Shareholder::CreateShareholder(DataLayer::OrmasDal& ormasDal, int uID, double sCoubtOfStock, std::string aInformation, std::string& errorMessage)
+	bool Shareholder::CreateShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, double sCoubtOfStock, std::string aInformation, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, errorMessage))
 			return false;
 		TrimStrings(aInformation);
 		userID = uID;
@@ -51,27 +51,27 @@ namespace BusinessLayer{
 		information = aInformation;
 		if (ormasDal.CreateShareholder(userID, countOfStock, information, errorMessage))
 		{
-			if (CreateBalanceForShareholder(ormasDal, userID, errorMessage))
+			if (CreateBalanceForShareholder(globalVar, ormasDal, userID, errorMessage))
 				return true;
 			return false;
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Shareholder::CreateShareholder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Shareholder::CreateShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		if (ormasDal.CreateShareholder(userID, countOfStock, information, errorMessage))
 		{
-			if (CreateBalanceForShareholder(ormasDal, userID, errorMessage))
+			if (CreateBalanceForShareholder(globalVar, ormasDal, userID, errorMessage))
 				return true;
 			return false;
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Shareholder::DeleteShareholder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Shareholder::DeleteShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (!errorMessage.empty())
@@ -83,7 +83,7 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Shareholder::UpdateShareholder(DataLayer::OrmasDal& ormasDal, int uID, double sCountOfStock, std::string aInformation, std::string& errorMessage)
+	bool Shareholder::UpdateShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, double sCountOfStock, std::string aInformation, std::string& errorMessage)
 	{
 		TrimStrings(aInformation);
 		userID = uID;
@@ -96,7 +96,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Shareholder::UpdateShareholder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Shareholder::UpdateShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.UpdateShareholder(userID, countOfStock, information, errorMessage))
 		{
@@ -114,7 +114,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Shareholder::GetShareholderByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool Shareholder::GetShareholderByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		if (uID <= 0)
 			return false;
@@ -156,7 +156,7 @@ namespace BusinessLayer{
 
 	}
 
-	bool Shareholder::IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool Shareholder::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		Shareholder shareholder;
 		shareholder.Clear();
@@ -176,7 +176,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Shareholder::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Shareholder::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Shareholder shareholder;
 		shareholder.Clear();

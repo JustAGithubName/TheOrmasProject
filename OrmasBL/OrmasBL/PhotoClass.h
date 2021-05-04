@@ -30,21 +30,21 @@ namespace BusinessLayer{
 		void SetSource(std::string);
 
 		// Create, delete and update Photo
-		bool CreatePhoto(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdatePhoto(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeletePhoto(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreatePhoto(DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage);
-		bool UpdatePhoto(DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage);
+		bool CreatePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdatePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeletePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreatePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage);
+		bool UpdatePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetPhotoByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		bool GetPhotoByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

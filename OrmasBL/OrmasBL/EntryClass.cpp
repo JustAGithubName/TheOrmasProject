@@ -85,14 +85,14 @@ namespace BusinessLayer{
 	}
 
 
-	bool Entry::CreateEntry(DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, 
+	bool Entry::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, 
 		std::string eDescription, std::string& errorMessage, bool corrEntry)
 	{
-		if (IsDuplicate(ormasDal, eDate, daID, eValue, caID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, eDate, daID, eValue, caID, errorMessage))
 			return false;
 		if (corrEntry == false)
 		{
-			if (!EntryRoutingValidation(ormasDal, daID, caID, errorMessage))
+			if (!EntryRoutingValidation(globalVar, ormasDal, daID, caID, errorMessage))
 				return false;
 		}
 		id = ormasDal.GenerateID();
@@ -108,12 +108,12 @@ namespace BusinessLayer{
 		Account cAccount;
 		int dSAccParentID = 0;
 		int cSAccParentID = 0;
-		if (!dSAcc.GetSubaccountByID(ormasDal, debitingAccountID, errorMessage))
+		if (!dSAcc.GetSubaccountByID(globalVar, ormasDal, debitingAccountID, errorMessage))
 		{
 			dSAccParentID = debitingAccountID;
 			dSAcc.Clear();
 			errorMessage.clear();
-			if (dAccount.HaveSubaccount(ormasDal, dSAccParentID))
+			if (dAccount.HaveSubaccount(globalVar, ormasDal, dSAccParentID))
 			{
 				return false;
 			}
@@ -123,12 +123,12 @@ namespace BusinessLayer{
 			dSAccParentID = dSAcc.GetParentAccountID();
 			errorMessage.clear();
 		}
-		if (!cSAcc.GetSubaccountByID(ormasDal, creditingAccountID, errorMessage))
+		if (!cSAcc.GetSubaccountByID(globalVar, ormasDal, creditingAccountID, errorMessage))
 		{
 			cSAccParentID = creditingAccountID;
 			cSAcc.Clear();
 			errorMessage.clear();
-			if (cAccount.HaveSubaccount(ormasDal, cSAccParentID))
+			if (cAccount.HaveSubaccount(globalVar, ormasDal, cSAccParentID))
 			{
 				return false;
 			}
@@ -140,9 +140,9 @@ namespace BusinessLayer{
 		}
 		if (0 != id && ormasDal.CreateEntry(id, date, dSAccParentID, value, cSAccParentID, eDescription, errorMessage))
 		{
-			if (DebitAccount(ormasDal, debitingAccountID, value) && CreditAccount(ormasDal, creditingAccountID, value))
+			if (DebitAccount(globalVar, ormasDal, debitingAccountID, value) && CreditAccount(globalVar, ormasDal, creditingAccountID, value))
 			{
-				if (!ReCalculateParentAccount(ormasDal, debitingAccountID, creditingAccountID,  value, errorMessage))
+				if (!ReCalculateParentAccount(globalVar, ormasDal, debitingAccountID, creditingAccountID,  value, errorMessage))
 					return false;
 				EntrySubaccountRelation debRelation;
 				EntrySubaccountRelation credRelation;
@@ -150,7 +150,7 @@ namespace BusinessLayer{
 				{
 					debRelation.SetSubaccountID(debitingAccountID);
 					debRelation.SetEntryID(id);
-					if (!debRelation.CreateEntrySubaccountRelation(ormasDal, errorMessage))
+					if (!debRelation.CreateEntrySubaccountRelation(globalVar, ormasDal, errorMessage))
 					{
 						return false;
 					}
@@ -159,7 +159,7 @@ namespace BusinessLayer{
 				{
 					credRelation.SetSubaccountID(creditingAccountID);
 					credRelation.SetEntryID(id);
-					if (!credRelation.CreateEntrySubaccountRelation(ormasDal, errorMessage))
+					if (!credRelation.CreateEntrySubaccountRelation(globalVar, ormasDal, errorMessage))
 					{
 						return false;
 					}
@@ -175,13 +175,13 @@ namespace BusinessLayer{
 		//ormasDal.StartTransaction(errorMessage);
 		return false;
 	}
-	bool Entry::CreateEntry(DataLayer::OrmasDal& ormasDal, std::string& errorMessage, bool corrEntry)
+	bool Entry::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage, bool corrEntry)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		if (corrEntry == false)
 		{
-			if (!EntryRoutingValidation(ormasDal, debitingAccountID, creditingAccountID, errorMessage))
+			if (!EntryRoutingValidation(globalVar, ormasDal, debitingAccountID, creditingAccountID, errorMessage))
 				return false;
 		}
 		if (value < 0)
@@ -194,12 +194,12 @@ namespace BusinessLayer{
 		Account dAccount;
 		int dSAccParentID = 0;
 		int cSAccParentID = 0;
-		if (!dSAcc.GetSubaccountByID(ormasDal, debitingAccountID, errorMessage))
+		if (!dSAcc.GetSubaccountByID(globalVar, ormasDal, debitingAccountID, errorMessage))
 		{
 			dSAccParentID = debitingAccountID;
 			dSAcc.Clear();
 			errorMessage.clear();
-			if (dAccount.HaveSubaccount(ormasDal, dSAccParentID))
+			if (dAccount.HaveSubaccount(globalVar, ormasDal, dSAccParentID))
 			{
 				return false;
 			}
@@ -209,12 +209,12 @@ namespace BusinessLayer{
 			dSAccParentID = dSAcc.GetParentAccountID();
 			errorMessage.clear();
 		}
-		if (!cSAcc.GetSubaccountByID(ormasDal, creditingAccountID, errorMessage))
+		if (!cSAcc.GetSubaccountByID(globalVar, ormasDal, creditingAccountID, errorMessage))
 		{
 			cSAccParentID = creditingAccountID;
 			cSAcc.Clear();
 			errorMessage.clear();
-			if (cAccount.HaveSubaccount(ormasDal, cSAccParentID))
+			if (cAccount.HaveSubaccount(globalVar, ormasDal, cSAccParentID))
 			{
 				return false;
 			}
@@ -226,9 +226,9 @@ namespace BusinessLayer{
 		}
 		if (0 != id && ormasDal.CreateEntry(id, date, dSAccParentID, value, cSAccParentID, description, errorMessage))
 		{
-			if (DebitAccount(ormasDal, debitingAccountID, value) && CreditAccount(ormasDal, creditingAccountID, value))
+			if (DebitAccount(globalVar, ormasDal, debitingAccountID, value) && CreditAccount(globalVar, ormasDal, creditingAccountID, value))
 			{
-				if (!ReCalculateParentAccount(ormasDal, debitingAccountID, creditingAccountID, value, errorMessage))
+				if (!ReCalculateParentAccount(globalVar, ormasDal, debitingAccountID, creditingAccountID, value, errorMessage))
 					return false;
 				EntrySubaccountRelation debRelation;
 				EntrySubaccountRelation credRelation;
@@ -240,7 +240,7 @@ namespace BusinessLayer{
 				{
 					debRelation.SetSubaccountID(debitingAccountID);
 					debRelation.SetEntryID(id);
-					if (!debRelation.CreateEntrySubaccountRelation(ormasDal, errorMessage))
+					if (!debRelation.CreateEntrySubaccountRelation(globalVar, ormasDal, errorMessage))
 					{
 						return false;
 					}
@@ -249,7 +249,7 @@ namespace BusinessLayer{
 				{
 					credRelation.SetSubaccountID(creditingAccountID);
 					credRelation.SetEntryID(id);
-					if (!credRelation.CreateEntrySubaccountRelation(ormasDal, errorMessage))
+					if (!credRelation.CreateEntrySubaccountRelation(globalVar, ormasDal, errorMessage))
 					{
 						return false;
 					}
@@ -265,7 +265,7 @@ namespace BusinessLayer{
 		//ormasDal.StartTransaction(errorMessage);
 		return false;
 	}
-	bool Entry::DeleteEntry(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Entry::DeleteEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteEntry(id, errorMessage))
 		{
@@ -279,7 +279,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Entry::UpdateEntry(DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, 
+	bool Entry::UpdateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, 
 		std::string eDescription, std::string& errorMessage, bool corrEntry)
 	{
 		date = eDate;
@@ -300,7 +300,7 @@ namespace BusinessLayer{
 		//ormasDal.StartTransaction(errorMessage);
 		return false;
 	}
-	bool Entry::UpdateEntry(DataLayer::OrmasDal& ormasDal, std::string& errorMessage, bool corrEntry)
+	bool Entry::UpdateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage, bool corrEntry)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.UpdateEntry(id, date, debitingAccountID, value, creditingAccountID, description, errorMessage))
@@ -325,7 +325,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::string Entry::GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string fromDate, std::string toDate)
+	std::string Entry::GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string toDate)
 	{
 		if (0 != id || !date.empty() || 0.0 != value || 0 != debitingAccountID || 0 != creditingAccountID || !description.empty())
 		{
@@ -334,7 +334,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Entry::GetEntryByID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	bool Entry::GetEntryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		if (eID <= 0)
 			return false;
@@ -375,7 +375,7 @@ namespace BusinessLayer{
 		description.clear();
 	}
 
-	bool Entry::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string eDate, int daID, double eValue, int caID, std::string& errorMessage)
+	bool Entry::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, std::string& errorMessage)
 	{
 		Entry entry;
 		entry.Clear();
@@ -394,7 +394,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Entry::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Entry::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Entry entry;
 		entry.Clear();
@@ -413,14 +413,14 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Entry::DebitAccount(DataLayer::OrmasDal& ormasDal, int accountID, double value)
+	bool Entry::DebitAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, double value)
 	{
 		Subaccount subAcc;
 		Account dAcc;
 		AccountType atype;
-		if (dAcc.GetAccountByID(ormasDal, accountID, errorMessage))
+		if (dAcc.GetAccountByID(globalVar, ormasDal, accountID, errorMessage))
 		{
-			/*if (atype.GetAccountTypeByNumber(ormasDal, dAcc.GetAccountTypeNumber(ormasDal), errorMessage))
+			/*if (atype.GetAccountTypeByNumber(globalVar, ormasDal, dAcc.GetAccountTypeNumber(ormasDal), errorMessage))
 			{
 				if (0 == atype.GetName().compare("ACTIVE"))
 				{
@@ -431,16 +431,16 @@ namespace BusinessLayer{
 					dAcc.SetCurrentBalance(dAcc.GetCurrentBalance() - value);
 				}
 			}*/
-			if (dAcc.AccountOperationValidation(ormasDal, dAcc.GetCurrentBalance() + value))
+			if (dAcc.AccountOperationValidation(globalVar, ormasDal, dAcc.GetCurrentBalance() + value))
 			{
 				dAcc.SetCurrentBalance(dAcc.GetCurrentBalance() + value);
-				if (dAcc.UpdateAccount(ormasDal, errorMessage))
+				if (dAcc.UpdateAccount(globalVar, ormasDal, errorMessage))
 					return true;
 			}
 		}
-		else if(subAcc.GetSubaccountByID(ormasDal, accountID, errorMessage))
+		else if(subAcc.GetSubaccountByID(globalVar, ormasDal, accountID, errorMessage))
 		{
-			/*if (atype.GetAccountTypeByNumber(ormasDal, dAcc.GetAccountTypeNumber(ormasDal), errorMessage))
+			/*if (atype.GetAccountTypeByNumber(globalVar, ormasDal, dAcc.GetAccountTypeNumber(ormasDal), errorMessage))
 			{
 			if (0 == atype.GetName().compare("ACTIVE"))
 			{
@@ -451,13 +451,13 @@ namespace BusinessLayer{
 			dAcc.SetCurrentBalance(dAcc.GetCurrentBalance() - value);
 			}
 			}*/
-			if (dAcc.GetAccountByID(ormasDal, subAcc.GetParentAccountID(), errorMessage))
+			if (dAcc.GetAccountByID(globalVar, ormasDal, subAcc.GetParentAccountID(), errorMessage))
 			{
-				if (dAcc.AccountOperationValidation(ormasDal, dAcc.GetCurrentBalance() + value))
+				if (dAcc.AccountOperationValidation(globalVar, ormasDal, dAcc.GetCurrentBalance() + value))
 				{
 					dAcc.SetCurrentBalance(dAcc.GetCurrentBalance() + value);
 					subAcc.SetCurrentBalance(subAcc.GetCurrentBalance() + value);
-					if (dAcc.UpdateAccount(ormasDal, errorMessage) && subAcc.UpdateSubaccount(ormasDal, errorMessage))
+					if (dAcc.UpdateAccount(globalVar, ormasDal, errorMessage) && subAcc.UpdateSubaccount(globalVar, ormasDal, errorMessage))
 						return true;
 				}
 			}
@@ -465,15 +465,15 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Entry::CreditAccount(DataLayer::OrmasDal& ormasDal, int accountID, double value)
+	bool Entry::CreditAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, double value)
 	{
 		Subaccount subAcc;
 		Account cAcc;
 		AccountType atype;
 		std::string parentNumber = "";
-		if (cAcc.GetAccountByID(ormasDal, accountID, errorMessage))
+		if (cAcc.GetAccountByID(globalVar, ormasDal, accountID, errorMessage))
 		{
-			/*if (atype.GetAccountTypeByNumber(ormasDal, cAcc.GetAccountTypeNumber(ormasDal), errorMessage))
+			/*if (atype.GetAccountTypeByNumber(globalVar, ormasDal, cAcc.GetAccountTypeNumber(ormasDal), errorMessage))
 			{
 				if (0 == atype.GetName().compare("ACTIVE"))
 				{
@@ -485,12 +485,12 @@ namespace BusinessLayer{
 				}
 			}*/
 			cAcc.SetCurrentBalance(cAcc.GetCurrentBalance() - value);
-			if (cAcc.UpdateAccount(ormasDal, errorMessage))
+			if (cAcc.UpdateAccount(globalVar, ormasDal, errorMessage))
 				return true;
 		}
-		else if (subAcc.GetSubaccountByID(ormasDal, accountID, errorMessage))
+		else if (subAcc.GetSubaccountByID(globalVar, ormasDal, accountID, errorMessage))
 		{
-			/*if (atype.GetAccountTypeByNumber(ormasDal, cAcc.GetAccountTypeNumber(ormasDal), errorMessage))
+			/*if (atype.GetAccountTypeByNumber(globalVar, ormasDal, cAcc.GetAccountTypeNumber(ormasDal), errorMessage))
 			{
 			if (0 == atype.GetName().compare("ACTIVE"))
 			{
@@ -501,13 +501,13 @@ namespace BusinessLayer{
 			cAcc.SetCurrentBalance(cAcc.GetCurrentBalance() + value);
 			}
 			}*/
-			if (cAcc.GetAccountByID(ormasDal, subAcc.GetParentAccountID(), errorMessage))
+			if (cAcc.GetAccountByID(globalVar, ormasDal, subAcc.GetParentAccountID(), errorMessage))
 			{
-				if (cAcc.AccountOperationValidation(ormasDal, cAcc.GetCurrentBalance() + value))
+				if (cAcc.AccountOperationValidation(globalVar, ormasDal, cAcc.GetCurrentBalance() + value))
 				{
 					cAcc.SetCurrentBalance(cAcc.GetCurrentBalance() - value);
 					subAcc.SetCurrentBalance(subAcc.GetCurrentBalance() - value);
-					if (cAcc.UpdateAccount(ormasDal, errorMessage) && subAcc.UpdateSubaccount(ormasDal, errorMessage))
+					if (cAcc.UpdateAccount(globalVar, ormasDal, errorMessage) && subAcc.UpdateSubaccount(globalVar, ormasDal, errorMessage))
 						return true;
 				}
 			}
@@ -515,20 +515,20 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Entry::EntryRoutingValidation(DataLayer::OrmasDal& ormasDal, int daID, int caID, std::string& errorMessage)
+	bool Entry::EntryRoutingValidation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int daID, int caID, std::string& errorMessage)
 	{
 		/*EntryRouting eRouting;
 		Account dAcc;
 		Account cAcc;
-		if (dAcc.GetAccountByID(ormasDal, daID, errorMessage) && cAcc.GetAccountByID(ormasDal, caID, errorMessage))
+		if (dAcc.GetAccountByID(globalVar, ormasDal, daID, errorMessage) && cAcc.GetAccountByID(globalVar, ormasDal, caID, errorMessage))
 		{
-			return eRouting.CheckEntryRouting(ormasDal, std::stoi(dAcc.GetNumber()), std::stoi(cAcc.GetNumber()), errorMessage);
+			return eRouting.CheckEntryRouting(globalVar, ormasDal, std::stoi(dAcc.GetNumber()), std::stoi(cAcc.GetNumber()), errorMessage);
 		}
 		return false;*/
 		return true;
 	}
 
-	bool Entry::ReCalculateParentAccount(DataLayer::OrmasDal& ormasDal, int dAccID, int cAccID, double value, std::string& errorMessage)
+	bool Entry::ReCalculateParentAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dAccID, int cAccID, double value, std::string& errorMessage)
 	{
 		Account dAcc;
 		Account cAcc;
@@ -539,28 +539,28 @@ namespace BusinessLayer{
 		std::string dParentNumber = "";
 		std::string cParentNumber = "";
 		dAcc.Clear();
-		if (!dAcc.GetAccountByID(ormasDal, dAccID, errorMessage))
+		if (!dAcc.GetAccountByID(globalVar, ormasDal, dAccID, errorMessage))
 		{
-			if (!dSubAcc.GetSubaccountByID(ormasDal, dAccID, errorMessage))
+			if (!dSubAcc.GetSubaccountByID(globalVar, ormasDal, dAccID, errorMessage))
 			{
 				return false;
 			}
 			else
 			{
-				if (!dAcc.GetAccountByID(ormasDal, dSubAcc.GetParentAccountID(), errorMessage))
+				if (!dAcc.GetAccountByID(globalVar, ormasDal, dSubAcc.GetParentAccountID(), errorMessage))
 					return false;
 			}
 		}		
 		cAcc.Clear();
-		if (!cAcc.GetAccountByID(ormasDal, cAccID, errorMessage))
+		if (!cAcc.GetAccountByID(globalVar, ormasDal, cAccID, errorMessage))
 		{
-			if (!cSubAcc.GetSubaccountByID(ormasDal, cAccID, errorMessage))
+			if (!cSubAcc.GetSubaccountByID(globalVar, ormasDal, cAccID, errorMessage))
 			{
 				return false;
 			}
 			else
 			{
-				if (!cAcc.GetAccountByID(ormasDal, cSubAcc.GetParentAccountID(), errorMessage))
+				if (!cAcc.GetAccountByID(globalVar, ormasDal, cSubAcc.GetParentAccountID(), errorMessage))
 					return false;
 			}
 		}
@@ -572,29 +572,29 @@ namespace BusinessLayer{
 			cParentNumber += "00";
 			if (dAcc.GetNumber() != dParentNumber && cAcc.GetNumber() != cParentNumber)
 			{
-				if (!dParentAcc.GetAccountByNumber(ormasDal, dParentNumber, errorMessage))
+				if (!dParentAcc.GetAccountByNumber(globalVar, ormasDal, dParentNumber, errorMessage))
 					return false;
-				if (!cParentAcc.GetAccountByNumber(ormasDal, cParentNumber, errorMessage))
+				if (!cParentAcc.GetAccountByNumber(globalVar, ormasDal, cParentNumber, errorMessage))
 					return false;
 				dParentAcc.SetCurrentBalance(dParentAcc.GetCurrentBalance() + value);
 				cParentAcc.SetCurrentBalance(cParentAcc.GetCurrentBalance() - value);
-				if (!dParentAcc.UpdateAccount(ormasDal, errorMessage) || !cParentAcc.UpdateAccount(ormasDal, errorMessage))
+				if (!dParentAcc.UpdateAccount(globalVar, ormasDal, errorMessage) || !cParentAcc.UpdateAccount(globalVar, ormasDal, errorMessage))
 					return false;
 			}
 			else if (dAcc.GetNumber() != dParentNumber)
 			{
-				if (!dParentAcc.GetAccountByNumber(ormasDal, dParentNumber, errorMessage))
+				if (!dParentAcc.GetAccountByNumber(globalVar, ormasDal, dParentNumber, errorMessage))
 					return false;
 				dParentAcc.SetCurrentBalance(dParentAcc.GetCurrentBalance() + value);
-				if (!dParentAcc.UpdateAccount(ormasDal, errorMessage))
+				if (!dParentAcc.UpdateAccount(globalVar, ormasDal, errorMessage))
 					return false;
 			}
 			else if (cAcc.GetNumber() != cParentNumber)
 			{
-				if (!cParentAcc.GetAccountByNumber(ormasDal, cParentNumber, errorMessage))
+				if (!cParentAcc.GetAccountByNumber(globalVar, ormasDal, cParentNumber, errorMessage))
 					return false;
 				cParentAcc.SetCurrentBalance(cParentAcc.GetCurrentBalance() - value);
-				if (!cParentAcc.UpdateAccount(ormasDal, errorMessage))
+				if (!cParentAcc.UpdateAccount(globalVar, ormasDal, errorMessage))
 					return false;
 			}
 		}

@@ -32,25 +32,25 @@ namespace BusinessLayer
 		void SetComment(std::string);
 		
 		//Create, delete, update methods
-		bool CreateStatus(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateStatus(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteStatus(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateStatus(DataLayer::OrmasDal& ormasDal, std::string sCode, std::string sName, std::string sComment, 
+		bool CreateStatus(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateStatus(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteStatus(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateStatus(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sCode, std::string sName, std::string sComment, 
 			std::string& errorMessage);
-		bool UpdateStatus(DataLayer::OrmasDal& ormasDal, std::string sCode, std::string sName, std::string sComment, 
+		bool UpdateStatus(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sCode, std::string sName, std::string sComment, 
 			std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetStatusByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool GetStatusByName(DataLayer::OrmasDal& ormasDal, std::string sName, std::string& errorMessage);
+		bool GetStatusByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool GetStatusByName(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sName, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		static std::map<std::string, int> GetStatusesAsMap(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		static std::map<std::string, int> GetStatusesAsMap(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string sCode, std::string sName, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sCode, std::string sName, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif // STATUSCLASS_H

@@ -56,9 +56,9 @@ namespace BusinessLayer{
 		source = pSource;
 	}
 
-	bool Photo::CreatePhoto(DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage)
+	bool Photo::CreatePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uID, pID, pSource, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, pID, pSource, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(pSource);
@@ -76,9 +76,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Photo::CreatePhoto(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Photo::CreatePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreatePhoto(id, userID, productID, source, errorMessage))
@@ -91,7 +91,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Photo::DeletePhoto(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Photo::DeletePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeletePhoto(id, errorMessage))
 		{
@@ -105,7 +105,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Photo::UpdatePhoto(DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage)
+	bool Photo::UpdatePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage)
 	{
 		TrimStrings(pSource);
 		userID = uID;
@@ -121,7 +121,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Photo::UpdatePhoto(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Photo::UpdatePhoto(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdatePhoto(id, userID, productID, source, errorMessage))
 		{
@@ -143,7 +143,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Photo::GetPhotoByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Photo::GetPhotoByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -186,7 +186,7 @@ namespace BusinessLayer{
 			boost::trim(pSource);
 	}
 
-	bool Photo::IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage)
+	bool Photo::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int pID, std::string pSource, std::string& errorMessage)
 	{
 		Photo photo;
 		photo.Clear();
@@ -216,7 +216,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Photo::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Photo::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Photo photo;
 		photo.Clear();

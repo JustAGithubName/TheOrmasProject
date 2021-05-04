@@ -62,12 +62,12 @@ void CreatePrcDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetShortName().c_str());
 					}
@@ -96,12 +96,12 @@ void CreatePrcDlg::FillEditElements(QString pDate, double pValue, int pProductID
 	isOutdatedCmb->setCurrentIndex(index);
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(pCurrencyID)));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), pProductID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pProductID, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetShortName().c_str());
 		}
@@ -141,7 +141,7 @@ void CreatePrcDlg::CreatePrice()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetPriceParams(dateEdit->text(), valueEdit->text().toDouble(), productEdit->text().toInt(), 
 			currencyCmb->currentData().toInt(), isOutdatedCmb->currentText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreatePrice(price, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -150,8 +150,8 @@ void CreatePrcDlg::CreatePrice()
 				{
 					BusinessLayer::Product *product = new BusinessLayer::Product;
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
-					if (!product->GetProductByID(dialogBL->GetOrmasDal(), price->GetProductID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), price->GetCurrencyID(), errorMessage))
+					if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), price->GetProductID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), price->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -164,7 +164,7 @@ void CreatePrcDlg::CreatePrice()
 						return;
 					}
 					BusinessLayer::Measure *measure = new BusinessLayer::Measure();
-					if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
+					if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -191,7 +191,13 @@ void CreatePrcDlg::CreatePrice()
 					delete measure;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -227,7 +233,7 @@ void CreatePrcDlg::EditPrice()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetPriceParams(dateEdit->text(), valueEdit->text().toDouble(), productEdit->text().toInt(), 
 				currencyCmb->currentData().toInt(), isOutdatedCmb->currentText(), price->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdatePrice(price, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -236,8 +242,8 @@ void CreatePrcDlg::EditPrice()
 					{
 						BusinessLayer::Product *product = new BusinessLayer::Product;
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency;
-						if (!product->GetProductByID(dialogBL->GetOrmasDal(), price->GetProductID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), price->GetCurrencyID(), errorMessage))
+						if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), price->GetProductID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), price->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -250,7 +256,7 @@ void CreatePrcDlg::EditPrice()
 							return;
 						}
 						BusinessLayer::Measure *measure = new BusinessLayer::Measure();
-						if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
+						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -276,7 +282,13 @@ void CreatePrcDlg::EditPrice()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}

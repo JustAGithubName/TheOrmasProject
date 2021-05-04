@@ -23,4 +23,23 @@ namespace BusinessLayer{
 	{
 		return subaccountNumber;
 	}
+
+	void WarehouseView::SetWarehouseTypeName(std::string sWarehouseTypeName)
+	{
+		warehouseTypeName = sWarehouseTypeName;
+	}
+
+	void WarehouseView::SetSubaccountNumber(std::string wSubaccountNumber)
+	{
+		subaccountNumber = wSubaccountNumber;
+	}
+	
+	std::string WarehouseView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != warehouseTypeID || 0 != subaccountID || !warehouseTypeName.empty() || !subaccountNumber.empty() || !name.empty() || !address.empty() || !phone.empty())
+		{
+			return ormasDal.GetFilterForWarehouseView(id, name, subaccountNumber, warehouseTypeName, address, phone, warehouseTypeID, subaccountID);
+		}
+		return "";
+	}
 }

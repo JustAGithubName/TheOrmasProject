@@ -57,12 +57,12 @@ void CreateRcpOthStListDlg::SetProductData(int productID)
 {
 	productEdit->setText(QString::number(productID));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), productID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productID, errorMessage))
 	{
 		othStNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
@@ -87,12 +87,12 @@ void CreateRcpOthStListDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::OtherStocks otherStocks;
-				if (otherStocks.GetOtherStocksByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (otherStocks.GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					othStNamePh->setText(otherStocks.GetName().c_str());
 					volumePh->setText(QString::number(otherStocks.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), otherStocks.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
@@ -107,7 +107,7 @@ void CreateRcpOthStListDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -136,18 +136,18 @@ void CreateRcpOthStListDlg::FillEditElements(int oReceiptOtherStocksID, int oOth
 	statusEdit->setText(QString::number(oStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(oCurrencyID)));
 	BusinessLayer::OtherStocks otherStocks;
-	if (otherStocks.GetOtherStocksByID(dialogBL->GetOrmasDal(), oOtherStocksID, errorMessage))
+	if (otherStocks.GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), oOtherStocksID, errorMessage))
 	{
 		othStNamePh->setText(otherStocks.GetName().c_str());
 		volumePh->setText(QString::number(otherStocks.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), otherStocks.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), oStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), oStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -216,7 +216,7 @@ void CreateRcpOthStListDlg::AddProductToList()
 		BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 		BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
 
-		if (!otherStocks->GetOtherStocksByID(dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
+		if (!otherStocks->GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr(errorMessage.c_str())),
@@ -229,9 +229,9 @@ void CreateRcpOthStListDlg::AddProductToList()
 		}
 		else
 		{
-			if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
-				|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage)
-				|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage))
+			if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
+				|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage)
+				|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -328,7 +328,7 @@ void CreateRcpOthStListDlg::EditProductInList()
 				return;
 			}
 			BusinessLayer::OtherStocks *otherStocks = new BusinessLayer::OtherStocks();
-			if (!otherStocks->GetOtherStocksByID(dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
+			if (!otherStocks->GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -357,10 +357,10 @@ void CreateRcpOthStListDlg::EditProductInList()
 						BusinessLayer::Status *status = new BusinessLayer::Status();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
-						if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage)
-							|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
+						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage)
+							|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Warning")),
 								QString(tr(errorMessage.c_str())),

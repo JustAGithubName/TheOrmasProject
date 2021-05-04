@@ -79,7 +79,7 @@ namespace BusinessLayer
 		currencyID = cCurrencyID;
 	}
 
-	bool ConsumeProductList::CreateConsumeProductList(DataLayer::OrmasDal& ormasDal, int cpID, int pID, double cplCount, double cplSum,
+	bool ConsumeProductList::CreateConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int pID, double cplCount, double cplSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -95,7 +95,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeProductList::CreateConsumeProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeProductList::CreateConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateConsumeProductList(id, consumeProductID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -104,7 +104,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeProductList::DeleteConsumeProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeProductList::DeleteConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInConsumeProductList(id, errorMessage))
 		{
@@ -113,7 +113,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeProductList::DeleteListByConsumeProductID(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage)
+	bool ConsumeProductList::DeleteListByConsumeProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage)
 	{
 		consumeProductID = cpID;
 		if (ormasDal.DeleteListByConsumeProductID(consumeProductID, errorMessage))
@@ -124,7 +124,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ConsumeProductList::UpdateConsumeProductList(DataLayer::OrmasDal& ormasDal, int cpID, int pID, double cplCount, double cplSum,
+	bool ConsumeProductList::UpdateConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int pID, double cplCount, double cplSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		consumeProductID = cpID;
@@ -139,7 +139,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeProductList::UpdateConsumeProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeProductList::UpdateConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateConsumeProductList(id, consumeProductID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -157,7 +157,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ConsumeProductList::GetConsumeProductListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool ConsumeProductList::GetConsumeProductListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -200,7 +200,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ConsumeProductList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int cpID, int pID, double cplCount, double cplSum,
+	bool ConsumeProductList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int pID, double cplCount, double cplSum,
 		int cID, std::string& errorMessage)
 	{
 		ConsumeProductList consumeProductList;
@@ -223,7 +223,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ConsumeProductList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeProductList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ConsumeProductList consumeProductList;
 		consumeProductList.Clear();

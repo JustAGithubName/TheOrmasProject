@@ -42,22 +42,22 @@ namespace BusinessLayer
 		void SetFixedAssetsID(int);
 
 		//Create, delete, update methods
-		bool CreateFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string oDate, std::string oName, 
+		bool CreateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName, 
 			double oValue, bool oIncrement, bool oDecrement, int faID, std::string& errorMessage);
-		bool UpdateFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string oDate, std::string oName,
+		bool UpdateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName,
 			double oValue, bool oIncrement, bool oDecrement, int faID, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetFixedAssetsOperationsByID(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
+		bool GetFixedAssetsOperationsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string oDate, std::string oName, double oValue, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName, double oValue, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //FixedAssetsOperationsCLASS_H

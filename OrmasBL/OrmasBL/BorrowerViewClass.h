@@ -11,9 +11,12 @@ namespace BusinessLayer{
 		BorrowerView(DataLayer::borrowersViewCollection);
 		BorrowerView(){};
 		~BorrowerView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// BorrowerView class Accessors
 		std::string GetRoleName();
+
+		void SetRoleName(std::string);
 	};
 }
 

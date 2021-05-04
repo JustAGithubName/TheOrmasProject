@@ -49,39 +49,39 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 				
 		//Create, delete, update methods
-		bool CreateOrder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateOrder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteOrder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateOrder(DataLayer::OrmasDal& ormasDal, int clID, std::string oDate, std::string oExecDate, int eID, double oCount,
+		bool CreateOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, std::string oDate, std::string oExecDate, int eID, double oCount,
 			double oSum, int sID, int cID, std::string& errorMessage);
-		bool UpdateOrder(DataLayer::OrmasDal& ormasDal, int clID, std::string oDate, std::string oExecDate, int eID, double oCount,
+		bool UpdateOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, std::string oDate, std::string oExecDate, int eID, double oCount,
 			double oSum, int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string formDate, std::string toDate);
-		bool GetOrderByID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string formDate, std::string toDate);
+		bool GetOrderByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		double previousSum = 0.0;
 		int previousStatusID = 0;
 		double prevCount = 0.0;
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int clID, std::string oDate, double oCount, double oSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, std::string oDate, double oCount, double oSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateOrderEntry(DataLayer::OrmasDal& ormasDal, int clID, int eID, double oSum, int cID, std::string oExecDate, std::string& errorMessage);
-		bool CreateOrderEntryReverse(DataLayer::OrmasDal& ormasDal, int clID, int eID, double oSum, int cID, std::string oExecDate, std::string& errorMessage);
-		bool CreateOrderEntry(DataLayer::OrmasDal& ormasDal, int clID, int eID, double oSum, double prevSum, int cID, std::string oExecDate, std::string& errorMessage);
-		double GetCurrentSum(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		int GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		double GetCurrentCount(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntryCancel(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage);
-		bool ChangesAtTransport(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		bool ChangesAtTransportReverse(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		bool ChangesAtTransport(DataLayer::OrmasDal& ormasDal, int oID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateOrderEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, int eID, double oSum, int cID, std::string oExecDate, std::string& errorMessage);
+		bool CreateOrderEntryReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, int eID, double oSum, int cID, std::string oExecDate, std::string& errorMessage);
+		bool CreateOrderEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, int eID, double oSum, double prevSum, int cID, std::string oExecDate, std::string& errorMessage);
+		double GetCurrentSum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		int GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		double GetCurrentCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntryCancel(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage);
+		bool ChangesAtTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		bool ChangesAtTransportReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		bool ChangesAtTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 		bool CheckDocumentCorrectness(DataLayer::OrmasDal& ormasDal);
 	};

@@ -34,21 +34,21 @@ namespace BusinessLayer{
 		void SetEmployeeID(int);
 
 		// Create, delete and update Jobsheet
-		bool CreateJobsheet(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateJobsheet(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteJobsheet(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateJobsheet(DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage);
-		bool UpdateJobsheet(DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage);
+		bool CreateJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage);
+		bool UpdateJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string fromDate, std::string toDate);
-		bool GetJobsheetByID(DataLayer::OrmasDal& ormasDal, int jID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string toDate);
+		bool GetJobsheetByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int jID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 

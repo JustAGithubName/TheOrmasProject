@@ -13,11 +13,16 @@ namespace BusinessLayer{
 		SubaccountView(DataLayer::subaccountsViewCollection);
 		SubaccountView(){};
 		~SubaccountView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// AccountView class Accessors
 		std::string GetParentAccountNumber();
 		std::string GetCurrencyName();
 		std::string GetStatusName();
+
+		void SetParentAccountNumber(std::string);
+		void SetCurrencyName(std::string);
+		void SetStatusName(std::string);
 	};
 }
 

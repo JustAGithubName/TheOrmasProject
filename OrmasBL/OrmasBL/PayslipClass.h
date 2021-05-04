@@ -34,31 +34,31 @@ namespace BusinessLayer{
 		void SetCurrencyID(int);
 
 		// Create, delete and update Payslip
-		bool CreatePayslip(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdatePayslip(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeletePayslip(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreatePayslip(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
+		bool CreatePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdatePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeletePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreatePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
 			std::string& errorMessage);
-		bool UpdatePayslip(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
+		bool UpdatePayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
 			std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetPayslipByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetPayslipByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		double currentValue = 0.0;
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pDate, double pValue, int sID, int cID,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int sID, int cID,
 			std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool Payout(DataLayer::OrmasDal& ormasDal, int uID, int cID, std::string& errorMessage);
-		bool Payout(DataLayer::OrmasDal& ormasDal, int uID, int cID, double previousValue, std::string& errorMessage);
-		double GetCurrentValue(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool CancelPayslip(DataLayer::OrmasDal& ormasDal, int sID, int cID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage);
-		bool CorrectingEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, std::string& errorMessage);
+		bool Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, double previousValue, std::string& errorMessage);
+		double GetCurrentValue(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool CancelPayslip(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage);
+		bool CorrectingEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};
 }

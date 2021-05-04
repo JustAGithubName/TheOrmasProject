@@ -110,12 +110,12 @@ namespace BusinessLayer
 		currencyID = oCurrencyID;
 	}
 
-	bool ReceiptOtherStocks::CreateReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, int pID, std::string oDate, std::string oExecDate,
+	bool ReceiptOtherStocks::CreateReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, std::string oExecDate,
 		int eID, double oCount, double oSum, int sID, int cID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pID, oDate, eID, oCount, oSum, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pID, oDate, eID, oCount, oSum, cID, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		purveyorID = pID;
@@ -126,11 +126,12 @@ namespace BusinessLayer
 		sum = oSum;
 		statusID = sID;
 		currencyID = cID;
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateReceiptOtherStocks(id, purveyorID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
-				if (ChangesAtStock(ormasDal, id, employeeID, errorMessage))
+				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 				{
 					if (!CheckDocumentCorrectness(ormasDal))
 					{
@@ -146,7 +147,7 @@ namespace BusinessLayer
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
-				if (ChangesAtStockReverse(ormasDal, id, employeeID, errorMessage))
+				if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 				{
 					if (!CheckDocumentCorrectness(ormasDal))
 					{
@@ -169,18 +170,19 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ReceiptOtherStocks::CreateReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReceiptOtherStocks::CreateReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateReceiptOtherStocks(id, purveyorID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
-				if (ChangesAtStock(ormasDal, id, employeeID, errorMessage))
+				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 				{
 					if (!CheckDocumentCorrectness(ormasDal))
 					{
@@ -196,7 +198,7 @@ namespace BusinessLayer
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
-				if (ChangesAtStockReverse(ormasDal, id, employeeID, errorMessage))
+				if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 				{
 					if (!CheckDocumentCorrectness(ormasDal))
 					{
@@ -218,16 +220,16 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReceiptOtherStocks::DeleteReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReceiptOtherStocks::DeleteReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
 		ReceiptOtherStocks oRaw;
-		if (!oRaw.GetReceiptOtherStocksByID(ormasDal, id, errorMessage))
+		if (!oRaw.GetReceiptOtherStocksByID(globalVar, ormasDal, id, errorMessage))
 		{
 			return false;
 		}
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (oRaw.GetStatusID() == statusMap.find("EXECUTED")->second)
@@ -268,13 +270,13 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReceiptOtherStocks::UpdateReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, int pID, std::string oDate, std::string oExecnDate,
+	bool ReceiptOtherStocks::UpdateReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, std::string oExecnDate,
 		int eID, double oCount, double oSum, int sID, int cID, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
-		std::map<int, double> prodCountMap = GetOtherStocksCount(ormasDal, id, errorMessage);
+		std::map<int, double> prodCountMap = GetOtherStocksCount(globalVar, ormasDal, id, errorMessage);
 		if (0 == prodCountMap.size())
 			return false;
 		purveyorID = pID;
@@ -285,10 +287,10 @@ namespace BusinessLayer
 		sum = oSum;
 		statusID = sID;
 		currencyID = cID;
-		previousSum = GetCurrentSum(ormasDal, id, errorMessage);
-		previousCount = GetCurrentCount(ormasDal, id, errorMessage);
-		previousStatusID = GetCurrentStatusID(ormasDal, id, errorMessage);
-
+		previousSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
+		previousCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateReceiptOtherStocks(id, purveyorID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID != statusMap.find("ERROR")->second &&
@@ -297,7 +299,7 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
-					if (ChangesAtStock(ormasDal, id, employeeID, errorMessage))
+					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -314,7 +316,7 @@ namespace BusinessLayer
 				}
 				else if (statusID == statusMap.find("RETURN")->second)
 				{
-					if (ChangesAtStockReverse(ormasDal, id, employeeID, errorMessage))
+					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -341,7 +343,7 @@ namespace BusinessLayer
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
 
-						if (ChangesAtStockReverse(ormasDal, id, employeeID, errorMessage))
+						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -359,7 +361,7 @@ namespace BusinessLayer
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
 
-						if (ChangesAtStock(ormasDal, id, employeeID, errorMessage))
+						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -383,7 +385,7 @@ namespace BusinessLayer
 			}
 			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-			if (ChangesAtStock(ormasDal, id, employeeID, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 			{
 
 			return true;
@@ -398,7 +400,7 @@ namespace BusinessLayer
 			{
 			if (count != previousCount || sum != previousSum)
 			{
-			if (ChangesAtStock(ormasDal, id, employeeID, prodCountMap, previousSum, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, prodCountMap, previousSum, errorMessage))
 			{
 
 			return true;
@@ -421,17 +423,18 @@ namespace BusinessLayer
 
 		return false;
 	}
-	bool ReceiptOtherStocks::UpdateReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReceiptOtherStocks::UpdateReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
-		std::map<int, double> prodCountMap = GetOtherStocksCount(ormasDal, id, errorMessage);
+		std::map<int, double> prodCountMap = GetOtherStocksCount(globalVar, ormasDal, id, errorMessage);
 		if (0 == prodCountMap.size())
 			return false;
-		previousSum = GetCurrentSum(ormasDal, id, errorMessage);
-		previousStatusID = GetCurrentStatusID(ormasDal, id, errorMessage);
-		previousCount = GetCurrentCount(ormasDal, id, errorMessage);
+		previousSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
+		previousCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateReceiptOtherStocks(id, purveyorID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID != statusMap.find("ERROR")->second &&
@@ -440,7 +443,7 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
-					if (ChangesAtStock(ormasDal, id, employeeID, errorMessage))
+					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -457,7 +460,7 @@ namespace BusinessLayer
 				}
 				else if (statusID == statusMap.find("RETURN")->second)
 				{
-					if (ChangesAtStockReverse(ormasDal, id, employeeID, errorMessage))
+					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -485,7 +488,7 @@ namespace BusinessLayer
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
 
-						if (ChangesAtStockReverse(ormasDal, id, employeeID, errorMessage))
+						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -503,7 +506,7 @@ namespace BusinessLayer
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
 
-						if (ChangesAtStock(ormasDal, id, employeeID, errorMessage))
+						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -527,7 +530,7 @@ namespace BusinessLayer
 			}
 			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-			if (ChangesAtStock(ormasDal, id, employeeID, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 			{
 
 			return true;
@@ -542,7 +545,7 @@ namespace BusinessLayer
 			{
 			if (count != previousCount || sum != previousSum)
 			{
-			if (ChangesAtStock(ormasDal, id, employeeID, prodCountMap, previousSum, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, prodCountMap, previousSum, errorMessage))
 			{
 
 			return true;
@@ -574,7 +577,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	std::string ReceiptOtherStocks::GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string fromDate, std::string toDate)
+	std::string ReceiptOtherStocks::GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string toDate)
 	{
 		if (!toDate.empty() && !fromDate.empty())
 		{
@@ -583,7 +586,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ReceiptOtherStocks::GetReceiptOtherStocksByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool ReceiptOtherStocks::GetReceiptOtherStocksByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -614,8 +617,8 @@ namespace BusinessLayer
 	{
 		if (0 == id && date == "" && executionDate == "" && 0 == count && 0 == sum && 0 == employeeID && 0 == purveyorID && 0 == statusID
 			&& 0 == currencyID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void ReceiptOtherStocks::Clear()
@@ -631,7 +634,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ReceiptOtherStocks::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, std::string oDate, int eID, double oCount, double oSum,
+	bool ReceiptOtherStocks::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, int eID, double oCount, double oSum,
 		int cID, std::string& errorMessage)
 	{
 		ReceiptOtherStocks receiptOtherStocks;
@@ -655,7 +658,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ReceiptOtherStocks::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReceiptOtherStocks::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ReceiptOtherStocks receiptOtherStocks;
 		receiptOtherStocks.Clear();
@@ -678,49 +681,49 @@ namespace BusinessLayer
 		return true;
 	}
 
-	double ReceiptOtherStocks::GetCurrentSum(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	double ReceiptOtherStocks::GetCurrentSum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		ReceiptOtherStocks ReceiptOtherStocks;
-		if (ReceiptOtherStocks.GetReceiptOtherStocksByID(ormasDal, oID, errorMessage))
+		if (ReceiptOtherStocks.GetReceiptOtherStocksByID(globalVar, ormasDal, oID, errorMessage))
 			return ReceiptOtherStocks.GetSum();
 		return 0;
 	}
 
-	int ReceiptOtherStocks::GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	int ReceiptOtherStocks::GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		ReceiptOtherStocks ReceiptOtherStocks;
-		if (ReceiptOtherStocks.GetReceiptOtherStocksByID(ormasDal, oID, errorMessage))
+		if (ReceiptOtherStocks.GetReceiptOtherStocksByID(globalVar, ormasDal, oID, errorMessage))
 			return ReceiptOtherStocks.GetStatusID();
 		return 0;
 	}
 
-	bool ReceiptOtherStocks::ChangesAtStock(DataLayer::OrmasDal& ormasDal, int cpID, int empID, std::string& errorMessage)
+	bool ReceiptOtherStocks::ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int empID, std::string& errorMessage)
 	{
 		LowValueStock stock;
-		return stock.ChangingByReceiptOtherStocks(ormasDal, cpID, empID, errorMessage);
+		return stock.ChangingByReceiptOtherStocks(globalVar, ormasDal, cpID, empID, errorMessage);
 	}
 
-	bool ReceiptOtherStocks::ChangesAtStockReverse(DataLayer::OrmasDal& ormasDal, int cpID, int empID, std::string& errorMessage)
+	bool ReceiptOtherStocks::ChangesAtStockReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int empID, std::string& errorMessage)
 	{
 		LowValueStock stock;
-		return stock.ChangingByReceiptOtherStocksReverse(ormasDal, cpID, empID, errorMessage);
+		return stock.ChangingByReceiptOtherStocksReverse(globalVar, ormasDal, cpID, empID, errorMessage);
 	}
 
-	bool ReceiptOtherStocks::ChangesAtStock(DataLayer::OrmasDal& ormasDal, int cpID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool ReceiptOtherStocks::ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
 		LowValueStock stock;
-		return stock.ChangingByReceiptOtherStocks(ormasDal, cpID, empID, pProdCountMap, pSum, errorMessage);
+		return stock.ChangingByReceiptOtherStocks(globalVar, ormasDal, cpID, empID, pProdCountMap, pSum, errorMessage);
 	}
 
-	double ReceiptOtherStocks::GetCurrentCount(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage)
+	double ReceiptOtherStocks::GetCurrentCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage)
 	{
 		ReceiptOtherStocks rRaw;
-		if (rRaw.GetReceiptOtherStocksByID(ormasDal, cpID, errorMessage))
+		if (rRaw.GetReceiptOtherStocksByID(globalVar, ormasDal, cpID, errorMessage))
 			return rRaw.GetCount();
 		return 0;
 	}
 
-	std::map<int, double> ReceiptOtherStocks::GetOtherStocksCount(DataLayer::OrmasDal& ormasDal, int orID, std::string& errorMessage)
+	std::map<int, double> ReceiptOtherStocks::GetOtherStocksCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, std::string& errorMessage)
 	{
 		std::map<int, double> mapOthSCount;
 		ReceiptOtherStocksList rPList;

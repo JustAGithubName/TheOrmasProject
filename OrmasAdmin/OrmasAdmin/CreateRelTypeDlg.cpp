@@ -66,7 +66,7 @@ void CreateRelTypeDlg::CreateRelationType()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetRelationTypeParams(nameEdit->text(), commentTextEdit->toPlainText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateRelationType(relationType, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -81,7 +81,13 @@ void CreateRelTypeDlg::CreateRelationType()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -110,7 +116,7 @@ void CreateRelTypeDlg::EditRelationType()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetRelationTypeParams(nameEdit->text(), commentTextEdit->toPlainText(), relationType->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateRelationType(relationType, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -124,7 +130,13 @@ void CreateRelTypeDlg::EditRelationType()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

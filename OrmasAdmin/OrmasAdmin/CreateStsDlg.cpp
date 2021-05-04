@@ -68,7 +68,7 @@ void CreateStsDlg::CreateStatus()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetStatusParams(codeEdit->text(), nameEdit->text(), commentTextEdit->toPlainText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateStatus(status, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -82,7 +82,13 @@ void CreateStsDlg::CreateStatus()
 					itemModel->appendRow(statusItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -112,7 +118,7 @@ void CreateStsDlg::EditStatus()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetStatusParams(codeEdit->text(), nameEdit->text(), commentTextEdit->toPlainText(), status->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateStatus(status, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -127,7 +133,13 @@ void CreateStsDlg::EditStatus()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

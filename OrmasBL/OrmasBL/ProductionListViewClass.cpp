@@ -50,4 +50,43 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+	void ProductionListView::SetProductName(std::string cProductName)
+	{
+		productName = cProductName;
+	}
+	void ProductionListView::SetPrice(double cPrice)
+	{
+		price = cPrice;
+	}
+	void  ProductionListView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+	void ProductionListView::SetVolume(double cVolume)
+	{
+		volume = cVolume;
+	}
+	void ProductionListView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void ProductionListView::SetSumCurrencyName(std::string cSumCurrencyName)
+	{
+		sumCurrencyName = cSumCurrencyName;
+	}
+	void ProductionListView::SetMeasureName(std::string cMeasureName)
+	{
+		measureName = cMeasureName;
+	}
+
+	std::string ProductionListView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != productionID || !productName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty()
+			|| 0 != count || 0 != sum || !sumCurrencyName.empty() || !statusName.empty() || 0 != productID || 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForProdnListView(id, productionID, productName, price, currencyName, volume, measureName, count, sum,
+				sumCurrencyName, statusName, productID, statusID, currencyID);
+		}
+		return "";
+	}
 }

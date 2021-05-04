@@ -61,12 +61,12 @@ void CreateJbpDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
@@ -76,7 +76,7 @@ void CreateJbpDlg::SetID(int ID, QString childName)
 			{
 				positionEdit->setText(QString::number(ID));
 				BusinessLayer::Position position;
-				if (position.GetPositionByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (position.GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					positionPh->setText(position.GetName().c_str());
 				}
@@ -105,18 +105,18 @@ void CreateJbpDlg::FillEditElements(int pID, double jValue, int cID, double jVol
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(cID)));
 	measureCmb->setCurrentIndex(measureCmb->findData(QVariant(mID)));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), pID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pID, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
 	}
 	BusinessLayer::Position position;
-	if (position.GetPositionByID(dialogBL->GetOrmasDal(), posID, errorMessage))
+	if (position.GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), posID, errorMessage))
 	{
 		prodNamePh->setText(position.GetName().c_str());
 	}
@@ -157,7 +157,7 @@ void CreateJbpDlg::CreateJobprice()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetJobpriceParams(productEdit->text().toInt(), valueEdit->text().toDouble(), currencyCmb->currentData().toInt(),
 			volumeEdit->text().toDouble(), measureCmb->currentData().toInt(), positionEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateJobprice(jobprice, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -168,10 +168,10 @@ void CreateJbpDlg::CreateJobprice()
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 					BusinessLayer::Measure *measure = new BusinessLayer::Measure;
 					BusinessLayer::Position *position = new BusinessLayer::Position;
-					if (!product->GetProductByID(dialogBL->GetOrmasDal(), jobprice->GetProductID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), jobprice->GetCurrencyID(), errorMessage)
-						|| !measure->GetMeasureByID(dialogBL->GetOrmasDal(), jobprice->GetMeasureID(), errorMessage)
-						|| !position->GetPositionByID(dialogBL->GetOrmasDal(), jobprice->GetPositionID(), errorMessage))
+					if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobprice->GetProductID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobprice->GetCurrencyID(), errorMessage)
+						|| !measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobprice->GetMeasureID(), errorMessage)
+						|| !position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobprice->GetPositionID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -204,7 +204,13 @@ void CreateJbpDlg::CreateJobprice()
 					delete position;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -241,7 +247,7 @@ void CreateJbpDlg::EditJobprice()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetJobpriceParams(productEdit->text().toInt(), valueEdit->text().toDouble(), currencyCmb->currentData().toInt(),
 				volumeEdit->text().toDouble(), measureCmb->currentData().toInt(), positionEdit->text().toInt(), jobprice->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateJobprice(jobprice, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -252,10 +258,10 @@ void CreateJbpDlg::EditJobprice()
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 						BusinessLayer::Measure *measure = new BusinessLayer::Measure;
 						BusinessLayer::Position *position = new BusinessLayer::Position;
-						if (!product->GetProductByID(dialogBL->GetOrmasDal(), jobprice->GetProductID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), jobprice->GetCurrencyID(), errorMessage)
-							|| !measure->GetMeasureByID(dialogBL->GetOrmasDal(), jobprice->GetMeasureID(), errorMessage)
-							|| !position->GetPositionByID(dialogBL->GetOrmasDal(), jobprice->GetPositionID(), errorMessage))
+						if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobprice->GetProductID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobprice->GetCurrencyID(), errorMessage)
+							|| !measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobprice->GetMeasureID(), errorMessage)
+							|| !position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobprice->GetPositionID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -286,7 +292,13 @@ void CreateJbpDlg::EditJobprice()
 						delete position;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}

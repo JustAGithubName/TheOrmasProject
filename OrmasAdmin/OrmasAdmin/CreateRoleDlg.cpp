@@ -71,7 +71,7 @@ void CreateRoleDlg::CreateRole()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetRoleParams(codeEdit->text(), nameEdit->text(), commentTextEdit->toPlainText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateRole(role, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -88,7 +88,13 @@ void CreateRoleDlg::CreateRole()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -118,7 +124,7 @@ void CreateRoleDlg::EditRole()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetRoleParams(codeEdit->text(), nameEdit->text(), commentTextEdit->toPlainText(), role->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateRole(role, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -133,7 +139,13 @@ void CreateRoleDlg::EditRole()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

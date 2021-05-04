@@ -28,27 +28,27 @@ namespace BusinessLayer{
 		void SetEmployeeID(int);
 
 		// Create, delete  Warehouse-Employee relation
-		bool CreateWarehouseEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteWarehouseEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateWarehouseEmployeeRelation(DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage);
-		bool UpdateWarehouseEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateWarehouseEmployeeRelation(DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage);
+		bool CreateWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage);
+		bool UpdateWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage);
 
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetWarehouseEmployeeByID(DataLayer::OrmasDal& ormasDal, int id, std::string& errorMessage);
-		bool GetWarehouseEmployeeByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
-		bool GetWarehouseEmployeeByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage);
-		int GetWarehouseIDByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
-		int GetEmployeeIDByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetWarehouseEmployeeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int id, std::string& errorMessage);
+		bool GetWarehouseEmployeeByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
+		bool GetWarehouseEmployeeByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
+		int GetWarehouseIDByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
+		int GetEmployeeIDByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		std::vector<int> GetWarehouseIDListByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID);
-		std::vector<int> GetEmployeeIDListByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID);
+		std::vector<int> GetWarehouseIDListByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID);
+		std::vector<int> GetEmployeeIDListByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int wID, int eID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

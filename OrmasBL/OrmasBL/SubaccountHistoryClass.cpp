@@ -82,10 +82,10 @@ namespace BusinessLayer{
 		tillDate = aTillDate;
 	}
 
-	bool SubaccountHistory::CreateSubaccountHistory(DataLayer::OrmasDal &ormasDal, int aID, double aStartBalance,
+	bool SubaccountHistory::CreateSubaccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, double aStartBalance,
 		double aCurrentBalance, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, aID, aFromDate, aTillDate, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, aID, aFromDate, aTillDate, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		subaccountID = aID;
@@ -103,9 +103,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool SubaccountHistory::CreateSubaccountHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SubaccountHistory::CreateSubaccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateSubaccountHistory(id, subaccountID, startBalance, currentBalance, fromDate, tillDate, errorMessage))
@@ -118,7 +118,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool SubaccountHistory::DeleteSubaccountHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SubaccountHistory::DeleteSubaccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteSubaccountHistory(id, errorMessage))
 		{
@@ -132,7 +132,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool SubaccountHistory::UpdateSubaccountHistory(DataLayer::OrmasDal &ormasDal, int aID, double aStartBalance,
+	bool SubaccountHistory::UpdateSubaccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, double aStartBalance,
 		double aCurrentBalance, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
 	{
 		subaccountID = aID;
@@ -150,7 +150,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool SubaccountHistory::UpdateSubaccountHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SubaccountHistory::UpdateSubaccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateSubaccountHistory(id, subaccountID, startBalance, currentBalance, fromDate, tillDate, errorMessage))
 		{
@@ -172,7 +172,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool SubaccountHistory::GetSubaccountHistoryByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool SubaccountHistory::GetSubaccountHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -196,7 +196,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool SubaccountHistory::GetSubaccountHistoryBySubaccountID(DataLayer::OrmasDal& ormasDal, int aSubaccountID, std::string& errorMessage)
+	bool SubaccountHistory::GetSubaccountHistoryBySubaccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aSubaccountID, std::string& errorMessage)
 	{
 		if (aSubaccountID <= 0)
 			return false;
@@ -238,7 +238,7 @@ namespace BusinessLayer{
 		tillDate = "";
 	}
 
-	bool SubaccountHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, int aID, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
+	bool SubaccountHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
 	{
 		SubaccountHistory subaccountHistory;
 		subaccountHistory.Clear();
@@ -258,7 +258,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool SubaccountHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SubaccountHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		SubaccountHistory subaccountHistory;
 		subaccountHistory.Clear();

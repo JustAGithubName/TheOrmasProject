@@ -27,20 +27,20 @@ namespace BusinessLayer{
 		void SetPayslipID(int);
 
 		// Create, delete and update Access
-		bool CreatePayslipOrderRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeletePayslipOrderRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreatePayslipOrderRelation(DataLayer::OrmasDal &ormasDal, int pID, int oID, std::string& errorMessage);
+		bool CreatePayslipOrderRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeletePayslipOrderRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreatePayslipOrderRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int oID, std::string& errorMessage);
 
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::vector<int> GetAllPayslipByOrderID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		std::vector<int> GetAllOrderByPayslipID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		std::vector<int> GetAllPayslipByOrderID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		std::vector<int> GetAllOrderByPayslipID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int oID, int pID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

@@ -34,24 +34,24 @@ namespace BusinessLayer{
 		void SetComment(std::string);
 
 		// Create, delete and update Branch
-		bool CreateBranch(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateBranch(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteBranch(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateBranch(DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone,
+		bool CreateBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone,
 			std::string cComment, std::string& errorMessage);
-		bool UpdateBranch(DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone,
+		bool UpdateBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone,
 			std::string cComment, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetBranchByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		int GetBranchID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool GetBranchByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		int GetBranchID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cAddress, std::string cPhone, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //BranchCLASS_H

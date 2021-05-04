@@ -56,9 +56,9 @@ namespace BusinessLayer{
 	}
 
 
-	bool EntryRouting::CreateEntryRouting(DataLayer::OrmasDal &ormasDal, std::string eOperation, int eDebitAccountID, int eCreditAccountID, std::string& errorMessage)
+	bool EntryRouting::CreateEntryRouting(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eOperation, int eDebitAccountID, int eCreditAccountID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, eOperation, eDebitAccountID, eCreditAccountID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, eOperation, eDebitAccountID, eCreditAccountID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		operation = eOperation;
@@ -74,9 +74,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EntryRouting::CreateEntryRouting(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntryRouting::CreateEntryRouting(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateEntryRouting(id, operation, debitAccountID, creditAccountID, errorMessage))
@@ -89,7 +89,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EntryRouting::DeleteEntryRouting(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntryRouting::DeleteEntryRouting(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteEntryRouting(id, errorMessage))
 		{
@@ -103,7 +103,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool EntryRouting::UpdateEntryRouting(DataLayer::OrmasDal &ormasDal, std::string eOperation, int eDebitAccountID, int eCreditAccountID, std::string& errorMessage)
+	bool EntryRouting::UpdateEntryRouting(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eOperation, int eDebitAccountID, int eCreditAccountID, std::string& errorMessage)
 	{
 		operation = eOperation;
 		debitAccountID = eDebitAccountID;
@@ -118,7 +118,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EntryRouting::UpdateEntryRouting(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntryRouting::UpdateEntryRouting(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateEntryRouting(id, operation, debitAccountID, creditAccountID, errorMessage))
 		{
@@ -140,7 +140,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool EntryRouting::GetEntryRoutingByID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	bool EntryRouting::GetEntryRoutingByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		if (eID <= 0)
 			return false;
@@ -177,7 +177,7 @@ namespace BusinessLayer{
 		creditAccountID = 0;
 	}
 
-	bool EntryRouting::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string eOperation, int eDebitAccountID, int eCreditAccountID, std::string& errorMessage)
+	bool EntryRouting::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eOperation, int eDebitAccountID, int eCreditAccountID, std::string& errorMessage)
 	{
 		EntryRouting entryRouting;
 		entryRouting.Clear();
@@ -198,7 +198,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool EntryRouting::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntryRouting::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		EntryRouting entryRouting;
 		entryRouting.Clear();
@@ -219,7 +219,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool EntryRouting::CheckEntryRouting(DataLayer::OrmasDal& ormasDal, int eDebitAccountID, int eCreditAccountID, std::string& errorMessage)
+	bool EntryRouting::CheckEntryRouting(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eDebitAccountID, int eCreditAccountID, std::string& errorMessage)
 	{
 		EntryRouting entryRouting;
 		entryRouting.SetDebitAccountID(eDebitAccountID);

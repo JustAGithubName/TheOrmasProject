@@ -50,24 +50,24 @@ namespace BusinessLayer
 		void SetAmortizeValue(double);
 
 		//Create, delete, update methods
-		bool CreateFixedAssetsDetails(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateFixedAssetsDetails(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteFixedAssetsDetails(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateFixedAssetsDetails(DataLayer::OrmasDal& ormasDal, int agID, int atID, int dID, std::string faLocation,
+		bool CreateFixedAssetsDetails(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateFixedAssetsDetails(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteFixedAssetsDetails(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateFixedAssetsDetails(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int agID, int atID, int dID, std::string faLocation,
 			int paID, int aaID, std::string bNumber, double amValue, std::string& errorMessage);
-		bool UpdateFixedAssetsDetails(DataLayer::OrmasDal& ormasDal, int agID, int atID, int dID, std::string faLocation,
+		bool UpdateFixedAssetsDetails(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int agID, int atID, int dID, std::string faLocation,
 			int paID, int aaID, std::string bNumber, double amValue, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetFixedAssetsDetailsByID(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetFixedAssetsDetailsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		int GenerateAmortizeSubaccount(DataLayer::OrmasDal& ormasDal, double currentValue, std::string& errorMessage);
-		int GeneratePrimeSubaccount(DataLayer::OrmasDal& ormasDal, double currentValue, std::string& errorMessage);
+		int GenerateAmortizeSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double currentValue, std::string& errorMessage);
+		int GeneratePrimeSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double currentValue, std::string& errorMessage);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int aID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int aID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		
 	};
 }

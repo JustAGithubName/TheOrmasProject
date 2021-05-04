@@ -16,6 +16,7 @@ namespace BusinessLayer{
 		CashboxEmployeeRelationView(DataLayer::cashboxEmployeeViewCollection);
 		CashboxEmployeeRelationView(){};
 		~CashboxEmployeeRelationView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// CashboxEmployeeRelationView class CashboxEmployeeRelationors
 		std::string GetSubaccountNumber();
@@ -24,6 +25,13 @@ namespace BusinessLayer{
 		std::string GetUserSurname();
 		std::string GetUserPhone();
 		std::string GetRoleName();
+
+		void SetSubaccountNumber(std::string);
+		void SetCashboxAddress(std::string);
+		void SetUsername(std::string);
+		void SetUserSurname(std::string);
+		void SetUserPhone(std::string);
+		void SetRoleName(std::string);
 	};
 }
 #endif

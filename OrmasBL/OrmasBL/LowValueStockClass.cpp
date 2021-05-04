@@ -18,6 +18,7 @@
 #include "WarehouseTypeClass.h"
 #include "WarehouseEmployeeRelationClass.h"
 #include "UserClass.h"
+#include "LowValueStockChangeLogClass.h"
 #include <codecvt>
 
 namespace BusinessLayer
@@ -98,7 +99,7 @@ namespace BusinessLayer
 		warehouseID = sWarehouseID;
 	}
 
-	bool LowValueStock::CreateLowValueStock(DataLayer::OrmasDal& ormasDal, int osID, double sCount, double sSum,
+	bool LowValueStock::CreateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, double sCount, double sSum,
 		int sID, int cID, int wID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -110,20 +111,22 @@ namespace BusinessLayer
 		warehouseID = wID;
 		if (0 != id && ormasDal.CreateLowValueStock(id, otherStocksID, count, sum, statusID, currencyID, warehouseID, errorMessage))
 		{
-			return true;
+			if (CreateLowValueStockChangeLog(globalVar, ormasDal, id, otherStocksID, count, sum, statusID, currencyID, warehouseID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool LowValueStock::CreateLowValueStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool LowValueStock::CreateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateLowValueStock(id, otherStocksID, count, sum, statusID, currencyID, warehouseID, errorMessage))
 		{
-			return true;
+			if (CreateLowValueStockChangeLog(globalVar, ormasDal, id, otherStocksID, count, sum, statusID, currencyID, warehouseID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool LowValueStock::DeleteLowValueStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool LowValueStock::DeleteLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteLowValueStock(id, errorMessage))
 		{
@@ -133,7 +136,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool LowValueStock::UpdateLowValueStock(DataLayer::OrmasDal& ormasDal, int osID, double sCount, double sSum,
+	bool LowValueStock::UpdateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, double sCount, double sSum,
 		int sID, int cID, int wID, std::string& errorMessage)
 	{
 		otherStocksID = osID;
@@ -150,11 +153,12 @@ namespace BusinessLayer
 		}
 		if (0 != id && ormasDal.UpdateLowValueStock(id, otherStocksID, count, sum, statusID, currencyID, warehouseID, errorMessage))
 		{
-			return true;
+			if (CreateLowValueStockChangeLog(globalVar, ormasDal, id, otherStocksID, count, sum, statusID, currencyID, warehouseID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool LowValueStock::UpdateLowValueStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool LowValueStock::UpdateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (count < 0 || sum < 0)
 		{
@@ -164,7 +168,8 @@ namespace BusinessLayer
 		}
 		if (0 != id && ormasDal.UpdateLowValueStock(id, otherStocksID, count, sum, statusID, currencyID, warehouseID, errorMessage))
 		{
-			return true;
+			if (CreateLowValueStockChangeLog(globalVar, ormasDal, id, otherStocksID, count, sum, statusID, currencyID, warehouseID, errorMessage))
+				return true;
 		}
 		return false;
 	}
@@ -178,7 +183,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool LowValueStock::GetLowValueStockByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool LowValueStock::GetLowValueStockByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -203,7 +208,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool LowValueStock::GetLowValueStockByOtherStocksID(DataLayer::OrmasDal& ormasDal, int osID, std::string& errorMessage)
+	bool LowValueStock::GetLowValueStockByOtherStocksID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, std::string& errorMessage)
 	{
 		if (osID <= 0)
 			return false;
@@ -228,7 +233,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool LowValueStock::GetLowValueStockByOtherStocksAndWarehouseID(DataLayer::OrmasDal& ormasDal, int osID, int wID, std::string& errorMessage)
+	bool LowValueStock::GetLowValueStockByOtherStocksAndWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, int wID, std::string& errorMessage)
 	{
 		if (osID <= 0)
 			return false;
@@ -256,7 +261,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	std::vector<int> LowValueStock::GetAllOtherStocksIDByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage)
+	std::vector<int> LowValueStock::GetAllOtherStocksIDByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
 	{
 		std::vector<int> othSIDList;
 		if (wID <= 0)
@@ -296,7 +301,7 @@ namespace BusinessLayer
 		warehouseID = 0;
 	}
 
-	bool LowValueStock::IsDuplicate(DataLayer::OrmasDal& ormasDal, int osID, int wID, std::string& errorMessage)
+	bool LowValueStock::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, int wID, std::string& errorMessage)
 	{
 		LowValueStock lowValueStock;
 		lowValueStock.Clear();
@@ -315,7 +320,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool LowValueStock::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		LowValueStock lowValueStock;
 		lowValueStock.Clear();
@@ -335,7 +340,7 @@ namespace BusinessLayer
 	}
 
 	
-	bool LowValueStock::ChangingByReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, int rosID, int empID, std::string& errorMessage)
+	bool LowValueStock::ChangingByReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rosID, int empID, std::string& errorMessage)
 	{
 		ReceiptOtherStocks rOthS;
 		ReceiptOtherStocksList rOthSList;
@@ -365,7 +370,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rOthSListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpOthSt(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpOthSt(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			LowValueStock lowValueStock;
 			OtherStocks otherStocks;
@@ -378,20 +383,20 @@ namespace BusinessLayer
 				lowValueStock.Clear();
 				otherStocks.Clear();
 				status.Clear();
-				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
+				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(globalVar, ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
 				{
 					oldCount = lowValueStock.GetCount();
 					oldSum = lowValueStock.GetSum();
 					totalOldCount += lowValueStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot order this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					companyID = otherStocks.GetCompanyID();
 					totalSum = totalSum + (item.GetSum());
@@ -401,7 +406,7 @@ namespace BusinessLayer
 					lowValueStock.SetCurrencyID(item.GetCurrencyID());
 					lowValueStock.SetStatusID(status.GetID());
 					lowValueStock.SetWarehouseID(warehouseID);
-					if (!lowValueStock.CreateLowValueStock(ormasDal, errorMessage))
+					if (!lowValueStock.CreateLowValueStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -414,13 +419,13 @@ namespace BusinessLayer
 					oldSum = lowValueStock.GetSum();
 					totalOldCount += lowValueStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					companyID = otherStocks.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					lowValueStock.SetCount(lowValueStock.GetCount() + item.GetCount());
 					lowValueStock.SetSum(lowValueStock.GetSum() + (item.GetCount()*otherStocks.GetPrice()));
-					if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+					if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -430,7 +435,7 @@ namespace BusinessLayer
 					if (std::round(otherStocks.GetPrice()*lowValueStock.GetCount() * 10) / 10 != std::round(lowValueStock.GetSum() * 10) / 10)
 					{
 						lowValueStock.SetSum(std::round(otherStocks.GetPrice()*lowValueStock.GetCount() * 1000) / 1000);
-						if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+						if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -452,10 +457,10 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!rOthS.GetReceiptOtherStocksByID(ormasDal, rosID, errorMessage))
+		if (!rOthS.GetReceiptOtherStocksByID(globalVar, ormasDal, rosID, errorMessage))
 			return false;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, rOthS.GetPurveyorID(), errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, rOthS.GetPurveyorID(), errorMessage))
 			return false;
 		CompanyAccountRelation caRel;
 		int debAccID = subAccID;
@@ -466,7 +471,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rosID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rosID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -474,7 +479,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::ChangingByReceiptOtherStocksReverse(DataLayer::OrmasDal& ormasDal, int rosID, int empID, std::string& errorMessage)
+	bool LowValueStock::ChangingByReceiptOtherStocksReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rosID, int empID, std::string& errorMessage)
 	{
 		ReceiptOtherStocks rOthS;
 		ReceiptOtherStocksList rOthSList;
@@ -505,7 +510,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rOthSListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpOthSt(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpOthSt(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			LowValueStock lowValueStock;
 			OtherStocks otherStocks;
@@ -517,9 +522,9 @@ namespace BusinessLayer
 			{
 				lowValueStock.Clear();
 				otherStocks.Clear();
-				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
+				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(globalVar, ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
 				{
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This other stocks is out of low value stock:";
 					errorMessage += otherStocks.GetName();
@@ -530,7 +535,7 @@ namespace BusinessLayer
 				{
 					if (lowValueStock.GetCount() < item.GetCount())
 					{
-						if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+						if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough other stocks in the LowValueStock!";
 						errorMessage += " Other stocks name:";
@@ -546,7 +551,7 @@ namespace BusinessLayer
 						oldSum = lowValueStock.GetSum();
 						totalOldCount += lowValueStock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+						if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 							return false;
 						companyID = otherStocks.GetCompanyID();
 						totalSum = totalSum + item.GetSum();
@@ -560,7 +565,7 @@ namespace BusinessLayer
 						{
 							lowValueStock.SetSum((lowValueStock.GetSum() - std::round(item.GetCount()* otherStocks.GetPrice() * 1000) / 1000));
 						}
-						if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+						if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -570,7 +575,7 @@ namespace BusinessLayer
 						if (std::round(otherStocks.GetPrice()*lowValueStock.GetCount() * 10) / 10 != std::round(lowValueStock.GetSum() * 10) / 10)
 						{
 							lowValueStock.SetSum(std::round(otherStocks.GetPrice()*lowValueStock.GetCount() * 1000) / 1000);
-							if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+							if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 							{
 								//ormasDal.CancelTransaction(errorMessage);
 								return false;
@@ -593,22 +598,22 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!rOthS.GetReceiptOtherStocksByID(ormasDal, rosID, errorMessage))
+		if (!rOthS.GetReceiptOtherStocksByID(globalVar, ormasDal, rosID, errorMessage))
 			return false;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, rOthS.GetPurveyorID(), errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, rOthS.GetPurveyorID(), errorMessage))
 			return false;
 		CompanyAccountRelation caRel;
 		int debAccID = subAccID;
 		int credAccID = balance.GetSubaccountID();
-		int acc55020ID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+		int acc55020ID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rosID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rosID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -617,7 +622,7 @@ namespace BusinessLayer
 		double checkSum = totalSum - newSum;
 		if (checkSum > 0)
 		{
-			if (!this->CreateEntry(ormasDal, rosID, acc55020ID, checkSum, debAccID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, rosID, acc55020ID, checkSum, debAccID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -625,7 +630,7 @@ namespace BusinessLayer
 		}
 		else if (checkSum < 0)
 		{
-			if (!this->CreateEntry(ormasDal, rosID, debAccID, checkSum *(-1), acc55020ID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, rosID, debAccID, checkSum *(-1), acc55020ID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -636,7 +641,7 @@ namespace BusinessLayer
 
 
 
-	bool LowValueStock::ChangingByReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, int orID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool LowValueStock::ChangingByReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
 		ReceiptOtherStocks rOthS;
 		ReceiptOtherStocksList rOthSList;
@@ -666,7 +671,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rOthSListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpOthSt(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpOthSt(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			LowValueStock lowValueStock;
 			OtherStocks otherStocks;
@@ -678,20 +683,20 @@ namespace BusinessLayer
 				lowValueStock.Clear();
 				otherStocks.Clear();
 				status.Clear();
-				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
+				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(globalVar, ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
 				{
 					oldCount = lowValueStock.GetCount();
 					oldSum = lowValueStock.GetSum();
 					totalOldCount += lowValueStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot order this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					companyID = otherStocks.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
@@ -701,7 +706,7 @@ namespace BusinessLayer
 					lowValueStock.SetCurrencyID(item.GetCurrencyID());
 					lowValueStock.SetStatusID(status.GetID());
 					lowValueStock.SetWarehouseID(warehouseID);
-					if (!lowValueStock.CreateLowValueStock(ormasDal, errorMessage))
+					if (!lowValueStock.CreateLowValueStock(globalVar, ormasDal, errorMessage))
 					{
 						return false;
 					}
@@ -713,13 +718,13 @@ namespace BusinessLayer
 					oldSum = lowValueStock.GetSum();
 					totalOldCount += lowValueStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					companyID = otherStocks.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					lowValueStock.SetCount(lowValueStock.GetCount() + (item.GetCount() - pProdCountMap.find(otherStocks.GetID())->second));
 					lowValueStock.SetSum(lowValueStock.GetSum() + (item.GetSum() - (pProdCountMap.find(otherStocks.GetID())->second * otherStocks.GetPrice())));
-					if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+					if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -729,7 +734,7 @@ namespace BusinessLayer
 					if (std::round(otherStocks.GetPrice()*lowValueStock.GetCount() * 10) / 10 != std::round(lowValueStock.GetSum() * 10) / 10)
 					{
 						lowValueStock.SetSum(std::round(otherStocks.GetPrice()*lowValueStock.GetCount() * 1000) / 1000);
-						if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+						if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -751,10 +756,10 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!rOthS.GetReceiptOtherStocksByID(ormasDal, orID, errorMessage))
+		if (!rOthS.GetReceiptOtherStocksByID(globalVar, ormasDal, orID, errorMessage))
 			return false;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, rOthS.GetPurveyorID(), errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, rOthS.GetPurveyorID(), errorMessage))
 			return false;
 		CompanyAccountRelation caRel;
 		int debAccID = subAccID;
@@ -765,7 +770,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, orID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, orID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -773,11 +778,11 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::ChangingByConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, int cosID, int lowValueStockEmpID, std::string& errorMessage)
+	bool LowValueStock::ChangingByConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cosID, int lowValueStockEmpID, std::string& errorMessage)
 	{
 		ConsumeOtherStocksList cOSList;
 		ConsumeOtherStocks cOthS;
-		if (!cOthS.GetConsumeOtherStocksByID(ormasDal, cosID, errorMessage))
+		if (!cOthS.GetConsumeOtherStocksByID(globalVar, ormasDal, cosID, errorMessage))
 			return false;
 		std::vector<ConsumeOtherStocksListView> cOSListVec;
 		double totalSum = 0.0;
@@ -808,7 +813,7 @@ namespace BusinessLayer
 		double totalChangingSum = 0;
 		if (cOSListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConOthSt(ormasDal, lowValueStockEmpID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConOthSt(globalVar, ormasDal, lowValueStockEmpID, warehouseID, subAccID, errorMessage))
 				return false;
 			LowValueStock lowValueStock;
 			OtherStocks otherStocks;
@@ -819,9 +824,9 @@ namespace BusinessLayer
 			{
 				lowValueStock.Clear();
 				otherStocks.Clear();
-				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
+				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(globalVar, ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
 				{
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This other stocks is out of low value stock:";
 					errorMessage += otherStocks.GetName();
@@ -832,7 +837,7 @@ namespace BusinessLayer
 				{
 					if (lowValueStock.GetCount() < item.GetCount())
 					{
-						if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+						if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough other stock in the low value stock!";
 						errorMessage += " Other stock name:";
@@ -846,13 +851,13 @@ namespace BusinessLayer
 					{
 						oldCount = lowValueStock.GetCount();
 						oldSum = lowValueStock.GetSum();
-						if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+						if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 							return false;
 						if (item.GetCount()*(lowValueStock.GetSum() / lowValueStock.GetCount()) != item.GetSum())
 						{
 							item.SetSum(item.GetCount()*(lowValueStock.GetSum() / lowValueStock.GetCount()));
 							//item.Get = cOthS.GetStockEmployeeID();
-							if (!item.UpdateConsumeOtherStocksList(ormasDal, errorMessage))
+							if (!item.UpdateConsumeOtherStocksList(globalVar, ormasDal, errorMessage))
 								return false;
 						}
 						totalOldCount += lowValueStock.GetCount();
@@ -870,7 +875,7 @@ namespace BusinessLayer
 						{
 							lowValueStock.SetSum((lowValueStock.GetSum() - item.GetSum()));
 						}
-						if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+						if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -901,19 +906,19 @@ namespace BusinessLayer
 			return false;
 		}
 		ConsumeOtherStocks cosRaw;
-		if (!cosRaw.GetConsumeOtherStocksByID(ormasDal, cosID, errorMessage))
+		if (!cosRaw.GetConsumeOtherStocksByID(globalVar, ormasDal, cosID, errorMessage))
 		{
 			errorMessage = "Document is wrong! Sum and count does not the same in list and document.";
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		/*cosRaw.SetSum(totalSum);
-		if (!cosRaw.SimpleUpdateConsumeOtherStocks(ormasDal, errorMessage))
+		if (!cosRaw.SimpleUpdateConsumeOtherStocks(globalVar, ormasDal, errorMessage))
 		{
 			return false;
 		}*/
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -921,7 +926,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, cosID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, cosID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -929,7 +934,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::ChangingByConsumeOtherStocksReverse(DataLayer::OrmasDal& ormasDal, int cosID, int lowValueStockEmpID, std::string& errorMessage)
+	bool LowValueStock::ChangingByConsumeOtherStocksReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cosID, int lowValueStockEmpID, std::string& errorMessage)
 	{
 		ConsumeOtherStocksList cOSList;
 		std::vector<ConsumeOtherStocksListView> cCoListVec;
@@ -958,7 +963,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cCoListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConOthSt(ormasDal, lowValueStockEmpID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConOthSt(globalVar, ormasDal, lowValueStockEmpID, warehouseID, subAccID, errorMessage))
 				return false;
 			LowValueStock lowValueStock;
 			OtherStocks otherStocks;
@@ -971,20 +976,20 @@ namespace BusinessLayer
 				lowValueStock.Clear();
 				otherStocks.Clear();
 				status.Clear();
-				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
+				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(globalVar, ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
 				{
 					oldCount = lowValueStock.GetCount();
 					oldSum = lowValueStock.GetSum();
 					totalOldCount += lowValueStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot order this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					companyID = otherStocks.GetCompanyID();
 					totalSum = totalSum + (item.GetSum());
@@ -994,7 +999,7 @@ namespace BusinessLayer
 					lowValueStock.SetCurrencyID(item.GetCurrencyID());
 					lowValueStock.SetStatusID(status.GetID());
 					lowValueStock.SetWarehouseID(warehouseID);
-					if (!lowValueStock.CreateLowValueStock(ormasDal, errorMessage))
+					if (!lowValueStock.CreateLowValueStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1007,13 +1012,13 @@ namespace BusinessLayer
 					oldSum = lowValueStock.GetSum();
 					totalOldCount += lowValueStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					companyID = otherStocks.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					lowValueStock.SetCount(lowValueStock.GetCount() + item.GetCount());
 					lowValueStock.SetSum(lowValueStock.GetSum() + item.GetSum());
-					if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+					if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1042,7 +1047,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -1050,7 +1055,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, cosID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, cosID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -1058,11 +1063,11 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::ChangingByConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, int cosID, int lowValueStockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool LowValueStock::ChangingByConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cosID, int lowValueStockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
 		ConsumeOtherStocksList cOtSList;
 		ConsumeOtherStocks otSRaw;
-		if (!otSRaw.GetConsumeOtherStocksByID(ormasDal, cosID, errorMessage))
+		if (!otSRaw.GetConsumeOtherStocksByID(globalVar, ormasDal, cosID, errorMessage))
 			return false;
 		std::vector<ConsumeOtherStocksListView> cOthSListVec;
 		double totalSum = 0.0;
@@ -1093,7 +1098,7 @@ namespace BusinessLayer
 		double totalChangingSum = 0;
 		if (cOthSListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConOthSt(ormasDal, lowValueStockEmpID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConOthSt(globalVar, ormasDal, lowValueStockEmpID, warehouseID, subAccID, errorMessage))
 				return false;
 			LowValueStock lowValueStock;
 			OtherStocks otherStocks;
@@ -1104,9 +1109,9 @@ namespace BusinessLayer
 			{
 				lowValueStock.Clear();
 				otherStocks.Clear();
-				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
+				if (!lowValueStock.GetLowValueStockByOtherStocksAndWarehouseID(globalVar, ormasDal, item.GetOtherStocksID(), warehouseID, errorMessage))
 				{
-					if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+					if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This other stocks is out of low value stock:";
 					errorMessage += otherStocks.GetName();
@@ -1117,7 +1122,7 @@ namespace BusinessLayer
 				{
 					if (lowValueStock.GetCount() < item.GetCount())
 					{
-						if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+						if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough other stocks in the low value Stock!";
 						errorMessage += " Other stocks name:";
@@ -1131,13 +1136,13 @@ namespace BusinessLayer
 					{
 						oldCount = lowValueStock.GetCount();
 						oldSum = lowValueStock.GetSum();
-						if (!otherStocks.GetOtherStocksByID(ormasDal, item.GetOtherStocksID(), errorMessage))
+						if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, item.GetOtherStocksID(), errorMessage))
 							return false;
 						if (item.GetCount()*(lowValueStock.GetSum() / lowValueStock.GetCount()) != item.GetSum())
 						{
 							item.SetSum(item.GetCount()*(lowValueStock.GetSum() / lowValueStock.GetCount()));
 							item.stockEmployeeID = otSRaw.GetStockEmployeeID();
-							if (!item.UpdateConsumeOtherStocksList(ormasDal, errorMessage))
+							if (!item.UpdateConsumeOtherStocksList(globalVar, ormasDal, errorMessage))
 								return false;
 						}
 						totalOldCount += lowValueStock.GetCount();
@@ -1155,7 +1160,7 @@ namespace BusinessLayer
 						{
 							lowValueStock.SetSum(lowValueStock.GetSum() - (item.GetSum() - (pProdCountMap.find(otherStocks.GetID())->second * otherStocks.GetPrice())));
 						}
-						if (!lowValueStock.UpdateLowValueStock(ormasDal, errorMessage))
+						if (!lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
@@ -1185,19 +1190,19 @@ namespace BusinessLayer
 			return false;
 		}
 		ConsumeOtherStocks cosRaw;
-		if (!cosRaw.GetConsumeOtherStocksByID(ormasDal, cosID, errorMessage))
+		if (!cosRaw.GetConsumeOtherStocksByID(globalVar, ormasDal, cosID, errorMessage))
 		{
 			errorMessage = "Document is wrong! Sum and count does not the same in list and document.";
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		cosRaw.SetSum(totalSum);
-		/*if (!cosRaw.SimpleUpdateConsumeOtherStocks(ormasDal, errorMessage))
+		/*if (!cosRaw.SimpleUpdateConsumeOtherStocks(globalVar, ormasDal, errorMessage))
 		{
 			return false;
 		}*/
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -1205,7 +1210,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, cosID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, cosID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -1213,7 +1218,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::RecalculateLowValueStock(DataLayer::OrmasDal& ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage)
+	bool LowValueStock::RecalculateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage)
 	{
 		LowValueStock checkLowValueStock;
 		LowValueStock lowValueStock;
@@ -1225,7 +1230,7 @@ namespace BusinessLayer
 		checkLowValueStock.Clear();
 		int companyID = 0;
 		double difference = 0;
-		if (!wType.GetWarehouseTypeByCode(ormasDal, "OTHER STOCKS", errorMessage))
+		if (!wType.GetWarehouseTypeByCode(globalVar, ormasDal, "OTHER STOCKS", errorMessage))
 		{
 			return false;
 		}
@@ -1244,33 +1249,33 @@ namespace BusinessLayer
 				warehouse.Clear();
 				otherStocks.Clear();
 				
-				if (!lowValueStock.GetLowValueStockByID(ormasDal, std::get<0>(lowValueStockObject), errorMessage))
+				if (!lowValueStock.GetLowValueStockByID(globalVar, ormasDal, std::get<0>(lowValueStockObject), errorMessage))
 					return false;
 				if (lowValueStock.GetCount() > 0)
 				{
-					if (!warehouse.GetWarehouseByID(ormasDal, lowValueStock.GetWarehouseID(), errorMessage))
+					if (!warehouse.GetWarehouseByID(globalVar, ormasDal, lowValueStock.GetWarehouseID(), errorMessage))
 						return false;
 					if (warehouse.GetWarehouseTypeID() == wType.GetID())
 					{
-						if (!otherStocks.GetOtherStocksByID(ormasDal, pID, errorMessage))
+						if (!otherStocks.GetOtherStocksByID(globalVar, ormasDal, pID, errorMessage))
 							return false;
 						
 						companyID = otherStocks.GetCompanyID();
 						difference = std::round((lowValueStock.GetCount()*newPrice - lowValueStock.GetCount()*oldPrice) * 1000) / 1000;
 						lowValueStock.SetSum(lowValueStock.GetSum() + difference);
-						lowValueStock.UpdateLowValueStock(ormasDal, errorMessage);
+						lowValueStock.UpdateLowValueStock(globalVar, ormasDal, errorMessage);
 
 
 						if (difference > 0 && difference != 0)
 						{
 							CompanyAccountRelation caRel;
 							int debAccID = warehouse.GetSubaccountID();
-							int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+							int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 							if (0 == debAccID || 0 == credAccID)
 							{
 								return false;
 							}
-							if (!this->CreateEntry(ormasDal, otherStocks.GetID(), debAccID, difference, credAccID, errorMessage))
+							if (!this->CreateEntry(globalVar, ormasDal, otherStocks.GetID(), debAccID, difference, credAccID, errorMessage))
 							{
 								return false;
 							}
@@ -1279,12 +1284,12 @@ namespace BusinessLayer
 						{
 							CompanyAccountRelation caRel;
 							int debAccID = warehouse.GetSubaccountID();
-							int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+							int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 							if (0 == debAccID || 0 == credAccID)
 							{
 								return false;
 							}
-							if (!this->CreateEntry(ormasDal, otherStocks.GetID(), credAccID, difference * (-1), debAccID, errorMessage))
+							if (!this->CreateEntry(globalVar, ormasDal, otherStocks.GetID(), credAccID, difference * (-1), debAccID, errorMessage))
 							{
 								return false;
 							}
@@ -1296,7 +1301,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::CreateEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
+	bool LowValueStock::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -1308,11 +1313,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Складская операция(прочие запасы). ID операции = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -1323,7 +1328,7 @@ namespace BusinessLayer
 		}
 		return true;
 	}
-	bool LowValueStock::CreateEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
+	bool LowValueStock::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -1335,11 +1340,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Складская операция(прочие запасы). ID операции = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -1356,11 +1361,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Складская операция. ID операции = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -1372,7 +1377,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::CreateCorrectongEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
+	bool LowValueStock::CreateCorrectongEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -1384,11 +1389,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Коррекция счета 10790 прочие запасы, после переоценки запасов, ID прочих запасов = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -1400,7 +1405,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStock::CreateCorrectongEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
+	bool LowValueStock::CreateCorrectongEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -1412,11 +1417,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Коррекция счета 10790 прочие запасы, после переоценки запасов, ID прочих запасов = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -1433,11 +1438,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Коррекция счета 10790 прочие запасы, после переоценки запасов, ID прочих запасов = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -1455,29 +1460,48 @@ namespace BusinessLayer
 		return myconv.to_bytes(str);
 	}
 
-	bool LowValueStock::GetSubIDAndWerhIDFromRcpOthSt(DataLayer::OrmasDal& ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
+	bool LowValueStock::GetSubIDAndWerhIDFromRcpOthSt(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, empID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, empID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		warehouseID = warehouse.GetID();
 		subAccID = warehouse.GetSubaccountID();
 		return true;
 	}
 
-	bool LowValueStock::GetSubIDAndWerhIDFromConOthSt(DataLayer::OrmasDal& ormasDal, int lowValueStockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage)
+	bool LowValueStock::GetSubIDAndWerhIDFromConOthSt(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int lowValueStockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, lowValueStockEmpID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, lowValueStockEmpID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		subAccID = warehouse.GetSubaccountID();
 		warehouseID = warehouse.GetID();
 		return true;
+	}
+
+	bool LowValueStock::CreateLowValueStockChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int stockID, int pID, double sCount, double sSum,
+		int sID, int cID, int wID, std::string& errorMessage)
+	{
+		LowValueStockChangeLog scLog;
+		scLog.SetLowValueStockID(stockID);
+		scLog.SetOtherStocksID(pID);
+		scLog.SetCount(sCount);
+		scLog.SetSum(sSum);
+		scLog.SetStatusID(sID);
+		scLog.SetCurrencyID(cID);
+		scLog.SetWarehouseID(wID);
+		scLog.SetLogDate(ormasDal.GetSystemDateTime());
+		scLog.SetUserID(globalVar->userID);
+		scLog.SetOperationID(globalVar->currentOperationID);
+		if (scLog.CreateLowValueStockChangeLog(globalVar, ormasDal, errorMessage))
+			return true;
+		return false;
 	}
 }

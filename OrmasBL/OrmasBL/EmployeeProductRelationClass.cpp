@@ -44,9 +44,9 @@ namespace BusinessLayer{
 		employeeID = eID;
 	}
 
-	bool EmployeeProductRelation::CreateEmployeeProductRelation(DataLayer::OrmasDal &ormasDal, int eID, int pID, std::string& errorMessage)
+	bool EmployeeProductRelation::CreateEmployeeProductRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int pID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, eID, pID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, eID, pID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		employeeID = eID;
@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EmployeeProductRelation::CreateEmployeeProductRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EmployeeProductRelation::CreateEmployeeProductRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateEmployeeProduct(id, employeeID, productID, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EmployeeProductRelation::DeleteEmployeeProductRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EmployeeProductRelation::DeleteEmployeeProductRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteEmployeeProduct(employeeID, productID, errorMessage))
 		{
@@ -91,9 +91,9 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool EmployeeProductRelation::UpdateEmployeeProductRelation(DataLayer::OrmasDal &ormasDal, int eID, int pID, std::string& errorMessage)
+	bool EmployeeProductRelation::UpdateEmployeeProductRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int pID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, eID, pID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, eID, pID, errorMessage))
 			return false;
 		employeeID = eID;
 		productID = pID;
@@ -107,9 +107,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EmployeeProductRelation::UpdateEmployeeProductRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EmployeeProductRelation::UpdateEmployeeProductRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		if (ormasDal.UpdateEmployeeProduct(id, employeeID, productID, errorMessage))
 		{
@@ -131,7 +131,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool EmployeeProductRelation::GetEmployeeProductByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool EmployeeProductRelation::GetEmployeeProductByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -148,7 +148,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	std::vector<int> EmployeeProductRelation::GetAllEmployeeByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	std::vector<int> EmployeeProductRelation::GetAllEmployeeByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		std::vector<int> employeeIDVector;
 		EmployeeProductRelation aeRelation;
@@ -166,7 +166,7 @@ namespace BusinessLayer{
 		return employeeIDVector;
 	}
 
-	std::vector<int> EmployeeProductRelation::GetAllProductByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	std::vector<int> EmployeeProductRelation::GetAllProductByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		std::vector<int> productIDVector;
 		EmployeeProductRelation aeRelation;
@@ -199,7 +199,7 @@ namespace BusinessLayer{
 		productID = 0;
 	}
 
-	bool EmployeeProductRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, int pID, std::string& errorMessage)
+	bool EmployeeProductRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int pID, std::string& errorMessage)
 	{
 		EmployeeProductRelation apRelation;
 		apRelation.Clear();
@@ -218,7 +218,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool EmployeeProductRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EmployeeProductRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		EmployeeProductRelation apRelation;
 		apRelation.Clear();

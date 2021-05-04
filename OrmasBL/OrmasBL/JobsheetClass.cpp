@@ -68,9 +68,9 @@ namespace BusinessLayer{
 	}
 
 
-	bool Jobsheet::CreateJobsheet(DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage)
+	bool Jobsheet::CreateJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, jDate, jCount, pID, eID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, jDate, jCount, pID, eID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		date = jDate;
@@ -87,9 +87,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Jobsheet::CreateJobsheet(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Jobsheet::CreateJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateJobsheet(id, date, count, productID, employeeID, errorMessage))
@@ -102,7 +102,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Jobsheet::DeleteJobsheet(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Jobsheet::DeleteJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteJobsheet(id, errorMessage))
 		{
@@ -116,7 +116,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Jobsheet::UpdateJobsheet(DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage)
+	bool Jobsheet::UpdateJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage)
 	{
 		date = jDate;
 		count = jCount;
@@ -132,7 +132,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Jobsheet::UpdateJobsheet(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Jobsheet::UpdateJobsheet(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateJobsheet(id, date, count, productID, employeeID, errorMessage))
 		{
@@ -154,7 +154,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::string Jobsheet::GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string fromDate, std::string tilDate)
+	std::string Jobsheet::GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string tilDate)
 	{
 		if (!fromDate.empty() && !tilDate.empty())
 		{
@@ -163,7 +163,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Jobsheet::GetJobsheetByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Jobsheet::GetJobsheetByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -202,7 +202,7 @@ namespace BusinessLayer{
 		employeeID = 0;
 	}
 
-	bool Jobsheet::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage)
+	bool Jobsheet::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string jDate, double jCount, int pID, int eID, std::string& errorMessage)
 	{
 		Jobsheet jobsheet;
 		jobsheet.Clear();
@@ -223,7 +223,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Jobsheet::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Jobsheet::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Jobsheet jobsheet;
 		jobsheet.Clear();

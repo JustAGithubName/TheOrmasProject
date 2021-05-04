@@ -37,24 +37,24 @@ namespace BusinessLayer{
 		void SetIsOutdated(bool);
 
 		// Create, delete and update NetCost
-		bool CreateNetCost(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateNetCost(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteNetCost(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateNetCost(DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID,
+		bool CreateNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID,
 			bool nIsOutdated, std::string& errorMessage);
-		bool UpdateNetCost(DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID,
+		bool UpdateNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID,
 			bool nIsOutdated, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetNetCostByID(DataLayer::OrmasDal& ormasDal, int nID, std::string& errorMessage);
-		bool GetNetCostByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetNetCostByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int nID, std::string& errorMessage);
+		bool GetNetCostByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string nDate, double nValue, int cID, int prID,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID,
 			std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 

@@ -64,7 +64,7 @@ void CreateSlrTypeDlg::CreateSalaryType()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetSalaryTypeParams(codeEdit->text(), nameEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateSalaryType(salaryType, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -79,7 +79,13 @@ void CreateSlrTypeDlg::CreateSalaryType()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -108,7 +114,7 @@ void CreateSlrTypeDlg::EditSalaryType()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetSalaryTypeParams(codeEdit->text(), nameEdit->text(), salaryType->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateSalaryType(salaryType, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -121,7 +127,13 @@ void CreateSlrTypeDlg::EditSalaryType()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

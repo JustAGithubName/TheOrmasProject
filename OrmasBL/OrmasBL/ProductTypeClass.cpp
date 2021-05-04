@@ -55,10 +55,10 @@ namespace BusinessLayer
 		code = boost::to_upper_copy(pCode);
 	}
 
-	bool ProductType::CreateProductType(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
+	bool ProductType::CreateProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
 		std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pTypeName, pTypeShortName, pTypeCode, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pTypeName, pTypeShortName, pTypeCode, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(pTypeName, pTypeShortName, pTypeCode);
@@ -75,9 +75,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductType::CreateProductType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductType::CreateProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id &&ormasDal.CreateProductType(id, name, shortName, code, errorMessage))
@@ -90,7 +90,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductType::DeleteProductType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductType::DeleteProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteProductType(id, errorMessage))
 		{
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductType::UpdateProductType(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
+	bool ProductType::UpdateProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
 		std::string& errorMessage)
 	{
 		TrimStrings(pTypeName, pTypeShortName, pTypeCode);
@@ -120,7 +120,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductType::UpdateProductType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductType::UpdateProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateProductType(id, name, shortName, code, errorMessage))
 		{
@@ -142,7 +142,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ProductType::GetProductTypeByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool ProductType::GetProductTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -164,7 +164,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ProductType::GetProductTypeByCode(DataLayer::OrmasDal& ormasDal, std::string pCode, std::string& errorMessage)
+	bool ProductType::GetProductTypeByCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pCode, std::string& errorMessage)
 	{
 		if (pCode.empty())
 			return false;
@@ -211,7 +211,7 @@ namespace BusinessLayer
 			boost::trim(pTypeCode);
 	}
 
-	bool ProductType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode, std::string& errorMessage)
+	bool ProductType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode, std::string& errorMessage)
 	{
 		ProductType productType;
 		productType.Clear();
@@ -231,7 +231,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ProductType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ProductType productType;
 		productType.Clear();

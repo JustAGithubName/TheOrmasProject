@@ -45,9 +45,9 @@ namespace BusinessLayer{
 		accountID = aID;
 	}
 
-	bool CompanyAccountRelation::CreateCompanyAccountRelation(DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage)
+	bool CompanyAccountRelation::CreateCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, cID, aID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, cID, aID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		companyID = cID;
@@ -63,9 +63,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CompanyAccountRelation::CreateCompanyAccountRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CompanyAccountRelation::CreateCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateCompanyAccount(id, companyID, accountID, errorMessage))
@@ -78,7 +78,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CompanyAccountRelation::DeleteCompanyAccountRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CompanyAccountRelation::DeleteCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteCompanyAccount(companyID, accountID, errorMessage))
 		{
@@ -92,7 +92,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool CompanyAccountRelation::UpdateCompanyAccountRelation(DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage)
+	bool CompanyAccountRelation::UpdateCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage)
 	{
 		companyID = cID;
 		accountID = aID;
@@ -106,7 +106,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CompanyAccountRelation::UpdateCompanyAccountRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CompanyAccountRelation::UpdateCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateCompanyAccount(id, companyID, accountID, errorMessage))
 		{
@@ -128,7 +128,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool CompanyAccountRelation::GetCompanyAccountByID(DataLayer::OrmasDal& ormasDal, int id, std::string& errorMessage)
+	bool CompanyAccountRelation::GetCompanyAccountByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int id, std::string& errorMessage)
 	{
 		if (id <= 0)
 			return false;
@@ -146,7 +146,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	std::vector<int> CompanyAccountRelation::GetAllCompanyByAccountID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	std::vector<int> CompanyAccountRelation::GetAllCompanyByAccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		std::vector<int> companyIDVector;
 		CompanyAccountRelation caRelation;
@@ -164,7 +164,7 @@ namespace BusinessLayer{
 		return companyIDVector;
 	}
 
-	std::vector<int> CompanyAccountRelation::GetAllAccountByCompanyID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	std::vector<int> CompanyAccountRelation::GetAllAccountByCompanyID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		std::vector<int> accountIDVector;
 		CompanyAccountRelation caRelation;
@@ -196,7 +196,7 @@ namespace BusinessLayer{
 		accountID = 0;
 	}
 
-	bool CompanyAccountRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int cID, int aID, std::string& errorMessage)
+	bool CompanyAccountRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage)
 	{
 		CompanyAccountRelation caRelation;
 		caRelation.Clear();
@@ -215,7 +215,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool CompanyAccountRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CompanyAccountRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		CompanyAccountRelation caRelation;
 		caRelation.Clear();
@@ -234,17 +234,17 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	int CompanyAccountRelation::GetAccountIDByCompanyID(DataLayer::OrmasDal& ormasDal, int cID, std::string parentNumber, std::string& errorMessage)
+	int CompanyAccountRelation::GetAccountIDByCompanyID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string parentNumber, std::string& errorMessage)
 	{
 		Account account;
 		std::vector<int> accVec;
-		accVec = GetAllAccountByCompanyID(ormasDal, cID, errorMessage);
+		accVec = GetAllAccountByCompanyID(globalVar, ormasDal, cID, errorMessage);
 		if (accVec.size() > 0)
 		{
 			for each (int accID in accVec)
 			{
 				account.Clear();
-				if (account.GetAccountByID(ormasDal, accID, errorMessage))
+				if (account.GetAccountByID(globalVar, ormasDal, accID, errorMessage))
 				{
 					if (0 == account.GetNumber().compare(parentNumber))
 					{

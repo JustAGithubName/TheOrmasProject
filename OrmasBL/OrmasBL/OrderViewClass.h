@@ -22,6 +22,7 @@ namespace BusinessLayer
 		OrderView(DataLayer::ordersViewCollection);
 		OrderView(){};
 		~OrderView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// OrderView class Accessors
 		std::string GetStatusCode();
@@ -36,6 +37,18 @@ namespace BusinessLayer
 		std::string GetEmployeePhone();
 		std::string GetCurrencyName();
 		
+
+		void SetStatusCode(std::string);
+		void SetStatusName(std::string);
+		void SetEmployeeName(std::string);
+		void SetEmployeeSurname(std::string);
+		void SetEmployeePhone(std::string);
+		void SetClientName(std::string);
+		void SetClientSurname(std::string);
+		void SetClientPhone(std::string);
+		void SetClientAddress(std::string);
+		void SetClientFirm(std::string);
+		void SetCurrencyName(std::string);
 	};
 }
 #endif //ORDERVIEWCLASS_H

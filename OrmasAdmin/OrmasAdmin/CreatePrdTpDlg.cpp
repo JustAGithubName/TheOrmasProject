@@ -70,7 +70,7 @@ void CreatePrdTpDlg::CreateProductType()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetProdTypeParams(nameEdit->text(), shortNameEdit->text(), codeEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateProductType(prodType, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -85,7 +85,13 @@ void CreatePrdTpDlg::CreateProductType()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -115,7 +121,7 @@ void CreatePrdTpDlg::EditProductType()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetProdTypeParams(nameEdit->text(), shortNameEdit->text(), codeEdit->text(), prodType->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateProductType(prodType, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -130,7 +136,13 @@ void CreatePrdTpDlg::EditProductType()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

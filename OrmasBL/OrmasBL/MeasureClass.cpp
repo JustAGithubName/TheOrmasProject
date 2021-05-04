@@ -53,9 +53,9 @@ namespace BusinessLayer{
 		unit = mUnit;
 	}
 
-	bool Measure::CreateMeasure(DataLayer::OrmasDal& ormasDal, std::string mName, std::string mShortName, int mUnit, std::string& errorMessage)
+	bool Measure::CreateMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string mName, std::string mShortName, int mUnit, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, mName, mShortName, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, mName, mShortName, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(mName, mShortName);
@@ -72,9 +72,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Measure::CreateMeasure(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Measure::CreateMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateMeasure(id, name, shortName, unit, errorMessage))
@@ -87,7 +87,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Measure::DeleteMeasure(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Measure::DeleteMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteMeasure(id, errorMessage))
 		{
@@ -100,7 +100,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Measure::UpdateMeasure(DataLayer::OrmasDal& ormasDal, std::string mName, std::string mShortName, int mUnit, std::string& errorMessage)
+	bool Measure::UpdateMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string mName, std::string mShortName, int mUnit, std::string& errorMessage)
 	{
 		TrimStrings(mName, mShortName);
 		name = mName;
@@ -115,7 +115,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Measure::UpdateMeasure(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Measure::UpdateMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateMeasure(id, name, shortName, unit, errorMessage))
 		{
@@ -137,7 +137,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Measure::GetMeasureByID(DataLayer::OrmasDal& ormasDal, int mID, std::string& errorMessage)
+	bool Measure::GetMeasureByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int mID, std::string& errorMessage)
 	{
 		if (mID <= 0)
 			return false;
@@ -182,7 +182,7 @@ namespace BusinessLayer{
 			boost::trim(mShortName);
 	}
 
-	bool Measure::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string mName, std::string mShortName, std::string& errorMessage)
+	bool Measure::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string mName, std::string mShortName, std::string& errorMessage)
 	{
 		Measure measure;
 		measure.Clear();
@@ -201,7 +201,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Measure::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Measure::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Measure measure;
 		measure.Clear();

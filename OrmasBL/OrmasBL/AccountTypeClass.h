@@ -30,22 +30,22 @@ namespace BusinessLayer
 		void SetComment(std::string);		
 
 		//Create, delete and update methods 
-		bool CreateAccountType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateAccountType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteAccountType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateAccountType(DataLayer::OrmasDal& ormasDal, std::string atName, int atNumber, std::string atComment, std::string& errorMessage);
-		bool UpdateAccountType(DataLayer::OrmasDal& ormasDal, std::string atName, int atNumber, std::string atComment, std::string& errorMessage);
+		bool CreateAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string atName, int atNumber, std::string atComment, std::string& errorMessage);
+		bool UpdateAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string atName, int atNumber, std::string atComment, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetAccountTypeByID(DataLayer::OrmasDal& ormasDal, int atID, std::string& errorMessage);
-		bool GetAccountTypeByNumber(DataLayer::OrmasDal& ormasDal, int atNumber, std::string& errorMessage);
+		bool GetAccountTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int atID, std::string& errorMessage);
+		bool GetAccountTypeByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int atNumber, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string atName, int atNumber, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string atName, int atNumber, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //ACCOUNTTYPECLASS_H

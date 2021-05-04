@@ -19,8 +19,8 @@
 
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_CreateFxdAstDlg_t {
-    QByteArrayData data[16];
-    char stringdata0[194];
+    QByteArrayData data[17];
+    char stringdata0[206];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -40,19 +40,20 @@ QT_MOC_LITERAL(7, 93, 10), // "OpenStsDlg"
 QT_MOC_LITERAL(8, 104, 10), // "OpenAccDlg"
 QT_MOC_LITERAL(9, 115, 10), // "OpenPurDlg"
 QT_MOC_LITERAL(10, 126, 10), // "OpenActDlg"
-QT_MOC_LITERAL(11, 137, 15), // "TextEditChanged"
-QT_MOC_LITERAL(12, 153, 21), // "CalculateMonthChanged"
-QT_MOC_LITERAL(13, 175, 5), // "SetID"
-QT_MOC_LITERAL(14, 181, 2), // "ID"
-QT_MOC_LITERAL(15, 184, 9) // "childName"
+QT_MOC_LITERAL(11, 137, 11), // "OpenSpecDlg"
+QT_MOC_LITERAL(12, 149, 15), // "TextEditChanged"
+QT_MOC_LITERAL(13, 165, 21), // "CalculateMonthChanged"
+QT_MOC_LITERAL(14, 187, 5), // "SetID"
+QT_MOC_LITERAL(15, 193, 2), // "ID"
+QT_MOC_LITERAL(16, 196, 9) // "childName"
 
     },
     "CreateFxdAstDlg\0CloseCreatedForms\0\0"
     "CreateFixedAssets\0EditFixedAssets\0"
     "DeleteFixedAssets\0Close\0OpenStsDlg\0"
     "OpenAccDlg\0OpenPurDlg\0OpenActDlg\0"
-    "TextEditChanged\0CalculateMonthChanged\0"
-    "SetID\0ID\0childName"
+    "OpenSpecDlg\0TextEditChanged\0"
+    "CalculateMonthChanged\0SetID\0ID\0childName"
 };
 #undef QT_MOC_LITERAL
 
@@ -62,7 +63,7 @@ static const uint qt_meta_data_CreateFxdAstDlg[] = {
        7,       // revision
        0,       // classname
        0,    0, // classinfo
-      12,   14, // methods
+      13,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -70,20 +71,21 @@ static const uint qt_meta_data_CreateFxdAstDlg[] = {
        1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    0,   74,    2, 0x06 /* Public */,
+       1,    0,   79,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       3,    0,   75,    2, 0x08 /* Private */,
-       4,    0,   76,    2, 0x08 /* Private */,
-       5,    0,   77,    2, 0x08 /* Private */,
-       6,    0,   78,    2, 0x08 /* Private */,
-       7,    0,   79,    2, 0x08 /* Private */,
-       8,    0,   80,    2, 0x08 /* Private */,
-       9,    0,   81,    2, 0x08 /* Private */,
-      10,    0,   82,    2, 0x08 /* Private */,
-      11,    0,   83,    2, 0x08 /* Private */,
-      12,    0,   84,    2, 0x08 /* Private */,
-      13,    2,   85,    2, 0x0a /* Public */,
+       3,    0,   80,    2, 0x08 /* Private */,
+       4,    0,   81,    2, 0x08 /* Private */,
+       5,    0,   82,    2, 0x08 /* Private */,
+       6,    0,   83,    2, 0x08 /* Private */,
+       7,    0,   84,    2, 0x08 /* Private */,
+       8,    0,   85,    2, 0x08 /* Private */,
+       9,    0,   86,    2, 0x08 /* Private */,
+      10,    0,   87,    2, 0x08 /* Private */,
+      11,    0,   88,    2, 0x08 /* Private */,
+      12,    0,   89,    2, 0x08 /* Private */,
+      13,    0,   90,    2, 0x08 /* Private */,
+      14,    2,   91,    2, 0x0a /* Public */,
 
  // signals: parameters
     QMetaType::Void,
@@ -99,7 +101,8 @@ static const uint qt_meta_data_CreateFxdAstDlg[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::Int, QMetaType::QString,   14,   15,
+    QMetaType::Void,
+    QMetaType::Void, QMetaType::Int, QMetaType::QString,   15,   16,
 
        0        // eod
 };
@@ -119,9 +122,10 @@ void CreateFxdAstDlg::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int 
         case 6: _t->OpenAccDlg(); break;
         case 7: _t->OpenPurDlg(); break;
         case 8: _t->OpenActDlg(); break;
-        case 9: _t->TextEditChanged(); break;
-        case 10: _t->CalculateMonthChanged(); break;
-        case 11: _t->SetID((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
+        case 9: _t->OpenSpecDlg(); break;
+        case 10: _t->TextEditChanged(); break;
+        case 11: _t->CalculateMonthChanged(); break;
+        case 12: _t->SetID((*reinterpret_cast< int(*)>(_a[1])),(*reinterpret_cast< QString(*)>(_a[2]))); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
@@ -164,13 +168,13 @@ int CreateFxdAstDlg::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 12)
+        if (_id < 13)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 12;
+        _id -= 13;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 12)
+        if (_id < 13)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 12;
+        _id -= 13;
     }
     return _id;
 }

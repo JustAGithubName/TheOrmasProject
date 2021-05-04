@@ -31,24 +31,24 @@ namespace BusinessLayer
 		void SetCode(std::string);
 
 		//Create, delete, update methods
-		bool CreateOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
+		bool CreateOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
 			std::string& errorMessage);
-		bool UpdateOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
+		bool UpdateOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
 			std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetOtherStocksTypeByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool GetOtherStocksTypeByCode(DataLayer::OrmasDal& ormasDal, std::string pCode, std::string& errorMessage);
+		bool GetOtherStocksTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool GetOtherStocksTypeByCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pCode, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal&, std::string pTypeName, std::string pTypeShortName, std::string pCode, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pCode, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //OtherStocksTYPECLASS_H

@@ -30,21 +30,22 @@ namespace BusinessLayer
 		void SetCount(double);
 	
 		//Create, delete, update methods
-		bool CreateSpecificationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateSpecificationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteSpecificationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListBySpecificationID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool CreateSpecificationList(DataLayer::OrmasDal& ormasDal, int sID, int pID, double slCount, std::string& errorMessage);
-		bool UpdateSpecificationList(DataLayer::OrmasDal& ormasDal, int sID, int pID, double slCount, std::string& errorMessage);
+		bool CreateSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListBySpecificationID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool CreateSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, std::string& errorMessage);
+		bool UpdateSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, std::string& errorMessage);
 
+		bool CreateSpecificationChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, std::string& errorMessage);
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetSpecificationListByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetSpecificationListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int sID, int pID, double slCount, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

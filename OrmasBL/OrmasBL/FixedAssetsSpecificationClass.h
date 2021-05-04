@@ -46,22 +46,22 @@ namespace BusinessLayer
 		void SetDateOfConstruction(std::string);
 
 		//Create, delete, update methods
-		bool CreateFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string sName, std::string sFactoryNumber, std::string sDeveloper, std::string sDocument,
+		bool CreateFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sName, std::string sFactoryNumber, std::string sDeveloper, std::string sDocument,
 			std::string sObjChar, std::string sCondition, std::string sDateOfConst, std::string& errorMessage);
-		bool UpdateFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string sName, std::string sFactoryNumber, std::string sDeveloper, std::string sDocument,
+		bool UpdateFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sName, std::string sFactoryNumber, std::string sDeveloper, std::string sDocument,
 			std::string sObjChar, std::string sCondition, std::string sDateOfConst, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetFixedAssetsSpecificationByID(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
+		bool GetFixedAssetsSpecificationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		//bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string sFactoryNumber, std::string& errorMessage);
-		//bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		//bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sFactoryNumber, std::string& errorMessage);
+		//bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //FixedAssetsSpecificationCLASS_H

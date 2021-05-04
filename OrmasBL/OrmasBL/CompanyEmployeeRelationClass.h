@@ -31,24 +31,25 @@ namespace BusinessLayer{
 		void SetBranchID(int);
 
 		// Create, delete  Company-Employee relation
-		bool CreateCompanyEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteCompanyEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateCompanyEmployeeRelation(DataLayer::OrmasDal &ormasDal, int cID, int eID, int bID, std::string& errorMessage);
-		bool UpdateCompanyEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateCompanyEmployeeRelation(DataLayer::OrmasDal &ormasDal, int cID, int eID, int bID, std::string& errorMessage);
+		bool CreateCompanyEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteCompanyEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateCompanyEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int eID, int bID, std::string& errorMessage);
+		bool UpdateCompanyEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateCompanyEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int eID, int bID, std::string& errorMessage);
 
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetCompanyEmployeeByID(DataLayer::OrmasDal& ormasDal, int id, std::string& errorMessage);
-		int GetCompanyByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
-		int GetBranchByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
-		int GetEmployeeByCompanyID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetCompanyEmployeeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int id, std::string& errorMessage);
+		int GetCompanyByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
+		int GetBranchByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
+		int GetEmployeeByCompanyID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		std::vector<int> GetAllEmployeeIDByBranchID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int cID, int aID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

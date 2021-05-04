@@ -45,15 +45,15 @@ void CreateCbxDlg::FillEditElements(int subID, QString cInfo, QString cAddress)
 	informationEdit->setText(cInfo);
 	addressEdit->setText(cAddress);
 	BusinessLayer::Subaccount subacc;
-	if(subacc.GetSubaccountByID(dialogBL->GetOrmasDal(), subID, errorMessage))
+	if(subacc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subID, errorMessage))
 	{
 		numberEdit->setText(subacc.GetNumber().c_str());
 	}
 	BusinessLayer::Account acc;
 	BusinessLayer::ChartOfAccounts aoSAcc;
-	if (acc.GetAccountByID(dialogBL->GetOrmasDal(), subacc.GetParentAccountID(), errorMessage))
+	if (acc.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subacc.GetParentAccountID(), errorMessage))
 	{
-		if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), acc.GetNumber(), errorMessage))
+		if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), acc.GetNumber(), errorMessage))
 		{
 			accNamePh->setText(aoSAcc.GetName().c_str());
 		}
@@ -89,10 +89,10 @@ void CreateCbxDlg::CreateCashbox()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		//create subacc section
 		BusinessLayer::Status status;
-		if (!status.GetStatusByName(dialogBL->GetOrmasDal(), "OPEN", errorMessage))
+		if (!status.GetStatusByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "OPEN", errorMessage))
 		{
 			dialogBL->CancelTransaction(errorMessage);
 			QMessageBox::information(NULL, QString(tr("Warning")),
@@ -107,7 +107,7 @@ void CreateCbxDlg::CreateCashbox()
 		subaccount->SetStartBalance(0);
 		subaccount->SetCurrencyID(currencyCmb->currentData().toInt());
 		subaccount->SetStatusID(status.GetID());
-		if (!subaccount->CreateSubaccount(dialogBL->GetOrmasDal(), errorMessage))
+		if (!subaccount->CreateSubaccount(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage))
 		{
 			dialogBL->CancelTransaction(errorMessage);
 			QMessageBox::information(NULL, QString(tr("Warning")),
@@ -136,7 +136,13 @@ void CreateCbxDlg::CreateCashbox()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -167,8 +173,8 @@ void CreateCbxDlg::EditCashbox()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetCashboxParams(cashbox->GetSubaccountID(), informationEdit->text(), addressEdit->text(), cashbox->GetID());
-			dialogBL->StartTransaction(errorMessage);
-			if(!subaccount->GetSubaccountByID(dialogBL->GetOrmasDal(), cashbox->GetSubaccountID(), errorMessage))
+			dialogBL->StartIsolatedTransaction(errorMessage);
+			if(!subaccount->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashbox->GetSubaccountID(), errorMessage))
 			{
 				dialogBL->CancelTransaction(errorMessage);
 				QMessageBox::information(NULL, QString(tr("Warning")),
@@ -192,7 +198,13 @@ void CreateCbxDlg::EditCashbox()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else
@@ -254,7 +266,7 @@ void CreateCbxDlg::GenerateSubaccount()
 	BusinessLayer::Account acc;
 	BusinessLayer::ChartOfAccounts aoSAcc;
 	BusinessLayer::Currency curr;
-	if (curr.GetCurrencyByID(dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage))
+	if (curr.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage))
 	{
 		std::string number = "";
 		if (curr.GetShortName().compare("TJS") == 0)
@@ -272,9 +284,9 @@ void CreateCbxDlg::GenerateSubaccount()
 			number += genNumber;
 			subaccount->SetNumber(number);
 			numberEdit->setText(subaccount->GetNumber().c_str());
-			if (acc.GetAccountByNumber(dialogBL->GetOrmasDal(), "10110", errorMessage))
+			if (acc.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10110", errorMessage))
 			{
-				if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), "10110", errorMessage))
+				if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10110", errorMessage))
 				{
 					accNamePh->setText(aoSAcc.GetName().c_str());
 				}
@@ -296,9 +308,9 @@ void CreateCbxDlg::GenerateSubaccount()
 			number += genNumber;
 			subaccount->SetNumber(number);
 			numberEdit->setText(subaccount->GetNumber().c_str());
-			if (acc.GetAccountByNumber(dialogBL->GetOrmasDal(), "10120", errorMessage))
+			if (acc.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10120", errorMessage))
 			{
-				if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), "10120", errorMessage))
+				if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), "10120", errorMessage))
 				{
 					accNamePh->setText(aoSAcc.GetName().c_str());
 				}

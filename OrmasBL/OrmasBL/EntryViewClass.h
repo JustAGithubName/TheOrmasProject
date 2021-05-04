@@ -12,10 +12,14 @@ namespace BusinessLayer{
 		EntryView(DataLayer::entriesViewCollection);
 		EntryView(){};
 		~EntryView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// EntryView class Accessors
 		std::string GetDebitingAccountNumber();
 		std::string GetCreditingAccountNumber();
+
+		void SetDebitingAccountNumber(std::string);
+		void SetCreditingAccountNumber(std::string);
 	};
 }
 

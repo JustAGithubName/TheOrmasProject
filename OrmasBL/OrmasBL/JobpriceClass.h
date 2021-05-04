@@ -41,23 +41,23 @@ namespace BusinessLayer{
 		void SetPositionID(int);
 
 		// Create, delete and update Jobprice
-		bool CreateJobprice(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateJobprice(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteJobprice(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateJobprice(DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
+		bool CreateJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
 			int posID, std::string& errorMessage);
-		bool UpdateJobprice(DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
+		bool UpdateJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
 			int posID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetJobpriceByID(DataLayer::OrmasDal& ormasDal, int jID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetJobpriceByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int jID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
 			int posID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //JOBPRICECLASS_H

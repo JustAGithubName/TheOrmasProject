@@ -75,7 +75,7 @@ void CreateBrhDlg::CreateBranch()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetBranchParams(nameEdit->text(), addressEdit->text(), phoneEdit->text(), commentTextEdit->toPlainText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateBranch(branch, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -91,7 +91,13 @@ void CreateBrhDlg::CreateBranch()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -124,7 +130,7 @@ void CreateBrhDlg::EditBranch()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetBranchParams(nameEdit->text(), addressEdit->text(), phoneEdit->text(), commentTextEdit->toPlainText(), branch->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateBranch(branch, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -139,7 +145,13 @@ void CreateBrhDlg::EditBranch()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

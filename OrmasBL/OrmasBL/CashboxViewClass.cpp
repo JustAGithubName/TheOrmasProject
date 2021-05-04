@@ -15,4 +15,18 @@ namespace BusinessLayer{
 	{
 		return subaccountNumber;
 	}
+	void CashboxView::SetSubaccountNumber(std::string bSubaccountNumber)
+	{
+		subaccountNumber = bSubaccountNumber;
+	}
+
+	std::string CashboxView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != subaccountID || !information.empty() || !address.empty())
+		{
+			return ormasDal.GetFilterForCashboxView(id, subaccountNumber, information, address, subaccountID);
+		}
+		return "";
+	}
+
 }

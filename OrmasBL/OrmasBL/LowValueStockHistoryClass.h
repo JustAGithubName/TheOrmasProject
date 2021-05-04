@@ -45,26 +45,26 @@ namespace BusinessLayer
 		void SetHistoryDate(std::string);
 
 		//Create, delete, update methods
-		bool CreateLowValueStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateLowValueStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteLowValueStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateLowValueStockHistory(DataLayer::OrmasDal& ormasDal, int osID, double sCount, double sSum,
+		bool CreateLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, double sCount, double sSum,
 			int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage);
-		bool UpdateLowValueStockHistory(DataLayer::OrmasDal& ormasDal, int osID, double sCount, double sSum,
+		bool UpdateLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, double sCount, double sSum,
 			int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetLowValueStockHistoryByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool GetLowValueStockHistoryByOtherStocksID(DataLayer::OrmasDal& ormasDal, int osID, std::string& errorMessage);
-		bool GetLowValueStockHistoryByOtherStocksAndWarehouseID(DataLayer::OrmasDal& ormasDal, int osID, int wID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetLowValueStockHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool GetLowValueStockHistoryByOtherStocksID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, std::string& errorMessage);
+		bool GetLowValueStockHistoryByOtherStocksAndWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, int wID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 
 
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int osID, int wID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, int wID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

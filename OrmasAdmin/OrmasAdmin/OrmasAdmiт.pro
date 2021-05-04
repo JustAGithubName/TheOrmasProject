@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+#QT       += core gui widgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -12,56 +12,85 @@ TARGET = OrmasAdmin
 TEMPLATE = app
 
 
-SOURCES += \
-    ClcWagesDlg.cpp \
+SOURCES += CashBookListDlg.cpp \
+	CashInfoDlg.cpp \
+	ClcWagesDlg.cpp \
+	CloseOfMonthDlg.cpp \
+	CloseOfMonthInfoDlg.cpp \
 	CreateAcсDlg.cpp \
     CreateAcсTpDlg.cpp \
+	CreateAcctbDlg.cpp \
+	CreateAccblEtrDlg.cpp \
+	CreateAccblExpDlg.cpp \
+	CreateAccblRepDlg.cpp \
     CreateAcsDlg.cpp \
     CreateAcsItemDlg.cpp \
+	CreateAmGrDlg.cpp \
+	CreateAmTypeDlg.cpp \
     CreateBlcDlg.cpp \
+	CreateBrhDlg.cpp \
+	CreateBrSAccDlg.cpp \
+	CreateBrwDlg.cpp \
 	CreateCARDlg.cpp \
+	CreateCASHERDlg.cpp \
+	CreateCbxDlg.cpp \
 	CreateCERDlg.cpp \
     CreateCltDlg.cpp \
     CreateCmpDlg.cpp \
     CreateCOADlg.cpp \
+	CreateConOthStDlg.cpp \
+	CreateConOthStListDlg.cpp \
 	CreateConPDlg.cpp \
     CreateConPListDlg.cpp \
     CreateConRDlg.cpp \
     CreateConRListDlg.cpp \
     CreateCurDlg.cpp \
+	CreateDivAccDlg.cpp \
+	CreateDivDlg.cpp \
     CreateEmpDlg.cpp \
+	CreateEmpPrdDlg.cpp \
 	CreateEtrDlg.cpp \
 	CreateEtrRtDlg.cpp \
+	CreateFxdAstDlg.cpp \
+	CreateFxdAstOperDlg.cpp \
+	CreateGrpDlg.cpp \
    	CreateInvDlg.cpp \
+	CreateInveDlg.cpp \
     CreateInvListDlg.cpp \
 	CreateJbpDlg.cpp \
     CreateJbsDlg.cpp \
 	CreateLcnDlg.cpp \
+	CreateLowValStockDlg.cpp \
     CreateMsrDlg.cpp \
 	CreateNetCDlg.cpp \
     CreateOrdDlg.cpp \
     CreateOrdListDlg.cpp \
 	CreateOrdRDlg.cpp \
     CreateOrdRListDlg.cpp \
+	CreateOthStDlg.cpp \
+	CreateOthSTypeDlg.cpp \
 	CreatePcrDlg.cpp \
     CreatePhtDlg.cpp \
     CreatePmtDlg.cpp \
     CreatePosDlg.cpp \
 	CreatePPlanDlg.cpp \
     CreatePPlanListDlg.cpp \
-	CreateProdnStockDlg.cpp \
     CreatePrcDlg.cpp \
+	CreatePrdBrnDlg.cpp \
+	CreateProdConRDlg.cpp \
+	CreateProdConRListDlg.cpp \
     CreatePrdTpDlg.cpp \
     CreateProdDlg.cpp \
     CreateProdnDlg.cpp \
+	CreateProdnStockDlg.cpp \
     CreateProdnListDlg.cpp \
     CreatePspDlg.cpp \
 	CreatePurDlg.cpp \
+	CreateRcpOthStDlg.cpp \
+	CreateRcpOthStListDlg.cpp \
 	CreateRcpPDlg.cpp \
 	CreateRcpPListDlg.cpp \
-	CreateRcpRDlg.cpp \
-	CreateRcpRListDlg.cpp \
-    CreateRelDlg.cpp \
+	CreateRelDlg.cpp \
     CreateRelTypeDlg.cpp \
     CreateRfdDlg.cpp \
     CreateRoleDlg.cpp \
@@ -74,79 +103,110 @@ SOURCES += \
 	CreateSplDlg.cpp \
     CreateSplListDlg.cpp \
 	CreateStockDlg.cpp \
+	CreateStockLmDlg.cpp \
+	CreateStockTrDlg.cpp \
+	CreateStockTrListDlg.cpp \
 	CreateSAccDlg.cpp \
+	CreateSAccLmDlg.cpp \
+	CreateShrDlg.cpp \
     CreateStsDlg.cpp \
 	CreateStsRuleDlg.cpp \
+	CreateTaxDlg.cpp \
 	CreateTmsDlg.cpp \
 	CreateTrsDlg.cpp \
     CreateTrsListDlg.cpp \
     CreateUserDlg.cpp \
+	CreateUserGrDlg.cpp \
     CreateWdwDlg.cpp \
+	CreateWERDlg.cpp \
     CreateWOffDlg.cpp \
     CreateWOffListDlg.cpp \
 	CreateWOffRDlg.cpp \
     CreateWOffRListDlg.cpp \
-	GenerateAccDlg.cpp \
-    GenerateOneAccDlg.cpp \
+	CreateWrhDlg.cpp \
+	CreateWrhTpDlg.cpp \
     DataForm.cpp \
-    LoginForm.cpp \
-	InfoForm.cpp \
-    MainForm.cpp \
-    OrmasAdmin.cpp \
-    CreateAccTpDlg.cpp \
-    CreateAccDlg.cpp \
-    CreateProdConRDlg.cpp \
-    CreateProdConRListDlg.cpp \
-    CloseOfMonthDlg.cpp \
-    CloseOfMonthInfoDlg.cpp \
-    ConfigParser.cpp \
-    CreateDivDlg.cpp \
-    DocForm.cpp \
+	DocForm.cpp \
+	GenerateAccDlg.cpp \
+	GenerateAccRepDlg.cpp \
+	GenerateAgentRepDlg.cpp \
     GenerateCmpBlcDlg.cpp \
+	GenerateComRepDlg.cpp \
+	GenerateDailySalesRepDlg.cpp \
     GenerateFinRepDlg.cpp \
-    ReworkRawDlg.cpp \
-    CreateBrhDlg.cpp \
-    CreateCASHERDlg.cpp \
-    CreateCbxDlg.cpp \
-    CreateWERDlg.cpp \
-    CreateWrhDlg.cpp \
-    CreateWrhTpDlg.cpp \
-    GenerateAccRepDlg.cpp \
+	GenerateOneAccDlg.cpp \
     GenerateProfRepDlg.cpp \
     GenerateSalesRepDlg.cpp \
-    GenerateSpecRepDlg.cpp
+    GenerateSpecRepDlg.cpp \
+	GenerateWrRepDlg.cpp \
+	GenerateWTBSDlg.cpp \
+	InfoForm.cpp \
+	LoginForm.cpp \
+	MainForm.cpp \
+	ReworkRawDlg.cpp \
+	ReportForm.cpp \
+	SearchDlg.cpp \
+    CreateAccDlg.cpp \
+    CreateAccTpDlg.cpp
 
 HEADERS  += AllDlgHeaders.h \
-    ClcWagesDlg.h \
+    CashBookListDlg.h \
+	CashInfoDlg.h \
+	ClcWagesDlg.h \
+	CloseOfMonthDlg.h \
+	CloseOfMonthInfoDlg.h \
 	CreateAcсDlg.h \
     CreateAcсTpDlg.h \
+	CreateAcctbDlg.h \
+	CreateAccblEtrDlg.h \
+	CreateAccblExpDlg.h \
+	CreateAccblRepDlg.h \
     CreateAcsDlg.h \
     CreateAcsItemDlg.h \
+	CreateAmGrDlg.h \
+	CreateAmTypeDlg.h \
     CreateBlcDlg.h \
+	CreateBrhDlg.h \
+	CreateBrSAccDlg.h \
+	CreateBrwDlg.h \
 	CreateCARDlg.h \
+	CreateCASHERDlg.h \
+	CreateCbxDlg.h \
 	CreateCERDlg.h \
     CreateCltDlg.h \
     CreateCmpDlg.h \
     CreateCOADlg.h \
+	CreateConOthStDlg.h \
+	CreateConOthStListDlg.h \
 	CreateConPDlg.h \
     CreateConPListDlg.h \
     CreateConRDlg.h \
     CreateConRListDlg.h \
     CreateCurDlg.h \
+	CreateDivAccDlg.h \
+	CreateDivDlg.h \
     CreateEmpDlg.h \
+	CreateEmpPrdDlg.h \
 	CreateEtrDlg.h \
 	CreateEtrRtDlg.h \
+	CreateFxdAstDlg.h \
+	CreateFxdAstOperDlg.h \
+	CreateGrpDlg.h \
    	CreateInvDlg.h \
+	CreateInveDlg.h \
     CreateInvListDlg.h \
 	CreateJbpDlg.h \
     CreateJbsDlg.h \
 	CreateLcnDlg.h \
+	CreateLowValStockDlg.h \
     CreateMsrDlg.h \
 	CreateNetCDlg.h \
     CreateOrdDlg.h \
     CreateOrdListDlg.h \
 	CreateOrdRDlg.h \
     CreateOrdRListDlg.h \
+	CreateOthStDlg.h \
+	CreateOthSTypeDlg.h \
 	CreatePcrDlg.h \
     CreatePhtDlg.h \
     CreatePmtDlg.h \
@@ -154,18 +214,21 @@ HEADERS  += AllDlgHeaders.h \
 	CreatePPlanDlg.h \
     CreatePPlanListDlg.h \
     CreatePrcDlg.h \
+	CreatePrdBrnDlg.h \
+	CreateProdConRDlg.h \
+	CreateProdConRListDlg.h \
     CreatePrdTpDlg.h \
     CreateProdDlg.h \
     CreateProdnDlg.h \
-    CreateProdnListDlg.h \
 	CreateProdnStockDlg.h \
+    CreateProdnListDlg.h \
     CreatePspDlg.h \
 	CreatePurDlg.h \
+	CreateRcpOthStDlg.h \
+	CreateRcpOthStListDlg.h \
 	CreateRcpPDlg.h \
 	CreateRcpPListDlg.h \
-	CreateRcpRDlg.h \
-	CreateRcpRListDlg.h \
-    CreateRelDlg.h \
+	CreateRelDlg.h \
     CreateRelTypeDlg.h \
     CreateRfdDlg.h \
     CreateRoleDlg.h \
@@ -178,78 +241,109 @@ HEADERS  += AllDlgHeaders.h \
 	CreateSplDlg.h \
     CreateSplListDlg.h \
 	CreateStockDlg.h \
+	CreateStockLmDlg.h \
+	CreateStockTrDlg.h \
+	CreateStockTrListDlg.h \
 	CreateSAccDlg.h \
+	CreateSAccLmDlg.h \
+	CreateShrDlg.h \
     CreateStsDlg.h \
 	CreateStsRuleDlg.h \
+	CreateTaxDlg.h \
 	CreateTmsDlg.h \
 	CreateTrsDlg.h \
     CreateTrsListDlg.h \
     CreateUserDlg.h \
+	CreateUserGrDlg.h \
     CreateWdwDlg.h \
+	CreateWERDlg.h \
     CreateWOffDlg.h \
     CreateWOffListDlg.h \
 	CreateWOffRDlg.h \
     CreateWOffRListDlg.h \
-	GenerateAccDlg.h \
-    GenerateOneAccDlg.h \
-	ExtraFunctions.h \
+	CreateWrhDlg.h \
+	CreateWrhTpDlg.h \
     DataForm.h \
-    LoginForm.h \
-	InfoForm.h \
-    MainForm.h \ 
-    CreateAccTpDlg.h \
-    CreateAccDlg.h \
-    CreateProdConRDlg.h \
-    CreateProdConRListDlg.h \
-    CloseOfMonthDlg.h \
-    CloseOfMonthInfoDlg.h \
-    ConfigParser.h \
-    CreateDivDlg.h \
-    DocForm.h \
+	DocForm.h \
+	GenerateAccDlg.h \
+	GenerateAccRepDlg.h \
+	GenerateAgentRepDlg.h \
     GenerateCmpBlcDlg.h \
+	GenerateComRepDlg.h \
+	GenerateDailySalesRepDlg.h \
     GenerateFinRepDlg.h \
-    ReworkRawDlg.h \
-    CreateBrhDlg.h \
-    CreateCASHERDlg.h \
-    CreateCbxDlg.h \
-    CreateWERDlg.h \
-    CreateWrhDlg.h \
-    CreateWrhTpDlg.h \
-    GenerateAccRepDlg.h \
+	GenerateOneAccDlg.h \
     GenerateProfRepDlg.h \
     GenerateSalesRepDlg.h \
-    GenerateSpecRepDlg.h
+    GenerateSpecRepDlg.h \
+	GenerateWrRepDlg.h \
+	GenerateWTBSDlg.h \
+	InfoForm.h \
+	LoginForm.h \
+	MainForm.h \
+	ReworkRawDlg.h \
+	ReportForm.h \
+	SearchDlg.h \
+    CreateAccDlg.h \
+    CreateAccTpDlg.h
 
-FORMS    += ClcWagesDlg.ui \
+FORMS    += CashBookListDlg.ui \
+	CashInfoDlg.ui \
+	ClcWagesDlg.ui \
+	CloseOfMonthDlg.ui \
+	CloseOfMonthInfoDlg.ui \
 	CreateAcсDlg.ui \
-    CreateAcсTpDlg.ui \
+	CreateAcсTpDlg.ui \
+	CreateAcctbDlg.ui \
+	CreateAccblEtrDlg.ui \
+	CreateAccblExpDlg.ui \
+	CreateAccblRepDlg.ui \
     CreateAcsDlg.ui \
     CreateAcsItemDlg.ui \
+	CreateAmGrDlg.ui \
+	CreateAmTypeDlg.ui \
     CreateBlcDlg.ui \
+	CreateBrhDlg.ui \
+	CreateBrSAccDlg.ui \
+	CreateBrwDlg.ui \
 	CreateCARDlg.ui \
+	CreateCASHERDlg.ui \
+	CreateCbxDlg.ui \
 	CreateCERDlg.ui \
     CreateCltDlg.ui \
     CreateCmpDlg.ui \
     CreateCOADlg.ui \
+	CreateConOthStDlg.ui \
+	CreateConOthStListDlg.ui \
 	CreateConPDlg.ui \
     CreateConPListDlg.ui \
     CreateConRDlg.ui \
     CreateConRListDlg.ui \
     CreateCurDlg.ui \
+	CreateDivAccDlg.ui \
+	CreateDivDlg.ui \
     CreateEmpDlg.ui \
+	CreateEmpPrdDlg.ui \
 	CreateEtrDlg.ui \
 	CreateEtrRtDlg.ui \
+	CreateFxdAstDlg.ui \
+	CreateFxdAstOperDlg.ui \
+	CreateGrpDlg.ui \
    	CreateInvDlg.ui \
+	CreateInveDlg.ui \
     CreateInvListDlg.ui \
 	CreateJbpDlg.ui \
     CreateJbsDlg.ui \
 	CreateLcnDlg.ui \
+	CreateLowValStockDlg.ui \
     CreateMsrDlg.ui \
 	CreateNetCDlg.ui \
     CreateOrdDlg.ui \
     CreateOrdListDlg.ui \
 	CreateOrdRDlg.ui \
     CreateOrdRListDlg.ui \
+	CreateOthStDlg.ui \
+	CreateOthSTypeDlg.ui \
 	CreatePcrDlg.ui \
     CreatePhtDlg.ui \
     CreatePmtDlg.ui \
@@ -257,6 +351,9 @@ FORMS    += ClcWagesDlg.ui \
 	CreatePPlanDlg.ui \
     CreatePPlanListDlg.ui \
     CreatePrcDlg.ui \
+	CreatePrdBrnDlg.ui \
+	CreateProdConRDlg.ui \
+	CreateProdConRListDlg.ui \
     CreatePrdTpDlg.ui \
     CreateProdDlg.ui \
     CreateProdnDlg.ui \
@@ -264,11 +361,11 @@ FORMS    += ClcWagesDlg.ui \
     CreateProdnListDlg.ui \
     CreatePspDlg.ui \
 	CreatePurDlg.ui \
+	CreateRcpOthStDlg.ui \
+	CreateRcpOthStListDlg.ui \
 	CreateRcpPDlg.ui \
 	CreateRcpPListDlg.ui \
-	CreateRcpRDlg.ui \
-	CreateRcpRListDlg.ui \
-    CreateRelDlg.ui \
+	CreateRelDlg.ui \
     CreateRelTypeDlg.ui \
     CreateRfdDlg.ui \
     CreateRoleDlg.ui \
@@ -281,46 +378,51 @@ FORMS    += ClcWagesDlg.ui \
 	CreateSplDlg.ui \
     CreateSplListDlg.ui \
 	CreateStockDlg.ui \
+	CreateStockLmDlg.ui \
+	CreateStockTrDlg.ui \
+	CreateStockTrListDlg.ui \
 	CreateSAccDlg.ui \
+	CreateSAccLmDlg.ui \
+	CreateShrDlg.ui \
     CreateStsDlg.ui \
 	CreateStsRuleDlg.ui \
+	CreateTaxDlg.ui \
 	CreateTmsDlg.ui \
 	CreateTrsDlg.ui \
     CreateTrsListDlg.ui \
     CreateUserDlg.ui \
+	CreateUserGrDlg.ui \
     CreateWdwDlg.ui \
+	CreateWERDlg.ui \
     CreateWOffDlg.ui \
     CreateWOffListDlg.ui \
 	CreateWOffRDlg.ui \
     CreateWOffRListDlg.ui \
-	GenerateAccDlg.ui \
-    GenerateOneAccDlg.ui \
+	CreateWrhDlg.ui \
+	CreateWrhTpDlg.ui \
     DataForm.ui \
-    LoginForm.ui \
-	InfoForm.ui \
-    MainForm.ui \
-    CreateAccTpDlg.ui \
-    CreatePrdnListDlg.ui \
-    CreateAccDlg.ui \
-    CreateProdConRDlg.ui \
-    CreateProdConRListDlg.ui \
-    CloseOfMonthDlg.ui \
-    CloseOfMonthInfoDlg.ui \
-    CreateDivDlg.ui \
-    DocForm.ui \
+	DocForm.ui \
+	GenerateAccDlg.ui \
+	GenerateAccRepDlg.ui \
+	GenerateAgentRepDlg.ui \
     GenerateCmpBlcDlg.ui \
+	GenerateComRepDlg.ui \
+	GenerateDailySalesRepDlg.ui \
     GenerateFinRepDlg.ui \
-    ReworkRawDlg.ui \
-    CreateBrhDlg.ui \
-    CreateCASHERDlg.ui \
-    CreateCbxDlg.ui \
-    CreateWERDlg.ui \
-    CreateWrhDlg.ui \
-    CreateWrhTpDlg.ui \
-    GenerateAccRepDlg.ui \
+	GenerateOneAccDlg.ui \
     GenerateProfRepDlg.ui \
     GenerateSalesRepDlg.ui \
-    GenerateSpecRepDlg.ui
+    GenerateSpecRepDlg.ui \
+	GenerateWrRepDlg.ui \
+	GenerateWTBSDlg.ui \
+	InfoForm.ui \
+	LoginForm.ui \
+	MainForm.ui \
+	ReworkRawDlg.ui \
+	ReportForm.ui \
+	SearchDlg.ui \
+    CreateAccDlg.ui \
+    CreateAccTpDlg.ui
 
 DISTFILES += \
     ../../OrmasAdmin/OrmasAdmin/OrmasResource.rcc

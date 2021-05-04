@@ -52,4 +52,45 @@ namespace BusinessLayer{
 	{
 		return accountNumber;
 	}
+
+	void WithdrawalView::SetUsername(std::string wUserName)
+	{
+		userName = wUserName;
+	}
+	void WithdrawalView::SetUserSurname(std::string wUserSurname)
+	{
+		userSurname = wUserSurname;
+	}
+	void WithdrawalView::SetUserPhone(std::string wUserPhone)
+	{
+		userPhone = wUserPhone;
+	}
+	void WithdrawalView::SetSubaccountNumber(std::string wSubaccountNumber)
+	{
+		subaccountNumber = wSubaccountNumber;
+	}
+	void WithdrawalView::SetCurrencyName(std::string wCurrencyName)
+	{
+		currencyName = wCurrencyName;
+	}
+	void WithdrawalView::SetStatusName(std::string wStatusName)
+	{
+		statusName = wStatusName;
+	}
+	void WithdrawalView::SetAccountNumber(std::string wAccountNumber)
+	{
+		accountNumber = wAccountNumber;
+	}
+
+	std::string WithdrawalView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || 0 != value || !currencyName.empty() || !userName.empty() || !userSurname.empty() || !userPhone.empty() || !statusName.empty()
+			|| !accountNumber.empty() || !subaccountNumber.empty() || !who.empty() || !target.empty() || 0 != userID || 0 != currencyID || 0 != subaccountID
+			|| 0 != statusID || 0 != accountID  || 0 != cashboxAccountID)
+		{
+			return ormasDal.GetFilterForWithdrawalView(id, date, value, currencyName, userName, userSurname, userPhone, statusName, accountNumber, subaccountNumber, 
+				who, target, userID, currencyID, subaccountID, statusID, accountID, cashboxAccountID);
+		}
+		return "";
+	}
 }

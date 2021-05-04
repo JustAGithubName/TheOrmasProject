@@ -119,7 +119,7 @@ void CreateFxdAstOperDlg::CreateFixedAssetsOperation()
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetFixedAssetsOperationParams(operDateEdit->text(), nameEdit->text(), valueEdit->text().toDouble(), inRdb->isChecked()? "true":"false",
 			decRdb->isChecked() ? "true" : "false", fixedAstEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateFixedAssetsOperation(fixedAssetsOperations, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -138,7 +138,13 @@ void CreateFxdAstOperDlg::CreateFixedAssetsOperation()
 					itemModel->appendRow(fixedAssetsOperationItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 			Close();
 		}
@@ -174,7 +180,7 @@ void CreateFxdAstOperDlg::EditFixedAssetsOperation()
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetFixedAssetsOperationParams(operDateEdit->text(), nameEdit->text(), valueEdit->text().toDouble(), inRdb->isChecked() ? "true" : "false",
 				decRdb->isChecked() ? "true" : "false", fixedAstEdit->text().toInt(), fixedAssetsOperations->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateFixedAssetsOperation(fixedAssetsOperations, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -190,7 +196,13 @@ void CreateFxdAstOperDlg::EditFixedAssetsOperation()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				Close();
 			}
@@ -247,7 +259,7 @@ void CreateFxdAstOperDlg::OpenFxdAstDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

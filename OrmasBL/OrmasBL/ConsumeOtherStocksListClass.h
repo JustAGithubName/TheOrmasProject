@@ -43,24 +43,24 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByConsumeOtherStocksID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		bool CreateConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, int crID, int osID, double clCount, double clSum,
+		bool CreateConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByConsumeOtherStocksID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		bool CreateConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int osID, double clCount, double clSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, int crID, int osID, double clCount, double clSum,
+		bool UpdateConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int osID, double clCount, double clSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetConsumeOtherStocksListByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetConsumeOtherStocksListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int crID, int osID, double clCount, double clSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int osID, double clCount, double clSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

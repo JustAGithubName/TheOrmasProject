@@ -61,13 +61,13 @@ void CreateNetCDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(product.GetCompanyID())));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetShortName().c_str());
 					}
@@ -96,12 +96,12 @@ void CreateNetCDlg::FillEditElements(QString nDate, double nValue, int nProductI
 	isOutdatedCmb->setCurrentIndex(index);
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(nCurrencyID)));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), nProductID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), nProductID, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetShortName().c_str());
 		}
@@ -141,7 +141,7 @@ void CreateNetCDlg::CreateNetCost()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetNetCostParams(dateEdit->text(), valueEdit->text().toDouble(), productEdit->text().toInt(),
 			currencyCmb->currentData().toInt(), isOutdatedCmb->currentText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateNetCost(netCost, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -150,8 +150,8 @@ void CreateNetCDlg::CreateNetCost()
 				{
 					BusinessLayer::Product *product = new BusinessLayer::Product;
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
-					if (!product->GetProductByID(dialogBL->GetOrmasDal(), netCost->GetProductID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), netCost->GetCurrencyID(), errorMessage))
+					if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), netCost->GetProductID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), netCost->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -164,7 +164,7 @@ void CreateNetCDlg::CreateNetCost()
 						return;
 					}
 					BusinessLayer::Measure *measure = new BusinessLayer::Measure();
-					if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
+					if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -192,7 +192,13 @@ void CreateNetCDlg::CreateNetCost()
 					delete measure;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 		
 			Close();
 		}
@@ -228,7 +234,7 @@ void CreateNetCDlg::EditNetCost()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetNetCostParams(dateEdit->text(), valueEdit->text().toDouble(), productEdit->text().toInt(),
 				currencyCmb->currentData().toInt(), isOutdatedCmb->currentText(), netCost->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateNetCost(netCost, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -237,8 +243,8 @@ void CreateNetCDlg::EditNetCost()
 					{
 						BusinessLayer::Product *product = new BusinessLayer::Product;
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency;
-						if (!product->GetProductByID(dialogBL->GetOrmasDal(), netCost->GetProductID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), netCost->GetCurrencyID(), errorMessage))
+						if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), netCost->GetProductID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), netCost->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -251,7 +257,7 @@ void CreateNetCDlg::EditNetCost()
 							return;
 						}
 						BusinessLayer::Measure *measure = new BusinessLayer::Measure();
-						if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
+						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -276,8 +282,13 @@ void CreateNetCDlg::EditNetCost()
 						delete measure;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
-			
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

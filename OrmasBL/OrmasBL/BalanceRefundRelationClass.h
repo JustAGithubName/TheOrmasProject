@@ -27,20 +27,20 @@ namespace BusinessLayer{
 		void SetRefundID(int);
 
 		// Create, delete and update Access
-		bool CreateBalanceRefundRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteBalanceRefundRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateBalanceRefundRelation(DataLayer::OrmasDal &ormasDal, int bID, int rID, std::string& errorMessage);
+		bool CreateBalanceRefundRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteBalanceRefundRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateBalanceRefundRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int rID, std::string& errorMessage);
 
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::vector<int> GetAllRefundByBalanceID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage);
-		std::vector<int> GetAllBalanceByRefundID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage);
+		std::vector<int> GetAllRefundByBalanceID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage);
+		std::vector<int> GetAllBalanceByRefundID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int bID, int rID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int rID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

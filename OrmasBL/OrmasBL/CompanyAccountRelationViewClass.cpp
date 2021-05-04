@@ -19,4 +19,22 @@ namespace BusinessLayer{
 	{
 		return accountNumber;
 	}
+
+	void CompanyAccountRelationView::SetCompanyName(std::string cCompanyName)
+	{
+		companyName = cCompanyName;
+	}
+	void CompanyAccountRelationView::SetAccountNumber(std::string cAccountNumber)
+	{
+		accountNumber = cAccountNumber;
+	}
+
+	std::string CompanyAccountRelationView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != companyID || 0 != accountID)
+		{
+			return ormasDal.GetFilterForCompanyAccountView(id, companyName, accountNumber, companyID, accountID);
+		}
+		return "";
+	}
 }

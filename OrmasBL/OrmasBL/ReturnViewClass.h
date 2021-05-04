@@ -22,6 +22,7 @@ namespace BusinessLayer
 		ReturnView(DataLayer::returnsViewCollection);
 		ReturnView(){};
 		~ReturnView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// ReturnView class Accessors
 		std::string GetStatusCode();
@@ -35,6 +36,19 @@ namespace BusinessLayer
 		std::string GetEmployeeSurname();
 		std::string GetEmployeePhone();
 		std::string GetCurrencyName();
+
+		void SetStatusCode(std::string);
+		void SetStatusName(std::string);
+		void SetClientName(std::string);
+		void SetClientSurname(std::string);
+		void SetClientPhone(std::string);
+		void SetClientAddress(std::string);
+		void SetClientFirm(std::string);
+		void SetEmployeeName(std::string);
+		void SetEmployeeSurname(std::string);
+		void SetEmployeePhone(std::string);
+		void SetCurrencyName(std::string);
+
 
 	};
 }

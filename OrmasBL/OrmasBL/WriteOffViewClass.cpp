@@ -72,5 +72,68 @@ namespace BusinessLayer
 		return currencyName;
 	}
 
+	void WriteOffView::SetStatusCode(std::string cStatusCode)
+	{
+		statusCode = cStatusCode;
+	}
+	void WriteOffView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void WriteOffView::SetEmployeeName(std::string cEmployeeName)
+	{
+		employeeName = cEmployeeName;
+	}
+	void WriteOffView::SetEmployeeSurname(std::string cEmployeeSurname)
+	{
+		employeeSurname = cEmployeeSurname;
+	}
+	void WriteOffView::SetEmployeePhone(std::string cEmployeePhone)
+	{
+		employeePhone = cEmployeePhone;
+	}
+
+	void WriteOffView::SetClientName(std::string oClientName)
+	{
+		clientName = oClientName;
+	}
+	void WriteOffView::SetClientSurname(std::string oClientSurname)
+	{
+		clientSurname = oClientSurname;
+	}
+	void WriteOffView::SetClientPhone(std::string oClientPhone)
+	{
+		clientPhone = oClientPhone;
+	}
+	void WriteOffView::SetClientAddress(std::string oClientAddres)
+	{
+		clientAddres = oClientAddres;
+	}
+	void WriteOffView::SetClientFirm(std::string oClientFirm)
+	{
+		clientFirm = oClientFirm;
+	}
+
+	void WriteOffView::SetCurrencyName(std::string eCurrencyName)
+	{
+		currencyName = eCurrencyName;
+	}
+
+	std::string WriteOffView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !executionDate.empty() || !statusCode.empty() || !statusName.empty() || !employeeName.empty() || !employeeSurname.empty()
+			|| !employeePhone.empty() || !clientName.empty() || !clientSurname.empty() || !clientPhone.empty()
+			|| !clientAddres.empty() || !clientFirm.empty() || 0 != count || 0 != sum || !currencyName.empty() ||
+			0 != clientID || 0 != employeeID || 0 != statusID || currencyID)
+		{
+			return ormasDal.GetFilterForWOffView(id, date, executionDate, statusCode, statusName, clientName,
+				clientSurname, clientPhone, clientAddres, clientFirm, employeeName, employeeSurname, employeePhone, count, sum, currencyName, employeeID,
+				clientID, statusID, currencyID);
+		}
+		return "";
+	}
 }
+
+
+
 

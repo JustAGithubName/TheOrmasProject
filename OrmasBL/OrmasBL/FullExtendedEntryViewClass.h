@@ -31,10 +31,12 @@ namespace BusinessLayer{
 		int writeOffRawID = 0;
 		int productID = 0;
 		int otherStocksID = 0;
+		int accDocumentID = 0;
 	public:
 		FullExtendedEntryView(DataLayer::entriesFullJoinViewCollection);
 		FullExtendedEntryView(){};
 		~FullExtendedEntryView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// EntryView class Accessors
 		std::string GetDebitingAccountNumber();
@@ -62,6 +64,34 @@ namespace BusinessLayer{
 		int GetWriteOFFRawID();
 		int GetProductID();
 		int GetOtherStocksID();
+		int GetAccountableDocumentID();
+
+		void SetDebitingAccountNumber(std::string);
+		void SetCreditingAccountNumber(std::string);
+		void SetOperationID(int);
+		void SetSubaccountID(int);
+		void SetConsumeRawID(int);
+		void SetConsumeProductID(int);
+		void SetConsumeOtherStocksID(int);
+		void SetFixedAssetsID(int);
+		void SetFixedAssetsOperID(int);
+		void SetInventoryID(int);
+		void SetOrderID(int);
+		void SetOrderRawID(int);
+		void SetPaymentID(int);
+		void SetPayslipID(int);
+		void SetProductionConRawID(int);
+		void SetReceiptProductID(int);
+		void SetReceiptOtherStocksID(int);
+		void SetReturnID(int);
+		void SetSpoilageID(int);
+		void SetStockTransferID(int);
+		void SetWithdrawalID(int);
+		void SetWriteOFFID(int);
+		void SetWriteOFFRawID(int);
+		void SetProductID(int);
+		void SetOtherStocksID(int);
+		void SetAccountableDocumentID(int);
 	};
 }
 #endif

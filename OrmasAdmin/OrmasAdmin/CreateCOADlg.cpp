@@ -52,7 +52,7 @@ void CreateCOADlg::SetID(int ID, QString childName)
 			{
 				accTypeEdit->setText(QString::number(ID));
 				BusinessLayer::AccountType accType;
-				if (accType.GetAccountTypeByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (accType.GetAccountTypeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					accTypeNamePh->setText(accType.GetName().c_str());
 				}
@@ -75,7 +75,7 @@ void CreateCOADlg::FillEditElements(QString cName, QString cNumber, int atID)
 	numberEdit->setText(cNumber);
 	accTypeEdit->setText(QString::number(atID));
 	BusinessLayer::AccountType accType;
-	if (accType.GetAccountTypeByID(dialogBL->GetOrmasDal(), atID, errorMessage))
+	if (accType.GetAccountTypeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), atID, errorMessage))
 	{
 		accTypeNamePh->setText(accType.GetName().c_str());
 	}
@@ -108,7 +108,7 @@ void CreateCOADlg::CreateChartOfAccounts()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetChartOfAccountsParams(nameEdit->text(), numberEdit->text(), accTypeEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateChartOfAccounts(chartOfAccounts, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -116,7 +116,7 @@ void CreateCOADlg::CreateChartOfAccounts()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::AccountType *accType = new BusinessLayer::AccountType();
-					if (!accType->GetAccountTypeByID(dialogBL->GetOrmasDal(), chartOfAccounts->GetAccountTypeID(), errorMessage))
+					if (!accType->GetAccountTypeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), chartOfAccounts->GetAccountTypeID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -137,8 +137,13 @@ void CreateCOADlg::CreateChartOfAccounts()
 					delete accType;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
-
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 		
 			Close();
 		}
@@ -172,7 +177,7 @@ void CreateCOADlg::EditChartOfAccounts()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetChartOfAccountsParams(nameEdit->text(), numberEdit->text(), accTypeEdit->text().toInt(), chartOfAccounts->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateChartOfAccounts(chartOfAccounts, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -180,7 +185,7 @@ void CreateCOADlg::EditChartOfAccounts()
 					if (!parentDataForm->IsClosed())
 					{
 						BusinessLayer::AccountType *accType = new BusinessLayer::AccountType();
-						if (!accType->GetAccountTypeByID(dialogBL->GetOrmasDal(), chartOfAccounts->GetAccountTypeID(), errorMessage))
+						if (!accType->GetAccountTypeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), chartOfAccounts->GetAccountTypeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -199,7 +204,13 @@ void CreateCOADlg::EditChartOfAccounts()
 						delete accType;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 			
 				Close();

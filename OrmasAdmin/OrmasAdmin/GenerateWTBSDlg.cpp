@@ -158,16 +158,15 @@ GenerateWTBS::~GenerateWTBS()
 void GenerateWTBS::Generate()
 {
 	QString message = tr("Loading...");
-	QWidget* checkedWidget = IsWindowExist(((MainForm*)parentForm)->mdiArea->subWindowList(), QString("generateWTBSForm"));
+	QWidget* checkedWidget= IsWindowExist(((MainForm*)parentForm)->mdiArea->subWindowList(), QString("generateWTBSForm"));
 	if (checkedWidget == nullptr)
 	{
-		ReportForm *rForm = new ReportForm(dialogBL, this);
+		ReportForm *rForm = new ReportForm(dialogBL, mainForm);
 		rForm->setWindowTitle(tr("Warehouse turnover balance sheet"));
 		std::string prevMonthLastDate = GetPrevMonthEnd(fromDateEdit->text().toUtf8().constData());
 		rForm->FillStockTable(fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData(), warehouseCmb->currentData().toInt(), prevMonthLastDate);
 		if (errorMessage.empty())
 		{
-			rForm->setObjectName("generateWTBSForm");
 			QMdiSubWindow *accountWindow = new QMdiSubWindow;
 			accountWindow->setWidget(rForm);
 			accountWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -203,7 +202,33 @@ void GenerateWTBS::Close()
 
 void GenerateWTBS::InitComboBox()
 {
-	std::vector<BusinessLayer::WarehouseView> curWarehouse = dialogBL->GetAllDataForClass<BusinessLayer::WarehouseView>(errorMessage);
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), errorMessage);
+	if (0 == rolesMap.size())
+		return;
+
+	std::string filter = "";
+
+	if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
+		mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
+	{
+		filter = "";
+	}
+	else
+	{
+		BusinessLayer::Subaccount subaccount;
+		BusinessLayer::BranchSubaccountRelation bsRel;
+		BusinessLayer::CompanyEmployeeRelation ceRel;
+		int branchID = ceRel.GetBranchByEmployeeID(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), mainForm->GetLoggedUser()->GetID(), errorMessage);
+		if (0 < branchID)
+		{
+			std::vector<int> subaccountIDVec = bsRel.GetSubaccountIDsbyBranchID(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), branchID, errorMessage);
+			if (subaccountIDVec.size() > 0)
+			{
+				filter = subaccount.GenerateINFilter(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), subaccountIDVec);
+			}
+		}
+	}
+	std::vector<BusinessLayer::WarehouseView> curWarehouse = dialogBL->GetAllDataForClass<BusinessLayer::WarehouseView>(errorMessage,filter);
 	if (!curWarehouse.empty())
 	{
 		for (unsigned int i = 0; i < curWarehouse.size(); i++)
@@ -243,14 +268,30 @@ std::string GenerateWTBS::GetPrevMonthEnd(std::string date)
 	if (month > 1)
 	{
 		startDate = "01.";
-		startDate += std::to_string(month - 1);
+		if (month < 11)
+		{
+			startDate += "0";
+			startDate += std::to_string(month - 1);
+		}
+		else
+		{
+			startDate += std::to_string(month - 1);
+		}
 		startDate += ".";
 		startDate += std::to_string(year);
 		pastMonthDate = (QDate::fromString(startDate.c_str(), "dd.MM.yyyy"));
 		coundOfDays = pastMonthDate.daysInMonth();
 		endDate = std::to_string(coundOfDays);
 		endDate += ".";
-		endDate += std::to_string(month - 1);
+		if (month < 11)
+		{
+			endDate += "0";
+			endDate += std::to_string(month - 1);
+		}
+		else
+		{
+			endDate += std::to_string(month - 1);
+		}
 		endDate += ".";
 		endDate += std::to_string(year);
 		return endDate;

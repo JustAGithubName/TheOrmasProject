@@ -59,7 +59,7 @@ void CreateJbsDlg::SetID(int ID, QString childName)
 			{
 				employeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(user.GetName().c_str());
 					empSurnamePh->setText(user.GetSurname().c_str());
@@ -70,12 +70,12 @@ void CreateJbsDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
@@ -101,18 +101,18 @@ void CreateJbsDlg::FillEditElements(QString jDate, double jCount, int pID, int e
 	productEdit->setText(QString::number(pID));
 	employeeEdit->setText(QString::number(eID));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), pID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pID, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
 	}
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), eID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), eID, errorMessage))
 	{
 		empNamePh->setText(user.GetName().c_str());
 		empSurnamePh->setText(user.GetSurname().c_str());
@@ -150,7 +150,7 @@ void CreateJbsDlg::CreateJobsheet()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetJobsheetParams(dateEdit->text(), countEdit->text().toDouble(), productEdit->text().toInt(), employeeEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateJobsheet(jobsheet, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -159,8 +159,8 @@ void CreateJbsDlg::CreateJobsheet()
 				{
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee;
 					BusinessLayer::Product *product = new BusinessLayer::Product;
-					if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), jobsheet->GetEmployeeID(), errorMessage)
-						|| !product->GetProductByID(dialogBL->GetOrmasDal(), jobsheet->GetProductID(), errorMessage))
+					if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobsheet->GetEmployeeID(), errorMessage)
+						|| !product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobsheet->GetProductID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -173,7 +173,7 @@ void CreateJbsDlg::CreateJobsheet()
 					}
 
 					BusinessLayer::Measure *measure = new BusinessLayer::Measure;
-					if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
+					if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -203,7 +203,13 @@ void CreateJbsDlg::CreateJobsheet()
 					delete measure;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 		
 			Close();
@@ -239,7 +245,7 @@ void CreateJbsDlg::EditJobsheet()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetJobsheetParams(dateEdit->text(), countEdit->text().toDouble(), productEdit->text().toInt(), employeeEdit->text().toInt(), jobsheet->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateJobsheet(jobsheet, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -248,8 +254,8 @@ void CreateJbsDlg::EditJobsheet()
 					{
 						BusinessLayer::Employee *employee = new BusinessLayer::Employee;
 						BusinessLayer::Product *product = new BusinessLayer::Product;
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), jobsheet->GetEmployeeID(), errorMessage)
-							|| !product->GetProductByID(dialogBL->GetOrmasDal(), jobsheet->GetProductID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobsheet->GetEmployeeID(), errorMessage)
+							|| !product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), jobsheet->GetProductID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -262,7 +268,7 @@ void CreateJbsDlg::EditJobsheet()
 						}
 
 						BusinessLayer::Measure *measure = new BusinessLayer::Measure;
-						if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
+						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -288,7 +294,13 @@ void CreateJbsDlg::EditJobsheet()
 						delete measure;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				
 				Close();
@@ -346,7 +358,7 @@ void CreateJbsDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

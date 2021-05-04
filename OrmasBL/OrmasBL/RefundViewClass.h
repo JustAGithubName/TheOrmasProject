@@ -11,9 +11,12 @@ namespace BusinessLayer{
 		RefundView(DataLayer::refundsViewCollection);
 		RefundView(){};
 		~RefundView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// RefundView class Accessors
 		std::string GetCurrencyName();
+
+		void SetCurrencyName(std::string);
 	};
 }
 

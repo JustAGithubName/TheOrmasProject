@@ -13,6 +13,7 @@ namespace BusinessLayer
 		OrmasBL(const OrmasBL &oBL);
 		~OrmasBL();
 		User* loggedUser;
+		GlobalVariable* globalVar;
 
 		OrmasBL& operator=(const OrmasBL& ob)
 		{
@@ -51,22 +52,27 @@ namespace BusinessLayer
 
 		//Transaction methids
 		bool StartTransaction(std::string& errorMessage);
+		bool StartIsolatedTransaction(std::string& errorMessage);
 		bool CommitTransaction(std::string& errorMessage);
 		bool CancelTransaction(std::string& errorMessage);
 		std::string ConcatenateFilters(std::vector<std::string> filterList);
+
+		void SetGlobalVariables(BusinessLayer::GlobalVariable*);
 
 		//Create, delete and update for all classes
 		bool CreateAccess(BusinessLayer::Access*, std::string&);
 		bool CreateAccessItem(BusinessLayer::AccessItem*, std::string&);
 		bool CreateAccount(BusinessLayer::Account*, std::string&);
 		bool CreateAccountable(BusinessLayer::Accountable*, std::string&);
-		bool CreateAccountableTransaction(BusinessLayer::AccountableTransaction*, std::string&);
+		bool CreateAccountableUnionDocument(BusinessLayer::AccountableUnionDocument*, std::string&);
 		bool CreateAccountHistory(BusinessLayer::AccountHistory*, std::string&);
+		bool CreateAccountChangeLog(BusinessLayer::AccountChangeLog*, std::string&);
 		bool CreateAccountType(BusinessLayer::AccountType*, std::string&); 
 		bool CreateAmortizeGroup(BusinessLayer::AmortizeGroup*, std::string&);
 		bool CreateAmortizeType(BusinessLayer::AmortizeType*, std::string&);
 		bool CreateBalance(BusinessLayer::Balance*, std::string&);
 		bool CreateBranch(BusinessLayer::Branch*, std::string&);
+		bool CreateBranchSubaccount(BusinessLayer::BranchSubaccountRelation*, std::string&);
 		bool CreateBorrower(BusinessLayer::Borrower*, std::string&);
 		bool CreateCashbox(BusinessLayer::Cashbox*, std::string&);
 		bool CreateCashboxTransaction(BusinessLayer::CashboxTransaction*, std::string&);
@@ -97,6 +103,7 @@ namespace BusinessLayer
 		bool CreateFixedAssetsDetails(BusinessLayer::FixedAssetsDetails*, std::string&);
 		bool CreateFixedAssetsOperation(BusinessLayer::FixedAssetsOperations*, std::string&);
 		bool CreateFixedAssetsSpecification(BusinessLayer::FixedAssetsSpecification*, std::string&);
+		bool CreateGroup(BusinessLayer::Group*, std::string&);
 		bool CreateInventorization(BusinessLayer::Inventorization*, std::string&);
 		bool CreateInventorizationList(BusinessLayer::InventorizationList*, std::string&);
 		bool CreateInventory(BusinessLayer::Inventory*, std::string&);
@@ -106,6 +113,7 @@ namespace BusinessLayer
 		bool CreateJobsheet(BusinessLayer::Jobsheet*, std::string&);
 		bool CreateLowValueStock(BusinessLayer::LowValueStock*, std::string&);
 		bool CreateLowValueStockHistory(BusinessLayer::LowValueStockHistory*, std::string&);
+		bool CreateLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog*, std::string&);
 		bool CreateLocation(BusinessLayer::Location*, std::string&);
 		bool CreateMeasure(BusinessLayer::Measure*, std::string&);
 		bool CreateNetCost(BusinessLayer::NetCost*, std::string&);
@@ -149,6 +157,7 @@ namespace BusinessLayer
 		bool CreateSalaryType(BusinessLayer::SalaryType*, std::string&);
 		bool CreateShareholder(BusinessLayer::Shareholder*, std::string&);
 		bool CreateSpecificationList(BusinessLayer::SpecificationList*, std::string&);
+		bool CreateSpecificationChangeLog(BusinessLayer::SpecificationChangeLog*, std::string&);
 		bool CreateSpecification(BusinessLayer::Specification*, std::string&);
 		bool CreateSpoilageList(BusinessLayer::SpoilageList*, std::string&);
 		bool CreateSpoilage(BusinessLayer::Spoilage*, std::string&);
@@ -156,15 +165,21 @@ namespace BusinessLayer
 		bool CreateStatus(BusinessLayer::Status*, std::string&);
 		bool CreateStatusRule(BusinessLayer::StatusRule*, std::string&);
 		bool CreateStock(BusinessLayer::Stock*, std::string&);
+		bool CreateStockLimit(BusinessLayer::StockLimit*, std::string&);
 		bool CreateStockHistory(BusinessLayer::StockHistory*, std::string&);
+		bool CreateStockChangeLog(BusinessLayer::StockChangeLog*, std::string&);
 		bool CreateSubaccount(BusinessLayer::Subaccount*, std::string&);
+		bool CreateSubaccountLimit(BusinessLayer::SubaccountLimit*, std::string&);
 		bool CreateSubaccountHistory(BusinessLayer::SubaccountHistory*, std::string&);
+		bool CreateSubaccountChangeLog(BusinessLayer::SubaccountChangeLog*, std::string&);
 		bool CreateTax(BusinessLayer::Tax*, std::string&);
 		bool CreateTimesheet(BusinessLayer::Timesheet*, std::string&);
 		bool CreateTransport(BusinessLayer::Transport*, std::string&);
 		bool CreateTransportHistory(BusinessLayer::TransportHistory*, std::string&);
+		bool CreateTransportChangeLog(BusinessLayer::TransportChangeLog*, std::string&);
 		bool CreateTransportList(BusinessLayer::TransportList*, std::string&);
 		bool CreateUser(BusinessLayer::User*, std::string&);
+		bool CreateUserGroupRelation(BusinessLayer::UserGroupRelation*, std::string&);
 		bool CreateWarehouse(BusinessLayer::Warehouse*, std::string&);
 		bool CreateWarehouseType(BusinessLayer::WarehouseType*, std::string&);
 		bool CreateWarehouseEmployeeRelation(BusinessLayer::WarehouseEmployeeRelation*, std::string&);
@@ -178,13 +193,15 @@ namespace BusinessLayer
 		bool DeleteAccessItem(BusinessLayer::AccessItem*, std::string&);
 		bool DeleteAccount(BusinessLayer::Account*, std::string&);
 		bool DeleteAccountable(BusinessLayer::Accountable*, std::string&);
-		bool DeleteAccountableTransaction(BusinessLayer::AccountableTransaction*, std::string&);
+		bool DeleteAccountableUnionDocument(BusinessLayer::AccountableUnionDocument*, std::string&);
 		bool DeleteAccountHistory(BusinessLayer::AccountHistory*, std::string&);
+		bool DeleteAccountChangeLog(BusinessLayer::AccountChangeLog*, std::string&);
 		bool DeleteAccountType(BusinessLayer::AccountType*, std::string&);
 		bool DeleteAmortizeGroup(BusinessLayer::AmortizeGroup*, std::string&);
 		bool DeleteAmortizeType(BusinessLayer::AmortizeType*, std::string&);
 		bool DeleteBalance(BusinessLayer::Balance*, std::string&);
 		bool DeleteBranch(BusinessLayer::Branch*, std::string&);
+		bool DeleteBranchSubaccount(BusinessLayer::BranchSubaccountRelation*, std::string&);
 		bool DeleteBorrower(BusinessLayer::Borrower*, std::string&);
 		bool DeleteCashbox(BusinessLayer::Cashbox*, std::string&);
 		bool DeleteCashboxTransaction(BusinessLayer::CashboxTransaction*, std::string&);
@@ -215,6 +232,7 @@ namespace BusinessLayer
 		bool DeleteFixedAssetsDetails(BusinessLayer::FixedAssetsDetails*, std::string&);
 		bool DeleteFixedAssetsOperation(BusinessLayer::FixedAssetsOperations*, std::string&);
 		bool DeleteFixedAssetsSpecification(BusinessLayer::FixedAssetsSpecification*, std::string&);
+		bool DeleteGroup(BusinessLayer::Group*, std::string&);
 		bool DeleteInventorization(BusinessLayer::Inventorization*, std::string&);
 		bool DeleteInventorizationList(BusinessLayer::InventorizationList*, std::string&);
 		bool DeleteInventory(BusinessLayer::Inventory*, std::string&);
@@ -224,6 +242,7 @@ namespace BusinessLayer
 		bool DeleteJobsheet(BusinessLayer::Jobsheet*, std::string&);
 		bool DeleteLowValueStock(BusinessLayer::LowValueStock*, std::string&);
 		bool DeleteLowValueStockHistory(BusinessLayer::LowValueStockHistory*, std::string&);
+		bool DeleteLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog*, std::string&);
 		bool DeleteLocation(BusinessLayer::Location*, std::string&);
 		bool DeleteMeasure(BusinessLayer::Measure*, std::string&);
 		bool DeleteNetCost(BusinessLayer::NetCost*, std::string&);
@@ -267,6 +286,7 @@ namespace BusinessLayer
 		bool DeleteSalaryType(BusinessLayer::SalaryType*, std::string&);
 		bool DeleteShareholder(BusinessLayer::Shareholder*, std::string&);
 		bool DeleteSpecificationList(BusinessLayer::SpecificationList*, std::string&);
+		bool DeleteSpecificationChangeLog(BusinessLayer::SpecificationChangeLog*, std::string&);
 		bool DeleteSpecification(BusinessLayer::Specification*, std::string&);
 		bool DeleteSpoilageList(BusinessLayer::SpoilageList*, std::string&);
 		bool DeleteSpoilage(BusinessLayer::Spoilage*, std::string&);
@@ -274,15 +294,21 @@ namespace BusinessLayer
 		bool DeleteStatus(BusinessLayer::Status*, std::string&);
 		bool DeleteStatusRule(BusinessLayer::StatusRule*, std::string&);
 		bool DeleteStock(BusinessLayer::Stock*, std::string&);
+		bool DeleteStockLimit(BusinessLayer::StockLimit*, std::string&);
 		bool DeleteStockHistory(BusinessLayer::StockHistory*, std::string&);
+		bool DeleteStockChangeLog(BusinessLayer::StockChangeLog*, std::string&);
 		bool DeleteSubaccount(BusinessLayer::Subaccount*, std::string&);
+		bool DeleteSubaccountLimit(BusinessLayer::SubaccountLimit*, std::string&);
 		bool DeleteSubaccountHistory(BusinessLayer::SubaccountHistory*, std::string&);
+		bool DeleteSubaccountChangeLog(BusinessLayer::SubaccountChangeLog*, std::string&);
 		bool DeleteTax(BusinessLayer::Tax*, std::string&);
 		bool DeleteTimesheet(BusinessLayer::Timesheet*, std::string&);
 		bool DeleteTransport(BusinessLayer::Transport*, std::string&);
 		bool DeleteTransportHistory(BusinessLayer::TransportHistory*, std::string&);
+		bool DeleteTransportChangeLog(BusinessLayer::TransportChangeLog*, std::string&);
 		bool DeleteTransportList(BusinessLayer::TransportList*, std::string&);
 		bool DeleteUser(BusinessLayer::User*, std::string&);
+		bool DeleteUserGroupRelation(BusinessLayer::UserGroupRelation*, std::string&);
 		bool DeleteWarehouse(BusinessLayer::Warehouse*, std::string&);
 		bool DeleteWarehouseType(BusinessLayer::WarehouseType*, std::string&);
 		bool DeleteWarehouseEmployeeRelation(BusinessLayer::WarehouseEmployeeRelation*, std::string&);
@@ -296,12 +322,14 @@ namespace BusinessLayer
 		bool UpdateAccessItem(BusinessLayer::AccessItem*, std::string&);
 		bool UpdateAccount(BusinessLayer::Account*, std::string&);
 		bool UpdateAccountable(BusinessLayer::Accountable*, std::string&);
-		bool UpdateAccountableTransaction(BusinessLayer::AccountableTransaction*, std::string&);
+		bool UpdateAccountableUnionDocument(BusinessLayer::AccountableUnionDocument*, std::string&);
 		bool UpdateAccountHistory(BusinessLayer::AccountHistory*, std::string&);
+		bool UpdateAccountChangeLog(BusinessLayer::AccountChangeLog*, std::string&);
 		bool UpdateAccountType(BusinessLayer::AccountType*, std::string&);
 		bool UpdateAmortizeGroup(BusinessLayer::AmortizeGroup*, std::string&);
 		bool UpdateAmortizeType(BusinessLayer::AmortizeType*, std::string&);
 		bool UpdateBranch(BusinessLayer::Branch*, std::string&);
+		bool UpdateBranchSubaccount(BusinessLayer::BranchSubaccountRelation*, std::string&);
 		bool UpdateBorrower(BusinessLayer::Borrower*, std::string&);
 		bool UpdateCashbox(BusinessLayer::Cashbox*, std::string&);
 		bool UpdateCashboxTransaction(BusinessLayer::CashboxTransaction*, std::string&);
@@ -333,6 +361,7 @@ namespace BusinessLayer
 		bool UpdateFixedAssetsDetails(BusinessLayer::FixedAssetsDetails*, std::string&);
 		bool UpdateFixedAssetsOperation(BusinessLayer::FixedAssetsOperations*, std::string&);
 		bool UpdateFixedAssetsSpecification(BusinessLayer::FixedAssetsSpecification*, std::string&);
+		bool UpdateGroup(BusinessLayer::Group*, std::string&);
 		bool UpdateInventorization(BusinessLayer::Inventorization*, std::string&);
 		bool UpdateInventorizationList(BusinessLayer::InventorizationList*, std::string&);
 		bool UpdateInventory(BusinessLayer::Inventory*, std::string&);
@@ -342,6 +371,7 @@ namespace BusinessLayer
 		bool UpdateJobsheet(BusinessLayer::Jobsheet*, std::string&);
 		bool UpdateLowValueStock(BusinessLayer::LowValueStock*, std::string&);
 		bool UpdateLowValueStockHistory(BusinessLayer::LowValueStockHistory*, std::string&);
+		bool UpdateLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog*, std::string&);
 		bool UpdateLocation(BusinessLayer::Location*, std::string&);
 		bool UpdateMeasure(BusinessLayer::Measure*, std::string&);
 		bool UpdateNetCost(BusinessLayer::NetCost*, std::string&);
@@ -385,6 +415,7 @@ namespace BusinessLayer
 		bool UpdateSalaryType(BusinessLayer::SalaryType*, std::string&);
 		bool UpdateShareholder(BusinessLayer::Shareholder*, std::string&);
 		bool UpdateSpecificationList(BusinessLayer::SpecificationList*, std::string&);
+		bool UpdateSpecificationChangeLog(BusinessLayer::SpecificationChangeLog*, std::string&);
 		bool UpdateSpecification(BusinessLayer::Specification*, std::string&);
 		bool UpdateSpoilageList(BusinessLayer::SpoilageList*, std::string&);
 		bool UpdateSpoilage(BusinessLayer::Spoilage*, std::string&);
@@ -392,15 +423,21 @@ namespace BusinessLayer
 		bool UpdateStatus(BusinessLayer::Status*, std::string&);
 		bool UpdateStatusRule(BusinessLayer::StatusRule*, std::string&);
 		bool UpdateStock(BusinessLayer::Stock*, std::string&);
+		bool UpdateStockLimit(BusinessLayer::StockLimit*, std::string&);
 		bool UpdateStockHistory(BusinessLayer::StockHistory*, std::string&);
+		bool UpdateStockChangeLog(BusinessLayer::StockChangeLog*, std::string&);
 		bool UpdateSubaccount(BusinessLayer::Subaccount*, std::string&);
+		bool UpdateSubaccountLimit(BusinessLayer::SubaccountLimit*, std::string&);
 		bool UpdateSubaccountHistory(BusinessLayer::SubaccountHistory*, std::string&);
+		bool UpdateSubaccountChangeLog(BusinessLayer::SubaccountChangeLog*, std::string&);
 		bool UpdateTax(BusinessLayer::Tax*, std::string&);
 		bool UpdateTimesheet(BusinessLayer::Timesheet*, std::string&);
 		bool UpdateTransport(BusinessLayer::Transport*, std::string&);
 		bool UpdateTransportHistory(BusinessLayer::TransportHistory*, std::string&);
+		bool UpdateTransportChangeLog(BusinessLayer::TransportChangeLog*, std::string&);
 		bool UpdateTransportList(BusinessLayer::TransportList*, std::string&);
 		bool UpdateUser(BusinessLayer::User*, std::string&);
+		bool UpdateUserGroupRelation(BusinessLayer::UserGroupRelation*, std::string&);
 		bool UpdateWarehouse(BusinessLayer::Warehouse*, std::string&);
 		bool UpdateWarehouseType(BusinessLayer::WarehouseType*, std::string&);
 		bool UpdateWarehouseEmployeeRelation(BusinessLayer::WarehouseEmployeeRelation*, std::string&);
@@ -417,6 +454,7 @@ namespace BusinessLayer
 		bool CalculateEmployeeSalary(std::string, std::string);
 		bool CalculateCloseOfMonth(std::string, std::string);
 		bool CalculateTax(std::string, std::string);
+		bool CalculateAmortization(std::string, std::string);
 		bool RecalculateNetCost(std::string fromDate, std::string tillDate);
 		bool GenerateReports(std::string, std::string);
 		bool CorrectingEntries();

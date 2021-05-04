@@ -55,9 +55,9 @@ namespace BusinessLayer
 		postingFixedAssets = pfa;
 	}
 
-	bool InventoryUnion::CreateInventoryUnion(DataLayer::OrmasDal& ormasDal, Inventory* fInven, PostingFixedAssets* pfAssets, std::string& errorMessage)
+	bool InventoryUnion::CreateInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, Inventory* fInven, PostingFixedAssets* pfAssets, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		inventory = fInven;
@@ -67,14 +67,14 @@ namespace BusinessLayer
 		int subAccID = 0;
 		if (isNewInventory)
 		{
-			subAccID = inventory->GenerateSubaccount(ormasDal, 0, errorMessage);
+			subAccID = inventory->GenerateSubaccount(globalVar, ormasDal, 0, errorMessage);
 		}
 		else
 		{
-			subAccID = inventory->GenerateSubaccount(ormasDal, subaccValue, errorMessage);
+			subAccID = inventory->GenerateSubaccount(globalVar, ormasDal, subaccValue, errorMessage);
 		}
 		inventory->SetSubaccountID(subAccID);
-		if (inventory->CreateInventory(ormasDal, errorMessage))
+		if (inventory->CreateInventory(globalVar, ormasDal, errorMessage))
 		{
 			if (0 != purveyorID || 0 != accountableID || 0 != accountID)
 			{
@@ -85,7 +85,7 @@ namespace BusinessLayer
 					Balance tempBalance;
 					Subaccount sub;
 					Account acc;
-					if (!acc.GetAccountByNumber(ormasDal, "10520", errorMessage))
+					if (!acc.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 					{
 						return false;
 					}
@@ -99,9 +99,9 @@ namespace BusinessLayer
 						{
 							sub.Clear();
 							tempBalance.Clear();
-							if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+							if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 								return false;
-							if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+							if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 							{
 								if (sub.GetParentAccountID() == acc.GetID())
 								{
@@ -116,7 +116,7 @@ namespace BusinessLayer
 					}
 					if (balance.GetSubaccountID() <= 0)
 						return false;
-					if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+					if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 					{
 						postingFixedAssets->SetSubaccountID(balance.GetSubaccountID());
 					}
@@ -126,7 +126,7 @@ namespace BusinessLayer
 					postingFixedAssets->SetUserID(purveyorID);
 				}
 				postingFixedAssets->SetInventoryID(inventory->GetID());
-				if (!postingFixedAssets->CreatePostingFixedAssets(ormasDal, errorMessage))
+				if (!postingFixedAssets->CreatePostingFixedAssets(globalVar, ormasDal, errorMessage))
 				{
 							return false;
 				}
@@ -135,7 +135,7 @@ namespace BusinessLayer
 				return true;
 			if (inventory->GetStatusID() == statusMap.find("IN USE")->second)
 			{
-				if (inventory->CreateInventoryEntry(ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
+				if (inventory->CreateInventoryEntry(globalVar, ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
 				{
 					return true;
 				}
@@ -163,10 +163,10 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool InventoryUnion::CreateInventoryUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventoryUnion::CreateInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
@@ -175,14 +175,14 @@ namespace BusinessLayer
 		int subAccID = 0;
 		if (isNewInventory)
 		{
-			subAccID = inventory->GenerateSubaccount(ormasDal, 0, errorMessage);
+			subAccID = inventory->GenerateSubaccount(globalVar, ormasDal, 0, errorMessage);
 		}
 		else
 		{
-			subAccID = inventory->GenerateSubaccount(ormasDal, subaccValue, errorMessage);
+			subAccID = inventory->GenerateSubaccount(globalVar, ormasDal, subaccValue, errorMessage);
 		}
 		inventory->SetSubaccountID(subAccID);
-		if (inventory->CreateInventory(ormasDal, errorMessage))
+		if (inventory->CreateInventory(globalVar, ormasDal, errorMessage))
 		{
 			if (0 != purveyorID || 0 != accountableID || 0 != accountID)
 			{
@@ -193,7 +193,7 @@ namespace BusinessLayer
 					Balance tempBalance;
 					Subaccount sub;
 					Account acc;
-					if (!acc.GetAccountByNumber(ormasDal, "10520", errorMessage))
+					if (!acc.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 					{
 						return false;
 					}
@@ -207,9 +207,9 @@ namespace BusinessLayer
 						{
 							sub.Clear();
 							tempBalance.Clear();
-							if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+							if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 								return false;
-							if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+							if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 							{
 								if (sub.GetParentAccountID() == acc.GetID())
 								{
@@ -224,7 +224,7 @@ namespace BusinessLayer
 					}
 					if (balance.GetSubaccountID() <= 0)
 						return false;
-					if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+					if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 					{
 						postingFixedAssets->SetSubaccountID(balance.GetSubaccountID());
 					}
@@ -234,7 +234,7 @@ namespace BusinessLayer
 					postingFixedAssets->SetUserID(purveyorID);
 				}
 				postingFixedAssets->SetInventoryID(inventory->GetID());
-				if (!postingFixedAssets->CreatePostingFixedAssets(ormasDal, errorMessage))
+				if (!postingFixedAssets->CreatePostingFixedAssets(globalVar, ormasDal, errorMessage))
 				{
 					return false;
 				}
@@ -243,7 +243,7 @@ namespace BusinessLayer
 				return true;
 			if (inventory->GetStatusID() == statusMap.find("IN USE")->second)
 			{
-				if (inventory->CreateInventoryEntry(ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
+				if (inventory->CreateInventoryEntry(globalVar, ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
 				{
 					return true;
 				}
@@ -271,30 +271,30 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool InventoryUnion::DeleteInventoryUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventoryUnion::DeleteInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (inventory->GetStatusID() == statusMap.find("WRITE-OFF")->second || inventory->GetStatusID() == statusMap.find("ERROR")->second)
 		{
-			if (!inventory->DeleteInventory(ormasDal, errorMessage))
+			if (!inventory->DeleteInventory(globalVar, ormasDal, errorMessage))
 				return false;
-			if (!postingFixedAssets->DeletePostingFixedAssets(ormasDal, errorMessage))
+			if (!postingFixedAssets->DeletePostingFixedAssets(globalVar, ormasDal, errorMessage))
 				return false;
 			return true;
 		}
 		return false;
 	}
-	bool InventoryUnion::UpdateInventoryUnion(DataLayer::OrmasDal& ormasDal, Inventory* inv, PostingFixedAssets* pfAssets, std::string& errorMessage)
+	bool InventoryUnion::UpdateInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, Inventory* inv, PostingFixedAssets* pfAssets, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		inventory = inv;
 		postingFixedAssets = pfAssets;
 
-		previousStatusID = GetCurrentStatusID(ormasDal, inventory->GetID(), errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, inventory->GetID(), errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
 		if (previousStatusID == statusMap.find("IN USE")->second && inventory->GetStatusID() == statusMap.find("IN USE")->second)
 		{
@@ -313,7 +313,7 @@ namespace BusinessLayer
 				return false;
 			}
 		}
-		if (inventory->UpdateInventory(ormasDal, errorMessage))
+		if (inventory->UpdateInventory(globalVar, ormasDal, errorMessage))
 		{
 			if (0 != purveyorID || 0 != accountableID || 0 != accountID)
 			{
@@ -324,7 +324,7 @@ namespace BusinessLayer
 					Balance tempBalance;
 					Subaccount sub;
 					Account acc;
-					if (!acc.GetAccountByNumber(ormasDal, "10520", errorMessage))
+					if (!acc.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 					{
 						return false;
 					}
@@ -338,9 +338,9 @@ namespace BusinessLayer
 						{
 							sub.Clear();
 							tempBalance.Clear();
-							if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+							if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 								return false;
-							if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+							if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 							{
 								if (sub.GetParentAccountID() == acc.GetID())
 								{
@@ -355,7 +355,7 @@ namespace BusinessLayer
 					}
 					if (balance.GetSubaccountID() <= 0)
 						return false;
-					if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+					if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 					{
 						postingFixedAssets->SetSubaccountID(balance.GetSubaccountID());
 					}
@@ -365,14 +365,14 @@ namespace BusinessLayer
 					postingFixedAssets->SetUserID(purveyorID);
 				}
 				postingFixedAssets->SetInventoryID(inventory->GetID());
-				if (!postingFixedAssets->UpdatePostingFixedAssets(ormasDal, errorMessage))
+				if (!postingFixedAssets->UpdatePostingFixedAssets(globalVar, ormasDal, errorMessage))
 				{
 					return false;
 				}
 			}
 			if (inventory->GetStatusID() == statusMap.find("IN USE")->second && isNewInventory == true)
 			{
-				if (inventory->CreateInventoryEntry(ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
+				if (inventory->CreateInventoryEntry(globalVar, ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
 				{
 					return true;
 				}
@@ -385,14 +385,14 @@ namespace BusinessLayer
 			if (previousStatusID == statusMap.find("IN USE")->second && inventory->GetStatusID() == statusMap.find("ERROR")->second)
 			{
 				Subaccount sub;
-				if (!sub.GetSubaccountByID(ormasDal, inventory->GetSubaccountID(), errorMessage))
+				if (!sub.GetSubaccountByID(globalVar, ormasDal, inventory->GetSubaccountID(), errorMessage))
 					return false;
 				if (sub.GetCurrentBalance() <= 0 && sub.GetCurrentBalance()< inventory->GetCost())
 				{
 					errorMessage = "Cannot set status to \"ERROR\", inventory account value must be equal to cost or more";
 					return false;
 				}
-				if (inventory->CreateInventoryEntryReverce(ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
+				if (inventory->CreateInventoryEntryReverce(globalVar, ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
 				{
 					return true;
 				}
@@ -404,7 +404,7 @@ namespace BusinessLayer
 			}
 			if (previousStatusID == statusMap.find("IN USE")->second && inventory->GetStatusID() == statusMap.find("WRITE-OFFED")->second)
 			{
-				if (inventory->CreateInventoryEntryWriteOFF(ormasDal, inventory->GetID(), errorMessage))
+				if (inventory->CreateInventoryEntryWriteOFF(globalVar, ormasDal, inventory->GetID(), errorMessage))
 				{
 					return true;
 				}
@@ -432,14 +432,14 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool InventoryUnion::UpdateInventoryUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventoryUnion::UpdateInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
 
-		previousStatusID = GetCurrentStatusID(ormasDal, inventory->GetID(), errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, inventory->GetID(), errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
 		if (previousStatusID == statusMap.find("IN USE")->second && inventory->GetStatusID() == statusMap.find("IN USE")->second)
 		{
@@ -458,7 +458,7 @@ namespace BusinessLayer
 				return false;
 			}
 		}
-		if (inventory->UpdateInventory(ormasDal, errorMessage))
+		if (inventory->UpdateInventory(globalVar, ormasDal, errorMessage))
 		{
 			if (0 != purveyorID || 0 != accountableID || 0 != accountID)
 			{
@@ -469,7 +469,7 @@ namespace BusinessLayer
 					Balance tempBalance;
 					Subaccount sub;
 					Account acc;
-					if (!acc.GetAccountByNumber(ormasDal, "10520", errorMessage))
+					if (!acc.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 					{
 						return false;
 					}
@@ -483,9 +483,9 @@ namespace BusinessLayer
 						{
 							sub.Clear();
 							tempBalance.Clear();
-							if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+							if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 								return false;
-							if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+							if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 							{
 								if (sub.GetParentAccountID() == acc.GetID())
 								{
@@ -500,7 +500,7 @@ namespace BusinessLayer
 					}
 					if (balance.GetSubaccountID() <= 0)
 						return false;
-					if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+					if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 					{
 						postingFixedAssets->SetSubaccountID(balance.GetSubaccountID());
 					}
@@ -510,14 +510,14 @@ namespace BusinessLayer
 					postingFixedAssets->SetUserID(purveyorID);
 				}
 				postingFixedAssets->SetInventoryID(inventory->GetID());
-				if (!postingFixedAssets->UpdatePostingFixedAssets(ormasDal, errorMessage))
+				if (!postingFixedAssets->UpdatePostingFixedAssets(globalVar, ormasDal, errorMessage))
 				{
 					return false;
 				}
 			}
 			if (inventory->GetStatusID() == statusMap.find("IN USE")->second && isNewInventory == true)
 			{
-				if (inventory->CreateInventoryEntry(ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
+				if (inventory->CreateInventoryEntry(globalVar, ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
 				{
 					return true;
 				}
@@ -530,14 +530,14 @@ namespace BusinessLayer
 			if (previousStatusID == statusMap.find("IN USE")->second && inventory->GetStatusID() == statusMap.find("ERROR")->second)
 			{
 				Subaccount sub;
-				if (!sub.GetSubaccountByID(ormasDal, inventory->GetSubaccountID(), errorMessage))
+				if (!sub.GetSubaccountByID(globalVar, ormasDal, inventory->GetSubaccountID(), errorMessage))
 					return false;
 				if (sub.GetCurrentBalance() <= 0 && sub.GetCurrentBalance()< inventory->GetCost())
 				{
 					errorMessage = "Cannot set status to \"ERROR\", inventory account value must be equal to cost or more";
 					return false;
 				}
-				if (inventory->CreateInventoryEntryReverce(ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
+				if (inventory->CreateInventoryEntryReverce(globalVar, ormasDal, accountableID, purveyorID, accountID, inventory->GetSubaccountID(), inventory->GetCost(), inventory->GetStartOfOperationDate(), errorMessage))
 				{
 					return true;
 				}
@@ -549,7 +549,7 @@ namespace BusinessLayer
 			}
 			if (previousStatusID == statusMap.find("IN USE")->second && inventory->GetStatusID() == statusMap.find("WRITE-OFFED")->second)
 			{
-				if (inventory->CreateInventoryEntryWriteOFF(ormasDal, inventory->GetID(), errorMessage))
+				if (inventory->CreateInventoryEntryWriteOFF(globalVar, ormasDal, inventory->GetID(), errorMessage))
 				{
 					return true;
 				}
@@ -581,8 +581,8 @@ namespace BusinessLayer
 	bool InventoryUnion::IsEmpty()
 	{
 		if (inventory->IsEmpty() && postingFixedAssets->IsEmpty())
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void InventoryUnion::Clear()
@@ -591,13 +591,13 @@ namespace BusinessLayer
 		postingFixedAssets->Clear();
 	}
 
-	std::string InventoryUnion::GenerateInventoryNumber(DataLayer::OrmasDal& ormasDal, int divID)
+	std::string InventoryUnion::GenerateInventoryNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int divID)
 	{
 		std::string errorMessage = "";
 		std::string invNumber = "";
 		invNumber += "I";
 		Division div;
-		if (!div.GetDivisionByID(ormasDal, divID, errorMessage))
+		if (!div.GetDivisionByID(globalVar, ormasDal, divID, errorMessage))
 			return "";
 		if (0 == div.GetCode().compare("PRODUCTION"))
 		{
@@ -611,14 +611,14 @@ namespace BusinessLayer
 		{
 			invNumber += "A";
 		}
-		std::string rawNumber = GenerateInvRawNumber(ormasDal, errorMessage);
+		std::string rawNumber = GenerateInvRawNumber(globalVar, ormasDal, errorMessage);
 		invNumber += rawNumber;
 		if (invNumber.size() < 9)
 			return "";
 		return invNumber;
 	}
 
-	std::string InventoryUnion::GenerateInvRawNumber(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	std::string InventoryUnion::GenerateInvRawNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		int countOfNulls;
 		int genNumber = ormasDal.GenerateInventoryNumber();
@@ -637,10 +637,10 @@ namespace BusinessLayer
 		return "";
 	}
 
-	int InventoryUnion::GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int fxID, std::string& errorMessage)
+	int InventoryUnion::GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fxID, std::string& errorMessage)
 	{
 		Inventory Inventory;
-		if (Inventory.GetInventoryByID(ormasDal, fxID, errorMessage))
+		if (Inventory.GetInventoryByID(globalVar, ormasDal, fxID, errorMessage))
 			return Inventory.GetStatusID();
 		return 0;
 	}

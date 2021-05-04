@@ -79,7 +79,7 @@ namespace BusinessLayer
 		currencyID = pCurrencyID;
 	}
 
-	bool ProductionList::CreateProductionList(DataLayer::OrmasDal& ormasDal, int prID, int pID, double prCount, double prSum,
+	bool ProductionList::CreateProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prID, int pID, double prCount, double prSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -95,7 +95,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionList::CreateProductionList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionList::CreateProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateProductionList(id, productionID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -104,7 +104,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionList::DeleteProductionList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionList::DeleteProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{		
 		if (ormasDal.DeleteItemInProductionList(id, errorMessage))
 		{
@@ -113,7 +113,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionList::DeleteListByProductionID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool ProductionList::DeleteListByProductionID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		productionID = pID;
 		if (ormasDal.DeleteListByOrderID(productionID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionList::UpdateProductionList(DataLayer::OrmasDal& ormasDal, int prID, int pID, double prCount, double prSum,
+	bool ProductionList::UpdateProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prID, int pID, double prCount, double prSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		productionID = prID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionList::UpdateProductionList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionList::UpdateProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateProductionList(id, productionID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 	
-	std::string ProductionList::GenerateFilterForEnum(DataLayer::OrmasDal& ormasDal, std::vector<int> vecProdnID)
+	std::string ProductionList::GenerateFilterForEnum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> vecProdnID)
 	{
 		if (vecProdnID.size()>0)
 		{
@@ -165,7 +165,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ProductionList::GetProductionListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool ProductionList::GetProductionListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -208,7 +208,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ProductionList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int prID, int pID, double plCount, double plSum,
+	bool ProductionList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prID, int pID, double plCount, double plSum,
 		int cID, std::string& errorMessage)
 	{
 		ProductionList productionList;
@@ -231,7 +231,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ProductionList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ProductionList productionList;
 		productionList.Clear();
@@ -253,7 +253,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	std::map<int, double> ProductionList::GetProductCount(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	std::map<int, double> ProductionList::GetProductCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::map<int, double> mapProdCount;
 		ProductionList rPList;

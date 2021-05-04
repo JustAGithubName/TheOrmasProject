@@ -40,24 +40,24 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateInventorizationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateInventorizationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteInventorizationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByInventorizationID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage);
-		bool CreateInventorizationList(DataLayer::OrmasDal& ormasDal, int iID, int pID, double ilCount, double ilSum,
+		bool CreateInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByInventorizationID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage);
+		bool CreateInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, int pID, double ilCount, double ilSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateInventorizationList(DataLayer::OrmasDal& ormasDal, int iID, int pID, double ilCount, double ilSum,
+		bool UpdateInventorizationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, int pID, double ilCount, double ilSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetInventorizationListByID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetInventorizationListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int iID, int pID, double ilCount, double ilSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, int pID, double ilCount, double ilSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

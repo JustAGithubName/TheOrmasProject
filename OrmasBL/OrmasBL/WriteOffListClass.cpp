@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = pCurrencyID;
 	}
 
-	bool WriteOffList::CreateWriteOffList(DataLayer::OrmasDal& ormasDal, int wID, int pID, double wCount, double wSum,
+	bool WriteOffList::CreateWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int pID, double wCount, double wSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool WriteOffList::CreateWriteOffList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WriteOffList::CreateWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateWriteOffList(id, writeOffID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool WriteOffList::DeleteWriteOffList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WriteOffList::DeleteWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInWriteOffList(id, errorMessage))
 		{
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool WriteOffList::DeleteListByWriteOffID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage)
+	bool WriteOffList::DeleteListByWriteOffID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
 	{
 		writeOffID = wID;
 		if (ormasDal.DeleteListByOrderID(writeOffID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool WriteOffList::UpdateWriteOffList(DataLayer::OrmasDal& ormasDal, int wID, int pID, double wCount, double wSum,
+	bool WriteOffList::UpdateWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int pID, double wCount, double wSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		writeOffID = wID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool WriteOffList::UpdateWriteOffList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WriteOffList::UpdateWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateWriteOffList(id, writeOffID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool WriteOffList::GetWriteOffListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool WriteOffList::GetWriteOffListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool WriteOffList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int wID, int pID, double wlCount, double wlSum,
+	bool WriteOffList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int pID, double wlCount, double wlSum,
 		int cID, std::string& errorMessage)
 	{
 		WriteOffList writeOffList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool WriteOffList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WriteOffList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		WriteOffList writeOffList;
 		writeOffList.Clear();

@@ -41,23 +41,23 @@ namespace BusinessLayer{
 		
 
 		// Create, delete and update Tax
-		bool CreateTax(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateTax(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteTax(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateTax(DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, double tFixedValue, int tPercentValue,
+		bool CreateTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, double tFixedValue, int tPercentValue,
 			std::string tFormulaValue, std::string& errorMessage);
-		bool UpdateTax(DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, double tFixedValue, int tPercentValue,
+		bool UpdateTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, double tFixedValue, int tPercentValue,
 			std::string tFormulaValue, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetTaxByID(DataLayer::OrmasDal& ormasDal, int shID, std::string& errorMessage);
+		bool GetTaxByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int shID, std::string& errorMessage);
 		void TrimStrings(std::string& tName, std::string& tCode);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string tName, std::string tCode, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //TaxCLASS_H

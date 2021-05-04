@@ -90,10 +90,10 @@ namespace BusinessLayer{
 
 	
 
-	bool Tax::CreateTax(DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, double tFixedValue, int tPercentValue,
+	bool Tax::CreateTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, double tFixedValue, int tPercentValue,
 		std::string tFormulaValue, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, tName, tCode, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, tName, tCode, errorMessage))
 			return false;
 		TrimStrings(tName, tCode);
 		id = ormasDal.GenerateID();
@@ -112,9 +112,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Tax::CreateTax(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Tax::CreateTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateTax(id, name, code, fixedValue, percentValue, formulaValue, errorMessage))
@@ -127,7 +127,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Tax::DeleteTax(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Tax::DeleteTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteTax(id, errorMessage))
 		{
@@ -141,7 +141,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Tax::UpdateTax(DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, double tFixedValue, int tPercentValue,
+	bool Tax::UpdateTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, double tFixedValue, int tPercentValue,
 		std::string tFormulaValue, std::string& errorMessage)
 	{
 		TrimStrings(tName, tCode);
@@ -160,7 +160,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Tax::UpdateTax(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Tax::UpdateTax(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateTax(id, name, code, fixedValue, percentValue, formulaValue, errorMessage))
 		{
@@ -182,7 +182,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Tax::GetTaxByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool Tax::GetTaxByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -231,7 +231,7 @@ namespace BusinessLayer{
 			boost::trim(tCode);
 	}
 
-	bool Tax::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string tName, std::string tCode, std::string& errorMessage)
+	bool Tax::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string tName, std::string tCode, std::string& errorMessage)
 	{
 		Tax tax;
 		tax.Clear();
@@ -250,7 +250,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Tax::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Tax::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Tax tax;
 		tax.Clear();

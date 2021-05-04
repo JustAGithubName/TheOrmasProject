@@ -42,24 +42,24 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateReturnList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateReturnList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteReturnList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByReturnID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		bool CreateReturnList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+		bool CreateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByReturnID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		bool CreateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateReturnList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+		bool UpdateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetReturnListByID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetReturnListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 			 int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

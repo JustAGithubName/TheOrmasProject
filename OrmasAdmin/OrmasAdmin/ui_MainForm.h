@@ -138,6 +138,22 @@ public:
     QAction *actionLowValueStock;
     QAction *actionConsumeOthSt;
     QAction *actionReceiptOthSt;
+    QAction *actionGroup;
+    QAction *actionUserGroup;
+    QAction *actionStockLimit;
+    QAction *actionSubaccountLimit;
+    QAction *actionDailySalesReport;
+    QAction *actionAccountableReport;
+    QAction *actionBranchSubaccounts;
+    QAction *actionCommonReport;
+    QAction *actionAgentReport;
+    QAction *actionDailyAgentReport;
+    QAction *actionABCAnalysis;
+    QAction *actionProductAlalysis;
+    QAction *actionRawMaterialsAnalysis;
+    QAction *actionCash_analysis;
+    QAction *actionFixedAssetsReport;
+    QAction *actionWarehouseReport;
     QWidget *centrWidget;
     QGridLayout *gridLayout;
     QMdiArea *mdiArea;
@@ -155,13 +171,14 @@ public:
     QMenu *menuCash;
     QMenu *menuReports;
     QMenu *menuFixedAssets;
+    QMenu *menuAnalysis;
     QStatusBar *statusbar;
 
     void setupUi(QMainWindow *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QStringLiteral("MainWindow"));
-        MainWindow->resize(800, 600);
+        MainWindow->resize(1059, 824);
         MainWindow->setMinimumSize(QSize(800, 600));
         MainWindow->setLocale(QLocale(QLocale::English, QLocale::UnitedStates));
         actionAllUsers = new QAction(MainWindow);
@@ -384,6 +401,38 @@ public:
         actionConsumeOthSt->setObjectName(QStringLiteral("actionConsumeOthSt"));
         actionReceiptOthSt = new QAction(MainWindow);
         actionReceiptOthSt->setObjectName(QStringLiteral("actionReceiptOthSt"));
+        actionGroup = new QAction(MainWindow);
+        actionGroup->setObjectName(QStringLiteral("actionGroup"));
+        actionUserGroup = new QAction(MainWindow);
+        actionUserGroup->setObjectName(QStringLiteral("actionUserGroup"));
+        actionStockLimit = new QAction(MainWindow);
+        actionStockLimit->setObjectName(QStringLiteral("actionStockLimit"));
+        actionSubaccountLimit = new QAction(MainWindow);
+        actionSubaccountLimit->setObjectName(QStringLiteral("actionSubaccountLimit"));
+        actionDailySalesReport = new QAction(MainWindow);
+        actionDailySalesReport->setObjectName(QStringLiteral("actionDailySalesReport"));
+        actionAccountableReport = new QAction(MainWindow);
+        actionAccountableReport->setObjectName(QStringLiteral("actionAccountableReport"));
+        actionBranchSubaccounts = new QAction(MainWindow);
+        actionBranchSubaccounts->setObjectName(QStringLiteral("actionBranchSubaccounts"));
+        actionCommonReport = new QAction(MainWindow);
+        actionCommonReport->setObjectName(QStringLiteral("actionCommonReport"));
+        actionAgentReport = new QAction(MainWindow);
+        actionAgentReport->setObjectName(QStringLiteral("actionAgentReport"));
+        actionDailyAgentReport = new QAction(MainWindow);
+        actionDailyAgentReport->setObjectName(QStringLiteral("actionDailyAgentReport"));
+        actionABCAnalysis = new QAction(MainWindow);
+        actionABCAnalysis->setObjectName(QStringLiteral("actionABCAnalysis"));
+        actionProductAlalysis = new QAction(MainWindow);
+        actionProductAlalysis->setObjectName(QStringLiteral("actionProductAlalysis"));
+        actionRawMaterialsAnalysis = new QAction(MainWindow);
+        actionRawMaterialsAnalysis->setObjectName(QStringLiteral("actionRawMaterialsAnalysis"));
+        actionCash_analysis = new QAction(MainWindow);
+        actionCash_analysis->setObjectName(QStringLiteral("actionCash_analysis"));
+        actionFixedAssetsReport = new QAction(MainWindow);
+        actionFixedAssetsReport->setObjectName(QStringLiteral("actionFixedAssetsReport"));
+        actionWarehouseReport = new QAction(MainWindow);
+        actionWarehouseReport->setObjectName(QStringLiteral("actionWarehouseReport"));
         centrWidget = new QWidget(MainWindow);
         centrWidget->setObjectName(QStringLiteral("centrWidget"));
         gridLayout = new QGridLayout(centrWidget);
@@ -398,7 +447,7 @@ public:
         MainWindow->setCentralWidget(centrWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 800, 21));
+        menuBar->setGeometry(QRect(0, 0, 1059, 26));
         menuUsers = new QMenu(menuBar);
         menuUsers->setObjectName(QStringLiteral("menuUsers"));
         menuUsers->setLocale(QLocale(QLocale::English, QLocale::UnitedStates));
@@ -426,6 +475,8 @@ public:
         menuReports->setObjectName(QStringLiteral("menuReports"));
         menuFixedAssets = new QMenu(menuBar);
         menuFixedAssets->setObjectName(QStringLiteral("menuFixedAssets"));
+        menuAnalysis = new QMenu(menuBar);
+        menuAnalysis->setObjectName(QStringLiteral("menuAnalysis"));
         MainWindow->setMenuBar(menuBar);
         statusbar = new QStatusBar(MainWindow);
         statusbar->setObjectName(QStringLiteral("statusbar"));
@@ -443,6 +494,7 @@ public:
         menuBar->addAction(menuStock->menuAction());
         menuBar->addAction(menuReports->menuAction());
         menuBar->addAction(menuReferences->menuAction());
+        menuBar->addAction(menuAnalysis->menuAction());
         menuBar->addAction(menuHelp->menuAction());
         menuUsers->addAction(actionAllUsers);
         menuUsers->addAction(actionClients);
@@ -452,6 +504,8 @@ public:
         menuUsers->addAction(actionBorrowers);
         menuUsers->addAction(actionCreditors);
         menuUsers->addAction(actionShareholders);
+        menuUsers->addAction(actionGroup);
+        menuUsers->addAction(actionUserGroup);
         menuUsers->addSeparator();
         menuUsers->addAction(actionCompanyEmployees);
         menuUsers->addAction(actionCashboxEmployees);
@@ -490,6 +544,7 @@ public:
         menuHelp->addAction(actionAbout);
         menuProductions->addAction(actionProduction);
         menuProductions->addAction(actionProductionList);
+        menuProductions->addAction(actionProductionStock);
         menuProductions->addAction(actionProductionConsumeRaws);
         menuProductions->addAction(actionProductionPlan);
         menuProductions->addAction(actionProductionPlanList);
@@ -505,6 +560,7 @@ public:
         menuAccountings->addAction(actionBalances);
         menuAccountings->addAction(actionAccounts);
         menuAccountings->addAction(actionSubaccounts);
+        menuAccountings->addAction(actionSubaccountLimit);
         menuAccountings->addAction(actionGenerateOneAccount);
         menuAccountings->addAction(actionGenerateAccounts);
         menuAccountings->addSeparator();
@@ -513,11 +569,13 @@ public:
         menuAccountings->addAction(actionPayroll);
         menuAccountings->addSeparator();
         menuAccountings->addAction(actionAccountType);
+        menuAccountings->addAction(actionBranchSubaccounts);
         menuAccountings->addAction(actionDivisionAccounts);
         menuAccountings->addAction(actionChartOfAccounts);
         menuAccountings->addAction(actionCompanyAccounts);
         menuAccountings->addAction(actionEntry);
         menuAccountings->addAction(actionEntryRouting);
+        menuAccountings->addAction(actionAccountableReport);
         menuAccountings->addAction(actionCloseOfMonth);
         menuAccountings->addSeparator();
         menuAccountings->addAction(actionWarehouse);
@@ -536,6 +594,7 @@ public:
         menuStock->addAction(actionLowValueStock);
         menuStock->addAction(actionConsumeOthSt);
         menuStock->addAction(actionReceiptOthSt);
+        menuStock->addAction(actionStockLimit);
         menuCash->addAction(actionCash);
         menuCash->addAction(actionPayments);
         menuCash->addAction(actionPayslip);
@@ -545,16 +604,27 @@ public:
         menuReports->addAction(actionCompanyBalanceInfo);
         menuReports->addAction(actionFinancialReport);
         menuReports->addAction(actionCompanyBalance);
+        menuReports->addSeparator();
         menuReports->addAction(actionSpecificationReport);
         menuReports->addAction(actionProfitability);
         menuReports->addAction(actionSalesReport);
         menuReports->addAction(actionAccountCard);
         menuReports->addAction(actionWarehouseTurnover);
+        menuReports->addAction(actionDailySalesReport);
+        menuReports->addAction(actionCommonReport);
+        menuReports->addAction(actionAgentReport);
+        menuReports->addSeparator();
+        menuReports->addAction(actionFixedAssetsReport);
+        menuReports->addAction(actionWarehouseReport);
         menuFixedAssets->addAction(actionFixedAssets);
         menuFixedAssets->addAction(actionFixedAssetsOperation);
         menuFixedAssets->addAction(actionInventory);
         menuFixedAssets->addAction(actionAmortizeGroup);
         menuFixedAssets->addAction(actionAmortizeType);
+        menuAnalysis->addAction(actionABCAnalysis);
+        menuAnalysis->addAction(actionProductAlalysis);
+        menuAnalysis->addAction(actionRawMaterialsAnalysis);
+        menuAnalysis->addAction(actionCash_analysis);
 
         retranslateUi(MainWindow);
 
@@ -674,6 +744,22 @@ public:
         actionLowValueStock->setText(QApplication::translate("MainWindow", "Low value stock", 0));
         actionConsumeOthSt->setText(QApplication::translate("MainWindow", "Consume other stocks", 0));
         actionReceiptOthSt->setText(QApplication::translate("MainWindow", "Receipt other stocks", 0));
+        actionGroup->setText(QApplication::translate("MainWindow", "Group", 0));
+        actionUserGroup->setText(QApplication::translate("MainWindow", "User group relation", 0));
+        actionStockLimit->setText(QApplication::translate("MainWindow", "Stock limit", 0));
+        actionSubaccountLimit->setText(QApplication::translate("MainWindow", "Subaccount limit", 0));
+        actionDailySalesReport->setText(QApplication::translate("MainWindow", "Daily sales report", 0));
+        actionAccountableReport->setText(QApplication::translate("MainWindow", "Accountable report", 0));
+        actionBranchSubaccounts->setText(QApplication::translate("MainWindow", "Branch subaccounts", 0));
+        actionCommonReport->setText(QApplication::translate("MainWindow", "Common report", 0));
+        actionAgentReport->setText(QApplication::translate("MainWindow", "Agent report", 0));
+        actionDailyAgentReport->setText(QApplication::translate("MainWindow", "Daily agent report", 0));
+        actionABCAnalysis->setText(QApplication::translate("MainWindow", "ABC analysis", 0));
+        actionProductAlalysis->setText(QApplication::translate("MainWindow", "Product and Net cost alalysis", 0));
+        actionRawMaterialsAnalysis->setText(QApplication::translate("MainWindow", "Raw materials analysis", 0));
+        actionCash_analysis->setText(QApplication::translate("MainWindow", "Cash analysis", 0));
+        actionFixedAssetsReport->setText(QApplication::translate("MainWindow", "Fixed assets report", 0));
+        actionWarehouseReport->setText(QApplication::translate("MainWindow", "Warehouse report", 0));
         menuUsers->setTitle(QApplication::translate("MainWindow", "Users", 0));
         menuProducts->setTitle(QApplication::translate("MainWindow", "Products", 0));
         menuOrders->setTitle(QApplication::translate("MainWindow", "Orders", 0));
@@ -687,6 +773,7 @@ public:
         menuCash->setTitle(QApplication::translate("MainWindow", "Cash", 0));
         menuReports->setTitle(QApplication::translate("MainWindow", "Reports", 0));
         menuFixedAssets->setTitle(QApplication::translate("MainWindow", "Fixed assets", 0));
+        menuAnalysis->setTitle(QApplication::translate("MainWindow", "Analysis", 0));
     } // retranslateUi
 
 };

@@ -77,7 +77,7 @@ void CreateAccTpDlg::CreateAccountType()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetAccountTypeParams(nameEdit->text(), numberEdit->text().toInt(), commentEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 
 		if (dialogBL->CreateAccountType(accountType, errorMessage))
 		{
@@ -95,7 +95,13 @@ void CreateAccTpDlg::CreateAccountType()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -124,7 +130,7 @@ void CreateAccTpDlg::EditAccountType()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetAccountTypeParams(nameEdit->text(), numberEdit->text().toInt(), commentEdit->text(), accountType->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateAccountType(accountType, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -138,7 +144,13 @@ void CreateAccTpDlg::EditAccountType()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

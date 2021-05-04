@@ -12,11 +12,11 @@ CashInfoDlg::CashInfoDlg(BusinessLayer::OrmasBL *ormasBL, QWidget *parent) :QDia
 	BusinessLayer::CashboxEmployeeRelation ceRel;
 	BusinessLayer::Cashbox cashbox;
 	BusinessLayer::Subaccount subacc;
-	if (ceRel.GetCashboxEmployeeByEmployeeID(dialogBL->GetOrmasDal(), mainForm->GetLoggedUser()->GetID(), errorMessage))
+	if (ceRel.GetCashboxEmployeeByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mainForm->GetLoggedUser()->GetID(), errorMessage))
 	{
-		if (cashbox.GetCashboxByID(dialogBL->GetOrmasDal(), ceRel.GetCashboxID(), errorMessage))
+		if (cashbox.GetCashboxByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ceRel.GetCashboxID(), errorMessage))
 		{
-			if (subacc.GetSubaccountByID(dialogBL->GetOrmasDal(), cashbox.GetSubaccountID(), errorMessage))
+			if (subacc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashbox.GetSubaccountID(), errorMessage))
 			{
 				cashValueLb->setText(QString::number(subacc.GetCurrentBalance(), 'f', 3));
 				cashCurLb->setText("TJS");

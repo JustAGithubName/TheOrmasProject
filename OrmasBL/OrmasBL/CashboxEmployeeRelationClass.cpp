@@ -45,9 +45,9 @@ namespace BusinessLayer{
 		employeeID = aID;
 	}
 
-	bool CashboxEmployeeRelation::CreateCashboxEmployeeRelation(DataLayer::OrmasDal &ormasDal, int cID, int eID, std::string& errorMessage)
+	bool CashboxEmployeeRelation::CreateCashboxEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int eID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, cID, eID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, cID, eID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		cashboxID = cID;
@@ -63,9 +63,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CashboxEmployeeRelation::CreateCashboxEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CashboxEmployeeRelation::CreateCashboxEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateCashboxEmployee(id, cashboxID, employeeID, errorMessage))
@@ -78,7 +78,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CashboxEmployeeRelation::DeleteCashboxEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CashboxEmployeeRelation::DeleteCashboxEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteCashboxEmployee(cashboxID, employeeID, errorMessage))
 		{
@@ -92,7 +92,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool CashboxEmployeeRelation::UpdateCashboxEmployeeRelation(DataLayer::OrmasDal &ormasDal, int cID, int eID, std::string& errorMessage)
+	bool CashboxEmployeeRelation::UpdateCashboxEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int eID, std::string& errorMessage)
 	{
 		cashboxID = cID;
 		employeeID = eID;
@@ -106,7 +106,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CashboxEmployeeRelation::UpdateCashboxEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CashboxEmployeeRelation::UpdateCashboxEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateCashboxEmployee(id, cashboxID, employeeID, errorMessage))
 		{
@@ -128,7 +128,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool CashboxEmployeeRelation::GetCashboxEmployeeByID(DataLayer::OrmasDal& ormasDal, int id, std::string& errorMessage)
+	bool CashboxEmployeeRelation::GetCashboxEmployeeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int id, std::string& errorMessage)
 	{
 		if (id <= 0)
 			return false;
@@ -146,7 +146,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	int CashboxEmployeeRelation::GetCashboxIDByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	int CashboxEmployeeRelation::GetCashboxIDByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		CashboxEmployeeRelation ceRelation;
 		ceRelation.SetEmployeeID(eID);
@@ -160,7 +160,7 @@ namespace BusinessLayer{
 		return 0;
 	}
 
-	bool CashboxEmployeeRelation::GetCashboxEmployeeByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	bool CashboxEmployeeRelation::GetCashboxEmployeeByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		if (eID <= 0)
 			return false;
@@ -179,7 +179,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	int CashboxEmployeeRelation::GetEmployeeIDByCashboxID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	int CashboxEmployeeRelation::GetEmployeeIDByCashboxID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		CashboxEmployeeRelation ceRelation;
 		ceRelation.SetEmployeeID(0);
@@ -208,7 +208,7 @@ namespace BusinessLayer{
 		employeeID = 0;
 	}
 
-	bool CashboxEmployeeRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int cID, int eID, std::string& errorMessage)
+	bool CashboxEmployeeRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int eID, std::string& errorMessage)
 	{
 		CashboxEmployeeRelation ceRelation;
 		ceRelation.Clear();
@@ -227,7 +227,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool CashboxEmployeeRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CashboxEmployeeRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		CashboxEmployeeRelation ceRelation;
 		ceRelation.Clear();

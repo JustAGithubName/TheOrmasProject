@@ -45,9 +45,9 @@ namespace BusinessLayer{
 		employeeID = eID;
 	}
 
-	bool WarehouseEmployeeRelation::CreateWarehouseEmployeeRelation(DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::CreateWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, wID, eID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, wID, eID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		warehouseID = wID;
@@ -63,9 +63,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool WarehouseEmployeeRelation::CreateWarehouseEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::CreateWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateWarehouseEmployee(id, warehouseID, employeeID, errorMessage))
@@ -78,7 +78,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool WarehouseEmployeeRelation::DeleteWarehouseEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::DeleteWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteWarehouseEmployee(warehouseID, employeeID, errorMessage))
 		{
@@ -92,7 +92,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool WarehouseEmployeeRelation::UpdateWarehouseEmployeeRelation(DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::UpdateWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int eID, std::string& errorMessage)
 	{
 		warehouseID = wID;
 		employeeID = eID;
@@ -106,7 +106,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool WarehouseEmployeeRelation::UpdateWarehouseEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::UpdateWarehouseEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateWarehouseEmployee(id, warehouseID, employeeID, errorMessage))
 		{
@@ -128,7 +128,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool WarehouseEmployeeRelation::GetWarehouseEmployeeByID(DataLayer::OrmasDal& ormasDal, int id, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::GetWarehouseEmployeeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int id, std::string& errorMessage)
 	{
 		if (id <= 0)
 			return false;
@@ -146,7 +146,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool WarehouseEmployeeRelation::GetWarehouseEmployeeByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::GetWarehouseEmployeeByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
 	{
 		if (wID <= 0)
 			return false;
@@ -164,7 +164,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool WarehouseEmployeeRelation::GetWarehouseEmployeeByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::GetWarehouseEmployeeByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		if (eID <= 0)
 			return false;
@@ -182,7 +182,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	int WarehouseEmployeeRelation::GetWarehouseIDByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	int WarehouseEmployeeRelation::GetWarehouseIDByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation ceRelation;
 		ceRelation.SetEmployeeID(eID);
@@ -196,7 +196,7 @@ namespace BusinessLayer{
 		return 0;
 	}
 
-	int WarehouseEmployeeRelation::GetEmployeeIDByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage)
+	int WarehouseEmployeeRelation::GetEmployeeIDByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation ceRelation;
 		ceRelation.SetEmployeeID(0);
@@ -225,7 +225,7 @@ namespace BusinessLayer{
 		employeeID = 0;
 	}
 
-	bool WarehouseEmployeeRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int cID, int eID, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int eID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRelation;
 		weRelation.Clear();
@@ -244,7 +244,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool WarehouseEmployeeRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WarehouseEmployeeRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRelation;
 		weRelation.Clear();
@@ -263,7 +263,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	std::vector<int> WarehouseEmployeeRelation::GetWarehouseIDListByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID)
+	std::vector<int> WarehouseEmployeeRelation::GetWarehouseIDListByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID)
 	{
 		std::vector<int> warehouseIDVector;
 		WarehouseEmployeeRelation ceRelation;
@@ -281,7 +281,7 @@ namespace BusinessLayer{
 		return warehouseIDVector;
 	}
 
-	std::vector<int> WarehouseEmployeeRelation::GetEmployeeIDListByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID)
+	std::vector<int> WarehouseEmployeeRelation::GetEmployeeIDListByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID)
 	{
 		std::vector<int> employeeIDVector;
 		WarehouseEmployeeRelation ceRelation;

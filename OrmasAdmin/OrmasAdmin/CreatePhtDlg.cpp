@@ -77,7 +77,7 @@ void CreatePhtDlg::SetID(int ID, QString childName)
 			{
 				userEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					namePh->setText(user.GetName().c_str());
 					surnamePh->setText(user.GetSurname().c_str());
@@ -88,12 +88,12 @@ void CreatePhtDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetShortName().c_str());
 					}
@@ -115,7 +115,7 @@ void CreatePhtDlg::FillEditElements(int pUserID, int pProduct, QString pSource)
 {
 	userEdit->setText(QString::number(pUserID));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), pUserID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pUserID, errorMessage))
 	{
 		namePh->setText(user.GetName().c_str());
 		surnamePh->setText(user.GetSurname().c_str());
@@ -123,12 +123,12 @@ void CreatePhtDlg::FillEditElements(int pUserID, int pProduct, QString pSource)
 	}
 	productEdit->setText(QString::number(pProduct));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), pProduct, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pProduct, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetShortName().c_str());
 		}
@@ -163,7 +163,7 @@ void CreatePhtDlg::CreatePhoto()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetPhotoParams(userEdit->text().toInt(), productEdit->text().toInt(), sourceEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreatePhoto(photo, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -177,7 +177,13 @@ void CreatePhtDlg::CreatePhoto()
 					itemModel->appendRow(photoItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -209,7 +215,7 @@ void CreatePhtDlg::EditPhoto()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetPhotoParams(userEdit->text().toInt(), productEdit->text().toInt(), sourceEdit->text(), photo->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdatePhoto(photo, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -225,7 +231,13 @@ void CreatePhtDlg::EditPhoto()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else
@@ -280,7 +292,7 @@ void CreatePhtDlg::OpenUserDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

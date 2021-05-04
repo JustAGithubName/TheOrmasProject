@@ -108,21 +108,21 @@ void CreateInvDlg::FillEditElements(int iEmployeeID, QString iDate, QString iExe
 	statusEdit->setText(QString::number(iStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(iCurrencyID)));
 	BusinessLayer::User user1;
-	if (user1.GetUserByID(dialogBL->GetOrmasDal(), iEmployeeID, errorMessage))
+	if (user1.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), iEmployeeID, errorMessage))
 	{
 		empNamePh->setText(user1.GetName().c_str());
 		empSurnamePh->setText(user1.GetSurname().c_str());
 		empPhonePh->setText(user1.GetPhone().c_str());
 	}
 	BusinessLayer::User user2;
-	if (user2.GetUserByID(dialogBL->GetOrmasDal(), iStockEmployeeID, errorMessage))
+	if (user2.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), iStockEmployeeID, errorMessage))
 	{
 		empStockNamePh->setText(user2.GetName().c_str());
 		empStockSurnamePh->setText(user2.GetSurname().c_str());
 		empStockPhonePh->setText(user2.GetPhone().c_str());
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), iStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), iStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -145,7 +145,7 @@ void CreateInvDlg::SetID(int ID, QString childName)
 			{
 				employeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(user.GetName().c_str());
 					empSurnamePh->setText(user.GetSurname().c_str());
@@ -156,7 +156,7 @@ void CreateInvDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -165,7 +165,7 @@ void CreateInvDlg::SetID(int ID, QString childName)
 			{
 				stockEmployeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empStockNamePh->setText(user.GetName().c_str());
 					empStockSurnamePh->setText(user.GetSurname().c_str());
@@ -226,7 +226,7 @@ void CreateInvDlg::CreateInventorization()
 				sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), inventorization->GetID());
 		}
 		
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateInventorization(inventorization, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -234,7 +234,7 @@ void CreateInvDlg::CreateInventorization()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), inventorization->GetStatusID(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -255,8 +255,8 @@ void CreateInvDlg::CreateInventorization()
 					BusinessLayer::Employee *stockEmployee = new BusinessLayer::Employee();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 
-					if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), inventorization->GetEmployeeID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), inventorization->GetCurrencyID(), errorMessage))
+					if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetEmployeeID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -271,7 +271,7 @@ void CreateInvDlg::CreateInventorization()
 
 					if (inventorization->GetStockEmployeeID() > 0)
 					{
-						if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), inventorization->GetStockEmployeeID(), errorMessage))
+						if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetStockEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -286,7 +286,7 @@ void CreateInvDlg::CreateInventorization()
 					if (0 != inventorization->GetEmployeeID())
 					{
 						BusinessLayer::Position *ePosition = new BusinessLayer::Position();
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), inventorization->GetEmployeeID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -311,7 +311,7 @@ void CreateInvDlg::CreateInventorization()
 					if (0 != inventorization->GetStockEmployeeID())
 					{
 						BusinessLayer::Position *sePosition = new BusinessLayer::Position();
-						if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), inventorization->GetStockEmployeeID(), errorMessage))
+						if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetStockEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -351,7 +351,13 @@ void CreateInvDlg::CreateInventorization()
 					delete status;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -396,7 +402,7 @@ void CreateInvDlg::EditInventorization()
 				SetInventorizationParams(employeeEdit->text().toInt(), dateEdit->text(), execDateEdit->text(), stockEmployeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 					sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), inventorization->GetID());
 			}
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateInventorization(inventorization, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -413,9 +419,9 @@ void CreateInvDlg::EditInventorization()
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Status *status = new BusinessLayer::Status;
 
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), inventorization->GetEmployeeID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), inventorization->GetCurrencyID(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), inventorization->GetStatusID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetEmployeeID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetCurrencyID(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetStatusID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -430,7 +436,7 @@ void CreateInvDlg::EditInventorization()
 						}
 						if (inventorization->GetStockEmployeeID() > 0)
 						{
-							if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), inventorization->GetStockEmployeeID(), errorMessage))
+							if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetStockEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -446,7 +452,7 @@ void CreateInvDlg::EditInventorization()
 						if (inventorization->GetEmployeeID() > 0)
 						{
 							BusinessLayer::Position *ePosition = new BusinessLayer::Position();
-							if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), inventorization->GetEmployeeID(), errorMessage))
+							if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -471,7 +477,7 @@ void CreateInvDlg::EditInventorization()
 						if (inventorization->GetStockEmployeeID() > 0)
 						{
 							BusinessLayer::Position *sePosition = new BusinessLayer::Position();
-							if (!stockEmployee->GetEmployeeByID(dialogBL->GetOrmasDal(), inventorization->GetStockEmployeeID(), errorMessage))
+							if (!stockEmployee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetStockEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -509,7 +515,13 @@ void CreateInvDlg::EditInventorization()
 						delete status;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				
 				Close();
@@ -601,7 +613,7 @@ void CreateInvDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -679,7 +691,7 @@ void CreateInvDlg::OpenSkEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -794,7 +806,7 @@ void CreateInvDlg::OpenInvListDlg()
 void CreateInvDlg::StatusWasChenged()
 {
 	errorMessage = "";
-	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (statusEdit->text().toInt() == statusMap.find("EXECUTED")->second
 		|| statusEdit->text().toInt() == statusMap.find("RETURN")->second
 		|| statusEdit->text().toInt() == statusMap.find("ERROR")->second)
@@ -843,11 +855,11 @@ void CreateInvDlg::TextEditChanged()
 
 bool CreateInvDlg::CheckAccess()
 {
-	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (0 == rolesMap.size())
 		return false;
 	BusinessLayer::Status *status = new BusinessLayer::Status;
-	if (!status->GetStatusByID(dialogBL->GetOrmasDal(), inventorization->GetStatusID(), errorMessage))
+	if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventorization->GetStatusID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr(errorMessage.c_str())),
@@ -860,8 +872,7 @@ bool CreateInvDlg::CheckAccess()
 	if (0 == status->GetName().compare("EXECUTED"))
 	{
 		if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("ACCOUNTANT")->second)
+			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
 		{
 			return true;
 		}

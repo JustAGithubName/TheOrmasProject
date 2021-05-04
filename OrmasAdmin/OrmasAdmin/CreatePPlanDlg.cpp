@@ -92,14 +92,14 @@ void CreatePPlanDlg::FillEditElements(QString pDate, int pEmployeeID, double pCo
 	statusEdit->setText(QString::number(pStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(pCurrencyID)));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), pEmployeeID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pEmployeeID, errorMessage))
 	{
 		empNamePh->setText(user.GetName().c_str());
 		empSurnamePh->setText(user.GetSurname().c_str());
 		empPhonePh->setText(user.GetPhone().c_str());
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), pStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -122,7 +122,7 @@ void CreatePPlanDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -131,7 +131,7 @@ void CreatePPlanDlg::SetID(int ID, QString childName)
 			{
 				employeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(user.GetName().c_str());
 					empSurnamePh->setText(user.GetSurname().c_str());
@@ -177,7 +177,7 @@ void CreatePPlanDlg::CreateProductionPlan()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetProductionPlanParams(dateEdit->text(), employeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 			sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), productionPlan->GetID());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateProductionPlan(productionPlan, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -185,7 +185,7 @@ void CreatePPlanDlg::CreateProductionPlan()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), productionPlan->GetStatusID(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productionPlan->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -197,8 +197,8 @@ void CreatePPlanDlg::CreateProductionPlan()
 					}
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
-					if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), productionPlan->GetEmployeeID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), productionPlan->GetCurrencyID(), errorMessage))
+					if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productionPlan->GetEmployeeID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productionPlan->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -214,7 +214,7 @@ void CreatePPlanDlg::CreateProductionPlan()
 					BusinessLayer::Position *position = new BusinessLayer::Position;
 					if (0 != productionPlan->GetEmployeeID())
 					{
-						if (!position->GetPositionByID(dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
+						if (!position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -265,7 +265,13 @@ void CreatePPlanDlg::CreateProductionPlan()
 					delete position;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -300,7 +306,7 @@ void CreatePPlanDlg::EditProductionPlan()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetProductionPlanParams(dateEdit->text(), employeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 				sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), productionPlan->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateProductionPlan(productionPlan, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -316,9 +322,9 @@ void CreatePPlanDlg::EditProductionPlan()
 						BusinessLayer::Status *status = new BusinessLayer::Status;
 						BusinessLayer::Position *position = new BusinessLayer::Position;
 
-						if (!currency->GetCurrencyByID(dialogBL->GetOrmasDal(), productionPlan->GetCurrencyID(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), productionPlan->GetStatusID(), errorMessage)
-							|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), productionPlan->GetEmployeeID(), errorMessage))
+						if (!currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productionPlan->GetCurrencyID(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productionPlan->GetStatusID(), errorMessage)
+							|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productionPlan->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -334,7 +340,7 @@ void CreatePPlanDlg::EditProductionPlan()
 
 						if (0 != productionPlan->GetEmployeeID())
 						{
-							if (!position->GetPositionByID(dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
+							if (!position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -382,7 +388,13 @@ void CreatePPlanDlg::EditProductionPlan()
 						delete status;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				Close();
 			}
@@ -474,7 +486,7 @@ void CreatePPlanDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise(); 
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

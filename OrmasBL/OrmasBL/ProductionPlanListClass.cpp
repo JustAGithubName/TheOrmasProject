@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = pCurrencyID;
 	}
 
-	bool ProductionPlanList::CreateProductionPlanList(DataLayer::OrmasDal& ormasDal, int ppID, int pID, double pplCount, double pplSum,
+	bool ProductionPlanList::CreateProductionPlanList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int ppID, int pID, double pplCount, double pplSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionPlanList::CreateProductionPlanList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionPlanList::CreateProductionPlanList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateProductionPlanList(id, productionPlanID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionPlanList::DeleteProductionPlanList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionPlanList::DeleteProductionPlanList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInProductionPlanList(id, errorMessage))
 		{
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionPlanList::DeleteListByProductionPlanID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool ProductionPlanList::DeleteListByProductionPlanID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		productionPlanID = oID;
 		if (ormasDal.DeleteListByProductionPlanID(productionPlanID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ProductionPlanList::UpdateProductionPlanList(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+	bool ProductionPlanList::UpdateProductionPlanList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		productionPlanID = oID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ProductionPlanList::UpdateProductionPlanList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionPlanList::UpdateProductionPlanList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateProductionPlanList(id, productionPlanID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ProductionPlanList::GetProductionPlanListByID(DataLayer::OrmasDal& ormasDal, int ppID, std::string& errorMessage)
+	bool ProductionPlanList::GetProductionPlanListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int ppID, std::string& errorMessage)
 	{
 		if (ppID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ProductionPlanList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int ppID, int pID, double pplCount, double pplSum,
+	bool ProductionPlanList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int ppID, int pID, double pplCount, double pplSum,
 		int cID, std::string& errorMessage)
 	{
 		ProductionPlanList productionPlanList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ProductionPlanList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ProductionPlanList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ProductionPlanList productionPlanList;
 		productionPlanList.Clear();

@@ -79,10 +79,10 @@ namespace BusinessLayer{
 		isOutdated = prIsOutdated;
 	}
 
-	bool Price::CreatePrice(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int cID, int prID, bool pIsOutdated,
+	bool Price::CreatePrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int cID, int prID, bool pIsOutdated,
 		std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pDate, pValue, cID, prID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pDate, pValue, cID, prID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		date = pDate;
@@ -100,9 +100,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Price::CreatePrice(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Price::CreatePrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreatePrice(id, date, value, currencyID, productID, isOutdated, errorMessage))
@@ -115,7 +115,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Price::DeletePrice(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Price::DeletePrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeletePrice(id, errorMessage))
 		{
@@ -129,7 +129,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Price::UpdatePrice(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int cID, int prID, bool pIsOutdated,
+	bool Price::UpdatePrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int cID, int prID, bool pIsOutdated,
 		std::string& errorMessage)
 	{
 		date = pDate;
@@ -147,7 +147,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Price::UpdatePrice(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Price::UpdatePrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdatePrice(id, date, value, currencyID, productID, isOutdated, errorMessage))
 		{
@@ -169,7 +169,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Price::GetPriceByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Price::GetPriceByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -193,7 +193,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Price::GetPriceByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool Price::GetPriceByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -234,7 +234,7 @@ namespace BusinessLayer{
 		isOutdated = true;
 	}
 
-	bool Price::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pDate, double pValue, int cID, int prID,
+	bool Price::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int cID, int prID,
 		std::string& errorMessage)
 	{
 		Price price;
@@ -256,7 +256,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Price::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Price::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Price price;
 		price.Clear();

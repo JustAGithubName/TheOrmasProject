@@ -92,9 +92,9 @@ namespace BusinessLayer{
 		withdrawalID = wID;
 	}
 
-	bool CashboxTransaction::CreateCashboxTransaction(DataLayer::OrmasDal &ormasDal, int cashbID, int cashiID, int accID, int ownID, int paymID, int withID, std::string& errorMessage)
+	bool CashboxTransaction::CreateCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cashbID, int cashiID, int accID, int ownID, int paymID, int withID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, paymID, withID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, paymID, withID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		cashboxID = cashbID;
@@ -113,9 +113,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CashboxTransaction::CreateCashboxTransaction(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CashboxTransaction::CreateCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateCashboxTransaction(id, cashboxID, cashierID, accountantID, ownerID, paymentID, withdrawalID, errorMessage))
@@ -128,7 +128,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CashboxTransaction::DeleteCashboxTransaction(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CashboxTransaction::DeleteCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteCashboxTransaction(id, errorMessage))
 		{
@@ -142,9 +142,9 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool CashboxTransaction::UpdateCashboxTransaction(DataLayer::OrmasDal &ormasDal, int cashbID, int cashiID, int accID, int ownID, int paymID, int withID, std::string& errorMessage)
+	bool CashboxTransaction::UpdateCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cashbID, int cashiID, int accID, int ownID, int paymID, int withID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, paymID, withID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, paymID, withID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		cashboxID = cashbID;
@@ -163,7 +163,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool CashboxTransaction::UpdateCashboxTransaction(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CashboxTransaction::UpdateCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateCashboxTransaction(id, cashboxID, cashierID, accountantID, ownerID, paymentID, withdrawalID, errorMessage))
 		{
@@ -186,7 +186,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool CashboxTransaction::GetCashboxTransactionByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool CashboxTransaction::GetCashboxTransactionByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -211,7 +211,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool CashboxTransaction::GetCashboxTransactionByPaymentID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool CashboxTransaction::GetCashboxTransactionByPaymentID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -236,7 +236,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool CashboxTransaction::GetCashboxTransactionByWithdrawalID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage)
+	bool CashboxTransaction::GetCashboxTransactionByWithdrawalID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
 	{
 		if (wID <= 0)
 			return false;
@@ -261,7 +261,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool CashboxTransaction::GetCashboxTransactionByCashierID(DataLayer::OrmasDal& ormasDal, int cierID, std::string& errorMessage)
+	bool CashboxTransaction::GetCashboxTransactionByCashierID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cierID, std::string& errorMessage)
 	{
 		if (cierID <= 0)
 			return false;
@@ -304,7 +304,7 @@ namespace BusinessLayer{
 		withdrawalID = 0;
 	}
 
-	bool CashboxTransaction::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool CashboxTransaction::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		CashboxTransaction cashboxTransaction;
 		cashboxTransaction.Clear();
@@ -330,7 +330,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool CashboxTransaction::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool CashboxTransaction::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		CashboxTransaction cashboxTransaction;
 		cashboxTransaction.Clear();

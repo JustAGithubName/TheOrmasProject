@@ -24,6 +24,7 @@ public:
 	void OpenAccDlg();
 	void OpenPurDlg();
 	void OpenActDlg();
+	void OpenSpecDlg();
 	void TextEditChanged();
 	void CalculateMonthChanged();
 	public slots:

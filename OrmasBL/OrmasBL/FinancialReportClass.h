@@ -80,27 +80,27 @@ namespace BusinessLayer{
 		void SetTillDate(std::string);
 
 		// Create, delete and update FinancialReport
-		bool CreateFinancialReport(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateFinancialReport(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteFinancialReport(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateFinancialReport(DataLayer::OrmasDal &ormasDal, double fAccount44010, double fAccount55010, double fAccount552, double fAccount55270,
+		bool CreateFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double fAccount44010, double fAccount55010, double fAccount552, double fAccount55270,
 			double fAccount553, double fAccount55321, double fAccount44020_90, double fAccount66010_66110, double fAccount66020_66120,
 			double fAccount66040_66140, double fAccount66050_66150, double fAccount66060_66160, double fAccount66130, 
 			double fAccount66070_66170,	double fTax, std::string fFromDate, std::string fTillDate, std::string& errorMessage);
-		bool UpdateFinancialReport(DataLayer::OrmasDal &ormasDal, double fAccount44010, double fAccount55010, double fAccount552, double fAccount55270,
+		bool UpdateFinancialReport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double fAccount44010, double fAccount55010, double fAccount552, double fAccount55270,
 			double fAccount553, double fAccount55321, double fAccount44020_90, double fAccount66010_66110, double fAccount66020_66120,
 			double fAccount66040_66140, double fAccount66050_66150, double fAccount66060_66160, double fAccount66130, double fAccount66070_66170,
 			double fTax, std::string fFromDate, std::string fTillDate, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetFinancialReportByID(DataLayer::OrmasDal& ormasDal, int ahID, std::string& errorMessage);
-		bool GetFinancialReportByAccountID(DataLayer::OrmasDal& ormasDal, int aAccountID, std::string& errorMessage);
+		bool GetFinancialReportByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int ahID, std::string& errorMessage);
+		bool GetFinancialReportByAccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aAccountID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string aFromDate, std::string aTillDate, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aFromDate, std::string aTillDate, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //FinancialReportCLASS_H

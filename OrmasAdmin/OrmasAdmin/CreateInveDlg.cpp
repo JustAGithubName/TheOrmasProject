@@ -122,16 +122,16 @@ void CreateInveDlg::SetInventoryUnionParams(BusinessLayer::Inventory* inv, Busin
 void CreateInveDlg::FillEditElements(QString iName, double iCost, QString iLocation, QString iInvNumber, int iDivID, QString iBarcode,
 	QString iStartO, QString iEndO, int iStatusID, int subAccID, int iID)
 {
-	if (postingFixedAssets->GetPostingFixedAssetsByInventoryID(dialogBL->GetOrmasDal(), iID, errorMessage))
+	if (postingFixedAssets->GetPostingFixedAssetsByInventoryID(dialogBL->globalVar, dialogBL->GetOrmasDal(), iID, errorMessage))
 	{
 		if (postingFixedAssets->GetAccountID() > 0)
 		{
 			accableIDEdit->setText(QString::number(postingFixedAssets->GetAccountID()));
 			BusinessLayer::ChartOfAccounts coa;
 			BusinessLayer::Account acc;
-			if (acc.GetAccountByID(dialogBL->GetOrmasDal(), postingFixedAssets->GetAccountID(), errorMessage))
+			if (acc.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), postingFixedAssets->GetAccountID(), errorMessage))
 			{
-				if (coa.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), acc.GetNumber(), errorMessage))
+				if (coa.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), acc.GetNumber(), errorMessage))
 				{
 					surnameLb->setText("");
 					accountName->setText(coa.GetName().c_str());
@@ -147,7 +147,7 @@ void CreateInveDlg::FillEditElements(QString iName, double iCost, QString iLocat
 		{
 			purEditID->setText(QString::number(postingFixedAssets->GetUserID()));
 			BusinessLayer::User user;
-			if (user.GetUserByID(dialogBL->GetOrmasDal(), postingFixedAssets->GetUserID(), errorMessage))
+			if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), postingFixedAssets->GetUserID(), errorMessage))
 			{
 				surnameLb->setText(user.GetSurname().c_str());
 				accableIDEdit->hide();
@@ -161,11 +161,11 @@ void CreateInveDlg::FillEditElements(QString iName, double iCost, QString iLocat
 		if (postingFixedAssets->GetSubaccountID() > 0)
 		{
 			BusinessLayer::Balance balance;
-			if (balance.GetBalanceBySubaccountID(dialogBL->GetOrmasDal(), postingFixedAssets->GetSubaccountID(), errorMessage))
+			if (balance.GetBalanceBySubaccountID(dialogBL->globalVar, dialogBL->GetOrmasDal(), postingFixedAssets->GetSubaccountID(), errorMessage))
 			{
 				accableIDEdit->setText(QString::number(balance.GetUserID()));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), balance.GetUserID(), errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance.GetUserID(), errorMessage))
 				{
 					surnameLb->setText(user.GetSurname().c_str());
 					purEditID->hide();
@@ -210,7 +210,7 @@ void CreateInveDlg::SetID(int ID, QString childName)
 			{
 				purEditID->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					surnameLb->setText(user.GetSurname().c_str());
 				}
@@ -219,10 +219,10 @@ void CreateInveDlg::SetID(int ID, QString childName)
 			{
 				accableIDEdit->setText(QString::number(ID));
 				BusinessLayer::Accountable accountable;
-				if (accountable.GetAccountableByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (accountable.GetAccountableByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					BusinessLayer::User user;
-					if (user.GetUserByID(dialogBL->GetOrmasDal(), accountable.GetEmployeeID(), errorMessage))
+					if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), accountable.GetEmployeeID(), errorMessage))
 					{
 						surnameLb->setText(user.GetSurname().c_str());
 					}
@@ -232,10 +232,10 @@ void CreateInveDlg::SetID(int ID, QString childName)
 			{
 				accID->setText(QString::number(ID));
 				BusinessLayer::Account account;
-				if (account.GetAccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					BusinessLayer::ChartOfAccounts coA;
-					if (coA.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), account.GetNumber(), errorMessage))
+					if (coA.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), account.GetNumber(), errorMessage))
 					{
 						surnameLb->setText(coA.GetName().c_str());
 					}
@@ -295,7 +295,7 @@ void CreateInveDlg::CreateInventory()
 		inventoryUnion->accountableID = accableIDEdit->text().toInt();
 		inventoryUnion->accountID = accID->text().toInt();
 		SetInventoryUnionParams(inventory, postingFixedAssets);
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateInventoryUnion(inventoryUnion, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -303,7 +303,7 @@ void CreateInveDlg::CreateInventory()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), inventory->GetStatusID(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventory->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -314,7 +314,7 @@ void CreateInveDlg::CreateInventory()
 						return;
 					}
 					BusinessLayer::Division *division = new BusinessLayer::Division;
-					if (!division->GetDivisionByID(dialogBL->GetOrmasDal(), inventory->GetDepartmentID(), errorMessage))
+					if (!division->GetDivisionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventory->GetDepartmentID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -347,7 +347,13 @@ void CreateInveDlg::CreateInventory()
 					delete status;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 			Close();
 		}
@@ -381,7 +387,7 @@ void CreateInveDlg::EditInventory()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			BusinessLayer::Status sts;
-			if (!sts.GetStatusByName(dialogBL->GetOrmasDal(), "WRITE-OFFED", errorMessage))
+			if (!sts.GetStatusByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "WRITE-OFFED", errorMessage))
 			{
 				return;
 			}
@@ -401,7 +407,7 @@ void CreateInveDlg::EditInventory()
 			inventoryUnion->accountableID = accableIDEdit->text().toInt();
 			inventoryUnion->accountID = accID->text().toInt();
 			SetInventoryUnionParams(inventory, postingFixedAssets);
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateInventoryUnion(inventoryUnion, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -409,7 +415,7 @@ void CreateInveDlg::EditInventory()
 					if (!parentDataForm->IsClosed())
 					{
 						BusinessLayer::Status *status = new BusinessLayer::Status;
-						if (!status->GetStatusByID(dialogBL->GetOrmasDal(), inventory->GetStatusID(), errorMessage))
+						if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventory->GetStatusID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -420,7 +426,7 @@ void CreateInveDlg::EditInventory()
 							return;
 						}
 						BusinessLayer::Division *division = new BusinessLayer::Division;
-						if (!division->GetDivisionByID(dialogBL->GetOrmasDal(), inventory->GetDepartmentID(), errorMessage))
+						if (!division->GetDivisionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), inventory->GetDepartmentID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -450,7 +456,13 @@ void CreateInveDlg::EditInventory()
 						delete status;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 
 				Close();
@@ -617,7 +629,7 @@ void CreateInveDlg::OpenPurDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -725,7 +737,7 @@ void CreateInveDlg::TextEditChanged()
 void CreateInveDlg::GenerateInventoryNumber()
 {
 	std::string invNumber = "";
-	invNumber =  inventoryUnion->GenerateInventoryNumber(dialogBL->GetOrmasDal(), divisionCmb->currentData().toInt());
+	invNumber =  inventoryUnion->GenerateInventoryNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), divisionCmb->currentData().toInt());
 	numberEdit->setText(invNumber.c_str());
 }
 

@@ -95,10 +95,10 @@ namespace BusinessLayer
 	}
 
 
-	bool FixedAssetsSpecification::CreateFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string sName, std::string sFactoryNumber, 
+	bool FixedAssetsSpecification::CreateFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sName, std::string sFactoryNumber, 
 		std::string sDeveloper, std::string sDocument, std::string sObjChar, std::string sCondition, std::string sDateOfConst, std::string& errorMessage)
 	{
-		//if (IsDuplicate(ormasDal, sFactoryNumber, errorMessage))
+		//if (IsDuplicate(globalVar, ormasDal, sFactoryNumber, errorMessage))
 			//return false;
 		id = ormasDal.GenerateID();
 		name = sName;
@@ -122,9 +122,9 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool FixedAssetsSpecification::CreateFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsSpecification::CreateFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		//if (IsDuplicate(ormasDal, errorMessage))
+		//if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			//return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
@@ -140,7 +140,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool FixedAssetsSpecification::DeleteFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsSpecification::DeleteFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -154,7 +154,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool FixedAssetsSpecification::UpdateFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string sName, std::string sFactoryNumber, std::string sDeveloper, std::string sDocument,
+	bool FixedAssetsSpecification::UpdateFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sName, std::string sFactoryNumber, std::string sDeveloper, std::string sDocument,
 		std::string sObjChar, std::string sCondition, std::string sDateOfConst, std::string& errorMessage)
 	{
 		name = sName;
@@ -177,7 +177,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool FixedAssetsSpecification::UpdateFixedAssetsSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsSpecification::UpdateFixedAssetsSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.UpdateFixedAssetsSpecification(id, name, factoryNumber, developer, document,
@@ -204,7 +204,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool FixedAssetsSpecification::GetFixedAssetsSpecificationByID(DataLayer::OrmasDal& ormasDal, int fID, std::string& errorMessage)
+	bool FixedAssetsSpecification::GetFixedAssetsSpecificationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fID, std::string& errorMessage)
 	{
 		if (fID <= 0)
 			return false;
@@ -234,8 +234,8 @@ namespace BusinessLayer
 	{
 		if (0 == id && name == "" && factoryNumber == "" && developer == "" && document == "" && objectCharacters == "" 
 			&& condition == "" && dateOfConstruction == "")
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void FixedAssetsSpecification::Clear()
@@ -250,7 +250,7 @@ namespace BusinessLayer
 		dateOfConstruction = "";
 	}
 
-	/*bool FixedAssetsSpecification::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string sFactoryNumber, std::string& errorMessage)
+	/*bool FixedAssetsSpecification::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sFactoryNumber, std::string& errorMessage)
 	{
 		FixedAssetsSpecification fixedAssetsSpecification;
 		fixedAssetsSpecification.Clear();
@@ -268,7 +268,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool FixedAssetsSpecification::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsSpecification::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		FixedAssetsSpecification fixedAssetsSpecification;
 		fixedAssetsSpecification.Clear();

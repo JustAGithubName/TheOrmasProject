@@ -45,5 +45,43 @@ namespace BusinessLayer
 		return currencyName;
 	}
 
+
+	void ProductionPlanView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void ProductionPlanView::SetEmployeeName(std::string cEmployeeName)
+	{
+		employeeName = cEmployeeName;
+	}
+	void ProductionPlanView::SetEmployeeSurname(std::string cEmployeeSurname)
+	{
+		employeeSurname = cEmployeeSurname;
+	}
+	void ProductionPlanView::SetEmployeePhone(std::string cEmployeePhone)
+	{
+		employeePhone = cEmployeePhone;
+	}
+	void ProductionPlanView::SetEmployeePosition(std::string cEmployeePosition)
+	{
+		employeePosition = cEmployeePosition;
+	}
+	void ProductionPlanView::SetCurrencyName(std::string eCurrencyName)
+	{
+		currencyName = eCurrencyName;
+	}
+
+	std::string ProductionPlanView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !statusName.empty() || !employeeName.empty() || !employeeSurname.empty()
+			|| !employeePhone.empty() || !employeePosition.empty() 
+			|| 0 != count || 0 != sum || !currencyName.empty() 
+			|| 0 != employeeID || 0 != statusID || currencyID)
+		{
+			return ormasDal.GetFilterForProdnPlanView(id, date, count, sum, currencyName, statusName, employeeName, employeeSurname, employeePhone,
+				employeePosition, employeeID, statusID, currencyID);
+		}
+		return "";
+	}
 }
 

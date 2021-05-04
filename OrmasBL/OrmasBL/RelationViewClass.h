@@ -18,6 +18,7 @@ namespace BusinessLayer
 		RelationView(DataLayer::relationsViewCollection);
 		RelationView(){};
 		~RelationView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// RelationView class Accessors
 		std::string GetEmployeeName();
@@ -27,6 +28,14 @@ namespace BusinessLayer
 		std::string GetUsername();
 		std::string GetUserSurname();
 		std::string GetUserPhone();
+
+		void SetEmployeeName(std::string);
+		void SetEmployeeSurname(std::string);
+		void SetEmployeePhone(std::string);
+		void SetRelationName(std::string);
+		void SetUsername(std::string);
+		void SetUserSurname(std::string);
+		void SetUserPhone(std::string);
 	};
 }
 #endif //RELATIONVIEWCLASS_H

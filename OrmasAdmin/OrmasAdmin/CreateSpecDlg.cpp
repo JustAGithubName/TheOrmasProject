@@ -71,19 +71,19 @@ void CreateSpecDlg::FillEditElements(int pID, double sSum, int cID, int eID, QSt
 	dateEdit->setDateTime(QDateTime::fromString(sDate, "dd.MM.yyyy hh:mm"));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(cID)));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), eID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), eID, errorMessage))
 	{
 		empNamePh->setText(user.GetName().c_str());
 		empSurnamePh->setText(user.GetSurname().c_str());
 		empPhonePh->setText(user.GetPhone().c_str());
 	}
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), pID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pID, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
@@ -107,12 +107,12 @@ void CreateSpecDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
@@ -122,7 +122,7 @@ void CreateSpecDlg::SetID(int ID, QString childName)
 			{
 				employeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(user.GetName().c_str());
 					empSurnamePh->setText(user.GetSurname().c_str());
@@ -166,7 +166,7 @@ void CreateSpecDlg::CreateSpecification()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetSpecificationParams(productEdit->text().toInt(), sumEdit->text().toDouble(), currencyCmb->currentData().toInt(),
 			employeeEdit->text().toInt(), dateEdit->text(), specification->GetID());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateSpecification(specification, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -177,9 +177,9 @@ void CreateSpecDlg::CreateSpecification()
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 
-					if (!product->GetProductByID(dialogBL->GetOrmasDal(), specification->GetProductID(), errorMessage)
-						|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), specification->GetEmployeeID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), specification->GetCurrencyID(), errorMessage))
+					if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), specification->GetProductID(), errorMessage)
+						|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), specification->GetEmployeeID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), specification->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -193,7 +193,7 @@ void CreateSpecDlg::CreateSpecification()
 					}
 
 					BusinessLayer::Position *position = new BusinessLayer::Position;
-					if (!position->GetPositionByID(dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
+					if (!position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -225,7 +225,13 @@ void CreateSpecDlg::CreateSpecification()
 					delete currency;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			
 			Close();
@@ -260,7 +266,7 @@ void CreateSpecDlg::EditSpecification()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetSpecificationParams(productEdit->text().toInt(), sumEdit->text().toDouble(), currencyCmb->currentData().toInt(),
 				employeeEdit->text().toInt(), dateEdit->text(), specification->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateSpecification(specification, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -272,9 +278,9 @@ void CreateSpecDlg::EditSpecification()
 						BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 
-						if (!product->GetProductByID(dialogBL->GetOrmasDal(), specification->GetProductID(), errorMessage)
-							|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), specification->GetEmployeeID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), specification->GetCurrencyID(), errorMessage))
+						if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), specification->GetProductID(), errorMessage)
+							|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), specification->GetEmployeeID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), specification->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -288,7 +294,7 @@ void CreateSpecDlg::EditSpecification()
 						}
 
 						BusinessLayer::Position *position = new BusinessLayer::Position;
-						if (!position->GetPositionByID(dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
+						if (!position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -318,7 +324,13 @@ void CreateSpecDlg::EditSpecification()
 						delete currency;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				
 				
@@ -411,7 +423,7 @@ void CreateSpecDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

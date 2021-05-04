@@ -31,21 +31,21 @@ namespace BusinessLayer{
 		void SetIsContract(bool);
 
 		// Create, delete and update DivisionEmployeeRelation
-		bool CreateDivisionEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateDivisionEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteDivisionEmployeeRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateDivisionEmployeeRelation(DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, bool dIsContract, std::string& errorMessage);
-		bool UpdateDivisionEmployeeRelation(DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, bool dIsContract, std::string& errorMessage);
+		bool CreateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, bool dIsContract, std::string& errorMessage);
+		bool UpdateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, bool dIsContract, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetDivisionEmployeeRelationByID(DataLayer::OrmasDal& ormasDal, int deID, std::string& errorMessage);
-		bool GetDivisionEmployeeRelationByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
+		bool GetDivisionEmployeeRelationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int deID, std::string& errorMessage);
+		bool GetDivisionEmployeeRelationByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int dDivisionID, int dAccountID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //DIVISIONEMPLOYEERELATIONCLASS_H

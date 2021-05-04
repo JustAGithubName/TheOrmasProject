@@ -63,7 +63,7 @@ void CreateUserDlg::SetID(int ID, QString childName)
 			{
 				roleEdit->setText(QString::number(ID));
 				BusinessLayer::Role role;
-				if (role.GetRoleByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (role.GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					roleNamePh->setText(role.GetName().c_str());
 				}
@@ -99,7 +99,7 @@ void CreateUserDlg::FillEditElements(QString uEmail, QString uName, QString uSur
 	int index = activatedCmbBox->findText(uActivated);
 	activatedCmbBox->setCurrentIndex(index);
 	BusinessLayer::Role role;
-	if (role.GetRoleByID(dialogBL->GetOrmasDal(), uRoleID, errorMessage))
+	if (role.GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), uRoleID, errorMessage))
 	{
 		roleNamePh->setText(role.GetName().c_str());
 	}
@@ -145,7 +145,7 @@ void CreateUserDlg::CreateUser()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetUserParams(emailEdit->text(), nameEdit->text(), surnameEdit->text(), phoneEdit->text(), addressEdit->text(),
 			roleEdit->text().toInt(), passwordEdit->text(), activatedCmbBox->currentText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateUser(user, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -153,7 +153,7 @@ void CreateUserDlg::CreateUser()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Role *role = new BusinessLayer::Role();
-					if (!role->GetRoleByID(dialogBL->GetOrmasDal(), user->GetRoleID(), errorMessage))
+					if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), user->GetRoleID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -182,7 +182,13 @@ void CreateUserDlg::CreateUser()
 			}
 			
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -219,7 +225,7 @@ void CreateUserDlg::EditUser()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetUserParams(emailEdit->text(), nameEdit->text(), surnameEdit->text(), phoneEdit->text(), addressEdit->text(),
 				roleEdit->text().toInt(), passwordEdit->text(), activatedCmbBox->currentText(), user->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateUser(user, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -237,7 +243,7 @@ void CreateUserDlg::EditUser()
 
 						//if role of user is changed, then update location data fields
 						BusinessLayer::Role *role = new BusinessLayer::Role();
-						if (!role->GetRoleByID(dialogBL->GetOrmasDal(), user->GetRoleID(), errorMessage))
+						if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), user->GetRoleID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -259,7 +265,13 @@ void CreateUserDlg::EditUser()
 						delete role;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

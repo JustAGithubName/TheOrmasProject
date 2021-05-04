@@ -58,17 +58,17 @@ void CreatePspDlg::SetID(int ID, QString childName)
 			{
 				salaryEdit->setText(QString::number(ID));
 				BusinessLayer::Salary salary;
-				if (salary.GetSalaryByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (salary.GetSalaryByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					BusinessLayer::User user;
-					if (user.GetUserByID(dialogBL->GetOrmasDal(), salary.GetEmployeeID(), errorMessage))
+					if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), salary.GetEmployeeID(), errorMessage))
 					{
 						namePh->setText(user.GetName().c_str());
 						surnamePh->setText(user.GetSurname().c_str());
 						phonePh->setText(user.GetPhone().c_str());
 					}
 					BusinessLayer::Currency currency;
-					if (currency.GetCurrencyByID(dialogBL->GetOrmasDal(), salary.GetCurrencyID(), errorMessage))
+					if (currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), salary.GetCurrencyID(), errorMessage))
 					{
 						currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(currency.GetID())));
 					}
@@ -94,10 +94,10 @@ void CreatePspDlg::FillEditElements(QString pDate, double pValue, int pSalaryID,
 	salaryEdit->setText(QString::number(pSalaryID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(pCurrencyID)));
 	BusinessLayer::Salary salary;
-	if (salary.GetSalaryByID(dialogBL->GetOrmasDal(), pSalaryID, errorMessage))
+	if (salary.GetSalaryByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pSalaryID, errorMessage))
 	{
 		BusinessLayer::User user;
-		if (user.GetUserByID(dialogBL->GetOrmasDal(), salary.GetEmployeeID(), errorMessage))
+		if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), salary.GetEmployeeID(), errorMessage))
 		{
 			namePh->setText(user.GetName().c_str());
 			surnamePh->setText(user.GetSurname().c_str());
@@ -136,7 +136,7 @@ void CreatePspDlg::CreatePayslip()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetPayslipParams(dateEdit->text(), valueEdit->text().toDouble(), salaryEdit->text().toInt(), currencyCmb->currentData().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreatePayslip(payslip, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -144,7 +144,7 @@ void CreatePspDlg::CreatePayslip()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
-					if (!currency->GetCurrencyByID(dialogBL->GetOrmasDal(), payslip->GetCurrencyID(), errorMessage))
+					if (!currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), payslip->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -166,7 +166,13 @@ void CreatePspDlg::CreatePayslip()
 					delete currency;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -201,7 +207,7 @@ void CreatePspDlg::EditPayslip()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetPayslipParams(dateEdit->text(), valueEdit->text().toDouble(), salaryEdit->text().toInt(), currencyCmb->currentData().toInt(), payslip->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdatePayslip(payslip, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -209,7 +215,7 @@ void CreatePspDlg::EditPayslip()
 					if (!parentDataForm->IsClosed())
 					{
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency;
-						if (!currency->GetCurrencyByID(dialogBL->GetOrmasDal(), payslip->GetCurrencyID(), errorMessage))
+						if (!currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), payslip->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -229,7 +235,13 @@ void CreatePspDlg::EditPayslip()
 						delete currency;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}

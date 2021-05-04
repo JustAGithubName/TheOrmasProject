@@ -17,6 +17,7 @@ namespace BusinessLayer
 		ProductionPlanView(DataLayer::productionPlanViewCollection);
 		ProductionPlanView(){};
 		~ProductionPlanView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// ProductionPlanView class Accessors
 		std::string GetStatusName();
@@ -25,6 +26,14 @@ namespace BusinessLayer
 		std::string GetEmployeePhone();
 		std::string GetEmployeePosition();
 		std::string GetCurrencyName();
+
+		
+		void SetStatusName(std::string);
+		void SetEmployeeName(std::string);
+		void SetEmployeeSurname(std::string);
+		void SetEmployeePhone(std::string);
+		void SetEmployeePosition(std::string);
+		void SetCurrencyName(std::string);
 
 	};
 }

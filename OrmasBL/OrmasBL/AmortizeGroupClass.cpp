@@ -58,9 +58,9 @@ namespace BusinessLayer{
 		toMonth = tMonth;
 	}
 
-	bool AmortizeGroup::CreateAmortizeGroup(DataLayer::OrmasDal &ormasDal, int gNumber, int fMonth, int tMonth, std::string& errorMessage)
+	bool AmortizeGroup::CreateAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int gNumber, int fMonth, int tMonth, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, gNumber, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, gNumber, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		groupNumber = gNumber;
@@ -76,9 +76,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AmortizeGroup::CreateAmortizeGroup(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AmortizeGroup::CreateAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateAmortizeGroup(id, groupNumber, fromMonth, toMonth, errorMessage))
@@ -91,7 +91,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AmortizeGroup::DeleteAmortizeGroup(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AmortizeGroup::DeleteAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteAmortizeGroup(id, errorMessage))
 		{
@@ -105,7 +105,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AmortizeGroup::UpdateAmortizeGroup(DataLayer::OrmasDal &ormasDal, int gNumber, int fMonth, int tMonth, std::string& errorMessage)
+	bool AmortizeGroup::UpdateAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int gNumber, int fMonth, int tMonth, std::string& errorMessage)
 	{
 		groupNumber = gNumber;
 		fromMonth = fMonth;
@@ -120,7 +120,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AmortizeGroup::UpdateAmortizeGroup(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AmortizeGroup::UpdateAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.UpdateAmortizeGroup(id, groupNumber, fromMonth, toMonth, errorMessage))
 		{
@@ -142,7 +142,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool AmortizeGroup::GetAmortizeGroupByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool AmortizeGroup::GetAmortizeGroupByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -164,7 +164,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AmortizeGroup::GetAmortizeGroupByNumber(DataLayer::OrmasDal& ormasDal, int aNumber, std::string& errorMessage)
+	bool AmortizeGroup::GetAmortizeGroupByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aNumber, std::string& errorMessage)
 	{
 		if (aNumber <= 0)
 			return false;
@@ -201,7 +201,7 @@ namespace BusinessLayer{
 		toMonth = 0;
 	}
 
-	bool AmortizeGroup::IsDuplicate(DataLayer::OrmasDal& ormasDal, int gNumber, std::string& errorMessage)
+	bool AmortizeGroup::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int gNumber, std::string& errorMessage)
 	{
 		AmortizeGroup amortizeGroup;
 		amortizeGroup.Clear();
@@ -219,7 +219,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool AmortizeGroup::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AmortizeGroup::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		AmortizeGroup amortizeGroup;
 		amortizeGroup.Clear();

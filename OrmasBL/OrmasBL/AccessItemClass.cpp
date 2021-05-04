@@ -58,9 +58,9 @@ namespace BusinessLayer{
 		division = boost::to_upper_copy(aDivision);
 	}
 
-	bool AccessItem::CreateAccessItem(DataLayer::OrmasDal &ormasDal, std::string aNameEng, std::string aNameRu, std::string aDivision, std::string& errorMessage)
+	bool AccessItem::CreateAccessItem(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNameEng, std::string aNameRu, std::string aDivision, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, aNameEng, aNameRu, aDivision, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, aNameEng, aNameRu, aDivision, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(aNameEng, aNameRu, aDivision);
@@ -77,9 +77,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccessItem::CreateAccessItem(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccessItem::CreateAccessItem(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateAccessItem(id, nameEng, nameRu, division, errorMessage))
@@ -92,7 +92,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccessItem::DeleteAccessItem(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccessItem::DeleteAccessItem(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteAccessItem(id, errorMessage))
 		{
@@ -106,7 +106,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AccessItem::UpdateAccessItem(DataLayer::OrmasDal &ormasDal, std::string aNameEng, std::string aNameRu, std::string aDivision, std::string& errorMessage)
+	bool AccessItem::UpdateAccessItem(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNameEng, std::string aNameRu, std::string aDivision, std::string& errorMessage)
 	{
 		TrimStrings(aNameEng, aNameRu, aDivision);
 		nameEng =aNameEng;
@@ -122,7 +122,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccessItem::UpdateAccessItem(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccessItem::UpdateAccessItem(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateAccessItem(id, nameEng, nameRu, division, errorMessage))
 		{
@@ -144,7 +144,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool AccessItem::GetAccessItemByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool AccessItem::GetAccessItemByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -166,7 +166,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AccessItem::GetAccessItemByEngName(DataLayer::OrmasDal& ormasDal, std::string engName, std::string& errorMessage)
+	bool AccessItem::GetAccessItemByEngName(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string engName, std::string& errorMessage)
 	{
 		nameEng = engName;
 		std::string filter = GenerateFilter(ormasDal);
@@ -186,7 +186,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AccessItem::GetAccessItemByRuName(DataLayer::OrmasDal& ormasDal, std::string ruName, std::string& errorMessage)
+	bool AccessItem::GetAccessItemByRuName(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string ruName, std::string& errorMessage)
 	{
 		nameRu = ruName;
 		std::string filter = GenerateFilter(ormasDal);
@@ -232,7 +232,7 @@ namespace BusinessLayer{
 			boost::trim(aDivision);
 	}
 
-	bool AccessItem::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string aNameEng, std::string aNameRu, std::string aDivision, std::string& errorMessage)
+	bool AccessItem::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNameEng, std::string aNameRu, std::string aDivision, std::string& errorMessage)
 	{
 		AccessItem accessItem;
 		accessItem.Clear();
@@ -261,7 +261,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool AccessItem::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccessItem::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		AccessItem accessItem;
 		accessItem.Clear();

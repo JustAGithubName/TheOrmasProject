@@ -28,20 +28,20 @@ namespace BusinessLayer{
 		void SetWithdrawalID(int);
 
 		// Create, delete and update Access
-		bool CreateBalanceWithdrawalRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteBalanceWithdrawalRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateBalanceWithdrawalRelation(DataLayer::OrmasDal &ormasDal, int bID, int wID, std::string& errorMessage);
+		bool CreateBalanceWithdrawalRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteBalanceWithdrawalRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateBalanceWithdrawalRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int wID, std::string& errorMessage);
 
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::vector<int> GetAllWithdrawalByBalanceID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage);
-		std::vector<int> GetAllBalanceByWithdrawalID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage);
+		std::vector<int> GetAllWithdrawalByBalanceID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
+		std::vector<int> GetAllBalanceByWithdrawalID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int bID, int wID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int wID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

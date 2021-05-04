@@ -79,10 +79,10 @@ namespace BusinessLayer{
 		isOutdated = nIsOutdated;
 	}
 
-	bool NetCost::CreateNetCost(DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID, bool nIsOutdated,
+	bool NetCost::CreateNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID, bool nIsOutdated,
 		std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, nDate, nValue, cID, prID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, nDate, nValue, cID, prID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		date = nDate;
@@ -100,9 +100,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool NetCost::CreateNetCost(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool NetCost::CreateNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateNetCost(id, date, value, currencyID, productID, isOutdated, errorMessage))
@@ -115,7 +115,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool NetCost::DeleteNetCost(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool NetCost::DeleteNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteNetCost(id, errorMessage))
 		{
@@ -129,7 +129,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool NetCost::UpdateNetCost(DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID, bool nIsOutdated,
+	bool NetCost::UpdateNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID, bool nIsOutdated,
 		std::string& errorMessage)
 	{
 		date = nDate;
@@ -147,7 +147,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool NetCost::UpdateNetCost(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool NetCost::UpdateNetCost(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateNetCost(id, date, value, currencyID, productID, isOutdated, errorMessage))
 		{
@@ -169,7 +169,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool NetCost::GetNetCostByID(DataLayer::OrmasDal& ormasDal, int nID, std::string& errorMessage)
+	bool NetCost::GetNetCostByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int nID, std::string& errorMessage)
 	{
 		if (nID <= 0)
 			return false;
@@ -193,7 +193,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool NetCost::GetNetCostByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool NetCost::GetNetCostByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -234,7 +234,7 @@ namespace BusinessLayer{
 		isOutdated = true;
 	}
 
-	bool NetCost::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string nDate, double nValue, int cID, int prID,
+	bool NetCost::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string nDate, double nValue, int cID, int prID,
 		std::string& errorMessage)
 	{
 		NetCost netCost;
@@ -256,7 +256,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool NetCost::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool NetCost::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		NetCost netCost;
 		netCost.Clear();

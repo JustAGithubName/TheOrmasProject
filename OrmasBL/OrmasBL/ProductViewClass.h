@@ -14,12 +14,18 @@ namespace BusinessLayer
 		ProductView(DataLayer::productsViewCollection);
 		ProductView(){};
 		~ProductView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		//UserView class Accessors
 		std::string GetCompanyName();
 		std::string GetMeasureName();
 		std::string GetProductTypeName();
 		std::string GetCurrencyName();
+
+		void SetCompanyName(std::string);
+		void SetMeasureName(std::string);
+		void SetProductTypeName(std::string);
+		void SetCurrencyName(std::string);
 
 
 	};

@@ -15,6 +15,7 @@ namespace BusinessLayer{
 		EmployeeView(DataLayer::employeesViewCollection);
 		EmployeeView(){};
 		~EmployeeView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// EmployeeView class Accessors
 		std::string GetPositionName();
@@ -22,6 +23,12 @@ namespace BusinessLayer{
 		int GetDivisionEmployeeID();
 		int GetDivisionID();
 		bool GetIsContract();
+
+		void SetPositionName(std::string);
+		void SetRoleName(std::string);
+		void SetDivisionEmployeeID(int);
+		void SetDivisionID(int);
+		
 	};
 }
 

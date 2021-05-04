@@ -58,29 +58,29 @@ namespace BusinessLayer
 		void SetSubaccountID(int);
 
 		//Create, delete, update methods
-		bool CreateInventory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateInventory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteInventory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateInventory(DataLayer::OrmasDal& ormasDal, std::string iName, double iCost, int depID, std::string iLocation, int sID, std::string sooDate,
+		bool CreateInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string iName, double iCost, int depID, std::string iLocation, int sID, std::string sooDate,
 			std::string eooDate, std::string iNumber, std::string bNumber, int subID, std::string& errorMessage);
-		bool UpdateInventory(DataLayer::OrmasDal& ormasDal, std::string iName, double iCost, int depID, std::string iLocation, int sID, std::string sooDate,
+		bool UpdateInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string iName, double iCost, int depID, std::string iLocation, int sID, std::string sooDate,
 			std::string eooDate, std::string iNumber, std::string bNumber, int subID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetInventoryByID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetInventoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		bool CreateInventoryEntry(DataLayer::OrmasDal& ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage);
-		bool CreateInventoryEntryReverce(DataLayer::OrmasDal& ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage);
-		bool CreateInventoryEntryWriteOFF(DataLayer::OrmasDal& ormasDal, int inventoryID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntryWriteOFF(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntryCancel(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		int GenerateSubaccount(DataLayer::OrmasDal& ormasDal, double currentValue, std::string& errorMessage);
+		bool CreateInventoryEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage);
+		bool CreateInventoryEntryReverce(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage);
+		bool CreateInventoryEntryWriteOFF(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int inventoryID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntryWriteOFF(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntryCancel(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		int GenerateSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double currentValue, std::string& errorMessage);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string iName, std::string iNumber, std::string bNumber, double iCost, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string iName, std::string iNumber, std::string bNumber, double iCost, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};
 }

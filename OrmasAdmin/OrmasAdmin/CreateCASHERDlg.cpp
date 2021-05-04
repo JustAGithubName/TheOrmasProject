@@ -54,7 +54,7 @@ void CreateCASHERDlg::SetID(int ID, QString childName)
 				employeeEdit->setText(QString::number(ID));
 			}
 			BusinessLayer::User user;
-			if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+			if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 			{
 				empNamePh->setText(user.GetName().c_str());
 				empSurnamePh->setText(user.GetSurname().c_str());
@@ -77,7 +77,7 @@ void CreateCASHERDlg::FillEditElements(int ceCashboxID, int ceEmployeeID)
 	employeeEdit->setText(QString::number(ceEmployeeID));
 	cashboxCmb->setCurrentIndex(cashboxCmb->findData(QVariant(ceCashboxID)));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), ceEmployeeID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ceEmployeeID, errorMessage))
 	{
 		empNamePh->setText(user.GetName().c_str());
 		empSurnamePh->setText(user.GetSurname().c_str());
@@ -110,7 +110,7 @@ void CreateCASHERDlg::CreateCashboxEmployee()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetCashboxEmployeeParams(cashboxCmb->currentData().toInt(), employeeEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateCashboxEmployeeRelation(cashboxEmployee, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -119,8 +119,8 @@ void CreateCASHERDlg::CreateCashboxEmployee()
 				{
 					BusinessLayer::Cashbox *cashbox = new BusinessLayer::Cashbox();
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
-					if (!cashbox->GetCashboxByID(dialogBL->GetOrmasDal(), cashboxEmployee->GetCashboxID(), errorMessage)
-						|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), cashboxEmployee->GetEmployeeID(), errorMessage))
+					if (!cashbox->GetCashboxByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashboxEmployee->GetCashboxID(), errorMessage)
+						|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashboxEmployee->GetEmployeeID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -134,7 +134,7 @@ void CreateCASHERDlg::CreateCashboxEmployee()
 						return;
 					}
 					BusinessLayer::Subaccount *subacc = new BusinessLayer::Subaccount();
-					if (!subacc->GetSubaccountByID(dialogBL->GetOrmasDal(), cashbox->GetSubaccountID(), errorMessage))
+					if (!subacc->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashbox->GetSubaccountID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -149,7 +149,7 @@ void CreateCASHERDlg::CreateCashboxEmployee()
 						return;
 					}
 					BusinessLayer::Role *role = new BusinessLayer::Role();
-					if (!role->GetRoleByID(dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage))
+					if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -183,7 +183,13 @@ void CreateCASHERDlg::CreateCashboxEmployee()
 					delete role;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 
 			Close();
@@ -216,7 +222,7 @@ void CreateCASHERDlg::EditCashboxEmployee()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetCashboxEmployeeParams(cashboxCmb->currentData().toInt(), employeeEdit->text().toInt(), cashboxEmployee->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateCashboxEmployeeRelation(cashboxEmployee, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -225,8 +231,8 @@ void CreateCASHERDlg::EditCashboxEmployee()
 					{
 						BusinessLayer::Cashbox *cashbox = new BusinessLayer::Cashbox();
 						BusinessLayer::Employee *employee = new BusinessLayer::Employee();
-						if (!cashbox->GetCashboxByID(dialogBL->GetOrmasDal(), cashboxEmployee->GetCashboxID(), errorMessage)
-							|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), cashboxEmployee->GetEmployeeID(), errorMessage))
+						if (!cashbox->GetCashboxByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashboxEmployee->GetCashboxID(), errorMessage)
+							|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashboxEmployee->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -240,7 +246,7 @@ void CreateCASHERDlg::EditCashboxEmployee()
 							return;
 						}
 						BusinessLayer::Subaccount *subacc = new BusinessLayer::Subaccount();
-						if (!subacc->GetSubaccountByID(dialogBL->GetOrmasDal(), cashbox->GetSubaccountID(), errorMessage))
+						if (!subacc->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashbox->GetSubaccountID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -255,7 +261,7 @@ void CreateCASHERDlg::EditCashboxEmployee()
 							return;
 						}
 						BusinessLayer::Role *role = new BusinessLayer::Role();
-						if (!role->GetRoleByID(dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage))
+						if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetRoleID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -286,7 +292,13 @@ void CreateCASHERDlg::EditCashboxEmployee()
 						delete role;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				Close();
 			}
@@ -375,7 +387,7 @@ void CreateCASHERDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

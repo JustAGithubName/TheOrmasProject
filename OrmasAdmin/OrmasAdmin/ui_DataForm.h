@@ -40,6 +40,7 @@ public:
     QLabel *maxCountLb;
     QPushButton *nextBtn;
     QSpacerItem *horizontalSpacer;
+    QPushButton *refreshBtn;
     QPushButton *viewBtn;
     QPushButton *createBtn;
     QPushButton *editBtn;
@@ -131,6 +132,11 @@ public:
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout->addItem(horizontalSpacer);
+
+        refreshBtn = new QPushButton(DataForm);
+        refreshBtn->setObjectName(QStringLiteral("refreshBtn"));
+
+        horizontalLayout->addWidget(refreshBtn);
 
         viewBtn = new QPushButton(DataForm);
         viewBtn->setObjectName(QStringLiteral("viewBtn"));
@@ -317,6 +323,7 @@ public:
         fromLb->setText(QApplication::translate("DataForm", "from", 0));
         maxCountLb->setText(QString());
         nextBtn->setText(QApplication::translate("DataForm", ">", 0));
+        refreshBtn->setText(QApplication::translate("DataForm", "Refresh", 0));
         viewBtn->setText(QApplication::translate("DataForm", "View", 0));
         createBtn->setText(QApplication::translate("DataForm", "Create", 0));
         editBtn->setText(QApplication::translate("DataForm", "Edit", 0));

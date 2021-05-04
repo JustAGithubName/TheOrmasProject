@@ -35,28 +35,28 @@ namespace BusinessLayer{
 		void SetLocationID(int);
 
 		//Create, delete, update methods
-		bool CreateClient(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateClient(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteClient(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateClient(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+		bool CreateClient(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateClient(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteClient(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateClient(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 			std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string cFirm, std::string cFirmNumber,
 			int lID, std::string& errorMessage);
-		bool UpdateClient(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+		bool UpdateClient(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 			std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string cFirm, std::string cFirmNumber,
 			int lID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetClientByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
-		bool GetClientByCredentials(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string uEmail, std::string uPassword);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetClientByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
+		bool GetClientByCredentials(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string uEmail, std::string uPassword);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&, std::string&, std::string&, std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string uName, std::string uSurname, std::string uPhone,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uName, std::string uSurname, std::string uPhone,
 			 int uRoleID, std::string cFirm, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		std::string GetCurrentPhone(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		std::string GetCurrentPhone(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
 	};
 }
 #endif

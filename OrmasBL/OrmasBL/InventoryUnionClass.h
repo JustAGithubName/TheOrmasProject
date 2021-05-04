@@ -36,19 +36,19 @@ namespace BusinessLayer
 		void SetPostingFixedAssets(PostingFixedAssets*);
 
 		//Create, delete, update methods
-		bool CreateInventoryUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateInventoryUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteInventoryUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateInventoryUnion(DataLayer::OrmasDal& ormasDal, Inventory* inv, PostingFixedAssets* pFxAssets, std::string& errorMessage);
-		bool UpdateInventoryUnion(DataLayer::OrmasDal& ormasDal, Inventory* inv, PostingFixedAssets* pFxAssets, std::string& errorMessage);
+		bool CreateInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, Inventory* inv, PostingFixedAssets* pFxAssets, std::string& errorMessage);
+		bool UpdateInventoryUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, Inventory* inv, PostingFixedAssets* pFxAssets, std::string& errorMessage);
 
 		//Generate filter string for class
 		bool IsEmpty();
 		void Clear();
-		std::string GenerateInventoryNumber(DataLayer::OrmasDal& ormasDal, int divID);
+		std::string GenerateInventoryNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int divID);
 	private:
-		std::string GenerateInvRawNumber(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		int GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int fxID, std::string& errorMessage);
+		std::string GenerateInvRawNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		int GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fxID, std::string& errorMessage);
 		int previousStatusID = 0;
 	};
 }

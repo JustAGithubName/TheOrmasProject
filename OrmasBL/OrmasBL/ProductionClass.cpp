@@ -61,10 +61,10 @@ namespace BusinessLayer
 		sessionEnd = pSessionEnd;
 	}
 
-	bool Production::CreateProduction(DataLayer::OrmasDal& ormasDal, std::string pProductionDate, std::string pExpiryDate,
+	bool Production::CreateProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pProductionDate, std::string pExpiryDate,
 		std::string pSessionStart, std::string pSessionEnd, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pProductionDate, pExpiryDate, pSessionStart, pSessionEnd, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pProductionDate, pExpiryDate, pSessionStart, pSessionEnd, errorMessage))
 			return false;
 		productionDate = pProductionDate;
 		expiryDate = pExpiryDate;
@@ -73,7 +73,7 @@ namespace BusinessLayer
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.CreateProduction(id, productionDate, expiryDate, sessionStart, sessionEnd, errorMessage))
 		{
-			if (ChangesAtStock(ormasDal, id, warehouseID, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, warehouseID, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -91,14 +91,14 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Production::CreateProduction(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Production::CreateProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id &&ormasDal.CreateProduction(id, productionDate, expiryDate, sessionStart, sessionEnd, errorMessage))
 		{
-			if (ChangesAtStock(ormasDal, id, warehouseID, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, warehouseID, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -116,7 +116,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Production::DeleteProduction(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Production::DeleteProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -145,7 +145,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Production::UpdateProduction(DataLayer::OrmasDal& ormasDal, std::string pProductionDate, std::string pExpiryDate,
+	bool Production::UpdateProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pProductionDate, std::string pExpiryDate,
 		std::string pSessionStart, std::string pSessionEnd, std::string& errorMessage)
 	{
 		if (0 == prodCountMap.size())
@@ -157,7 +157,7 @@ namespace BusinessLayer
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id &&ormasDal.UpdateProduction(id, productionDate, expiryDate, sessionStart, sessionEnd, errorMessage))
 		{
-			if (ChangesAtStock(ormasDal, id, warehouseID, prodCountMap, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, warehouseID, prodCountMap, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -175,14 +175,14 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Production::UpdateProduction(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Production::UpdateProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 == prodCountMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id &&ormasDal.UpdateProduction(id, productionDate, expiryDate, sessionStart, sessionEnd, errorMessage))
 		{
-			if (ChangesAtStock(ormasDal, id, warehouseID, prodCountMap, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, warehouseID, prodCountMap, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -210,7 +210,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	std::string Production::GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string fromDate, std::string toDate)
+	std::string Production::GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string toDate)
 	{
 		if (!toDate.empty() && !fromDate.empty())
 		{
@@ -219,7 +219,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Production::GetProductionByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool Production::GetProductionByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -258,7 +258,7 @@ namespace BusinessLayer
 		sessionStart.clear();
 	}
 
-	bool Production::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pProductionDate, std::string pExpiryDate,
+	bool Production::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pProductionDate, std::string pExpiryDate,
 		std::string pSessionStart, std::string pSessionEnd, std::string& errorMessage)
 	{
 		Production production;
@@ -280,7 +280,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Production::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Production::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Production production;
 		production.Clear();
@@ -302,16 +302,16 @@ namespace BusinessLayer
 	}
 
 
-	bool Production::ChangesAtStock(DataLayer::OrmasDal& ormasDal, int rpID, int warID, std::string& errorMessage)
+	bool Production::ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int warID, std::string& errorMessage)
 	{
 		Stock pStock;
-		return pStock.ChangingByProduction(ormasDal, rpID, warID, errorMessage);
+		return pStock.ChangingByProduction(globalVar, ormasDal, rpID, warID, errorMessage);
 	}
 
-	bool Production::ChangesAtStock(DataLayer::OrmasDal& ormasDal, int rpID, int warID, std::map<int, double> pProdCountMap, std::string& errorMessage)
+	bool Production::ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int warID, std::map<int, double> pProdCountMap, std::string& errorMessage)
 	{
 		Stock pStock;
-		return pStock.ChangingByProduction(ormasDal, rpID, warID, pProdCountMap, errorMessage);
+		return pStock.ChangingByProduction(globalVar, ormasDal, rpID, warID, pProdCountMap, errorMessage);
 	}
 }
 

@@ -22,6 +22,8 @@ namespace BusinessLayer
 		specificationID = std::get<14>(fCollection);
 		statusID = std::get<15>(fCollection);
 		fixedAssetsDetailsID = std::get<16>(fCollection);
+		primaryParentAccID = std::get<17>(fCollection);
+		amortizePrimeAccID = std::get<18>(fCollection);
 	}
 
 	std::string FixedAssetsView::GetName()
@@ -43,6 +45,56 @@ namespace BusinessLayer
 	std::string FixedAssetsView::GetStatusName()
 	{
 		return statusName;
+	}
+	int FixedAssetsView::GetPrimaryParentAccID()
+	{
+		return primaryParentAccID;
+	}
+	int FixedAssetsView::GetAmortizePrimeAccID()
+	{
+		return amortizePrimeAccID;
+	}
+
+	void FixedAssetsView::SetName(std::string dName)
+	{
+		name = dName;
+	}
+	void FixedAssetsView::SetPrimaryCostValue(double fPrimaryCostValue)
+	{
+		primaryCostValue = fPrimaryCostValue;
+	}
+	void FixedAssetsView::SetAmortizeValue(double fAmortizeValue)
+	{
+		amortizeValue = fAmortizeValue;
+	}
+	void FixedAssetsView::SetDivisionName(std::string fDivisionName)
+	{
+		divisionName = fDivisionName;
+	}
+	void FixedAssetsView::SetStatusName(std::string dStatusName)
+	{
+		statusName = dStatusName;
+	}
+	void FixedAssetsView::SetPrimaryParentAccID(int pPrimaryParentAccID)
+	{
+		primaryParentAccID = pPrimaryParentAccID;
+	}
+	void FixedAssetsView::SetAmortizePrimeAccID(int aAmortizePrimeAccID)
+	{
+		amortizePrimeAccID = aAmortizePrimeAccID;
+	}
+
+	std::string FixedAssetsView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !name.empty() || !inventoryNumber.empty() || 0.0 != primaryCost || 0.0 != stopCost || 0.0 != primaryCostValue || 0.0 != amortizeValue 
+			|| !divisionName.empty() || !statusName.empty() || 0 != serviceLife
+			|| !buyDate.empty() || !startOfOperationDate.empty() || !endOfOperationDate.empty() || 0 != specificationID || 0 != statusID || 0 != fixedAssetsDetailsID
+			|| 0 != primaryParentAccID || 0 != amortizePrimeAccID)
+		{
+			return ormasDal.GetFilterForFixedAssView(id, name, inventoryNumber, primaryCost, stopCost, primaryCostValue, amortizeValue, 
+				divisionName, statusName, serviceLife, buyDate, startOfOperationDate, endOfOperationDate, specificationID, statusID, fixedAssetsDetailsID, primaryParentAccID, amortizePrimeAccID);
+		}
+		return "";
 	}
 }
 

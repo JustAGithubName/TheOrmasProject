@@ -31,23 +31,23 @@ namespace BusinessLayer
 		void SetComment(std::string);
 		
 		//Create, delete, update methods
-		bool CreateRole(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateRole(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteRole(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateRole(DataLayer::OrmasDal& ormasDal, std::string rCode, std::string rName, std::string rComment, std::string& errorMessage);
-		bool UpdateRole(DataLayer::OrmasDal& ormasDal, std::string rCode, std::string rName, std::string rComment, std::string& errorMessage);
+		bool CreateRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rCode, std::string rName, std::string rComment, std::string& errorMessage);
+		bool UpdateRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rCode, std::string rName, std::string rComment, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetRoleByID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage);
-		int GetRoleIDByName(DataLayer::OrmasDal& ormasDal, std::string rName, std::string& errorMessage);
-		static std::map<std::string, int> GetRolesAsMap(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool GetRoleByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage);
+		int GetRoleIDByName(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rName, std::string& errorMessage);
+		static std::map<std::string, int> GetRolesAsMap(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string rCode, std::string rName, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rCode, std::string rName, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //ROLECLASS_H

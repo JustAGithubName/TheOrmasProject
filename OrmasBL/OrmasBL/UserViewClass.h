@@ -15,6 +15,7 @@ namespace BusinessLayer
 		UserView(DataLayer::usersViewCollection);
 		UserView(){};
 		~UserView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		//UserView class Accessors
 		std::string GetCountryName();
@@ -22,6 +23,12 @@ namespace BusinessLayer
 		std::string GetRegionName();
 		std::string GetCityName();
 		std::string GetRoleName();
+
+		void SetCountryName(std::string);
+		void SetCountryCode(std::string);
+		void SetRegionName(std::string);
+		void SetCityName(std::string);
+		void SetRoleName(std::string);
 
 		
 	};

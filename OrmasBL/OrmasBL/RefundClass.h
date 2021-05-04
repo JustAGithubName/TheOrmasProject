@@ -35,31 +35,31 @@ namespace BusinessLayer{
 		void SetCurrencyID(int);
 
 		// Create, delete and update Refund
-		bool CreateRefund(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateRefund(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteRefund(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateRefund(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
+		bool CreateRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
 			std::string& errorMessage);
-		bool UpdateRefund(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
+		bool UpdateRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
 			std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetRefundByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetRefundByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		double currentValue = 0.0;
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pDate, double pValue, int uID, int cID,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
 			std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool Replenishment(DataLayer::OrmasDal& ormasDal, int uID, int cID, std::string& errorMessage);
-		bool Replenishment(DataLayer::OrmasDal& ormasDal, int uID, int cID, double previousValue, std::string& errorMessage);
-		double GetCurrentValue(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool CancelRefund(DataLayer::OrmasDal& ormasDal, int uID, int cID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage);
-		bool CorrectingEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool Replenishment(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, std::string& errorMessage);
+		bool Replenishment(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, double previousValue, std::string& errorMessage);
+		double GetCurrentValue(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool CancelRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage);
+		bool CorrectingEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};
 }

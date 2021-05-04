@@ -29,24 +29,24 @@ namespace BusinessLayer{
 		void SetAccessItemID(int);
 
 		// Create, delete and update Access
-		bool CreateAccess(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateAccess(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteAccess(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateAccess(DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage);
-		bool UpdateAccess(DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage);
+		bool CreateAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage);
+		bool UpdateAccess(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetAccessByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetAccessByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		bool CheckAccess(DataLayer::OrmasDal* ormasDal, int accessItemID, std::string checkedDivision, std::string checkingItem);
-		bool CheckAccess(DataLayer::OrmasDal* ormasDal, int accessItemID, std::string checkedDivision);
-		std::string GetCRUDAccess(DataLayer::OrmasDal* ormasDal, User*, std::string accessItemName);
-		std::vector<int> GetRightsList(DataLayer::OrmasDal* ormasDal, User*);
+		bool CheckAccess(GlobalVariable* globalVar, DataLayer::OrmasDal* ormasDal, int accessItemID, std::string checkedDivision, std::string checkingItem);
+		bool CheckAccess(GlobalVariable* globalVar, DataLayer::OrmasDal* ormasDal, int accessItemID, std::string checkedDivision);
+		std::string GetCRUDAccess(GlobalVariable* globalVar, DataLayer::OrmasDal* ormasDal, User*, std::string accessItemName);
+		std::vector<int> GetRightsList(GlobalVariable* globalVar, DataLayer::OrmasDal* ormasDal, User*);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int rID, int aiID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int aiID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 

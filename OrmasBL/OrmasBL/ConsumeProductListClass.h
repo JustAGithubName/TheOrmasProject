@@ -41,24 +41,24 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateConsumeProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateConsumeProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteConsumeProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByConsumeProductID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		bool CreateConsumeProductList(DataLayer::OrmasDal& ormasDal, int cpID, int pID, double clCount, double clSum,
+		bool CreateConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByConsumeProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		bool CreateConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int pID, double clCount, double clSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateConsumeProductList(DataLayer::OrmasDal& ormasDal, int cpID, int pID, double clCount, double clSum,
+		bool UpdateConsumeProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int pID, double clCount, double clSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetConsumeProductListByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetConsumeProductListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int cpID, int pID, double clCount, double clSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int pID, double clCount, double clSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

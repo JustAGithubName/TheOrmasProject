@@ -43,7 +43,7 @@ void GenerateOneAcc::SetID(int ID, QString childName)
 			{
 				chartOfAccEdit->setText(QString::number(ID));
 				BusinessLayer::ChartOfAccounts coAcc;
-				if (coAcc.GetChartOfAccountsByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (coAcc.GetChartOfAccountsByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					accNamePh->setText(coAcc.GetName().c_str());
 				}
@@ -75,7 +75,7 @@ void GenerateOneAcc::Generate()
 		status->SetID(statusVector.at(0).GetID());
 
 		BusinessLayer::ChartOfAccounts coAcc;
-		if (!coAcc.GetChartOfAccountsByID(dialogBL->GetOrmasDal(), chartOfAccEdit->text().toInt(), errorMessage))
+		if (!coAcc.GetChartOfAccountsByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), chartOfAccEdit->text().toInt(), errorMessage))
 		{
 			dialogBL->CancelTransaction(errorMessage);
 			QMessageBox::information(NULL, QString(tr("Warning")),
@@ -84,7 +84,7 @@ void GenerateOneAcc::Generate()
 			errorMessage.clear();
 			return;
 		}
-		if (!currency.GetCurrencyByID(dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage))
+		if (!currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage))
 		{
 			dialogBL->CancelTransaction(errorMessage);
 			QMessageBox::information(NULL, QString(tr("Warning")),
@@ -96,7 +96,7 @@ void GenerateOneAcc::Generate()
 
 		number = coAcc.GetNumber();
 		
-		if (!account.GetAccountByNumber(dialogBL->GetOrmasDal(), coAcc.GetNumber(), errorMessage))
+		if (!account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), coAcc.GetNumber(), errorMessage))
 		{
 			dialogBL->CancelTransaction(errorMessage);
 			QMessageBox::information(NULL, QString(tr("Warning")),
@@ -107,7 +107,7 @@ void GenerateOneAcc::Generate()
 		}
 
 		number.append(std::to_string(currency.GetCode()));
-		genAccRawNumber = subaccount->GenerateRawNumber(dialogBL->GetOrmasDal(), errorMessage);
+		genAccRawNumber = subaccount->GenerateRawNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 		if (genAccRawNumber.empty())
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
@@ -127,7 +127,7 @@ void GenerateOneAcc::Generate()
 		subaccount->SetClosedDate("");
 		subaccount->SetDetails("");
 
-		if (subaccount->CreateSubaccount(dialogBL->GetOrmasDal(), errorMessage))
+		if (subaccount->CreateSubaccount(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage))
 		{
 			Close();
 		}

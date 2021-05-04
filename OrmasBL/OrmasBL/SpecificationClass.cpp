@@ -73,9 +73,9 @@ namespace BusinessLayer
 		date = oDate;
 	}	
 
-	bool Specification::CreateSpecification(DataLayer::OrmasDal& ormasDal, int pID, double sSum, int cID, int eID, std::string sDate, std::string& errorMessage)
+	bool Specification::CreateSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sSum, int cID, int eID, std::string sDate, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pID, sSum, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pID, sSum, cID, errorMessage))
 			return false;
 		productID = pID;
 		sum = sSum;
@@ -93,9 +93,9 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Specification::CreateSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Specification::CreateSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		if (0 != id && ormasDal.CreateSpecification(id, productID, sum, currencyID, employeeID, date, errorMessage))
 		{
@@ -107,7 +107,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Specification::DeleteSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Specification::DeleteSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -134,7 +134,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Specification::UpdateSpecification(DataLayer::OrmasDal& ormasDal, int pID, double sSum, int cID, int eID, std::string sDate, std::string& errorMessage)
+	bool Specification::UpdateSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sSum, int cID, int eID, std::string sDate, std::string& errorMessage)
 	{
 		productID = pID;
 		sum = sSum;
@@ -151,7 +151,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Specification::UpdateSpecification(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Specification::UpdateSpecification(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateSpecification(id, productID, sum, currencyID, employeeID, date, errorMessage))
 		{
@@ -173,7 +173,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Specification::GetSpecificationByID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool Specification::GetSpecificationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		if (oID <= 0)
 			return false;
@@ -197,7 +197,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Specification::GetSpecificationByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool Specification::GetSpecificationByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -238,7 +238,7 @@ namespace BusinessLayer
 		date.clear();
 	}
 
-	bool Specification::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, double sSum, int cID, std::string& errorMessage)
+	bool Specification::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sSum, int cID, std::string& errorMessage)
 	{
 		Specification specification;
 		specification.Clear();
@@ -258,7 +258,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Specification::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Specification::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Specification specification;
 		specification.Clear();
@@ -278,7 +278,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Specification::UpdateSpecificationByProductID(DataLayer::OrmasDal& ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage)
+	bool Specification::UpdateSpecificationByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage)
 	{
 		Specification spec;
 		SpecificationList sList;
@@ -288,10 +288,10 @@ namespace BusinessLayer
 		for each (auto item in specificationListVector)
 		{
 			spec.Clear();
-			if (spec.GetSpecificationByID(ormasDal, std::get<1>(item), errorMessage))
+			if (spec.GetSpecificationByID(globalVar, ormasDal, std::get<1>(item), errorMessage))
 			{
 				spec.SetSum(spec.GetSum() + (std::get<3>(item)*newPrice - std::get<3>(item)*oldPrice));
-				if (!spec.UpdateSpecification(ormasDal, errorMessage))
+				if (!spec.UpdateSpecification(globalVar, ormasDal, errorMessage))
 					return false;
 			}
 		}

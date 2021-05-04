@@ -96,9 +96,9 @@ namespace BusinessLayer
 		postingFixedAssets = pfa;
 	}
 
-	bool FixedAssetsUnion::CreateFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, FixedAssets* fAssets, FixedAssetsDetails* faDetails, FixedAssetsSpecification* faSpecification, PostingFixedAssets* pfAssets, std::string& errorMessage)
+	bool FixedAssetsUnion::CreateFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, FixedAssets* fAssets, FixedAssetsDetails* faDetails, FixedAssetsSpecification* faSpecification, PostingFixedAssets* pfAssets, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		fixedAssets = fAssets;
@@ -106,28 +106,28 @@ namespace BusinessLayer
 		fixedAssetsSpecification = faSpecification;
 		postingFixedAssets = pfAssets;
 		//ormasDal.StartTransaction(errorMessage);
-		if (fixedAssetsSpecification->CreateFixedAssetsSpecification(ormasDal, errorMessage))
+		if (fixedAssetsSpecification->CreateFixedAssetsSpecification(globalVar, ormasDal, errorMessage))
 		{
 			fixedAssetsDetails->fixedAssetsAccountID = fixedAssetsAccountID;
 			int primAccID = 0;
 			int amoAccID = 0;
 			if (isNewFixedAssets)
 			{
-				primAccID = fixedAssetsDetails->GeneratePrimeSubaccount(ormasDal, 0, errorMessage);
-				amoAccID = fixedAssetsDetails->GenerateAmortizeSubaccount(ormasDal, 0, errorMessage);
+				primAccID = fixedAssetsDetails->GeneratePrimeSubaccount(globalVar, ormasDal, 0, errorMessage);
+				amoAccID = fixedAssetsDetails->GenerateAmortizeSubaccount(globalVar, ormasDal, 0, errorMessage);
 			}
 			else
 			{
-				primAccID = fixedAssetsDetails->GeneratePrimeSubaccount(ormasDal, primaryValue, errorMessage);
-				amoAccID = fixedAssetsDetails->GenerateAmortizeSubaccount(ormasDal, amortizeValue, errorMessage);
+				primAccID = fixedAssetsDetails->GeneratePrimeSubaccount(globalVar, ormasDal, primaryValue, errorMessage);
+				amoAccID = fixedAssetsDetails->GenerateAmortizeSubaccount(globalVar, ormasDal, amortizeValue, errorMessage);
 			}
 			fixedAssetsDetails->SetPrimaryCostAccountID(primAccID);
 			fixedAssetsDetails->SetAmortizeAccountID(amoAccID);
-			if (fixedAssetsDetails->CreateFixedAssetsDetails(ormasDal, errorMessage))
+			if (fixedAssetsDetails->CreateFixedAssetsDetails(globalVar, ormasDal, errorMessage))
 			{
 				fixedAssets->SetFixedAssetsDetailsID(fixedAssetsDetails->GetID());
 				fixedAssets->SetSpecificationID(fixedAssetsSpecification->GetID());
-				if (fixedAssets->CreateFixedAssets(ormasDal, errorMessage))
+				if (fixedAssets->CreateFixedAssets(globalVar, ormasDal, errorMessage))
 				{
 					if (0 != purveyorID || 0 != accountableID || 0 != accountID)
 					{
@@ -138,7 +138,7 @@ namespace BusinessLayer
 							Balance tempBalance;
 							Subaccount sub;
 							Account acc;
-							if (!acc.GetAccountByNumber(ormasDal, "10520", errorMessage))
+							if (!acc.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 							{
 								return false;
 							}
@@ -152,9 +152,9 @@ namespace BusinessLayer
 								{
 									sub.Clear();
 									tempBalance.Clear();
-									if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+									if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 										return false;
-									if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+									if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 									{
 										if (sub.GetParentAccountID() == acc.GetID())
 										{
@@ -169,7 +169,7 @@ namespace BusinessLayer
 							}
 							if (balance.GetSubaccountID() <= 0)
 								return false;
-							if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+							if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 							{
 								postingFixedAssets->SetSubaccountID(balance.GetSubaccountID());
 							}
@@ -179,7 +179,7 @@ namespace BusinessLayer
 							postingFixedAssets->SetUserID(purveyorID);
 						}
 						postingFixedAssets->SetFixedAssetsID(fixedAssets->GetID());
-						if (!postingFixedAssets->CreatePostingFixedAssets(ormasDal, errorMessage))
+						if (!postingFixedAssets->CreatePostingFixedAssets(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
@@ -188,7 +188,7 @@ namespace BusinessLayer
 						return true;
 					if (fixedAssets->GetStatusID() == statusMap.find("IN USE")->second)
 					{
-						if (fixedAssets->CreatePostingFixedAssetsEntry(ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), fixedAssets->GetStartOfOperationDate(), errorMessage))
+						if (fixedAssets->CreatePostingFixedAssetsEntry(globalVar, ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), fixedAssets->GetStartOfOperationDate(), errorMessage))
 						{
 							return true;
 						}
@@ -219,35 +219,35 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool FixedAssetsUnion::CreateFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsUnion::CreateFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
-		if (fixedAssetsSpecification->CreateFixedAssetsSpecification(ormasDal, errorMessage))
+		if (fixedAssetsSpecification->CreateFixedAssetsSpecification(globalVar, ormasDal, errorMessage))
 		{
 			fixedAssetsDetails->fixedAssetsAccountID = fixedAssetsAccountID;
 			int primAccID = 0;
 			int amoAccID = 0;
 			if (isNewFixedAssets)
 			{
-				primAccID = fixedAssetsDetails->GeneratePrimeSubaccount(ormasDal, 0, errorMessage);
-				amoAccID = fixedAssetsDetails->GenerateAmortizeSubaccount(ormasDal, 0, errorMessage);
+				primAccID = fixedAssetsDetails->GeneratePrimeSubaccount(globalVar, ormasDal, 0, errorMessage);
+				amoAccID = fixedAssetsDetails->GenerateAmortizeSubaccount(globalVar, ormasDal, 0, errorMessage);
 			}
 			else
 			{
-				primAccID = fixedAssetsDetails->GeneratePrimeSubaccount(ormasDal, primaryValue, errorMessage);
-				amoAccID = fixedAssetsDetails->GenerateAmortizeSubaccount(ormasDal, amortizeValue, errorMessage);
+				primAccID = fixedAssetsDetails->GeneratePrimeSubaccount(globalVar, ormasDal, primaryValue, errorMessage);
+				amoAccID = fixedAssetsDetails->GenerateAmortizeSubaccount(globalVar, ormasDal, amortizeValue, errorMessage);
 			}
 			fixedAssetsDetails->SetPrimaryCostAccountID(primAccID);
 			fixedAssetsDetails->SetAmortizeAccountID(amoAccID);
-			if (fixedAssetsDetails->CreateFixedAssetsDetails(ormasDal, errorMessage))
+			if (fixedAssetsDetails->CreateFixedAssetsDetails(globalVar, ormasDal, errorMessage))
 			{
 				fixedAssets->SetFixedAssetsDetailsID(fixedAssetsDetails->GetID());
 				fixedAssets->SetSpecificationID(fixedAssetsSpecification->GetID());
-				if (fixedAssets->CreateFixedAssets(ormasDal, errorMessage))
+				if (fixedAssets->CreateFixedAssets(globalVar, ormasDal, errorMessage))
 				{
 					if (0 != purveyorID || 0 != accountableID || 0 != accountID)
 					{
@@ -258,7 +258,7 @@ namespace BusinessLayer
 							Balance tempBalance;
 							Subaccount sub;
 							Account acc;
-							if (!acc.GetAccountByNumber(ormasDal, "10520", errorMessage))
+							if (!acc.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 							{
 								return false;
 							}
@@ -272,9 +272,9 @@ namespace BusinessLayer
 								{
 									sub.Clear();
 									tempBalance.Clear();
-									if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+									if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 										return false;
-									if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+									if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 									{
 										if (sub.GetParentAccountID() == acc.GetID())
 										{
@@ -289,7 +289,7 @@ namespace BusinessLayer
 							}
 							if (balance.GetSubaccountID() <= 0)
 								return false;
-							if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+							if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 							{
 								postingFixedAssets->SetSubaccountID(balance.GetSubaccountID());
 							}
@@ -299,7 +299,7 @@ namespace BusinessLayer
 							postingFixedAssets->SetUserID(purveyorID);
 						}
 						postingFixedAssets->SetFixedAssetsID(fixedAssets->GetID());
-						if (!postingFixedAssets->CreatePostingFixedAssets(ormasDal, errorMessage))
+						if (!postingFixedAssets->CreatePostingFixedAssets(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
@@ -308,7 +308,7 @@ namespace BusinessLayer
 						return true;
 					if (fixedAssets->GetStatusID() == statusMap.find("IN USE")->second)
 					{
-						if (fixedAssets->CreatePostingFixedAssetsEntry(ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), fixedAssets->GetStartOfOperationDate(), errorMessage))
+						if (fixedAssets->CreatePostingFixedAssetsEntry(globalVar, ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), fixedAssets->GetStartOfOperationDate(), errorMessage))
 						{
 							return true;
 						}
@@ -339,26 +339,26 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool FixedAssetsUnion::DeleteFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsUnion::DeleteFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (fixedAssets->GetStatusID() == statusMap.find("WRITE-OFF")->second || fixedAssets->GetStatusID() == statusMap.find("ERROR")->second)
 		{
-			if (!fixedAssets->DeleteFixedAssets(ormasDal, errorMessage))
+			if (!fixedAssets->DeleteFixedAssets(globalVar, ormasDal, errorMessage))
 				return false;
-			if (!fixedAssetsDetails->DeleteFixedAssetsDetails(ormasDal, errorMessage))
+			if (!fixedAssetsDetails->DeleteFixedAssetsDetails(globalVar, ormasDal, errorMessage))
 				return false;
-			if (!postingFixedAssets->DeletePostingFixedAssets(ormasDal, errorMessage))
+			if (!postingFixedAssets->DeletePostingFixedAssets(globalVar, ormasDal, errorMessage))
 				return false;
 			return true;
 		}
 		return false;
 	}
-	bool FixedAssetsUnion::UpdateFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, FixedAssets* fAssets, FixedAssetsDetails* faDetails, FixedAssetsSpecification* faSpecification, PostingFixedAssets* pfAssets, std::string& errorMessage)
+	bool FixedAssetsUnion::UpdateFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, FixedAssets* fAssets, FixedAssetsDetails* faDetails, FixedAssetsSpecification* faSpecification, PostingFixedAssets* pfAssets, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		fixedAssets = fAssets;
@@ -366,11 +366,11 @@ namespace BusinessLayer
 		fixedAssetsSpecification = faSpecification;
 		postingFixedAssets = pfAssets;
 
-		previousStatusID = GetCurrentStatusID(ormasDal, fixedAssets->GetID(), errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, fixedAssets->GetID(), errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
-		if (fixedAssetsSpecification->UpdateFixedAssetsSpecification(ormasDal, errorMessage))
+		if (fixedAssetsSpecification->UpdateFixedAssetsSpecification(globalVar, ormasDal, errorMessage))
 		{
-			if (fixedAssetsDetails->UpdateFixedAssetsDetails(ormasDal, errorMessage))
+			if (fixedAssetsDetails->UpdateFixedAssetsDetails(globalVar, ormasDal, errorMessage))
 			{
 				if (previousStatusID == statusMap.find("IN USE")->second && fixedAssets->GetStatusID() == statusMap.find("IN USE")->second)
 				{
@@ -389,7 +389,7 @@ namespace BusinessLayer
 						return false;
 					}
 				}
-				if (fixedAssets->UpdateFixedAssets(ormasDal, errorMessage))
+				if (fixedAssets->UpdateFixedAssets(globalVar, ormasDal, errorMessage))
 				{
 					if (0 != purveyorID || 0 != accountableID || 0 != accountID)
 					{
@@ -400,7 +400,7 @@ namespace BusinessLayer
 							Balance tempBalance;
 							Subaccount sub;
 							Account acc;
-							if (!acc.GetAccountByNumber(ormasDal, "10520", errorMessage))
+							if (!acc.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 							{
 								return false;
 							}
@@ -414,9 +414,9 @@ namespace BusinessLayer
 								{
 									sub.Clear();
 									tempBalance.Clear();
-									if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+									if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 										return false;
-									if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+									if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 									{
 										if (sub.GetParentAccountID() == acc.GetID())
 										{
@@ -431,7 +431,7 @@ namespace BusinessLayer
 							}
 							if (balance.GetSubaccountID() <= 0)
 								return false;
-							if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+							if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 							{
 								postingFixedAssets->SetSubaccountID(balance.GetSubaccountID());
 							}
@@ -441,14 +441,14 @@ namespace BusinessLayer
 							postingFixedAssets->SetUserID(purveyorID);
 						}
 						postingFixedAssets->SetFixedAssetsID(fixedAssets->GetID());
-						if (!postingFixedAssets->UpdatePostingFixedAssets(ormasDal, errorMessage))
+						if (!postingFixedAssets->UpdatePostingFixedAssets(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
 					}
 					if (fixedAssets->GetStatusID() == statusMap.find("IN USE")->second && isNewFixedAssets == true)
 					{
-						if (fixedAssets->CreatePostingFixedAssetsEntry(ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), fixedAssets->GetStartOfOperationDate(), errorMessage))
+						if (fixedAssets->CreatePostingFixedAssetsEntry(globalVar, ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), fixedAssets->GetStartOfOperationDate(), errorMessage))
 						{
 							return true;
 						}
@@ -461,14 +461,14 @@ namespace BusinessLayer
 					if (previousStatusID == statusMap.find("IN USE")->second && fixedAssets->GetStatusID() == statusMap.find("ERROR")->second)
 					{
 						Subaccount sub;
-						if (!sub.GetSubaccountByID(ormasDal, fixedAssetsDetails->GetAmortizeAccountID(), errorMessage))
+						if (!sub.GetSubaccountByID(globalVar, ormasDal, fixedAssetsDetails->GetAmortizeAccountID(), errorMessage))
 							return false;
 						if (sub.GetCurrentBalance() != 0)
 						{
 							errorMessage = "Cannot set status to \"ERROR\", amortize account value does not equal to 0";
 							return false;
 						}
-						if (fixedAssets->CreatePostingFixedAssetsEntryReverce(ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), fixedAssets->GetStartOfOperationDate(), errorMessage))
+						if (fixedAssets->CreatePostingFixedAssetsEntryReverce(globalVar, ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), fixedAssets->GetStartOfOperationDate(), errorMessage))
 						{
 							return true;
 						}
@@ -480,7 +480,7 @@ namespace BusinessLayer
 					}
 					if (previousStatusID == statusMap.find("IN USE")->second && fixedAssets->GetStatusID() == statusMap.find("WRITE-OFFED")->second)
 					{
-						if (fixedAssets->CreatePostingFixedAssetsEntryWriteOFF(ormasDal, fixedAssets->GetID(), errorMessage))
+						if (fixedAssets->CreatePostingFixedAssetsEntryWriteOFF(globalVar, ormasDal, fixedAssets->GetID(), errorMessage))
 						{
 							return true;
 						}
@@ -515,18 +515,67 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool FixedAssetsUnion::UpdateFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+
+	std::string FixedAssetsUnion::GenerateFilter(DataLayer::OrmasDal& ormasDal)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		/*fixedAssets->SetID(std::get<0>(fCollection));
+		fixedAssets->SetSpecificationID(std::get<22>(fCollection));
+		fixedAssets->SetInventoryNumber(std::get<6>(fCollection));
+		fixedAssets->SetPrimaryCost(std::get<3>(fCollection));
+		fixedAssets->SetStopCost(std::get<4>(fCollection));
+		fixedAssets->SetServiceLife(std::get<8>(fCollection));
+		fixedAssets->SetIsAmortize(std::get<9>(fCollection));
+		fixedAssets->SetBuyDate(std::get<11>(fCollection));
+		fixedAssets->SetStartOfOperationDate(std::get<12>(fCollection));
+		fixedAssets->SetEndOfOperationDate(std::get<13>(fCollection));
+		fixedAssets->SetStatusID(std::get<23>(fCollection));
+		fixedAssets->SetFixedAssetsDetailsID(std::get<24>(fCollection));
+
+		fixedAssetsSpecification->SetID(std::get<22>(fCollection));
+		fixedAssetsSpecification->SetName(std::get<1>(fCollection));
+		fixedAssetsSpecification->SetFactoryNumber(std::get<16>(fCollection));
+		fixedAssetsSpecification->SetDeveloper(std::get<17>(fCollection));
+		fixedAssetsSpecification->SetDocument(std::get<18>(fCollection));
+		fixedAssetsSpecification->SetObjectCharacters(std::get<19>(fCollection));
+		fixedAssetsSpecification->SetCondition(std::get<20>(fCollection));
+		fixedAssetsSpecification->SetDateOfConstruction(std::get<21>(fCollection));
+
+		fixedAssetsDetails->SetID(std::get<24>(fCollection));
+		fixedAssetsDetails->SetAmortizeGroupID(std::get<25>(fCollection));
+		fixedAssetsDetails->SetAmortizeTypeID(std::get<26>(fCollection));
+		fixedAssetsDetails->SetDepartmentID(std::get<27>(fCollection));
+		fixedAssetsDetails->SetFixedAssetsLocation(std::get<14>(fCollection));
+		fixedAssetsDetails->SetPrimaryCostAccountID(std::get<28>(fCollection));
+		fixedAssetsDetails->SetAmortizeAccountID(std::get<29>(fCollection));
+		fixedAssetsDetails->SetBarcodeNumber(std::get<15>(fCollection));
+		fixedAssetsDetails->SetAmortizeValue(std::get<7>(fCollection));
+
+		postingFixedAssets->SetID(std::get<30>(fCollection));
+		postingFixedAssets->SetUserID(std::get<31>(fCollection));
+		postingFixedAssets->SetSubaccountID(std::get<32>(fCollection));
+		postingFixedAssets->SetAccountID(std::get<33>(fCollection));
+		if (!fixedAssets->IsEmpty() || !fixedAssetsSpecification->IsEmpty() || !fixedAssetsDetails->IsEmpty() || !postingFixedAssets->IsEmpty())
+		{
+			return ormasDal.GetFilterForFixedAssUnionView(fixedAssets->GetID(), fixedAssetsSpecification->GetName(), fixedAssetsDetails->GetDepartmentID(),
+				fixedAssets->GetInventoryNumber(), fixedAssets->GetPrimaryCost(),
+				fixedAssets->GetStopCost(), fixedAssets->GetServiceLife(), fixedAssets->GetIsAmortize(), fixedAssets->GetBuyDate(), fixedAssets->SetStartOfOperationDate(),inventoryNumber, primaryCost, stopCost, serviceLife,
+				isAmortize, buyDate, startOfOperationDate, endOfOperationDate, fixedAssetsSpecification->GetID(), statusID, fixedAssetsDetailsID);
+		}*/
+		return "";
+	}
+
+	bool FixedAssetsUnion::UpdateFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
+	{
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
 		
-		previousStatusID = GetCurrentStatusID(ormasDal, fixedAssets->GetID(), errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, fixedAssets->GetID(), errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
-		if (fixedAssetsSpecification->UpdateFixedAssetsSpecification(ormasDal, errorMessage))
+		if (fixedAssetsSpecification->UpdateFixedAssetsSpecification(globalVar, ormasDal, errorMessage))
 		{
-			if (fixedAssetsDetails->UpdateFixedAssetsDetails(ormasDal, errorMessage))
+			if (fixedAssetsDetails->UpdateFixedAssetsDetails(globalVar, ormasDal, errorMessage))
 			{
 				if (previousStatusID == statusMap.find("IN USE")->second && fixedAssets->GetStatusID() == statusMap.find("IN USE")->second)
 				{
@@ -545,7 +594,7 @@ namespace BusinessLayer
 						return false;
 					}
 				}
-				if (fixedAssets->UpdateFixedAssets(ormasDal, errorMessage))
+				if (fixedAssets->UpdateFixedAssets(globalVar, ormasDal, errorMessage))
 				{
 					if (0 != purveyorID || 0 != accountableID || 0 != accountID)
 					{
@@ -556,7 +605,7 @@ namespace BusinessLayer
 							Balance tempBalance;
 							Subaccount sub;
 							Account acc;
-							if (!acc.GetAccountByNumber(ormasDal, "10520", errorMessage))
+							if (!acc.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 							{
 								return false;
 							}
@@ -570,9 +619,9 @@ namespace BusinessLayer
 								{
 									sub.Clear();
 									tempBalance.Clear();
-									if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+									if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 										return false;
-									if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+									if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 									{
 										if (sub.GetParentAccountID() == acc.GetID())
 										{
@@ -587,7 +636,7 @@ namespace BusinessLayer
 							}
 							if (balance.GetSubaccountID() <= 0)
 								return false;
-							if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+							if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 							{
 								postingFixedAssets->SetSubaccountID(balance.GetSubaccountID());
 							}
@@ -597,14 +646,14 @@ namespace BusinessLayer
 							postingFixedAssets->SetUserID(purveyorID);
 						}
 						postingFixedAssets->SetFixedAssetsID(fixedAssets->GetID());
-						if (!postingFixedAssets->UpdatePostingFixedAssets(ormasDal, errorMessage))
+						if (!postingFixedAssets->UpdatePostingFixedAssets(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
 					}
 					if (fixedAssets->GetStatusID() == statusMap.find("IN USE")->second && isNewFixedAssets == true)
 					{
-						if (fixedAssets->CreatePostingFixedAssetsEntry(ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), ormasDal.GetSystemDate(), errorMessage))
+						if (fixedAssets->CreatePostingFixedAssetsEntry(globalVar, ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), ormasDal.GetSystemDate(), errorMessage))
 						{
 							return true;
 						}
@@ -617,14 +666,14 @@ namespace BusinessLayer
 					if (previousStatusID == statusMap.find("IN USE")->second && fixedAssets->GetStatusID() == statusMap.find("ERROR")->second)
 					{
 						Subaccount sub;
-						if (!sub.GetSubaccountByID(ormasDal, fixedAssetsDetails->GetAmortizeAccountID(), errorMessage))
+						if (!sub.GetSubaccountByID(globalVar, ormasDal, fixedAssetsDetails->GetAmortizeAccountID(), errorMessage))
 							return false;
 						if (sub.GetCurrentBalance() != 0)
 						{
 							errorMessage = "Cannot set status to \"ERROR\", amortize account value does not equal to 0";
 							return false;
 						}
-						if (fixedAssets->CreatePostingFixedAssetsEntryReverce(ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), ormasDal.GetSystemDate(), errorMessage))
+						if (fixedAssets->CreatePostingFixedAssetsEntryReverce(globalVar, ormasDal, accountableID, purveyorID, accountID, fixedAssetsDetails->GetPrimaryCostAccountID(), fixedAssets->GetPrimaryCost(), ormasDal.GetSystemDate(), errorMessage))
 						{
 							return true;
 						}
@@ -636,7 +685,7 @@ namespace BusinessLayer
 					}
 					if (previousStatusID == statusMap.find("IN USE")->second && fixedAssets->GetStatusID() == statusMap.find("WRITE-OFFED")->second)
 					{
-						if (fixedAssets->CreatePostingFixedAssetsEntryWriteOFF(ormasDal, fixedAssets->GetID(), errorMessage))
+						if (fixedAssets->CreatePostingFixedAssetsEntryWriteOFF(globalVar, ormasDal, fixedAssets->GetID(), errorMessage))
 						{
 							return true;
 						}
@@ -675,8 +724,8 @@ namespace BusinessLayer
 	bool FixedAssetsUnion::IsEmpty()
 	{
 		if (fixedAssets->IsEmpty() && fixedAssetsDetails->IsEmpty() && fixedAssetsSpecification->IsEmpty() && postingFixedAssets->IsEmpty())
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void FixedAssetsUnion::Clear()
@@ -687,13 +736,13 @@ namespace BusinessLayer
 		postingFixedAssets->Clear();
 	}
 
-	std::string FixedAssetsUnion::GenerateInventoryNumber(DataLayer::OrmasDal& ormasDal, int divID)
+	std::string FixedAssetsUnion::GenerateInventoryNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int divID)
 	{
 		std::string errorMessage="";
 		std::string invNumber="";
 		invNumber += "F";
 		Division div;
-		if (!div.GetDivisionByID(ormasDal, divID, errorMessage))
+		if (!div.GetDivisionByID(globalVar, ormasDal, divID, errorMessage))
 			return "";
 		if (0 == div.GetCode().compare("PRODUCTION"))
 		{
@@ -707,14 +756,14 @@ namespace BusinessLayer
 		{
 			invNumber += "A";
 		}
-		std::string rawNumber = GenerateInvRawNumber(ormasDal, errorMessage);
+		std::string rawNumber = GenerateInvRawNumber(globalVar, ormasDal, errorMessage);
 		invNumber += rawNumber;
 		if (invNumber.size() < 9)
 			return "";
 		return invNumber;
 	}
 
-	std::string FixedAssetsUnion::GenerateInvRawNumber(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	std::string FixedAssetsUnion::GenerateInvRawNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		int countOfNulls;
 		int genNumber = ormasDal.GenerateInventoryNumber();
@@ -733,10 +782,10 @@ namespace BusinessLayer
 		return "";
 	}
 
-	int FixedAssetsUnion::GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int fxID, std::string& errorMessage)
+	int FixedAssetsUnion::GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fxID, std::string& errorMessage)
 	{
 		FixedAssets fixedAssets;
-		if (fixedAssets.GetFixedAssetsByID(ormasDal, fxID, errorMessage))
+		if (fixedAssets.GetFixedAssetsByID(globalVar, ormasDal, fxID, errorMessage))
 			return fixedAssets.GetStatusID();
 		return 0;
 	}

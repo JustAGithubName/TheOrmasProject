@@ -8,14 +8,14 @@ namespace BusinessLayer
 	{
 	protected:
 		int id = 0;
-		int StockTransferID = 0;
+		int stockTransferID = 0;
 		int productID = 0;
 		double count = 0;
 		double sum = 0;
 		int statusID = 0;
 		int currencyID = 0;
 	public:
-		StockTransferList(int rlID, int rpID, int pID, double rlCount, double rlSum, int sID, int cID) :id(rlID), StockTransferID(rpID),
+		StockTransferList(int rlID, int rpID, int pID, double rlCount, double rlSum, int sID, int cID) :id(rlID), stockTransferID(rpID),
 			productID(pID),	count(rlCount), sum(rlSum), statusID(sID), currencyID(cID){};
 		StockTransferList(DataLayer::stockTransferListCollection);
 		StockTransferList(){};
@@ -41,24 +41,24 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateStockTransferList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateStockTransferList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteStockTransferList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByStockTransferID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage);
-		bool CreateStockTransferList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+		bool CreateStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByStockTransferID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage);
+		bool CreateStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateStockTransferList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+		bool UpdateStockTransferList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetStockTransferListByID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetStockTransferListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

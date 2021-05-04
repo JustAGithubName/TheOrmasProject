@@ -57,13 +57,13 @@ namespace BusinessLayer{
 	}
 	
 
-	bool Employee::CreateEmployee(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+	bool Employee::CreateEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 		std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, int pID, std::string eBirthDate,
 		std::string eHireDate, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uName, uSurname, uPhone, uRoleID, eBirthDate, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uName, uSurname, uPhone, uRoleID, eBirthDate, errorMessage))
 			return false;
-		if (!IsUnique(ormasDal, uPhone, errorMessage))
+		if (!IsUnique(globalVar, ormasDal, uPhone, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(uEmail, uName, uSurname, uPhone, uAddress, uPassword, eBirthDate, eHireDate);
@@ -82,9 +82,9 @@ namespace BusinessLayer{
 		hireDate = eHireDate;
 		if (0 != id && ormasDal.CreateUser(id, email, name, surname, phone, address, roleID, password, activated, errorMessage))
 		{
-			if (ormasDal.CreateEmployee(userID, positionID, birthDate, hireDate, errorMessage) && this->CreateCompanyEmployeeRelation(ormasDal, errorMessage))
+			if (ormasDal.CreateEmployee(userID, positionID, birthDate, hireDate, errorMessage) && this->CreateCompanyEmployeeRelation(globalVar, ormasDal, errorMessage))
 			{
-				if (CreateBalance(ormasDal, errorMessage))
+				if (CreateBalance(globalVar, ormasDal, errorMessage))
 					return true;
 				return false;
 			}
@@ -94,19 +94,19 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Employee::CreateEmployee(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Employee::CreateEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		if (!IsUnique(ormasDal, phone, errorMessage))
+		if (!IsUnique(globalVar, ormasDal, phone, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		userID = id;
 		if (0 != id && ormasDal.CreateUser(id, email, name, surname, phone, address, roleID, password, activated, errorMessage))
 		{
-			if (ormasDal.CreateEmployee(userID, positionID, birthDate, hireDate, errorMessage) && this->CreateCompanyEmployeeRelation(ormasDal, errorMessage))
+			if (ormasDal.CreateEmployee(userID, positionID, birthDate, hireDate, errorMessage) && this->CreateCompanyEmployeeRelation(globalVar, ormasDal, errorMessage))
 			{
-				if (CreateBalance(ormasDal, errorMessage))
+				if (CreateBalance(globalVar, ormasDal, errorMessage))
 					return true;
 				return false;
 			}
@@ -116,7 +116,7 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Employee::DeleteEmployee(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Employee::DeleteEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (!errorMessage.empty())
@@ -124,23 +124,23 @@ namespace BusinessLayer{
 		if (ormasDal.DeleteEmployee(id, errorMessage))
 		{
 			User user;
-			if (user.GetUserByID(ormasDal, id, errorMessage))
+			if (user.GetUserByID(globalVar, ormasDal, id, errorMessage))
 			{
-				if (user.DeleteUser(ormasDal, errorMessage))
+				if (user.DeleteUser(globalVar, ormasDal, errorMessage))
 					return true;
 			}
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Employee::UpdateEmployee(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+	bool Employee::UpdateEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 		std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, int pID, std::string eBirthDate,
 		std::string eHireDate, std::string& errorMessage)
 	{
-		std::string prevPhone = GetCurrentPhone(ormasDal, id, errorMessage);
+		std::string prevPhone = GetCurrentPhone(globalVar, ormasDal, id, errorMessage);
 		if (0 != prevPhone.compare(uPhone))
 		{
-			if (!IsUnique(ormasDal, uPhone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, uPhone, errorMessage))
 				return false;
 		}
 		TrimStrings(uEmail, uName, uSurname, uPhone, uAddress, uPassword, eBirthDate, eHireDate);
@@ -177,12 +177,12 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Employee::UpdateEmployee(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Employee::UpdateEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::string prevPhone = GetCurrentPhone(ormasDal, id, errorMessage);
+		std::string prevPhone = GetCurrentPhone(globalVar, ormasDal, id, errorMessage);
 		if (0 != prevPhone.compare(phone))
 		{
-			if (!IsUnique(ormasDal, phone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, phone, errorMessage))
 				return false;
 		}
 		//ormasDal.StartTransaction(errorMessage);
@@ -218,7 +218,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::string Employee::GenerateINFilterForEmployee(DataLayer::OrmasDal& ormasDal, std::vector<int> empIDList)
+	std::string Employee::GenerateINFilterForEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> empIDList)
 	{
 		if (empIDList.size()>0)
 		{
@@ -226,7 +226,7 @@ namespace BusinessLayer{
 		}
 		return "";
 	}
-	std::string Employee::GenerateINFilterForStockEmployee(DataLayer::OrmasDal& ormasDal, std::vector<int> empIDList)
+	std::string Employee::GenerateINFilterForStockEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> empIDList)
 	{
 		if (empIDList.size()>0)
 		{
@@ -235,7 +235,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Employee::GetEmployeeByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool Employee::GetEmployeeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		if (uID <= 0)
 			return false;
@@ -265,7 +265,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Employee::GetEmployeeByCredentials(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string uEmail, std::string uPassword)
+	bool Employee::GetEmployeeByCredentials(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string uEmail, std::string uPassword)
 	{
 		std::string errorMessage = "";
 		if (!uPhone.empty())
@@ -343,7 +343,7 @@ namespace BusinessLayer{
 			boost::trim(eHireDate);
 	}
 
-	bool Employee::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string uName, std::string uSurname, std::string uPhone,
+	bool Employee::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uName, std::string uSurname, std::string uPhone,
 		int uRoleID, std::string eBirthDate, std::string& errorMessage)
 	{
 		Employee employee;
@@ -366,7 +366,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Employee::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Employee::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Employee employee;
 		employee.Clear();
@@ -388,25 +388,25 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	std::string Employee::GetCurrentPhone(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	std::string Employee::GetCurrentPhone(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		User user;
-		if (user.GetUserByID(ormasDal, uID, errorMessage))
+		if (user.GetUserByID(globalVar, ormasDal, uID, errorMessage))
 			return user.GetPhone();
 		return 0;
 	}
 
-	bool Employee::CreateDivisionEmployeeRelation(DataLayer::OrmasDal& ormasDal, DivisionEmployeeRelation deRelation, std::string& errorMessage)
+	bool Employee::CreateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, DivisionEmployeeRelation deRelation, std::string& errorMessage)
 	{
-		return deRelation.CreateDivisionEmployeeRelation(ormasDal, errorMessage);
+		return deRelation.CreateDivisionEmployeeRelation(globalVar, ormasDal, errorMessage);
 	}
 
-	bool Employee::UpdateDivisionEmployeeRelation(DataLayer::OrmasDal& ormasDal, DivisionEmployeeRelation deRelation, std::string& errorMessage)
+	bool Employee::UpdateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, DivisionEmployeeRelation deRelation, std::string& errorMessage)
 	{
-		return deRelation.UpdateDivisionEmployeeRelation(ormasDal, errorMessage);
+		return deRelation.UpdateDivisionEmployeeRelation(globalVar, ormasDal, errorMessage);
 	}
 
-	bool Employee::CreateCompanyEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Employee::CreateCompanyEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Company company;
 		Branch branch;
@@ -420,14 +420,14 @@ namespace BusinessLayer{
 		{
 			branchID = std::get<0>(vecBranch.at(0));
 		}
-		int companyID = company.GetCompanyID(ormasDal, errorMessage);
+		int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
 		if (0 == companyID)
 			return false;
 		CompanyEmployeeRelation ceRelation;
 		ceRelation.SetEmployeeID(id);
 		ceRelation.SetCompanyID(companyID);
 		ceRelation.SetBranchID(branchID);
-		return ceRelation.CreateCompanyEmployeeRelation(ormasDal, errorMessage);
+		return ceRelation.CreateCompanyEmployeeRelation(globalVar, ormasDal, errorMessage);
 	}
 
 

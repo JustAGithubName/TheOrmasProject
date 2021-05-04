@@ -121,12 +121,12 @@ namespace BusinessLayer
 		currencyID = tCurrencyID;
 	}
 
-	bool Transport::CreateTransport(DataLayer::OrmasDal& ormasDal, int uID, std::string tDate, std::string tExecDate, 
+	bool Transport::CreateTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string tDate, std::string tExecDate, 
 		int eID, double tCount, double tSum, int sID, int cID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, eID ,errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, eID ,errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		userID = uID;
@@ -148,11 +148,11 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Transport::CreateTransport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Transport::CreateTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (0 != id && ormasDal.CreateTransport(id, userID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
@@ -165,7 +165,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Transport::DeleteTransport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Transport::DeleteTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -192,10 +192,10 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Transport::UpdateTransport(DataLayer::OrmasDal& ormasDal, int uID, std::string tDate, std::string tExecnDate,
+	bool Transport::UpdateTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string tDate, std::string tExecnDate,
 		int eID, double tCount, double tSum, int sID, int cID, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		userID = uID;
@@ -216,9 +216,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Transport::UpdateTransport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Transport::UpdateTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (0 != id && ormasDal.UpdateTransport(id, userID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
@@ -241,7 +241,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Transport::GetTransportByID(DataLayer::OrmasDal& ormasDal, int tID, std::string& errorMessage)
+	bool Transport::GetTransportByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage)
 	{
 		if (tID <= 0)
 			return false;
@@ -268,7 +268,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Transport::GetTransportByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	bool Transport::GetTransportByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		if (eID <= 0)
 			return false;
@@ -299,8 +299,8 @@ namespace BusinessLayer
 	{
 		if (0 == id && date == "" && executionDate == "" && 0 == count && 0 == sum && 0 == employeeID && 0 == userID && 0 == statusID
 			&& 0 == currencyID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void Transport::Clear()
@@ -316,19 +316,19 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool Transport::ChangingByReceiptProduct(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage)
+	bool Transport::ChangingByReceiptProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage)
 	{
 		ConsumeProduct consumeProduct;
-		if (!consumeProduct.GetConsumeProductByID(ormasDal, cpID, errorMessage))
+		if (!consumeProduct.GetConsumeProductByID(globalVar, ormasDal, cpID, errorMessage))
 			return false;
 		Transport transport;
-		if (!transport.GetTransportByEmployeeID(ormasDal, consumeProduct.GetEmployeeID(), errorMessage))
+		if (!transport.GetTransportByEmployeeID(globalVar, ormasDal, consumeProduct.GetEmployeeID(), errorMessage))
 		{
 			transport.Clear();
 			transport.SetID(ormasDal.GenerateID());
 			transport.SetDate(ormasDal.GetSystemDate());
 			transport.SetEmployeeID(consumeProduct.GetEmployeeID());
-			if (!transport.CreateTransport(ormasDal, errorMessage))
+			if (!transport.CreateTransport(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		
@@ -370,22 +370,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!tList.GetTransportListByTransportAndProductID(ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
+				if (!tList.GetTransportListByTransportAndProductID(globalVar, ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
 				{
 					oldCount = tList.GetCount();
 					oldSum = tList.GetSum();
 					totalOldCount += tList.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "TRANSPORTING", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "TRANSPORTING", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot transport this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -395,7 +395,7 @@ namespace BusinessLayer
 					tList.SetSum((item.GetCount()*nCost.GetValue()));
 					tList.SetCurrencyID(item.GetCurrencyID());
 					tList.SetStatusID(status.GetID());
-					if (!tList.CreateTransportList(ormasDal, errorMessage))
+					if (!tList.CreateTransportList(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -408,15 +408,15 @@ namespace BusinessLayer
 					oldSum = tList.GetSum();
 					totalOldCount += tList.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
 					tList.SetCount(tList.GetCount() + item.GetCount());
 					tList.SetSum(tList.GetSum() + (item.GetCount()*nCost.GetValue()));
-					if (!tList.UpdateTransportList(ormasDal, errorMessage))
+					if (!tList.UpdateTransportList(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -444,19 +444,19 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Transport::ChangingByReceiptProductReverse(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage)
+	bool Transport::ChangingByReceiptProductReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage)
 	{
 		ConsumeProduct consumeProduct;
-		if (!consumeProduct.GetConsumeProductByID(ormasDal, cpID, errorMessage))
+		if (!consumeProduct.GetConsumeProductByID(globalVar, ormasDal, cpID, errorMessage))
 			return false;
 		Transport transport;
-		if (!transport.GetTransportByEmployeeID(ormasDal, consumeProduct.GetEmployeeID(), errorMessage))
+		if (!transport.GetTransportByEmployeeID(globalVar, ormasDal, consumeProduct.GetEmployeeID(), errorMessage))
 		{
 			transport.Clear();
 			transport.SetID(ormasDal.GenerateID());
 			transport.SetDate(ormasDal.GetSystemDate());
 			transport.SetEmployeeID(consumeProduct.GetEmployeeID());
-			if (!transport.CreateTransport(ormasDal, errorMessage))
+			if (!transport.CreateTransport(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 
@@ -498,9 +498,9 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!tList.GetTransportListByTransportAndProductID(ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
+				if (!tList.GetTransportListByTransportAndProductID(globalVar, ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of transport:";
 					errorMessage += product.GetName();
@@ -511,7 +511,7 @@ namespace BusinessLayer
 				{
 					if (tList.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the transport!";
 							errorMessage += " Product name:";
@@ -529,9 +529,9 @@ namespace BusinessLayer
 						oldSum = tList.GetSum();
 						totalOldCount += tList.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
@@ -544,7 +544,7 @@ namespace BusinessLayer
 						{
 							tList.SetSum(tList.GetSum() - (item.GetCount()*nCost.GetValue()));
 						}
-						if (!tList.UpdateTransportList(ormasDal, errorMessage))
+						if (!tList.UpdateTransportList(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -573,19 +573,19 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Transport::ChangingByReceiptProduct(DataLayer::OrmasDal& ormasDal, int cpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Transport::ChangingByReceiptProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
 		ConsumeProduct consumeProduct;
-		if (!consumeProduct.GetConsumeProductByID(ormasDal, cpID, errorMessage))
+		if (!consumeProduct.GetConsumeProductByID(globalVar, ormasDal, cpID, errorMessage))
 			return false;
 		Transport transport;
-		if (!transport.GetTransportByEmployeeID(ormasDal, consumeProduct.GetEmployeeID(), errorMessage))
+		if (!transport.GetTransportByEmployeeID(globalVar, ormasDal, consumeProduct.GetEmployeeID(), errorMessage))
 		{
 			transport.Clear();
 			transport.SetID(ormasDal.GenerateID());
 			transport.SetDate(ormasDal.GetSystemDate());
 			transport.SetEmployeeID(consumeProduct.GetEmployeeID());
-			if (!transport.CreateTransport(ormasDal, errorMessage))
+			if (!transport.CreateTransport(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 
@@ -627,22 +627,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!tList.GetTransportListByTransportAndProductID(ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
+				if (!tList.GetTransportListByTransportAndProductID(globalVar, ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
 				{
 					oldCount = tList.GetCount();
 					oldSum = tList.GetSum();
 					totalOldCount += tList.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot transport this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -652,7 +652,7 @@ namespace BusinessLayer
 					tList.SetSum(item.GetCount()*nCost.GetValue());
 					tList.SetCurrencyID(item.GetCurrencyID());
 					tList.SetStatusID(status.GetID());
-					if (!tList.CreateTransportList(ormasDal, errorMessage))
+					if (!tList.CreateTransportList(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -665,15 +665,15 @@ namespace BusinessLayer
 					oldSum = tList.GetSum();
 					totalOldCount += tList.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
 					tList.SetCount(tList.GetCount() + (item.GetCount() - pProdCountMap.find(product.GetID())->second));
 					tList.SetSum(tList.GetSum() + ((item.GetCount()*nCost.GetValue()) - (pProdCountMap.find(product.GetID())->second * nCost.GetValue())));
-					if (!tList.UpdateTransportList(ormasDal, errorMessage))
+					if (!tList.UpdateTransportList(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -701,13 +701,13 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Transport::ChangingByConsumeProduct(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool Transport::ChangingByConsumeProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Order order;
-		if (!order.GetOrderByID(ormasDal, oID, errorMessage))
+		if (!order.GetOrderByID(globalVar, ormasDal, oID, errorMessage))
 			return false;
 		Transport transport;
-		if (!transport.GetTransportByEmployeeID(ormasDal, order.GetEmployeeID(), errorMessage))
+		if (!transport.GetTransportByEmployeeID(globalVar, ormasDal, order.GetEmployeeID(), errorMessage))
 		{
 			errorMessage = "This employee does not have a transport!";
 			return false;
@@ -751,9 +751,9 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!tList.GetTransportListByTransportAndProductID(ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
+				if (!tList.GetTransportListByTransportAndProductID(globalVar, ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of transport:";
 					errorMessage += product.GetName();
@@ -764,7 +764,7 @@ namespace BusinessLayer
 				{
 					if (tList.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the transport!";
 							errorMessage += " Product name:";
@@ -782,9 +782,9 @@ namespace BusinessLayer
 						oldSum = tList.GetSum();
 						totalOldCount += tList.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
@@ -797,7 +797,7 @@ namespace BusinessLayer
 						{
 							tList.SetSum(tList.GetSum() - (item.GetCount()*nCost.GetValue()));
 						}
-						if (!tList.UpdateTransportList(ormasDal, errorMessage))
+						if (!tList.UpdateTransportList(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -825,15 +825,15 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55010", errorMessage);
-		int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10742", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55010", errorMessage);
+		int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, oID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, oID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -841,13 +841,13 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Transport::ChangingByConsumeProductReverse(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool Transport::ChangingByConsumeProductReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Order order;
-		if (!order.GetOrderByID(ormasDal, oID, errorMessage))
+		if (!order.GetOrderByID(globalVar, ormasDal, oID, errorMessage))
 			return false;
 		Transport transport;
-		if (!transport.GetTransportByEmployeeID(ormasDal, order.GetEmployeeID(), errorMessage))
+		if (!transport.GetTransportByEmployeeID(globalVar, ormasDal, order.GetEmployeeID(), errorMessage))
 		{
 			errorMessage = "This employee does not have a transport!";
 			return false;
@@ -891,22 +891,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!tList.GetTransportListByTransportAndProductID(ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
+				if (!tList.GetTransportListByTransportAndProductID(globalVar, ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
 				{
 					oldCount = tList.GetCount();
 					oldSum = tList.GetSum();
 					totalOldCount += tList.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "TRANSPORTING", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "TRANSPORTING", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot transport this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -916,7 +916,7 @@ namespace BusinessLayer
 					tList.SetSum((item.GetCount()*nCost.GetValue()));
 					tList.SetCurrencyID(item.GetCurrencyID());
 					tList.SetStatusID(status.GetID());
-					if (!tList.CreateTransportList(ormasDal, errorMessage))
+					if (!tList.CreateTransportList(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -929,15 +929,15 @@ namespace BusinessLayer
 					oldSum = tList.GetSum();
 					totalOldCount += tList.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
 					tList.SetCount(tList.GetCount() + item.GetCount());
 					tList.SetSum(tList.GetSum() + (item.GetCount()*nCost.GetValue()));
-					if (!tList.UpdateTransportList(ormasDal, errorMessage))
+					if (!tList.UpdateTransportList(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -963,15 +963,15 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55010", errorMessage);
-		int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10742", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55010", errorMessage);
+		int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, oID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, oID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -980,13 +980,13 @@ namespace BusinessLayer
 	}
 
 
-	bool Transport::ChangingByConsumeProduct(DataLayer::OrmasDal& ormasDal, int oID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Transport::ChangingByConsumeProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
 		Order order;
-		if (!order.GetOrderByID(ormasDal, oID, errorMessage))
+		if (!order.GetOrderByID(globalVar, ormasDal, oID, errorMessage))
 			return false;
 		Transport transport;
-		if (!transport.GetTransportByEmployeeID(ormasDal, order.GetEmployeeID(), errorMessage))
+		if (!transport.GetTransportByEmployeeID(globalVar, ormasDal, order.GetEmployeeID(), errorMessage))
 		{
 			errorMessage = "This employee does not have a transport!";
 			return false;
@@ -1030,9 +1030,9 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!tList.GetTransportListByTransportAndProductID(ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
+				if (!tList.GetTransportListByTransportAndProductID(globalVar, ormasDal, transport.GetID(), item.GetProductID(), errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of transport:";
 					errorMessage += product.GetName();
@@ -1043,7 +1043,7 @@ namespace BusinessLayer
 				{
 					if (tList.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the transport!";
 							errorMessage += " Product name:";
@@ -1061,9 +1061,9 @@ namespace BusinessLayer
 						oldSum = tList.GetSum();
 						totalOldCount += tList.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -1076,7 +1076,7 @@ namespace BusinessLayer
 						{
 							tList.SetSum(tList.GetSum() - ((item.GetCount()*nCost.GetValue()) - (pProdCountMap.find(product.GetID())->second * nCost.GetValue())));
 						}
-						if (!tList.UpdateTransportList(ormasDal, errorMessage))
+						if (!tList.UpdateTransportList(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -1103,15 +1103,15 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55010", errorMessage);
-		int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10742", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55010", errorMessage);
+		int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, oID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, oID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -1119,7 +1119,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Transport::IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	bool Transport::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		Transport transport;
 		transport.Clear();
@@ -1137,7 +1137,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Transport::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Transport::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Transport transport;
 		transport.Clear();
@@ -1155,7 +1155,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Transport::CreateEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
+	bool Transport::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -1164,11 +1164,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Операция по приему и выдаче товара из транспортного средства"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -1179,7 +1179,7 @@ namespace BusinessLayer
 		}
 		return true;
 	}
-	bool Transport::CreateEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
+	bool Transport::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -1188,11 +1188,11 @@ namespace BusinessLayer
 		entry.SetValue(previousSum);
 		entry.SetCreditingAccountID(debAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена выдачи товара из транспортного средства"));
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -1207,11 +1207,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Операция по приему и выдаче товара из транспортного средства"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}

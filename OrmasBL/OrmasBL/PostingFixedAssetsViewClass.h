@@ -14,10 +14,14 @@ namespace BusinessLayer
 		PostingFixedAssetsView(DataLayer::postingFixedAssetsViewCollection);
 		PostingFixedAssetsView(){};
 		~PostingFixedAssetsView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// OrderView class Accessors
 		std::string GetSurname();
 		std::string GetAccountName();
+
+		void SetSurname(std::string);
+		void SetAccountName(std::string);
 	};
 }
 #endif //POSTINGFIXEDASSETSVIEWCLASS_H

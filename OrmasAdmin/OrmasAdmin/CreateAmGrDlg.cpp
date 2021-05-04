@@ -78,7 +78,7 @@ void CreateAmGrDlg::CreateAmortizeGroup()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetAmortizeGroupParams(gNumberEdit->text().toInt(), fromMonthEdit->text().toInt(), toMonthEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateAmortizeGroup(amortizeGroup, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -95,7 +95,13 @@ void CreateAmGrDlg::CreateAmortizeGroup()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -127,7 +133,7 @@ void CreateAmGrDlg::EditAmortizeGroup()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetAmortizeGroupParams(gNumberEdit->text().toInt(), fromMonthEdit->text().toInt(), toMonthEdit->text().toInt(), amortizeGroup->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateAmortizeGroup(amortizeGroup, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -141,7 +147,13 @@ void CreateAmGrDlg::EditAmortizeGroup()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

@@ -92,14 +92,14 @@ void CreateSplDlg::FillEditElements(QString sDate, int sEmployeeID, double sCoun
 	statusEdit->setText(QString::number(sStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(sCurrencyID)));
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), sEmployeeID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), sEmployeeID, errorMessage))
 	{
 		empNamePh->setText(user.GetName().c_str());
 		empSurnamePh->setText(user.GetSurname().c_str());
 		empPhonePh->setText(user.GetPhone().c_str());
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), sStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), sStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -122,7 +122,7 @@ void CreateSplDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -131,7 +131,7 @@ void CreateSplDlg::SetID(int ID, QString childName)
 			{
 				employeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(user.GetName().c_str());
 					empSurnamePh->setText(user.GetSurname().c_str());
@@ -177,7 +177,7 @@ void CreateSplDlg::CreateSpoilage()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetSpoilageParams(dateEdit->text(), employeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 			sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), spoilage->GetID());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateSpoilage(spoilage, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -185,7 +185,7 @@ void CreateSplDlg::CreateSpoilage()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), spoilage->GetStatusID(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), spoilage->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -197,8 +197,8 @@ void CreateSplDlg::CreateSpoilage()
 					}
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
-					if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), spoilage->GetEmployeeID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), spoilage->GetCurrencyID(), errorMessage))
+					if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), spoilage->GetEmployeeID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), spoilage->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -214,7 +214,7 @@ void CreateSplDlg::CreateSpoilage()
 					BusinessLayer::Position *position = new BusinessLayer::Position;
 					if (0 != spoilage->GetEmployeeID())
 					{
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -264,7 +264,13 @@ void CreateSplDlg::CreateSpoilage()
 					delete position;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 		
 			Close();
 		}
@@ -299,7 +305,7 @@ void CreateSplDlg::EditSpoilage()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetSpoilageParams(dateEdit->text(), employeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 				sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), spoilage->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateSpoilage(spoilage, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -314,9 +320,9 @@ void CreateSplDlg::EditSpoilage()
 						BusinessLayer::Status *status = new BusinessLayer::Status;
 						BusinessLayer::Position *position = new BusinessLayer::Position;
 
-						if (!currency->GetCurrencyByID(dialogBL->GetOrmasDal(), spoilage->GetCurrencyID(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), spoilage->GetStatusID(), errorMessage)
-							|| !employee->GetEmployeeByID(dialogBL->GetOrmasDal(), spoilage->GetEmployeeID(), errorMessage))
+						if (!currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), spoilage->GetCurrencyID(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), spoilage->GetStatusID(), errorMessage)
+							|| !employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), spoilage->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -332,7 +338,7 @@ void CreateSplDlg::EditSpoilage()
 
 						if (0 != spoilage->GetEmployeeID())
 						{
-							if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
+							if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee->GetPositionID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -379,7 +385,13 @@ void CreateSplDlg::EditSpoilage()
 						delete status;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				
 				Close();
@@ -472,7 +484,7 @@ void CreateSplDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

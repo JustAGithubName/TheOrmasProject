@@ -31,24 +31,24 @@ namespace BusinessLayer
 		void SetCode(std::string);
 		
 		//Create, delete, update methods
-		bool CreateProductType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateProductType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteProductType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateProductType(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
+		bool CreateProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
 			std::string& errorMessage);
-		bool UpdateProductType(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
+		bool UpdateProductType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
 			std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetProductTypeByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool GetProductTypeByCode(DataLayer::OrmasDal& ormasDal, std::string pCode, std::string& errorMessage);
+		bool GetProductTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool GetProductTypeByCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pCode, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal&, std::string pTypeName, std::string pTypeShortName, std::string pCode, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pCode, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //PRODUCTTYPECLASS_H

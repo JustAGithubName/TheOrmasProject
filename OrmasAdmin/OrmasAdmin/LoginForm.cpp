@@ -27,10 +27,10 @@ void LoginForm::CheckCredentials()
 	{
 		messageLb->setText(tr("Please fill up phone and password fields!"));
 	}
-	if (loggedUser->GetUserByCredentials(oBL->GetOrmasDal(), userEdit->text().toUtf8().constData(), passwordEdit->text().toUtf8().constData()))
+	if (loggedUser->GetUserByCredentials(oBL->globalVar, oBL->GetOrmasDal(), userEdit->text().toUtf8().constData(), passwordEdit->text().toUtf8().constData()))
 	{
 		BusinessLayer::Role *userRole = new BusinessLayer::Role();
-		if (!userRole->GetRoleByID(oBL->GetOrmasDal(), loggedUser->GetRoleID(), errorMessage))
+		if (!userRole->GetRoleByID(oBL->globalVar, oBL->GetOrmasDal(), loggedUser->GetRoleID(), errorMessage))
 		{
 			userEdit->setText("");
 			passwordEdit->setText("");

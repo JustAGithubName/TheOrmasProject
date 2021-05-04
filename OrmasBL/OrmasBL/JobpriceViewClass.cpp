@@ -33,4 +33,31 @@ namespace BusinessLayer{
 	{
 		return positionName;
 	}
+
+	void JobpriceView::SetProductName(std::string jProductName)
+	{
+		productName = jProductName;
+	}
+	void JobpriceView::SetCurrencyName(std::string jCurrencyName)
+	{
+		currencyName = jCurrencyName;
+	}
+	void JobpriceView::SetMeasureName(std::string jMeasureName)
+	{
+		measureName = jMeasureName;
+	}
+	void JobpriceView::SetPositionName(std::string jPositionName)
+	{
+		positionName = jPositionName;
+	}
+	std::string JobpriceView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !productName.empty() || 0 != value || !currencyName.empty() || 0 != volume || !measureName.empty() || !positionName.empty() 
+			|| 0 != productID || 0 != currencyID || 0 != measureID || 0 != positionID)
+		{
+			return ormasDal.GetFilterForJobpriceView(id, productName, value, currencyName, volume, measureName, positionName, productID, currencyID,
+				measureID, positionID);
+		}
+		return "";
+	}
 }

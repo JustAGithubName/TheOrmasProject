@@ -41,15 +41,15 @@ void ReworkRawDlg::SetID(int ID, QString childName)
 
 			if (childName == QString("productForm"))
 			{
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
-					if(spec.GetSpecificationByProductID(dialogBL->GetOrmasDal(), ID, errorMessage))
+					if(spec.GetSpecificationByProductID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 					{
 						productEdit->setText(QString::number(ID));
 						prodNamePh->setText(product.GetName().c_str());
 						volumePh->setText(QString::number(product.GetVolume()));
 						BusinessLayer::Measure measure;
-						if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+						if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 						{
 							measurePh->setText(measure.GetName().c_str());
 						}
@@ -88,16 +88,16 @@ void ReworkRawDlg::Rework()
 				double curCount = 0;
 				double curSum = 0;
 				double totalSum = 0;
-				dialogBL->StartTransaction(errorMessage);
+				dialogBL->StartIsolatedTransaction(errorMessage);
 				for each (auto item in sListVector)
 				{
 					curCount = 0;
 					curSum = 0;
-					if (curProduct.GetProductByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (curProduct.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						curCount = round(countEdit->text().toDouble() * item.GetCount() *1000)/1000;
 						curSum = round(item.GetCount()* curProduct.GetPrice() * 1000) / 1000;
-						if (!pStock.ChangingByReworkRawDec(dialogBL->GetOrmasDal(), curProduct.GetID(), curCount, curSum, errorMessage))
+						if (!pStock.ChangingByReworkRawDec(dialogBL->globalVar, dialogBL->GetOrmasDal(), curProduct.GetID(), curCount, curSum, errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -118,7 +118,7 @@ void ReworkRawDlg::Rework()
 						return;
 					}
 				}
-				if (!pStock.ChangingByReworkRawInc(dialogBL->GetOrmasDal(), curProduct.GetID(), countEdit->text().toDouble(), totalSum, errorMessage))
+				if (!pStock.ChangingByReworkRawInc(dialogBL->globalVar, dialogBL->GetOrmasDal(), curProduct.GetID(), countEdit->text().toDouble(), totalSum, errorMessage))
 				{
 					dialogBL->CancelTransaction(errorMessage);
 					QMessageBox::information(NULL, QString(tr("Warning")),
@@ -130,7 +130,7 @@ void ReworkRawDlg::Rework()
 				else
 				{
 					product.SetPrice(totalSum);
-					if (!product.UpdateProduct(dialogBL->GetOrmasDal(), errorMessage))
+					if (!product.UpdateProduct(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -141,7 +141,13 @@ void ReworkRawDlg::Rework()
 					}
 					else
 					{
-						dialogBL->CommitTransaction(errorMessage);
+						if (!dialogBL->CommitTransaction(errorMessage))
+						{
+							dialogBL->CancelTransaction(errorMessage);
+							QMessageBox::information(NULL, QString(tr("Warning")),
+								QString(tr(errorMessage.c_str())),
+								QString(tr("Ok")));
+						}
 						QMessageBox::information(NULL, QString(tr("Warning")),
 							QString(tr("Reworking the raw is successfully ended!")),
 							QString(tr("Ok")));

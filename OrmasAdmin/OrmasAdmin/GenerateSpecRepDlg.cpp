@@ -158,7 +158,7 @@ GenerateSpecRep::~GenerateSpecRep()
 void GenerateSpecRep::Generate()
 {
 	BusinessLayer::Status status;
-	if (!status.GetStatusByName(dialogBL->GetOrmasDal(), "EXECUTED", errorMessage))
+	if (!status.GetStatusByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "EXECUTED", errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Info")),
 			QString(tr("Please contact with administrator, you have same troubles with statuses!")),
@@ -167,7 +167,7 @@ void GenerateSpecRep::Generate()
 	}
 	BusinessLayer::ProductionConsumeRaw prRaw;
 	prRaw.SetStatusID(status.GetID());
-	std::string filterprRaw = prRaw.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
+	std::string filterprRaw = prRaw.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
 	std::vector<BusinessLayer::ProductionConsumeRawView> vecConRaw = dialogBL->GetAllDataForClass<BusinessLayer::ProductionConsumeRawView>(errorMessage, filterprRaw);
 	if (vecConRaw.size() == 0)
 	{
@@ -178,7 +178,7 @@ void GenerateSpecRep::Generate()
 	}
 
 	BusinessLayer::Production production;
-	std::string filter = production.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
+	std::string filter = production.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
 	std::vector<BusinessLayer::Production> vecProdn = dialogBL->GetAllDataForClass<BusinessLayer::Production>(errorMessage, filter);
 	if (vecProdn.size() == 0)
 	{
@@ -283,7 +283,7 @@ void GenerateSpecRep::Generate()
 			for each (auto product in prodnProductCount)
 			{
 				specification.Clear();
-				if (!specification.GetSpecificationByProductID(dialogBL->GetOrmasDal(), product.first, errorMessage))
+				if (!specification.GetSpecificationByProductID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.first, errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Info")),
 						QString(tr("This product does't have specification! Cannot print it")),
@@ -324,7 +324,7 @@ void GenerateSpecRep::Generate()
 			for each (auto producedProduct in prodnProductCount)
 			{
 				product.Clear();
-				product.GetProductByID(dialogBL->GetOrmasDal(), producedProduct.first, errorMessage);
+				product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), producedProduct.first, errorMessage);
 				producedTableBody += "<tr>";
 				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(producedProduct.first) + "</td>";
 				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(product.GetName().c_str()) + "</td>";
@@ -340,10 +340,10 @@ void GenerateSpecRep::Generate()
 			for each (auto specProduct in specProductCount)
 			{
 				product.Clear();
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), specProduct.first, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), specProduct.first, errorMessage))
 				{
 					measure.Clear();
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						specTableBody += "<tr>";
 						specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(product.GetName().c_str()) + "</td>";
@@ -374,10 +374,10 @@ void GenerateSpecRep::Generate()
 			for each (auto consumedProduct in consumeProductCount)
 			{
 				product.Clear();
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), consumedProduct.first, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), consumedProduct.first, errorMessage))
 				{
 					measure.Clear();
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						if (specProductCount.find(product.GetID()) == specProductCount.end())
 						{

@@ -118,21 +118,21 @@ void CreateTrsDlg::FillEditElements(int tUserID, QString tDate, QString tExecDat
 	statusEdit->setText(QString::number(tStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(tCurrencyID)));
 	BusinessLayer::User user1;
-	if (user1.GetUserByID(dialogBL->GetOrmasDal(), tUserID, errorMessage))
+	if (user1.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), tUserID, errorMessage))
 	{
 		empNamePh->setText(user1.GetName().c_str());
 		empSurnamePh->setText(user1.GetSurname().c_str());
 		empPhonePh->setText(user1.GetPhone().c_str());
 	}
 	BusinessLayer::User user2;
-	if (user2.GetUserByID(dialogBL->GetOrmasDal(), tEmployeeID, errorMessage))
+	if (user2.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), tEmployeeID, errorMessage))
 	{
 		empStockNamePh->setText(user2.GetName().c_str());
 		empStockSurnamePh->setText(user2.GetSurname().c_str());
 		empStockPhonePh->setText(user2.GetPhone().c_str());
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), tStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), tStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -155,7 +155,7 @@ void CreateTrsDlg::SetID(int ID, QString childName)
 			{
 				employeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(user.GetName().c_str());
 					empSurnamePh->setText(user.GetSurname().c_str());
@@ -166,7 +166,7 @@ void CreateTrsDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -175,7 +175,7 @@ void CreateTrsDlg::SetID(int ID, QString childName)
 			{
 				stockEmployeeEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empStockNamePh->setText(user.GetName().c_str());
 					empStockSurnamePh->setText(user.GetSurname().c_str());
@@ -209,7 +209,7 @@ bool CreateTrsDlg::FillDlgElements(QTableView* cTable)
 			cTable->model()->data(cTable->model()->index(mIndex.row(), 18)).toInt(),
 			cTable->model()->data(cTable->model()->index(mIndex.row(), 19)).toInt());
 		BusinessLayer::Status *status = new BusinessLayer::Status;
-		if (!status->GetStatusByID(dialogBL->GetOrmasDal(), transport->GetStatusID(), errorMessage))
+		if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetStatusID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr(errorMessage.c_str())),
@@ -263,7 +263,7 @@ void CreateTrsDlg::CreateTransport()
 				sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), transport->GetID());
 		}
 		
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateTransport(transport, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -271,7 +271,7 @@ void CreateTrsDlg::CreateTransport()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), transport->GetStatusID(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -292,8 +292,8 @@ void CreateTrsDlg::CreateTransport()
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 
-					if (!user->GetEmployeeByID(dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), transport->GetCurrencyID(), errorMessage))
+					if (!user->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -308,7 +308,7 @@ void CreateTrsDlg::CreateTransport()
 
 					if (transport->GetEmployeeID() > 0)
 					{
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -323,7 +323,7 @@ void CreateTrsDlg::CreateTransport()
 					if (0 != transport->GetUserID())
 					{
 						BusinessLayer::Position *ePosition = new BusinessLayer::Position();
-						if (!user->GetEmployeeByID(dialogBL->GetOrmasDal(), transport->GetUserID(), errorMessage))
+						if (!user->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetUserID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -348,7 +348,7 @@ void CreateTrsDlg::CreateTransport()
 					if (0 != transport->GetEmployeeID())
 					{
 						BusinessLayer::Position *sePosition = new BusinessLayer::Position();
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -386,7 +386,13 @@ void CreateTrsDlg::CreateTransport()
 					delete status;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -431,7 +437,7 @@ void CreateTrsDlg::EditTransport()
 				SetTransportParams(employeeEdit->text().toInt(), dateEdit->text(), execDateEdit->text(), stockEmployeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 					sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), transport->GetID());
 			}
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateTransport(transport, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -449,9 +455,9 @@ void CreateTrsDlg::EditTransport()
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Status *status = new BusinessLayer::Status;
 
-						if (!user->GetEmployeeByID(dialogBL->GetOrmasDal(), transport->GetUserID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), transport->GetCurrencyID(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), transport->GetStatusID(), errorMessage))
+						if (!user->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetUserID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetCurrencyID(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetStatusID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -466,7 +472,7 @@ void CreateTrsDlg::EditTransport()
 						}
 						if (transport->GetEmployeeID() > 0)
 						{
-							if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage))
+							if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -482,7 +488,7 @@ void CreateTrsDlg::EditTransport()
 						if (transport->GetUserID() > 0)
 						{
 							BusinessLayer::Position *ePosition = new BusinessLayer::Position();
-							if (!user->GetEmployeeByID(dialogBL->GetOrmasDal(), transport->GetUserID(), errorMessage))
+							if (!user->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetUserID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -507,7 +513,7 @@ void CreateTrsDlg::EditTransport()
 						if (transport->GetEmployeeID() > 0)
 						{
 							BusinessLayer::Position *sePosition = new BusinessLayer::Position();
-							if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage))
+							if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), transport->GetEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -546,7 +552,13 @@ void CreateTrsDlg::EditTransport()
 						delete status;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				Close();
 			}
@@ -637,7 +649,7 @@ void CreateTrsDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -715,7 +727,7 @@ void CreateTrsDlg::OpenUserDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -829,7 +841,7 @@ void CreateTrsDlg::OpenTrsListDlg()
 void CreateTrsDlg::StatusWasChenged()
 {
 	errorMessage = "";
-	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (statusEdit->text().toInt() == statusMap.find("EXECUTED")->second
 		|| statusEdit->text().toInt() == statusMap.find("RETURN")->second
 		|| statusEdit->text().toInt() == statusMap.find("ERROR")->second)

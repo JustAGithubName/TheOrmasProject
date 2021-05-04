@@ -89,7 +89,7 @@ void CreateTaxDlg::CreateTax()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetTaxParams(nameEdit->text(), codeEdit->text(), fixedEdit->text().toDouble(), percentEdit->text().toInt(), formulaEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateTax(tax, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -108,7 +108,13 @@ void CreateTaxDlg::CreateTax()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -141,7 +147,7 @@ void CreateTaxDlg::EditTax()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetTaxParams(nameEdit->text(), codeEdit->text(), fixedEdit->text().toDouble(), percentEdit->text().toInt(), formulaEdit->text(), tax->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateTax(tax, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -158,7 +164,13 @@ void CreateTaxDlg::EditTax()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

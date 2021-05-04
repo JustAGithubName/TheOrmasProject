@@ -32,25 +32,29 @@ namespace BusinessLayer{
 		void SetCurrentBalance(double);
 
 		// Create, delete and update Account
-		bool CreateAccount(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateAccount(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteAccount(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateAccount(DataLayer::OrmasDal &ormasDal, std::string aNumber, double aStartBalance, double aCurrentBalance, std::string& errorMessage);
-		bool UpdateAccount(DataLayer::OrmasDal &ormasDal, std::string aNumber, double aStartBalance, double aCurrentBalance, std::string& errorMessage);
+		bool CreateAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNumber, double aStartBalance, double aCurrentBalance, std::string& errorMessage);
+		bool UpdateAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNumber, double aStartBalance, double aCurrentBalance, std::string& errorMessage);
+
+		bool CreateAccountChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, std::string aNumber, double aStartBalance, double aCurrentBalance, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetAccountByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage);
-		bool GetAccountByNumber(DataLayer::OrmasDal& ormasDal, std::string aNumber, std::string& errorMessage);
+		std::string GenerateLikeFilterForNumber(DataLayer::OrmasDal& ormasDal);
+		bool GetAccountByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage);
+		bool GetAccountByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNumber, std::string& errorMessage);
+		std::vector<int> GetChildAccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		std::string GetName(DataLayer::OrmasDal& ormasDal);
-		bool AccountOperationValidation(DataLayer::OrmasDal& ormasDal, double aValue);
+		bool AccountOperationValidation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double aValue);
 		bool IsEmpty();
-		bool HaveSubaccount(DataLayer::OrmasDal& ormasDal, int accountID);
+		bool HaveSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID);
 		void Clear();
-		void BalanceShortInfo(DataLayer::OrmasDal& ormasDal, double &active, double &passive, std::string& errorMessage);
+		void BalanceShortInfo(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double &active, double &passive, std::string& errorMessage);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string aNumber, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNumber, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //ACCOUNTCLASS_H

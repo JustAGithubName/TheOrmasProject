@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SubaccountClass.h"
+#include "SubaccountChangeLogClass.h"
 #include "ChartOfAccountsClass.h"
 #include "AccountTypeClass.h"
 #include <boost/algorithm/string.hpp>
@@ -132,10 +133,10 @@ namespace BusinessLayer{
 		details = aDetails;
 	}
 
-	bool Subaccount::CreateSubaccount(DataLayer::OrmasDal &ormasDal, int saID, std::string aNumber, double aStartBalance, double aCurrentBalance, int cID,
+	bool Subaccount::CreateSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int saID, std::string aNumber, double aStartBalance, double aCurrentBalance, int cID,
 		int sID, std::string aOpenedDate, std::string aClosedDate, std::string aDetails, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, aNumber, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, aNumber, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		parentSubaccountID = saID;
@@ -150,7 +151,8 @@ namespace BusinessLayer{
 		if (0 != id && ormasDal.CreateSubaccount(id, parentSubaccountID, number, startBalance, currentBalance, currencyID, statusID,
 			openedDate, closedDate,	details, errorMessage))
 		{
-			return true;
+			if (CreateSubaccountChangeLog(globalVar, ormasDal, id, startBalance, currentBalance, errorMessage))
+				return true;
 		}
 		if (errorMessage.empty())
 		{
@@ -158,15 +160,16 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Subaccount::CreateSubaccount(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Subaccount::CreateSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateSubaccount(id, parentSubaccountID, number, startBalance, currentBalance, currencyID, statusID,
 			openedDate, closedDate, details, errorMessage))
 		{
-			return true;
+			if (CreateSubaccountChangeLog(globalVar, ormasDal, id, startBalance, currentBalance, errorMessage))
+				return true;
 		}
 		if (errorMessage.empty())
 		{
@@ -174,7 +177,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Subaccount::DeleteSubaccount(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Subaccount::DeleteSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteSubaccount(id, errorMessage))
 		{
@@ -188,7 +191,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Subaccount::UpdateSubaccount(DataLayer::OrmasDal &ormasDal, int saID, std::string aNumber, double aStartBalance, double aCurrentBalance, int cID,
+	bool Subaccount::UpdateSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int saID, std::string aNumber, double aStartBalance, double aCurrentBalance, int cID,
 		int sID, std::string aOpenedDate, std::string aClosedDate, std::string aDetails, std::string& errorMessage)
 	{
 		parentSubaccountID = saID;
@@ -203,7 +206,8 @@ namespace BusinessLayer{
 		if (0 != id && ormasDal.UpdateSubaccount(id, parentSubaccountID, number, startBalance, currentBalance, currencyID, statusID,
 			openedDate, closedDate, details, errorMessage))
 		{
-			return true;
+			if (CreateSubaccountChangeLog(globalVar, ormasDal, id, startBalance, currentBalance, errorMessage))
+				return true;
 		}
 		if (errorMessage.empty())
 		{
@@ -211,12 +215,13 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Subaccount::UpdateSubaccount(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Subaccount::UpdateSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.UpdateSubaccount(id, parentSubaccountID, number, startBalance, currentBalance, currencyID, statusID,
 			openedDate, closedDate, details, errorMessage))
 		{
-			return true;
+			if (CreateSubaccountChangeLog(globalVar, ormasDal, id, startBalance, currentBalance, errorMessage))
+				return true;
 		}
 		if (errorMessage.empty())
 		{
@@ -236,7 +241,16 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Subaccount::GetSubaccountByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	std::string Subaccount::GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> subaccountIDList)
+	{
+		if (subaccountIDList.size()>0)
+		{
+			return ormasDal.GetINFilterForSubaccountID(subaccountIDList);
+		}
+		return "";
+	}
+
+	bool Subaccount::GetSubaccountByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -264,7 +278,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Subaccount::GetSubaccountByNumber(DataLayer::OrmasDal& ormasDal, std::string aNumber, std::string& errorMessage)
+	bool Subaccount::GetSubaccountByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNumber, std::string& errorMessage)
 	{
 		if (aNumber.empty())
 			return false;
@@ -292,7 +306,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	std::string Subaccount::GenerateRawNumber(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	std::string Subaccount::GenerateRawNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		int countOfNulls;
 		int genNumber = ormasDal.GenerateAccountID();
@@ -333,7 +347,7 @@ namespace BusinessLayer{
 		details = "";
 	}
 
-	bool Subaccount::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string aNumber, std::string& errorMessage)
+	bool Subaccount::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNumber, std::string& errorMessage)
 	{
 		Subaccount subaccount;
 		subaccount.Clear();
@@ -351,7 +365,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Subaccount::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Subaccount::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Subaccount subaccount;
 		subaccount.Clear();
@@ -412,10 +426,10 @@ namespace BusinessLayer{
 		return std::stoi(partentNumberOfSubaccount);
 	}
 
-	bool Subaccount::SubaccountOperationValidation(DataLayer::OrmasDal& ormasDal, double aValue)
+	bool Subaccount::SubaccountOperationValidation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double aValue)
 	{
 		/*SubaccountType atype;
-		if (atype.GetSubaccountTypeByNumber(ormasDal, GetSubaccountTypeNumber(ormasDal), errorMessage))
+		if (atype.GetSubaccountTypeByNumber(globalVar, ormasDal, GetSubaccountTypeNumber(ormasDal), errorMessage))
 		{
 			if (0 == atype.GetName().compare("ACTIVE"))
 			{
@@ -445,5 +459,20 @@ namespace BusinessLayer{
 			}
 		}*/
 		return true;
+	}
+
+	bool Subaccount::CreateSubaccountChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccountID, double aStartBalance, 
+		double aCurrentBalance,  std::string& errorMessage)
+	{
+		SubaccountChangeLog scLog;
+		scLog.SetSubaccountID(subaccountID);
+		scLog.SetStartBalance(aStartBalance);
+		scLog.SetCurrentBalance(aCurrentBalance);
+		scLog.SetLogDate(ormasDal.GetSystemDateTime());
+		scLog.SetUserID(globalVar->userID);
+		scLog.SetOperationID(globalVar->currentOperationID);
+		if (scLog.CreateSubaccountChangeLog(globalVar, ormasDal, errorMessage))
+			return true;
+		return false;
 	}
 }

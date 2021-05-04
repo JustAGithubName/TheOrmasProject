@@ -34,4 +34,34 @@ namespace BusinessLayer{
 	{
 		return currencyName;
 	}
+
+	void BalanceView::SetUsername(std::string bUserName)
+	{
+		userName = bUserName;
+	}
+	void BalanceView::SetUserSurname(std::string bUserSurname)
+	{
+		userSurname = bUserSurname;
+	}
+	void BalanceView::SetSubaccountNumber(std::string bSubaccountNumber)
+	{
+		subaccountNumber = bSubaccountNumber;
+	}
+	void BalanceView::SetCurrentBalance(double bCurrentBalance)
+	{
+		currentBalance = bCurrentBalance;
+	}
+	void BalanceView::SetCurrencyName(std::string bCurrencyName)
+	{
+		currencyName = bCurrencyName;
+	}
+
+	std::string BalanceView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !userName.empty() || !userSurname.empty() || !subaccountNumber.empty() || 0 != currentBalance || !currencyName.empty() || 0 != userID || 0 != subaccountID)
+		{
+			return ormasDal.GetFilterForBalancesView(id, userName, userSurname, subaccountNumber, currentBalance, currencyName,   userID, subaccountID);
+		}
+		return "";
+	}
 }

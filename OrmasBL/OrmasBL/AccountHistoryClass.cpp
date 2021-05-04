@@ -94,10 +94,10 @@ namespace BusinessLayer{
 		tillDate = aTillDate;
 	}
 
-	bool AccountHistory::CreateAccountHistory(DataLayer::OrmasDal &ormasDal, int aID, std::string aNumber, double aStartBalance,
+	bool AccountHistory::CreateAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string aNumber, double aStartBalance,
 		double aCurrentBalance, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, aID, aFromDate, aTillDate, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, aID, aFromDate, aTillDate, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		accountID = aID;
@@ -116,9 +116,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccountHistory::CreateAccountHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccountHistory::CreateAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateAccountHistory(id, accountID, number, startBalance, currentBalance, fromDate, tillDate, errorMessage))
@@ -131,7 +131,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccountHistory::DeleteAccountHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccountHistory::DeleteAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteAccountHistory(id, errorMessage))
 		{
@@ -145,7 +145,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AccountHistory::UpdateAccountHistory(DataLayer::OrmasDal &ormasDal, int aID, std::string aNumber, double aStartBalance,
+	bool AccountHistory::UpdateAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string aNumber, double aStartBalance,
 		double aCurrentBalance, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
 	{
 		accountID = aID;
@@ -164,7 +164,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccountHistory::UpdateAccountHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccountHistory::UpdateAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateAccountHistory(id, accountID, number, startBalance, currentBalance, fromDate, tillDate, errorMessage))
 		{
@@ -186,7 +186,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool AccountHistory::GetAccountHistoryByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool AccountHistory::GetAccountHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -211,7 +211,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AccountHistory::GetAccountHistoryByAccountID(DataLayer::OrmasDal& ormasDal, int aAccountID, std::string& errorMessage)
+	bool AccountHistory::GetAccountHistoryByAccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aAccountID, std::string& errorMessage)
 	{
 		if (aAccountID <= 0)
 			return false;
@@ -255,7 +255,7 @@ namespace BusinessLayer{
 		tillDate = "";
 	}
 
-	bool AccountHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, int aID, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
+	bool AccountHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string aFromDate, std::string aTillDate, std::string& errorMessage)
 	{
 		AccountHistory accountHistory;
 		accountHistory.Clear();
@@ -275,7 +275,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool AccountHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccountHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		AccountHistory accountHistory;
 		accountHistory.Clear();

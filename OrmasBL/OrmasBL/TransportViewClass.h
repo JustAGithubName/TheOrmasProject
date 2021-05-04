@@ -22,6 +22,7 @@ namespace BusinessLayer
 		TransportView(DataLayer::transportsViewCollection);
 		TransportView(){};
 		~TransportView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// OrderView class Accessors
 		std::string GetStatusCode();
@@ -35,6 +36,18 @@ namespace BusinessLayer
 		std::string GetEmployeePhone();
 		std::string GetEmployeePosition();
 		std::string GetCurrencyName();
+
+		void SetStatusCode(std::string);
+		void SetStatusName(std::string);
+		void SetEmployeeName(std::string);
+		void SetEmployeeSurname(std::string);
+		void SetEmployeePhone(std::string);
+		void SetEmployeePosition(std::string);
+		void SetUserName(std::string);
+		void SetUserSurname(std::string);
+		void SetUserPhone(std::string);
+		void SetUserPosition(std::string);
+		void SetCurrencyName(std::string);
 
 	};
 }

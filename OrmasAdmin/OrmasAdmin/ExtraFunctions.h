@@ -3,6 +3,7 @@
 #include "QTWidgets/QMdiSubWindow"
 #include <QString>
 #include <QTableView>
+#include <QModelIndex>
 
 inline QWidget* IsWindowExist(QList <QMdiSubWindow *> mList, QString formName)
 {

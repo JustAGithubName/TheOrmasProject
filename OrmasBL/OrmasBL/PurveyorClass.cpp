@@ -40,13 +40,13 @@ namespace BusinessLayer{
 		locationID = cLocationID;
 	}
 
-	bool Purveyor::CreatePurveyor(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+	bool Purveyor::CreatePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 		std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string pCompanyName,
 		int lID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uName, uSurname, uPhone, uRoleID, pCompanyName, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uName, uSurname, uPhone, uRoleID, pCompanyName, errorMessage))
 			return false;
-		if (!IsUnique(ormasDal, uPhone, errorMessage))
+		if (!IsUnique(globalVar, ormasDal, uPhone, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(uEmail, uName, uSurname, uPhone, uAddress, uPassword, pCompanyName);
@@ -66,7 +66,7 @@ namespace BusinessLayer{
 		{
 			if (ormasDal.CreatePurveyor(userID, companyName, locationID, errorMessage))
 			{
-				if (CreateBalance(ormasDal, errorMessage))
+				if (CreateBalance(globalVar, ormasDal, errorMessage))
 					return true;
 				return false;
 			}
@@ -76,11 +76,11 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Purveyor::CreatePurveyor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Purveyor::CreatePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		if (!IsUnique(ormasDal, phone, errorMessage))
+		if (!IsUnique(globalVar, ormasDal, phone, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		userID = id;
@@ -88,7 +88,7 @@ namespace BusinessLayer{
 		{
 			if (ormasDal.CreatePurveyor(userID, companyName, locationID, errorMessage))
 			{
-				if (CreateBalance(ormasDal, errorMessage))
+				if (CreateBalance(globalVar, ormasDal, errorMessage))
 					return true;
 				return false;
 			}
@@ -98,7 +98,7 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Purveyor::DeletePurveyor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Purveyor::DeletePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (!errorMessage.empty())
@@ -106,23 +106,23 @@ namespace BusinessLayer{
 		if (ormasDal.DeletePurveyor(id, errorMessage))
 		{
 			User user;
-			if (user.GetUserByID(ormasDal, id, errorMessage))
+			if (user.GetUserByID(globalVar, ormasDal, id, errorMessage))
 			{
-				if (user.DeleteUser(ormasDal, errorMessage))
+				if (user.DeleteUser(globalVar, ormasDal, errorMessage))
 					return true;
 			}
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Purveyor::UpdatePurveyor(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+	bool Purveyor::UpdatePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 		std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string pCompanyName,
 		int lID, std::string& errorMessage)
 	{
-		std::string prevPhone = GetCurrentPhone(ormasDal, id, errorMessage);
+		std::string prevPhone = GetCurrentPhone(globalVar, ormasDal, id, errorMessage);
 		if (0 != prevPhone.compare(uPhone))
 		{
-			if (!IsUnique(ormasDal, uPhone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, uPhone, errorMessage))
 				return false;
 		}
 		TrimStrings(uEmail, uName, uSurname, uPhone, uAddress, uPassword, pCompanyName);
@@ -158,12 +158,12 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Purveyor::UpdatePurveyor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Purveyor::UpdatePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::string prevPhone = GetCurrentPhone(ormasDal, id, errorMessage);
+		std::string prevPhone = GetCurrentPhone(globalVar, ormasDal, id, errorMessage);
 		if (0 != prevPhone.compare(phone))
 		{
-			if (!IsUnique(ormasDal, phone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, phone, errorMessage))
 				return false;
 		}
 		//ormasDal.StartTransaction(errorMessage);
@@ -198,7 +198,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Purveyor::GetPurveyorByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool Purveyor::GetPurveyorByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		if (uID <= 0)
 			return false;
@@ -227,7 +227,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Purveyor::GetPurveyorByCredentials(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string uEmail, std::string uPassword)
+	bool Purveyor::GetPurveyorByCredentials(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string uEmail, std::string uPassword)
 	{
 		std::string errorMessage = "";
 		if (!uPhone.empty())
@@ -302,7 +302,7 @@ namespace BusinessLayer{
 			boost::trim(pCompanyName);
 	}
 
-	bool Purveyor::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string uName, std::string uSurname, std::string uPhone,
+	bool Purveyor::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uName, std::string uSurname, std::string uPhone,
 		int uRoleID, std::string pCompanyName, std::string& errorMessage)
 	{
 		Purveyor purveyor;
@@ -325,7 +325,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Purveyor::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Purveyor::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Purveyor purveyor;
 		purveyor.Clear();
@@ -347,10 +347,10 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	std::string Purveyor::GetCurrentPhone(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	std::string Purveyor::GetCurrentPhone(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		User user;
-		if (user.GetUserByID(ormasDal, uID, errorMessage))
+		if (user.GetUserByID(globalVar, ormasDal, uID, errorMessage))
 			return user.GetPhone();
 		return 0;
 	}

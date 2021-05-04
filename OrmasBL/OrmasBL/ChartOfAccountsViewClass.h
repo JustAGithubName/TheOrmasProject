@@ -11,9 +11,10 @@ namespace BusinessLayer{
 		ChartOfAccountsView(DataLayer::chartOfAccountsViewCollection);
 		ChartOfAccountsView(){};
 		~ChartOfAccountsView(){};
-
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 		// Chart Of Accounts View class Accessors
 		std::string GetAccountTypeName();
+		void SetAccountTypeName(std::string);
 	};
 }
 

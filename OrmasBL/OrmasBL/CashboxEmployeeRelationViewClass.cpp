@@ -39,4 +39,40 @@ namespace BusinessLayer{
 	{
 		return roleName;
 	}
+
+
+	void CashboxEmployeeRelationView::SetSubaccountNumber(std::string cSubaccountNumber)
+	{
+		subaccountNumber = cSubaccountNumber;
+	}
+	void CashboxEmployeeRelationView::SetCashboxAddress(std::string CCashboxAddress)
+	{
+		cashboxAddress = CCashboxAddress;
+	}
+	void CashboxEmployeeRelationView::SetUsername(std::string cUserName)
+	{
+		userName = cUserName;
+	}
+	void CashboxEmployeeRelationView::SetUserSurname(std::string cUserSurname)
+	{
+		userSurname = cUserSurname;
+	}
+	void CashboxEmployeeRelationView::SetUserPhone(std::string cUserPhone)
+	{
+		userPhone = cUserPhone;
+	}
+	void CashboxEmployeeRelationView::SetRoleName(std::string cRoleName)
+	{
+		roleName = cRoleName;
+	}
+
+	std::string CashboxEmployeeRelationView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !subaccountNumber.empty() || !cashboxAddress.empty() || !userName.empty() || !userSurname.empty() ||
+			!userPhone.empty() || !roleName.empty() || 0 != cashboxID || 0 != employeeID)
+		{
+			return ormasDal.GetFilterForCashboxEmployeeView(id, subaccountNumber, cashboxAddress, userName, userSurname, userPhone, roleName, cashboxID, employeeID);
+		}
+		return "";
+	}
 }

@@ -44,9 +44,9 @@ namespace BusinessLayer{
 		entryID = eID;
 	}
 
-	bool EntryOperationRelation::CreateEntryOperationRelation(DataLayer::OrmasDal &ormasDal, int eID, int oID, std::string& errorMessage)
+	bool EntryOperationRelation::CreateEntryOperationRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int oID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, eID, oID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, eID, oID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		operationID = oID;
@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EntryOperationRelation::CreateEntryOperationRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntryOperationRelation::CreateEntryOperationRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateEntryOperation(id, entryID, operationID, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool EntryOperationRelation::DeleteEntryOperationRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntryOperationRelation::DeleteEntryOperationRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteEntryOperation(entryID, operationID, errorMessage))
 		{
@@ -102,7 +102,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::vector<int> EntryOperationRelation::GetAllEntryByOperationID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	std::vector<int> EntryOperationRelation::GetAllEntryByOperationID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		std::vector<int> entryIDVector;
 		EntryOperationRelation aeRelation;
@@ -120,7 +120,7 @@ namespace BusinessLayer{
 		return entryIDVector;
 	}
 
-	std::vector<int> EntryOperationRelation::GetAllOperationByEntryID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	std::vector<int> EntryOperationRelation::GetAllOperationByEntryID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		std::vector<int> operationIDVector;
 		EntryOperationRelation aeRelation;
@@ -153,7 +153,7 @@ namespace BusinessLayer{
 		entryID = 0;
 	}
 
-	bool EntryOperationRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, int sID, std::string& errorMessage)
+	bool EntryOperationRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int sID, std::string& errorMessage)
 	{
 		EntryOperationRelation aeRelation;
 		aeRelation.Clear();
@@ -172,7 +172,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool EntryOperationRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool EntryOperationRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		EntryOperationRelation aeRelation;
 		aeRelation.Clear();

@@ -30,21 +30,21 @@ namespace BusinessLayer
 		void SetUnit(int);
 
 		//Create, delete and update methods 
-		bool CreateMeasure(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateMeasure(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteMeasure(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateMeasure(DataLayer::OrmasDal& ormasDal, std::string mName, std::string mShortName, int mUnit, std::string& errorMessage);
-		bool UpdateMeasure(DataLayer::OrmasDal& ormasDal, std::string mName, std::string mShortName, int mUnit, std::string& errorMessage);
+		bool CreateMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string mName, std::string mShortName, int mUnit, std::string& errorMessage);
+		bool UpdateMeasure(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string mName, std::string mShortName, int mUnit, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetMeasureByID(DataLayer::OrmasDal& ormasDal, int mID, std::string& errorMessage);
+		bool GetMeasureByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int mID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string mName, std::string mShortName, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string mName, std::string mShortName, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //MEASURECLASS_H

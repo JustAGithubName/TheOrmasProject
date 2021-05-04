@@ -23,5 +23,23 @@ namespace BusinessLayer
 	{
 		return accountName;
 	}
+
+	void PostingFixedAssetsView::SetSurname(std::string pSurname)
+	{
+		surname = pSurname;
+	}
+	void PostingFixedAssetsView::SetAccountName(std::string pAccountName)
+	{
+		accountName = pAccountName;
+	}
+
+	std::string PostingFixedAssetsView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !surname.empty() || !accountName.empty() || 0 != userID || 0 != subaccountID || 0 != accountID || 0 != fixedAssetsID || 0 != inventoryID)
+		{
+			return ormasDal.GetFilterForPostingFixAssetView(id, surname, accountName, userID, subaccountID, accountID, fixedAssetsID, inventoryID);
+		}
+		return "";
+	}
 }
 

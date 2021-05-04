@@ -37,4 +37,35 @@ namespace BusinessLayer
 	{
 		return roleName;
 	}
+
+	void UserView::SetCountryName(std::string uCountryName)
+	{
+		countryName = uCountryName;
+	}
+	void UserView::SetCountryCode(std::string uCountryCode)
+	{
+		countryCode = uCountryCode;
+	}
+	void UserView::SetRegionName(std::string uRegionName)
+	{
+		regionName = uRegionName;
+	}
+	void UserView::SetCityName(std::string uCityName)
+	{
+		cityName = uCityName;
+	}
+	void UserView::SetRoleName(std::string uRoleName)
+	{
+		roleName = uRoleName;
+	}
+
+	std::string UserView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !email.empty() || !name.empty() || !surname.empty() || !phone.empty() || !address.empty() || !roleName.empty() || !password.empty()
+			|| 0 != roleID)
+		{
+			return ormasDal.GetFilterForUserView(id, email, name, surname, phone, address, roleName, password, roleID);
+		}
+		return "";
+	}
 }

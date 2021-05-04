@@ -6,8 +6,14 @@
 namespace BusinessLayer{
 	Accountable::Accountable(DataLayer::accountableCollection cCollection)
 	{
-		employeeID = std::get<0>(cCollection);
-		information = std::get<1>(cCollection);
+		id = std::get<0>(cCollection);;
+		employeeID = std::get<1>(cCollection);
+		information = std::get<2>(cCollection);
+	}
+
+	int Accountable::GetID()
+	{
+		return id;
 	}
 
 	int Accountable::GetEmployeeID()
@@ -19,6 +25,10 @@ namespace BusinessLayer{
 		return information;
 	}
 	
+	void Accountable::SetID(int aID)
+	{
+		id = aID;
+	}
 	void Accountable::SetEmployeeID(int eID)
 	{
 		employeeID = eID;
@@ -30,36 +40,39 @@ namespace BusinessLayer{
 		information = aInformation;
 	}
 	
-	bool Accountable::CreateAccountable(DataLayer::OrmasDal& ormasDal, int eID, std::string aInformation, std::string& errorMessage)
+	bool Accountable::CreateAccountable(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string aInformation, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, eID, aInformation, errorMessage))
-			return false;
+		
+		//if (IsDuplicate(globalVar, ormasDal, eID, aInformation, errorMessage))
+		//	return false;
+		id = ormasDal.GenerateID();
 		TrimStrings(aInformation);
 		employeeID = eID;
 		information = aInformation;
-		if (ormasDal.CreateAccountable(employeeID, information, errorMessage))
+		if (ormasDal.CreateAccountable(id, employeeID, information, errorMessage))
 		{
-			if (CreateBalanceForAccountable(ormasDal,  employeeID, errorMessage))
+			if (CreateBalanceForAccountable(globalVar, ormasDal,  employeeID, errorMessage))
 				return true;
 			return false;
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Accountable::CreateAccountable(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Accountable::CreateAccountable(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		if (ormasDal.CreateAccountable(employeeID, information, errorMessage))
+		id = ormasDal.GenerateID();
+		if (ormasDal.CreateAccountable(id, employeeID, information, errorMessage))
 		{
-			if (CreateBalanceForAccountable(ormasDal, employeeID, errorMessage))
+			if (CreateBalanceForAccountable(globalVar, ormasDal, employeeID, errorMessage))
 				return true;
 			return false;
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Accountable::DeleteAccountable(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Accountable::DeleteAccountable(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (!errorMessage.empty())
@@ -71,21 +84,22 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Accountable::UpdateAccountable(DataLayer::OrmasDal& ormasDal, int eID, std::string aInformation, std::string& errorMessage)
+	bool Accountable::UpdateAccountable(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal,  int eID, std::string aInformation, std::string& errorMessage)
 	{
 		TrimStrings(aInformation);
+		
 		employeeID = eID;
 		information = aInformation;
 		//ormasDal.StartTransaction(errorMessage);
-		if (ormasDal.UpdateAccountable(employeeID, information, errorMessage))
+		if (ormasDal.UpdateAccountable(id, employeeID, information, errorMessage))
 		{
 				return true;
 		}
 		return false;
 	}
-	bool Accountable::UpdateAccountable(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Accountable::UpdateAccountable(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (ormasDal.UpdateAccountable(employeeID, information, errorMessage))
+		if (ormasDal.UpdateAccountable(id, employeeID, information, errorMessage))
 		{
 			return true;
 		}
@@ -94,15 +108,35 @@ namespace BusinessLayer{
 
 	std::string Accountable::GenerateFilter(DataLayer::OrmasDal& ormasDal)
 	{
-		if (0 != id || !name.empty() || !surname.empty() || !address.empty() || !phone.empty() || !information.empty()
-			|| !password.empty() || !email.empty() || 0 != roleID )
+		if (0 != id || 0 != employeeID || !information.empty())
 		{
-			return ormasDal.GetFilterForAccountable(id, name, surname, phone, address, roleID, information);
+			return ormasDal.GetFilterForAccountable(id, employeeID, information);
 		}
 		return "";
 	}
 
-	bool Accountable::GetAccountableByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool Accountable::GetAccountableByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
+	{
+		if (aID <= 0)
+			return false;
+		id = aID;
+		std::string filter = GenerateFilter(ormasDal);
+		std::vector<DataLayer::accountableViewCollection> accountableVector = ormasDal.GetAccountable(errorMessage, filter);
+		if (0 != accountableVector.size())
+		{
+			id = std::get<0>(accountableVector.at(0));
+			employeeID = std::get<1>(accountableVector.at(0));
+			information = std::get<4>(accountableVector.at(0));
+			return true;
+		}
+		else
+		{
+			errorMessage = "Cannot find Accountable with this id";
+		}
+		return false;
+	}
+
+	bool Accountable::GetAccountableByUserID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		if (uID <= 0)
 			return false;
@@ -111,8 +145,9 @@ namespace BusinessLayer{
 		std::vector<DataLayer::accountableViewCollection> accountableVector = ormasDal.GetAccountable(errorMessage, filter);
 		if (0 != accountableVector.size())
 		{
-			employeeID = std::get<0>(accountableVector.at(0));
-			information = std::get<3>(accountableVector.at(0));
+			id = std::get<0>(accountableVector.at(0));
+			employeeID = std::get<1>(accountableVector.at(0));
+			information = std::get<4>(accountableVector.at(0));
 			return true;
 		}
 		else
@@ -124,13 +159,14 @@ namespace BusinessLayer{
 
 	bool Accountable::IsEmpty()
 	{
-		if (0 == employeeID && information.empty())
+		if (0 == id && 0 == employeeID && information.empty())
 			return true;
 		return false;
 	}
 
 	void Accountable::Clear()
 	{
+		id = 0;
 		employeeID = 0;
 		information.clear();
 	}
@@ -142,11 +178,12 @@ namespace BusinessLayer{
 		
 	}
 
-	bool Accountable::IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, std::string aInformation, std::string& errorMessage)
+	bool Accountable::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, int eID, std::string aInformation, std::string& errorMessage)
 	{
 		Accountable accountable;
 		accountable.Clear();
 		errorMessage.clear();
+		accountable.SetID(aID);
 		accountable.SetEmployeeID(eID);
 		accountable.SetInformation(aInformation);
 		std::string filter = accountable.GenerateFilter(ormasDal);
@@ -161,11 +198,12 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Accountable::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Accountable::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Accountable accountable;
 		accountable.Clear();
 		errorMessage.clear();
+		accountable.SetID(id);
 		accountable.SetEmployeeID(employeeID);
 		accountable.SetInformation(information);
 		std::string filter = accountable.GenerateFilter(ormasDal);

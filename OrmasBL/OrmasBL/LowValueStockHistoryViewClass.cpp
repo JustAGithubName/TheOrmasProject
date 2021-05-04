@@ -61,4 +61,52 @@ namespace BusinessLayer
 		return subaccountNumber;
 	}
 
+	void LowValueStockHistoryView::SetOtherStocksName(std::string iOtherStocksName)
+	{
+		otherStocksName = iOtherStocksName;
+	}
+	void LowValueStockHistoryView::SetPrice(double iPrice)
+	{
+		price = iPrice;
+	}
+	void LowValueStockHistoryView::SetCurrencyName(std::string jCurrencyName)
+	{
+		currencyName = jCurrencyName;
+	}
+	void LowValueStockHistoryView::SetVolume(double jVolume)
+	{
+		volume = jVolume;
+	}
+	void LowValueStockHistoryView::SetStatusName(std::string jStatusName)
+	{
+		statusName = jStatusName;
+	}
+	void LowValueStockHistoryView::SetSumCurrencyName(std::string jSumCurrencyName)
+	{
+		sumCurrencyName = jSumCurrencyName;
+	}
+	void LowValueStockHistoryView::SetMeasureName(std::string jMeasureName)
+	{
+		measureName = jMeasureName;
+	}
+	void LowValueStockHistoryView::SetWarehouseName(std::string lWarehouseName)
+	{
+		warehouseName = lWarehouseName;
+	}
+	void LowValueStockHistoryView::SetSubaccountNumber(std::string jSubaccountNumber)
+	{
+		subaccountNumber = jSubaccountNumber;
+	}
+
+	std::string LowValueStockHistoryView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !otherStocksName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty() || 0 != count || 0 != sum
+			|| !sumCurrencyName.empty() || !warehouseName.empty() || !subaccountNumber.empty() || !statusName.empty() || 0 != otherStocksID || 0 != statusID
+			|| 0 != currencyID || 0 != warehouseID || !historyDate.empty())
+		{
+			return ormasDal.GetFilterForLowValStockHisView(id, otherStocksName, price, currencyName, volume, measureName, count, sum, sumCurrencyName, warehouseName,
+				subaccountNumber, statusName, otherStocksID, statusID, currencyID, warehouseID, historyDate);
+		}
+		return "";
+	}
 }

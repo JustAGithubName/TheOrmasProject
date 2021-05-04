@@ -49,23 +49,23 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateInventorization(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateInventorization(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteInventorization(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateInventorization(DataLayer::OrmasDal& ormasDal, int eID, std::string iDate, std::string iExecDate, int seID,
+		bool CreateInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string iDate, std::string iExecDate, int seID,
 			double iCount, double iSum, int sID, int cID, std::string& errorMessage);
-		bool UpdateInventorization(DataLayer::OrmasDal& ormasDal, int eID, std::string iDate, std::string iExecDate, int seID, 
+		bool UpdateInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string iDate, std::string iExecDate, int seID, 
 			double iCount, double iSum, int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetInventorizationByID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetInventorizationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, std::string iDate, int seID, double iCount, double iSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string iDate, int seID, double iCount, double iSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //InventorizationCLASS_H

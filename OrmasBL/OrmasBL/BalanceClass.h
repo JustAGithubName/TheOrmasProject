@@ -27,22 +27,23 @@ namespace BusinessLayer{
 		void SetSubaccountID(int);
 
 		// Create, delete and update balance
-		bool CreateBalance(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateBalance(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteBalance(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateBalance(DataLayer::OrmasDal &ormasDal, int uID, int saID, std::string& errorMessage);
-		bool UpdateBalance(DataLayer::OrmasDal &ormasDal, int uID, int saID, std::string& errorMessage);
+		bool CreateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int saID, std::string& errorMessage);
+		bool UpdateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int saID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetBalanceByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage);
-		bool GetBalanceByUserID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		bool GetBalanceBySubaccountID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetBalanceByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage);
+		bool GetBalanceByUserID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		bool GetBalanceBySubaccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		std::vector<int> GetSubaccountIDlistByUserIDList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> cID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, int saID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int saID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //BALANCECLASS_H

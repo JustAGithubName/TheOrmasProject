@@ -72,5 +72,63 @@ namespace BusinessLayer
 		return currencyName;
 	}
 
+	void ConsumeOtherStocksView::SetStatusCode(std::string cStatusCode)
+	{
+		statusCode = cStatusCode;
+	}
+	void ConsumeOtherStocksView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void ConsumeOtherStocksView::SetEmployeeName(std::string cEmployeeName)
+	{
+		employeeName = cEmployeeName;
+	}
+	void ConsumeOtherStocksView::SetEmployeeSurname(std::string cEmployeeSurname)
+	{
+		employeeSurname = cEmployeeSurname;
+	}
+	void ConsumeOtherStocksView::SetEmployeePhone(std::string cEmployeePhone)
+	{
+		employeePhone = cEmployeePhone;
+	}
+	void ConsumeOtherStocksView::SetEmployeePosition(std::string cEmployeePosition)
+	{
+		employeePosition = cEmployeePosition;
+	}
+	void ConsumeOtherStocksView::SetStockEmployeeName(std::string sStockEmployeeName)
+	{
+		stockEmployeeName = sStockEmployeeName;
+	}
+	void ConsumeOtherStocksView::SetStockEmployeeSurname(std::string cStockEmployeeSurname)
+	{
+		stockEmployeeSurname = cStockEmployeeSurname;
+	}
+	void ConsumeOtherStocksView::SetStockEmployeePhone(std::string cStockEmployeePhone)
+	{
+		stockEmployeePhone = cStockEmployeePhone;
+	}
+	void ConsumeOtherStocksView::SetStockEmployeePosition(std::string cStockEmployeePosition)
+	{
+		stockEmployeePosition = cStockEmployeePosition;
+	}
+	void ConsumeOtherStocksView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+
+	std::string ConsumeOtherStocksView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !executionDate.empty() || !statusCode.empty() || !statusName.empty() || !employeeName.empty() || !employeeSurname.empty()
+			|| !employeePhone.empty() || !employeePosition.empty() || !stockEmployeeName.empty() || !stockEmployeeSurname.empty() || !stockEmployeePhone.empty()
+			|| !stockEmployeePosition.empty() || 0 != count || 0 != sum || !currencyName.empty() || 0 != stockEmployeeID || 0 != employeeID || 0 != statusID 
+			|| 0 != currencyID)
+		{
+			return ormasDal.GetFilterForConOthStView(id, date, executionDate, statusCode, statusName, employeeName, employeeSurname, employeePhone, employeePosition, stockEmployeeName,
+				stockEmployeeSurname, stockEmployeePhone, stockEmployeePosition, count, sum, currencyName, stockEmployeeID, employeeID, statusID, currencyID);
+		}
+		return "";
+	}
+
 }
 

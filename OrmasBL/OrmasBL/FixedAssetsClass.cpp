@@ -152,10 +152,10 @@ namespace BusinessLayer
 		fixedAssetsDetailsID = fAssetsID;
 	}
 
-	bool FixedAssets::CreateFixedAssets(DataLayer::OrmasDal& ormasDal, int sID, std::string iNumber, double pCost, double sCost,
+	bool FixedAssets::CreateFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string iNumber, double pCost, double sCost,
 		int sLife, bool isAmor, std::string bDate, std::string sOfDate, std::string eOfDate, int statID, int fadID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, sID, iNumber, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, sID, iNumber, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		specificationID = sID;
@@ -170,6 +170,7 @@ namespace BusinessLayer
 		statusID = statID;
 		fixedAssetsDetailsID = fadID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateFixedAssets(id, specificationID, inventoryNumber, primaryCost, stopCost, serviceLife, 
 			isAmortize, buyDate, startOfOperationDate, endOfOperationDate, statusID, fixedAssetsDetailsID, errorMessage))
 		{
@@ -183,12 +184,13 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool FixedAssets::CreateFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssets::CreateFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateFixedAssets(id, specificationID, inventoryNumber, primaryCost, stopCost, serviceLife,
 			isAmortize, buyDate, startOfOperationDate, endOfOperationDate, statusID, fixedAssetsDetailsID, errorMessage))
 		{
@@ -201,7 +203,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool FixedAssets::DeleteFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssets::DeleteFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -215,7 +217,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool FixedAssets::UpdateFixedAssets(DataLayer::OrmasDal& ormasDal, int sID, std::string iNumber, double pCost, double sCost, int sLife, bool isAmor, std::string bDate,
+	bool FixedAssets::UpdateFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string iNumber, double pCost, double sCost, int sLife, bool isAmor, std::string bDate,
 		std::string sOfDate, std::string eOfDate, int statID, int fadID, std::string& errorMessage)
 	{
 		specificationID = sID;
@@ -230,6 +232,7 @@ namespace BusinessLayer
 		statusID = statID;
 		fixedAssetsDetailsID = fadID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateFixedAssets(id, specificationID, inventoryNumber, primaryCost, stopCost, serviceLife,
 			isAmortize, buyDate, startOfOperationDate, endOfOperationDate, statusID, fixedAssetsDetailsID, errorMessage))
 		{
@@ -242,9 +245,10 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool FixedAssets::UpdateFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssets::UpdateFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateFixedAssets(id, specificationID, inventoryNumber, primaryCost, stopCost, serviceLife,
 			isAmortize, buyDate, startOfOperationDate, endOfOperationDate, statusID, fixedAssetsDetailsID, errorMessage))
 		{
@@ -269,7 +273,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool FixedAssets::GetFixedAssetsByID(DataLayer::OrmasDal& ormasDal, int fID, std::string& errorMessage)
+	bool FixedAssets::GetFixedAssetsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fID, std::string& errorMessage)
 	{
 		if (fID <= 0)
 			return false;
@@ -303,8 +307,8 @@ namespace BusinessLayer
 	{
 		if (0 == id && 0 == specificationID && inventoryNumber == "" && 0 == primaryCost && 0 == stopCost && 0 == serviceLife
 			&& buyDate == "" && startOfOperationDate == "" && endOfOperationDate == "" && 0 == statusID && 0 == fixedAssetsDetailsID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void FixedAssets::Clear()
@@ -323,7 +327,7 @@ namespace BusinessLayer
 		fixedAssetsDetailsID = 0;
 	}
 
-	bool FixedAssets::IsDuplicate(DataLayer::OrmasDal& ormasDal, int sID, std::string iNumber, std::string& errorMessage)
+	bool FixedAssets::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string iNumber, std::string& errorMessage)
 	{
 		FixedAssets fixedAssets;
 		fixedAssets.Clear();
@@ -342,7 +346,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool FixedAssets::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssets::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		FixedAssets fixedAssets;
 		fixedAssets.Clear();
@@ -361,18 +365,18 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool FixedAssets::CreatePostingFixedAssetsEntry(DataLayer::OrmasDal& ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage)
+	bool FixedAssets::CreatePostingFixedAssetsEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage)
 	{
 		if (purID > 0)
 		{
 			Balance balance;
-			if (balance.GetBalanceByUserID(ormasDal, purID, errorMessage))
+			if (balance.GetBalanceByUserID(globalVar, ormasDal, purID, errorMessage))
 			{
 				int debAccID = 0;
 				int credAccID = 0;
 				debAccID = debitingAccID;
 				credAccID = balance.GetSubaccountID();
-				if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 				{
 					return true;
 				}
@@ -385,7 +389,7 @@ namespace BusinessLayer
 			Balance tempBalance;
 			Subaccount sub;
 			Account account;
-			if (!account.GetAccountByNumber(ormasDal, "10520", errorMessage))
+			if (!account.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 				return false;
 			balance.SetUserID(acctbID);
 			std::string filter = balance.GenerateFilter(ormasDal);
@@ -397,9 +401,9 @@ namespace BusinessLayer
 				{
 					sub.Clear();
 					tempBalance.Clear();
-					if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+					if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 						return false;
-					if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+					if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 					{
 						if (sub.GetParentAccountID() == account.GetID())
 						{
@@ -414,7 +418,7 @@ namespace BusinessLayer
 			}
 			if (balance.GetSubaccountID() <= 0)
 				return false;
-			if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+			if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 			{
 				int debAccID = debitingAccID;
 				int credAccID = balance.GetSubaccountID();
@@ -422,7 +426,7 @@ namespace BusinessLayer
 				{
 					return false;
 				}
-				if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 				{
 					return true;
 				}
@@ -436,7 +440,7 @@ namespace BusinessLayer
 			{
 				return false;
 			}
-			if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 			{
 				return true;
 			}
@@ -444,18 +448,18 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool FixedAssets::CreatePostingFixedAssetsEntryReverce(DataLayer::OrmasDal& ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage)
+	bool FixedAssets::CreatePostingFixedAssetsEntryReverce(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage)
 	{
 		if (purID > 0)
 		{
 			Balance balance;
-			if (balance.GetBalanceByUserID(ormasDal, purID, errorMessage))
+			if (balance.GetBalanceByUserID(globalVar, ormasDal, purID, errorMessage))
 			{
 				int debAccID = 0;
 				int credAccID = 0;
 				debAccID = balance.GetSubaccountID();
 				credAccID = debitingAccID;
-				if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 				{
 					return true;
 				}
@@ -468,7 +472,7 @@ namespace BusinessLayer
 			Balance tempBalance;
 			Subaccount sub;
 			Account account;
-			if (!account.GetAccountByNumber(ormasDal, "10520", errorMessage))
+			if (!account.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 				return false;
 			balance.SetUserID(acctbID);
 			std::string filter = balance.GenerateFilter(ormasDal);
@@ -480,9 +484,9 @@ namespace BusinessLayer
 				{
 					sub.Clear();
 					tempBalance.Clear();
-					if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+					if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 						return false;
-					if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+					if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 					{
 						if (sub.GetParentAccountID() == account.GetID())
 						{
@@ -497,7 +501,7 @@ namespace BusinessLayer
 			}
 			if (balance.GetSubaccountID() <= 0)
 				return false;
-			if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+			if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 			{
 				int debAccID = balance.GetSubaccountID();
 				int credAccID = debitingAccID;
@@ -505,7 +509,7 @@ namespace BusinessLayer
 				{
 					return false;
 				}
-				if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 				{
 					return true;
 				}
@@ -519,7 +523,7 @@ namespace BusinessLayer
 			{
 				return false;
 			}
-			if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 			{
 				return true;
 			}
@@ -527,25 +531,25 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool FixedAssets::CreatePostingFixedAssetsEntryWriteOFF(DataLayer::OrmasDal& ormasDal, int fixedAssetsID, std::string& errorMessage)
+	bool FixedAssets::CreatePostingFixedAssetsEntryWriteOFF(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fixedAssetsID, std::string& errorMessage)
 	{
 		FixedAssets fx;
 		FixedAssetsDetails fxDetails;
 		DivisionAccountRelation daRel;
-		if (!fx.GetFixedAssetsByID(ormasDal, fixedAssetsID, errorMessage))
+		if (!fx.GetFixedAssetsByID(globalVar, ormasDal, fixedAssetsID, errorMessage))
 			return false;
-		if (!fxDetails.GetFixedAssetsDetailsByID(ormasDal, fx.GetFixedAssetsDetailsID(), errorMessage))
+		if (!fxDetails.GetFixedAssetsDetailsByID(globalVar, ormasDal, fx.GetFixedAssetsDetailsID(), errorMessage))
 			return false;
 		if (fxDetails.GetAmortizeAccountID() <= 0 || fxDetails.GetPrimaryCostAccountID() <= 0)
 			return false;
-		if (!daRel.GetDARelationByDivisionIDAndCode(ormasDal, fxDetails.GetDepartmentID(), "TO WRITE-OFF", errorMessage))
+		if (!daRel.GetDARelationByDivisionIDAndCode(globalVar, ormasDal, fxDetails.GetDepartmentID(), "TO WRITE-OFF", errorMessage))
 			return false;
 
 		Subaccount primAcc;
 		Subaccount amotAcc;
-		if (!amotAcc.GetSubaccountByID(ormasDal, fxDetails.GetAmortizeAccountID(), errorMessage))
+		if (!amotAcc.GetSubaccountByID(globalVar, ormasDal, fxDetails.GetAmortizeAccountID(), errorMessage))
 			return false;
-		if (!primAcc.GetSubaccountByID(ormasDal, fxDetails.GetPrimaryCostAccountID(), errorMessage))
+		if (!primAcc.GetSubaccountByID(globalVar, ormasDal, fxDetails.GetPrimaryCostAccountID(), errorMessage))
 			return false;
 		int debAccID = fxDetails.GetAmortizeAccountID();
 		int credAccID = daRel.GetAccountID();
@@ -553,7 +557,7 @@ namespace BusinessLayer
 		{
 			return false;
 		}
-		if (this->CreateEntryWriteOFF(ormasDal, debAccID, amotAcc.GetCurrentBalance()*(-1), credAccID, ormasDal.GetSystemDate(), errorMessage))
+		if (this->CreateEntryWriteOFF(globalVar, ormasDal, debAccID, amotAcc.GetCurrentBalance()*(-1), credAccID, ormasDal.GetSystemDate(), errorMessage))
 		{
 			debAccID = daRel.GetAccountID();
 			credAccID = fxDetails.GetPrimaryCostAccountID();
@@ -561,7 +565,7 @@ namespace BusinessLayer
 			{
 				return false;
 			}
-			if (this->CreateEntryWriteOFF(ormasDal, debAccID, primAcc.GetCurrentBalance(), credAccID, ormasDal.GetSystemDate(), errorMessage))
+			if (this->CreateEntryWriteOFF(globalVar, ormasDal, debAccID, primAcc.GetCurrentBalance(), credAccID, ormasDal.GetSystemDate(), errorMessage))
 			{
 				return true;
 			}
@@ -569,7 +573,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool FixedAssets::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool FixedAssets::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -578,11 +582,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Покупака основного средства!"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -594,7 +598,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool FixedAssets::CreateEntryCancel(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool FixedAssets::CreateEntryCancel(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -603,11 +607,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена покупки основного средства"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -619,7 +623,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool FixedAssets::CreateEntryWriteOFF(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool FixedAssets::CreateEntryWriteOFF(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -628,11 +632,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Списание основного средства"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}

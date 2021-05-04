@@ -397,6 +397,30 @@ namespace DataLayer{
 		return currentDate;
 	}
 
+	//start isolated transaction level serializable
+	bool OrmasDal::StartIsolatedTransaction(std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+
+		//start transaction
+		std::string sqlCommand = "BEGIN ISOLATION LEVEL SERIALIZABLE;";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	//transaction functions
 	bool OrmasDal::StartTransaction(std::string& errorMessage)
 	{
@@ -705,7 +729,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".account_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY account_history_id ASC LIMIT 1000;";
+			sqlCommand += " ORDER BY account_history_id ASC ;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -751,6 +775,67 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	// Get all account history from DB
+	std::vector<accountChangeLogCollection> OrmasDal::GetAccountChangeLog(std::string& errorMessage, std::string filter)
+	{
+		accountChangeLogCollection rowTuple;
+		std::vector<accountChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".account_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY account_change_log_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					int AclID;
+					int accountID;
+					std::string accountNumber;
+					double startBalance;
+					double currentBalance;
+					std::string logDate;
+					
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						AclID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						accountID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						accountNumber = PQgetvalue(result, i, 2);
+						startBalance = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						currentBalance = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						logDate = PQgetvalue(result, i, 5);
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						int operationID =accountID = std::stoi(std::string(PQgetvalue(result, i, 7)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 7)));
+						rowTuple = std::make_tuple(AclID, accountID, accountNumber, startBalance, currentBalance, logDate, userID, operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for account change log, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	//Get accountables
 	std::vector<accountableViewCollection> OrmasDal::GetAccountable(std::string& errorMessage, std::string filter)
 	{
@@ -764,9 +849,9 @@ namespace DataLayer{
 		else
 		{
 			PGresult* result;
-			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_veiw ";
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountables_veiw ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id;";
+			sqlCommand += " ORDER BY employee_id;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -775,14 +860,15 @@ namespace DataLayer{
 				{
 					for (int i = 0; i < PQntuples(result); i++)
 					{
-						int employeeID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
-						std::string employeeName = PQgetvalue(result, i, 1);
-						std::string employeeSurname = PQgetvalue(result, i, 2);
-						std::string information = PQgetvalue(result, i, 3);
-						std::string employeePhone = PQgetvalue(result, i, 4);
-						std::string employeeAddress = PQgetvalue(result, i, 5);
-						std::string employeeRole = PQgetvalue(result, i, 6);
-						rowTuple = std::make_tuple(employeeID, employeeName, employeeSurname, information, employeePhone,
+						int accountableID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int employeeID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						std::string employeeName = PQgetvalue(result, i, 2);
+						std::string employeeSurname = PQgetvalue(result, i, 3);
+						std::string information = PQgetvalue(result, i, 4);
+						std::string employeePhone = PQgetvalue(result, i, 5);
+						std::string employeeAddress = PQgetvalue(result, i, 6);
+						std::string employeeRole = PQgetvalue(result, i, 7);
+						rowTuple = std::make_tuple(accountableID, employeeID, employeeName, employeeSurname, information, employeePhone,
 							employeeAddress, employeeRole);
 						resultVector.push_back(rowTuple);
 					}
@@ -806,6 +892,311 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get accountable approvement
+	std::vector<accountableApprovementCollection> OrmasDal::GetAccountableApprovement(std::string& errorMessage, std::string filter)
+	{
+
+		accountableApprovementCollection rowTuple;
+		std::vector<accountableApprovementCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_approvement_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_approvement_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableApprovementID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string approveDate = PQgetvalue(result, i, 1);
+						int directorID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						int accountantID = std::stoi(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						rowTuple = std::make_tuple(accountableApprovementID, approveDate, directorID, accountantID, accountableDocumentID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable approvement, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountable document list
+	std::vector<accountableDocumentListCollection> OrmasDal::GetAccountableDocumentList(std::string& errorMessage, std::string filter)
+	{
+		accountableDocumentListCollection rowTuple;
+		std::vector<accountableDocumentListCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_document_list_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_document_list_id  DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableDocumentListID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int expenseDocumentID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						rowTuple = std::make_tuple(accountableDocumentListID, accountableDocumentID, expenseDocumentID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable document list, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountable document
+	std::vector<accountableDocumentCollection> OrmasDal::GetAccountableDocument(std::string& errorMessage, std::string filter)
+	{
+		accountableDocumentCollection rowTuple;
+		std::vector<accountableDocumentCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_documents_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_document_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string documentDate = PQgetvalue(result, i, 1);
+						double value = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						std::string expenseAssignment = PQgetvalue(result, i, 3);
+						int accountableID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						rowTuple = std::make_tuple(accountableDocumentID, documentDate, value, expenseAssignment, accountableID, statusID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable document , please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountable entry
+	std::vector<accountableEntryCollection> OrmasDal::GetAccountableEntry(std::string& errorMessage, std::string filter)
+	{
+		accountableEntryCollection rowTuple;
+		std::vector<accountableEntryCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_entries_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_entry_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableEntryID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int debitAccountID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int debitSubaccountID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double value = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						int creditAccountID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int creditSubaccountID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int accountableDocumrntID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						rowTuple = std::make_tuple(accountableEntryID, debitAccountID, debitSubaccountID, value, creditAccountID, creditSubaccountID, accountableDocumrntID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable entries , please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+
+	//Get accountable payment
+	std::vector<accountablePaymentCollection> OrmasDal::GetAccountablePayment(std::string& errorMessage, std::string filter)
+	{
+		accountablePaymentCollection rowTuple;
+		std::vector<accountablePaymentCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_payment_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_payment_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountablePaymentID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int paymentID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						rowTuple = std::make_tuple(accountablePaymentID, accountableDocumentID, paymentID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable payment , please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountable withdrawal
+	std::vector<accountableWithdrawalCollection> OrmasDal::GetAccountableWithdrawal(std::string& errorMessage, std::string filter)
+	{
+		accountableWithdrawalCollection rowTuple;
+		std::vector<accountableWithdrawalCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_withdrawal_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_withdrawal_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableWithdrawalID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int withdrawalID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						rowTuple = std::make_tuple(accountableWithdrawalID, accountableDocumentID, withdrawalID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable withdrawal , please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	//Get accountable transaction
 	std::vector<accountableTransactionCollection> OrmasDal::GetAccountableTransaction(std::string& errorMessage, std::string filter)
 	{
@@ -821,7 +1212,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_transaction_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id;";
+			sqlCommand += " ORDER BY accountable_document_id DESC;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -831,11 +1222,12 @@ namespace DataLayer{
 					for (int i = 0; i < PQntuples(result); i++)
 					{
 						int accountableTransactionID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
-						int accountableID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
-						double startValue = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
-						double endValue = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
-						int operationID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
-						rowTuple = std::make_tuple(accountableTransactionID, accountableID, startValue, endValue, operationID);
+						double residualValue = std::stod(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						double totalValue = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double spentValue = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double differenceValue = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						rowTuple = std::make_tuple(accountableTransactionID, residualValue, totalValue, spentValue, differenceValue, accountableDocumentID);
 						resultVector.push_back(rowTuple);
 					}
 					PQclear(result);
@@ -1186,7 +1578,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".balances_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY balance_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY balance_id DESC;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -1249,7 +1641,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".branches_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY branch_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY branch_id LIMIT 1000;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -1291,6 +1683,57 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	// Get all branches from DB
+	std::vector<branchSubaccountViewCollection> OrmasDal::GetBranchSubaccount(std::string& errorMessage, std::string filter)
+	{
+		branchSubaccountViewCollection rowTuple;
+		std::vector<branchSubaccountViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".branch_subaccount_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY branch_subaccount_id LIMIT 1000;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int branchSubaccountID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string branchName = PQgetvalue(result, i, 1);
+						std::string subaccountNumber = PQgetvalue(result, i, 2);
+						int branchID = std::stoi(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						int subaccountID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						rowTuple = std::make_tuple(branchSubaccountID, branchName, subaccountNumber, branchID, subaccountID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for branches, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	//Get Borrowers
 	std::vector<borrowersViewCollection> OrmasDal::GetBorrowers(std::string& errorMessage, std::string filter)
 	{
@@ -1305,7 +1748,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".borrowers_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY user_id LIMIT 1000;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -1595,7 +2038,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".clients_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY user_id DESC;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -2525,7 +2968,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".employees_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY user_id DESC ";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -2743,11 +3186,12 @@ namespace DataLayer{
 						int otherStockID = std::stoi(std::string(PQgetvalue(result, i, 28)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 28)));
 						int rcpOthStID = std::stoi(std::string(PQgetvalue(result, i, 29)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 29)));
 						int conOthStID = std::stoi(std::string(PQgetvalue(result, i, 30)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 30)));
+						int accDocID = std::stoi(std::string(PQgetvalue(result, i, 30)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 31)));
 						rowTuple = std::make_tuple(entryID, entryDate, debitingAccountNumber, value, creditingAccountNumber, operationID,
 							subaccountID, debitingAccountID, creditingAccountID, description, conProdID, conRawID, fixAstID,
 							fixAstOperID, invenID, invenID, orderID, ordRawID, paymentID, payslipID, prodConRawID, rcpProdID,
 							returnID, spoilageID, stockTrID, withdrawalID, writeOFFID, writeOFFRawID, productID, otherStockID, 
-							rcpOthStID, conOthStID);
+							rcpOthStID, conOthStID, accDocID);
 						resultVector.push_back(rowTuple);
 					}
 					PQclear(result);
@@ -2918,6 +3362,59 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+
+	// Get all financial report
+	std::vector<expenseDocumentCollection> OrmasDal::GetExpenseDocument(std::string& errorMessage, std::string filter)
+	{
+		expenseDocumentCollection rowTuple;
+		std::vector<expenseDocumentCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".expense_document_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY expense_document_id DESC LIMIT 1000;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int expenseDocumentID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string expenseName = PQgetvalue(result, i, 1);
+						double count = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double sum = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						int measureID= std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						rowTuple = std::make_tuple(expenseDocumentID, expenseName, count, sum, measureID, currencyID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for expense document, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+
 	// Get all financial report
 	std::vector<financialReportCollection> OrmasDal::GetFinancialReport(std::string& errorMessage, std::string filter)
 	{
@@ -3009,10 +3506,10 @@ namespace DataLayer{
 						int fixedAssetsID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
 						std::string fixedAssetsName = PQgetvalue(result, i, 1);
 						std::string inventoryNumber = PQgetvalue(result, i, 2);
-						double primaryCost = std::stoi(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
-						double stopCost = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
-						double primaryCostValue = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
-						double amortizeValue = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						double primaryCost = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double stopCost = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						double primaryCostValue = std::stod(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						double amortizeValue = std::stod(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
 						std::string divisionName = PQgetvalue(result, i, 7);
 						std::string statusName = PQgetvalue(result, i, 8);
 						int serviceLife = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 9)));
@@ -3024,9 +3521,11 @@ namespace DataLayer{
 						int faSpecID = std::stoi(std::string(PQgetvalue(result, i, 14)).length() == 0 ? "0" : PQgetvalue(result, i, 14));
 						int statusID = std::stoi(std::string(PQgetvalue(result, i, 15)).length() == 0 ? "0" : PQgetvalue(result, i, 15));
 						int faDetID = std::stoi(std::string(PQgetvalue(result, i, 16)).length() == 0 ? "0" : PQgetvalue(result, i, 16));
+						int prAccID = std::stoi(std::string(PQgetvalue(result, i, 17)).length() == 0 ? "0" : PQgetvalue(result, i, 17));
+						int amAccID = std::stoi(std::string(PQgetvalue(result, i, 18)).length() == 0 ? "0" : PQgetvalue(result, i, 18));
 						rowTuple = std::make_tuple(fixedAssetsID, fixedAssetsName, inventoryNumber, primaryCost, stopCost,
 							primaryCostValue, amortizeValue, divisionName, statusName, serviceLife, isamortize, buyDate,
-							startDate, endDate, faSpecID, statusID, faDetID);
+							startDate, endDate, faSpecID, statusID, faDetID, prAccID, amAccID);
 						resultVector.push_back(rowTuple);
 					}
 					PQclear(result);
@@ -3307,6 +3806,55 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get group
+	std::vector<groupsCollection> OrmasDal::GetGroups(std::string& errorMessage, std::string filter)
+	{
+		groupsCollection rowTuple;
+		std::vector<groupsCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".group_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY group_id DESC LIMIT 1000;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int gID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string groupName = std::string(PQgetvalue(result, i, 1));
+						std::string definision = std::string(PQgetvalue(result, i, 2));
+						rowTuple = std::make_tuple(gID, groupName, definision);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for group, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	//Get inventorization list
 	std::vector<inventorizationListViewCollection> OrmasDal::GetInventorizationList(std::string& errorMessage, std::string filter)
 	{
@@ -3577,7 +4125,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".inventory_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " LIMIT 1000;";
+			sqlCommand += " ;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -3963,7 +4511,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".orders_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY order_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY order_id DESC LIMIT 2000;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -4272,7 +4820,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".payments_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY payment_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY payment_id DESC LIMIT 2000;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -5896,7 +6444,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".relations_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id_1 ASC LIMIT 1000;";
+			sqlCommand += " ORDER BY user_id_1 ASC LIMIT 2000;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
 			{
@@ -6336,6 +6884,58 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get specification change log
+	std::vector<specificationChangeLogCollection> OrmasDal::GetSpecificationChangeLog(std::string& errorMessage, std::string filter)
+	{
+		specificationChangeLogCollection rowTuple;
+		std::vector<specificationChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".specification_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY specification_change_log_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int slID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int specificationID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int productID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double count = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						std::string logDate = std::string(PQgetvalue(result, i, 4));
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));						
+						rowTuple = std::make_tuple(slID, specificationID, productID, count, logDate, userID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for specification change log, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	// Get specifications 
 	std::vector<specificationsViewCollection> OrmasDal::GetSpecifications(std::string& errorMessage, std::string filter)
 	{
@@ -6731,6 +7331,59 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get stock limit
+	std::vector<stockLimitViewCollection> OrmasDal::GetStockLimit(std::string& errorMessage, std::string filter)
+	{
+		stockLimitViewCollection rowTuple;
+		std::vector<stockLimitViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".stock_limit_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY warehouse_name ASC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int slID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string warehouseName = PQgetvalue(result, i, 1);
+						std::string productName = PQgetvalue(result, i, 2);
+						double minValue = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double maxValue = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int stockID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int productID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						rowTuple = std::make_tuple(slID, warehouseName, productName, minValue, maxValue, stockID, productID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for stock limit, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	//Get stock
 	std::vector<stockHistoryViewCollection> OrmasDal::GetStockHistory(std::string& errorMessage, std::string filter)
 	{
@@ -6745,7 +7398,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".stock_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY product_name ASC LIMIT 1000;";
+			sqlCommand += " ORDER BY product_name ASC ;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -6790,6 +7443,65 @@ namespace DataLayer{
 				//WriteLog(logStr);
 				PQclear(result);
 				errorMessage = "Cannot get information from DB for stock, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+
+	//Get stock change log
+	std::vector<stockChangeLogCollection> OrmasDal::GetStockChangeLog(std::string& errorMessage, std::string filter)
+	{
+		stockChangeLogCollection rowTuple;
+		std::vector<stockChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".stock_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY stock_change_log_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int sclID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int sID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int productID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double count = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double sum = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						int warehouseID = std::stoi(std::string(PQgetvalue(result, i, 7)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 7)));
+						std::string logDate = std::string(PQgetvalue(result, i, 8));
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 9)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 10)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 10)));
+						rowTuple = std::make_tuple(sclID, sID, productID, count, sum, statusID, currencyID, warehouseID, logDate, userID,
+							operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for stock change log, please contact with appliction provider!";
 			}
 		}
 		return resultVector;
@@ -6872,7 +7584,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".low_value_stock_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY other_stocks_name ASC LIMIT 1000;";
+			sqlCommand += " ORDER BY other_stocks_name ASC ;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -6922,6 +7634,64 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get stock
+	std::vector<lowValueStockChangeLogCollection> OrmasDal::GetLowValueStockChangeLog(std::string& errorMessage, std::string filter)
+	{
+		lowValueStockChangeLogCollection rowTuple;
+		std::vector<lowValueStockChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".low_value_stock_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY low_value_stock_change_log_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int lvsclID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int lvsID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int otherStocksID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double count = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double sum = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						int warehouseID = std::stoi(std::string(PQgetvalue(result, i, 7)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 7)));
+						std::string logDate = std::string(PQgetvalue(result, i, 8));
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 9)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 10)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 10)));
+						rowTuple = std::make_tuple(lvsclID, lvsID, otherStocksID, count, sum, statusID, currencyID, warehouseID, logDate, userID,
+							operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for stock change log, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	// Get all subaccounts from DB
 	std::vector<subaccountsViewCollection> OrmasDal::GetSubaccounts(std::string& errorMessage, std::string filter)
 	{
@@ -6936,7 +7706,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".subaccounts_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY subaccount_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY subaccount_id DESC";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -6982,6 +7752,57 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	// Get all subaccount limits from DB
+	std::vector<subaccountLimitViewCollection> OrmasDal::GetSubaccountLimit(std::string& errorMessage, std::string filter)
+	{
+		subaccountLimitViewCollection rowTuple;
+		std::vector<subaccountLimitViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".subaccount_limit_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY subaccount_limit_id DESC LIMIT 1000;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int subaccountLimitID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string subaccountNumber = PQgetvalue(result, i, 1);
+						int subaccountID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double minValue = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double maxValue = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						rowTuple = std::make_tuple(subaccountLimitID, subaccountNumber, subaccountID, minValue, maxValue);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for subaccount limit, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	// Get all subaccounts history from DB
 	std::vector<subaccountHistoryCollection> OrmasDal::GetSubaccountHistory(std::string& errorMessage, std::string filter)
 	{
@@ -6996,7 +7817,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".subaccount_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY subaccount_history_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY subaccount_history_id DESC ;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -7029,6 +7850,59 @@ namespace DataLayer{
 				//WriteLog(logStr);
 				PQclear(result);
 				errorMessage = "Cannot get information from DB for subaccount, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get all subaccounts history from DB
+	std::vector<subaccountChangeLogCollection> OrmasDal::GetSubaccountChangeLog(std::string& errorMessage, std::string filter)
+	{
+		subaccountChangeLogCollection rowTuple;
+		std::vector<subaccountChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".subaccount_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY subaccount_change_log_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int shID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int subaccountID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						double startBalance = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double currentBalance = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						std::string logDate = PQgetvalue(result, i, 4);
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						rowTuple = std::make_tuple(shID, subaccountID, startBalance, currentBalance, logDate, userID, operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for subaccount change log, please contact with appliction provider!";
 			}
 		}
 		return resultVector;
@@ -7284,7 +8158,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".transport_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY product_name ASC LIMIT 1000 ";
+			sqlCommand += " ORDER BY transport_history_id ASC  ";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -7300,8 +8174,9 @@ namespace DataLayer{
 						double sum = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
 						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
 						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
-						std::string historyDate = PQgetvalue(result, i, 7);
-						rowTuple = std::make_tuple(thID, transportID, productID, count, sum, statusID, currencyID, historyDate);
+						std::string fromDate = PQgetvalue(result, i, 7);
+						std::string tillDate = PQgetvalue(result, i, 8);
+						rowTuple = std::make_tuple(thID, transportID, productID, count, sum, statusID, currencyID, fromDate, tillDate);
 						resultVector.push_back(rowTuple);
 					}
 					PQclear(result);
@@ -7324,6 +8199,62 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get transport change log
+	std::vector<transportChangeLogCollection> OrmasDal::GetTransportChangeLog(std::string& errorMessage, std::string filter)
+	{
+		transportChangeLogCollection rowTuple;
+		std::vector<transportChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".transport_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY transport_change_log_id DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int thID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int transportID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int productID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double count = std::stoi(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double sum = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						std::string logDate = PQgetvalue(result, i, 7);
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 8)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 8)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 9)));
+						rowTuple = std::make_tuple(thID, transportID, productID, count, sum, statusID, currencyID, logDate, userID, operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for transport change log, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	// Get user
 	std::vector<usersViewCollection> OrmasDal::GetUsers(std::string& errorMessage, std::string filter)
 	{
@@ -7338,7 +8269,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".users_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id DESC LIMIT 1000;";
+			sqlCommand += " ORDER BY user_id DESC;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -7377,6 +8308,121 @@ namespace DataLayer{
 				//WriteLog(logStr);
 				PQclear(result);
 				errorMessage = "Cannot get information from DB for user, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get user extended
+	std::vector<userExtendedViewCollection> OrmasDal::GetUserExtended(std::string& errorMessage, std::string filter)
+	{
+		userExtendedViewCollection rowTuple;
+		std::vector<userExtendedViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".user_extended_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY user_id DESC ";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string userName = PQgetvalue(result, i, 1);
+						std::string userSurname = PQgetvalue(result, i, 2);
+						std::string userPhone = PQgetvalue(result, i, 3);
+						std::string userAddress = PQgetvalue(result, i, 4);
+						std::string companyName = PQgetvalue(result, i, 5);
+						std::string branchName = PQgetvalue(result, i, 6);
+						std::string roleName = PQgetvalue(result, i, 7);
+						std::string subaccountNumber = PQgetvalue(result, i, 8);
+						int roleID = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : PQgetvalue(result, i, 9));
+						int subaccountID = std::stoi(std::string(PQgetvalue(result, i, 10)).length() == 0 ? "0" : PQgetvalue(result, i, 10));
+						int accountID = std::stoi(std::string(PQgetvalue(result, i, 11)).length() == 0 ? "0" : PQgetvalue(result, i, 11));
+						int companyID = std::stoi(std::string(PQgetvalue(result, i, 12)).length() == 0 ? "0" : PQgetvalue(result, i, 12));
+						int branchID = std::stoi(std::string(PQgetvalue(result, i, 13)).length() == 0 ? "0" : PQgetvalue(result, i, 13));
+						rowTuple = std::make_tuple(userID, userName, userSurname, userPhone, userAddress, companyName, branchName,
+							roleName, subaccountNumber, roleID, subaccountID, accountID, companyID, branchID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					PQclear(result);
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for user branch, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get user
+	std::vector<userGroupViewCollection> OrmasDal::GetUserGroup(std::string& errorMessage, std::string filter)
+	{
+		userGroupViewCollection rowTuple;
+		std::vector<userGroupViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".user_group_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY user_group_id DESC LIMIT 1000;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int userGroupID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string groupName = PQgetvalue(result, i, 1);
+						std::string userSurname = PQgetvalue(result, i, 2);
+						std::string userName = PQgetvalue(result, i, 3);
+						int roleID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : PQgetvalue(result, i, 4));
+						int groupID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : PQgetvalue(result, i, 5));
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : PQgetvalue(result, i, 6));
+						rowTuple = std::make_tuple(userGroupID, groupName, userSurname, userName, roleID, groupID,
+							userID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					PQclear(result);
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for user group, please contact with appliction provider!";
 			}
 		}
 		return resultVector;
@@ -8160,12 +9206,11 @@ namespace DataLayer{
 		return resultVector;
 	}
 
-	//Get accountables
-	std::vector<accountableViewCollection> OrmasDal::GetAccountable(int offset, std::string& errorMessage, std::string filter)
+	// Get all account change log from DB
+	std::vector<accountChangeLogCollection> OrmasDal::GetAccountChangeLog(int offset, std::string& errorMessage, std::string filter)
 	{
-
-		accountableViewCollection rowTuple;
-		std::vector<accountableViewCollection> resultVector;
+		accountChangeLogCollection rowTuple;
+		std::vector<accountChangeLogCollection> resultVector;
 		if (PQstatus(dbConnection) == CONNECTION_BAD)
 		{
 			errorMessage = "DB connection was lost! Please restart application!";
@@ -8173,9 +9218,9 @@ namespace DataLayer{
 		else
 		{
 			PGresult* result;
-			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_veiw ";
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".account_change_log_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id";
+			sqlCommand += " ORDER BY account_change_log_id DESC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -8190,14 +9235,76 @@ namespace DataLayer{
 				{
 					for (int i = 0; i < PQntuples(result); i++)
 					{
-						int employeeID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
-						std::string employeeName = PQgetvalue(result, i, 1);
-						std::string employeeSurname = PQgetvalue(result, i, 2);
-						std::string information = PQgetvalue(result, i, 3);
-						std::string employeePhone = PQgetvalue(result, i, 4);
-						std::string employeeAddress = PQgetvalue(result, i, 5);
-						std::string employeeRole = PQgetvalue(result, i, 6);
-						rowTuple = std::make_tuple(employeeID, employeeName, employeeSurname, information, employeePhone,
+						int aclID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int accountID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						std::string accountNumber = PQgetvalue(result, i, 2);
+						double startBalance = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double currentBalance = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						std::string logDate = PQgetvalue(result, i, 5);
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 7)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 7)));
+						rowTuple = std::make_tuple(aclID, accountID, accountNumber, startBalance, currentBalance, logDate, userID, operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for account change log, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountables
+	std::vector<accountableViewCollection> OrmasDal::GetAccountable(int offset, std::string& errorMessage, std::string filter)
+	{
+
+		accountableViewCollection rowTuple;
+		std::vector<accountableViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountables_veiw ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY employee_id";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int employeeID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						std::string employeeName = PQgetvalue(result, i, 2);
+						std::string employeeSurname = PQgetvalue(result, i, 3);
+						std::string information = PQgetvalue(result, i, 4);
+						std::string employeePhone = PQgetvalue(result, i, 5);
+						std::string employeeAddress = PQgetvalue(result, i, 6);
+						std::string employeeRole = PQgetvalue(result, i, 7);
+						rowTuple = std::make_tuple(accountableID, employeeID, employeeName, employeeSurname, information, employeePhone,
 							employeeAddress, employeeRole);
 						resultVector.push_back(rowTuple);
 					}
@@ -8221,6 +9328,347 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get accountable approvement
+	std::vector<accountableApprovementCollection> OrmasDal::GetAccountableApprovement(int offset, std::string& errorMessage, std::string filter)
+	{
+
+		accountableApprovementCollection rowTuple;
+		std::vector<accountableApprovementCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_approvement_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_approvement_id";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += "  DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableApprovementID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string approveDate = PQgetvalue(result, i, 1);
+						int directorID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						int accountantID = std::stoi(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						rowTuple = std::make_tuple(accountableApprovementID, approveDate, directorID, accountantID, accountableDocumentID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable approvement, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountable document list
+	std::vector<accountableDocumentListCollection> OrmasDal::GetAccountableDocumentList(int offset, std::string& errorMessage, std::string filter)
+	{
+		accountableDocumentListCollection rowTuple;
+		std::vector<accountableDocumentListCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_document_list_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_document_list_id";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += "  DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableDocumentListID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int expenseDocumentID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						rowTuple = std::make_tuple(accountableDocumentListID, accountableDocumentID, expenseDocumentID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable document list, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountable document
+	std::vector<accountableDocumentCollection> OrmasDal::GetAccountableDocument(int offset, std::string& errorMessage, std::string filter)
+	{
+		accountableDocumentCollection rowTuple;
+		std::vector<accountableDocumentCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_documents_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_document_id DESC";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string documentDate = PQgetvalue(result, i, 1);
+						double value = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						std::string expenseAssignment = PQgetvalue(result, i, 3);
+						int accountableID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						rowTuple = std::make_tuple(accountableDocumentID, documentDate, value, expenseAssignment, accountableID, statusID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable document , please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountable entry
+	std::vector<accountableEntryCollection> OrmasDal::GetAccountableEntry(int offset, std::string& errorMessage, std::string filter)
+	{
+		accountableEntryCollection rowTuple;
+		std::vector<accountableEntryCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_entries_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_entry_id";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += "  DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableEntryID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int debitAccountID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int debitSubaccountID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double value = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						int creditAccountID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int creditSubaccountID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int accountableDocumrntID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						rowTuple = std::make_tuple(accountableEntryID, debitAccountID, debitSubaccountID, value, creditAccountID, creditSubaccountID, accountableDocumrntID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable entries , please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+
+	//Get accountable payment
+	std::vector<accountablePaymentCollection> OrmasDal::GetAccountablePayment(int offset, std::string& errorMessage, std::string filter)
+	{
+		accountablePaymentCollection rowTuple;
+		std::vector<accountablePaymentCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_payment_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_payment_id";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += "  DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountablePaymentID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int paymentID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						rowTuple = std::make_tuple(accountablePaymentID, accountableDocumentID, paymentID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable payment , please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get accountable withdrawal
+	std::vector<accountableWithdrawalCollection> OrmasDal::GetAccountableWithdrawal(int offset, std::string& errorMessage, std::string filter)
+	{
+		accountableWithdrawalCollection rowTuple;
+		std::vector<accountableWithdrawalCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_withdrawal_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY accountable_withdrawal_id";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += "  DESC;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int accountableWithdrawalID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int withdrawalID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						rowTuple = std::make_tuple(accountableWithdrawalID, accountableDocumentID, withdrawalID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for accountable payment , please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	//Get accountable transaction
 	std::vector<accountableTransactionCollection> OrmasDal::GetAccountableTransaction(int offset, std::string& errorMessage, std::string filter)
 	{
@@ -8236,13 +9684,13 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".accountable_transaction_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id";
+			sqlCommand += " ORDER BY accountable_transaction_id";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
 				sqlCommand += boost::lexical_cast<std::string>(offset);
 			}
-			sqlCommand += " ;";
+			sqlCommand += "  DESC;";
 			result = PQexec(dbConnection, sqlCommand.c_str());
 
 			if (PQresultStatus(result) == PGRES_TUPLES_OK)
@@ -8252,11 +9700,12 @@ namespace DataLayer{
 					for (int i = 0; i < PQntuples(result); i++)
 					{
 						int accountableTransactionID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
-						int accountableID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
-						double startValue = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
-						double endValue = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
-						int operationID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
-						rowTuple = std::make_tuple(accountableTransactionID, accountableID, startValue, endValue, operationID);
+						double residualValue = std::stod(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						double totalValue = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double spentValue = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double differenceValue = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int accountableDocumentID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						rowTuple = std::make_tuple(accountableTransactionID, residualValue, totalValue, spentValue, differenceValue, accountableDocumentID);
 						resultVector.push_back(rowTuple);
 					}
 					PQclear(result);
@@ -8279,6 +9728,7 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	
 	//Get amortize group
 	std::vector<amortizeGroupCollection> OrmasDal::GetAmortizeGroup(int offset, std::string& errorMessage, std::string filter)
 	{
@@ -8627,7 +10077,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".balances_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY balance_id DESC LIMIT 1000 ";
+			sqlCommand += " ORDER BY balance_id DESC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -8714,6 +10164,64 @@ namespace DataLayer{
 						branchPhone = PQgetvalue(result, i, 3);
 						comment = PQgetvalue(result, i, 4);
 						rowTuple = std::make_tuple(branchID, branchName, branchAddress, branchPhone, comment);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for branches, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get all branches from DB
+	std::vector<branchSubaccountViewCollection> OrmasDal::GetBranchSubaccount(int offset, std::string& errorMessage, std::string filter)
+	{
+		branchSubaccountViewCollection rowTuple;
+		std::vector<branchSubaccountViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".branch_subaccount_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY branch_subaccount_id DESC LIMIT 1000 ";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int branchSubaccountID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string branchName = PQgetvalue(result, i, 1);
+						std::string subaccountNumber = PQgetvalue(result, i, 2);
+						int branchID = std::stoi(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						int subaccountID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						rowTuple = std::make_tuple(branchSubaccountID, branchName, subaccountNumber, branchID, subaccountID);
 						resultVector.push_back(rowTuple);
 					}
 					PQclear(result);
@@ -9065,7 +10573,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".clients_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id DESC LIMIT 1000 ";
+			sqlCommand += " ORDER BY user_id DESC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -10030,7 +11538,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".employees_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id DESC LIMIT 1000 ";
+			sqlCommand += " ORDER BY user_id DESC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -10333,11 +11841,12 @@ namespace DataLayer{
 						int otherStockID = std::stoi(std::string(PQgetvalue(result, i, 28)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 28)));
 						int rcpOthStID = std::stoi(std::string(PQgetvalue(result, i, 29)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 29)));
 						int conOthStID = std::stoi(std::string(PQgetvalue(result, i, 30)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 30)));
+						int accDocID = std::stoi(std::string(PQgetvalue(result, i, 30)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 31)));
 						rowTuple = std::make_tuple(entryID, entryDate, debitingAccountNumber, value, creditingAccountNumber, operationID,
 							subaccountID, debitingAccountID, creditingAccountID, description, conProdID, conRawID, fixAstID,
 							fixAstOperID, invenID, invenID, orderID, ordRawID, paymentID, payslipID, prodConRawID, rcpProdID,
 							returnID, spoilageID, stockTrID, withdrawalID, writeOFFID, writeOFFRawID, productID, otherStockID,
-							rcpOthStID, conOthStID);
+							rcpOthStID, conOthStID, accDocID);
 					}
 					PQclear(result);
 					return resultVector;
@@ -10526,6 +12035,63 @@ namespace DataLayer{
 	}
 
 	// Get all financial report
+	std::vector<expenseDocumentCollection> OrmasDal::GetExpenseDocument(int offset, std::string& errorMessage, std::string filter)
+	{
+		expenseDocumentCollection rowTuple;
+		std::vector<expenseDocumentCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".expense_document_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY expense_document_id DESC LIMIT 1000 ";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int expenseDocumentID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string expenseName = PQgetvalue(result, i, 1);
+						double count = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double sum = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						int measureID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						rowTuple = std::make_tuple(expenseDocumentID, expenseName, count, sum, measureID, currencyID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for expense document, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get all financial report
 	std::vector<financialReportCollection> OrmasDal::GetFinancialReport(int offset, std::string& errorMessage, std::string filter)
 	{
 		financialReportCollection rowTuple;
@@ -10643,9 +12209,11 @@ namespace DataLayer{
 						int faSpecID = std::stoi(std::string(PQgetvalue(result, i, 14)).length() == 0 ? "0" : PQgetvalue(result, i, 14));
 						int statusID = std::stoi(std::string(PQgetvalue(result, i, 15)).length() == 0 ? "0" : PQgetvalue(result, i, 15));
 						int faDetID = std::stoi(std::string(PQgetvalue(result, i, 16)).length() == 0 ? "0" : PQgetvalue(result, i, 16));
+						int prAccID = std::stoi(std::string(PQgetvalue(result, i, 17)).length() == 0 ? "0" : PQgetvalue(result, i, 17));
+						int amAccID = std::stoi(std::string(PQgetvalue(result, i, 18)).length() == 0 ? "0" : PQgetvalue(result, i, 18));
 						rowTuple = std::make_tuple(fixedAssetsID, fixedAssetsName, inventoryNumber, primaryCost, stopCost, 
 							primaryCostValue, amortizeValue, divisionName, statusName, serviceLife, isamortize, buyDate,
-							startDate, endDate, faSpecID, statusID, faDetID);
+							startDate, endDate, faSpecID, statusID, faDetID, prAccID, amAccID);
 						resultVector.push_back(rowTuple);
 					}
 					PQclear(result);
@@ -11102,7 +12670,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".inventory_history_view ";
 			sqlCommand += filter;
-			sqlCommand += "  LIMIT 1000 ";
+			sqlCommand += "  ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -11139,6 +12707,61 @@ namespace DataLayer{
 				//WriteLog(logStr);
 				PQclear(result);
 				errorMessage = "Cannot get information from DB for inventory history, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get group
+	std::vector<groupsCollection> OrmasDal::GetGroups(int offset, std::string& errorMessage, std::string filter)
+	{
+		groupsCollection rowTuple;
+		std::vector<groupsCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".group_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY group_id DESC LIMIT 1000 ";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int gID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string groupName = std::string(PQgetvalue(result, i, 1));
+						std::string definision = std::string(PQgetvalue(result, i, 2));
+						rowTuple = std::make_tuple(gID, groupName, definision);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for group, please contact with appliction provider!";
 			}
 		}
 		return resultVector;
@@ -11673,7 +13296,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".orders_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY order_id DESC LIMIT 1000 ";
+			sqlCommand += " ORDER BY order_id DESC LIMIT 2000 ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -12012,7 +13635,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".payments_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY payment_id DESC LIMIT 1000 ";
+			sqlCommand += " ORDER BY payment_id DESC LIMIT 2000 ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -13799,7 +15422,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".relations_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id_1 ASC LIMIT 1000 ";
+			sqlCommand += " ORDER BY user_id_1 ASC LIMIT 2000 ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -14287,6 +15910,64 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get specification change log
+	std::vector<specificationChangeLogCollection> OrmasDal::GetSpecificationChangeLog(int offset, std::string& errorMessage, std::string filter)
+	{
+		specificationChangeLogCollection rowTuple;
+		std::vector<specificationChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".specification_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY specification_change_log_id DESC";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int slID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int specificationID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int productID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double count = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						std::string logDate = std::string(PQgetvalue(result, i, 4));
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						rowTuple = std::make_tuple(slID, specificationID, productID, count, logDate, userID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for specification change log, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	// Get specifications 
 	std::vector<specificationsViewCollection> OrmasDal::GetSpecifications(int offset, std::string& errorMessage, std::string filter)
 	{
@@ -14724,6 +16405,65 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get stock limit
+	std::vector<stockLimitViewCollection> OrmasDal::GetStockLimit(int offset, std::string& errorMessage, std::string filter)
+	{
+		stockLimitViewCollection rowTuple;
+		std::vector<stockLimitViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".stock_limit_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY warehouse_name ASC LIMIT 1000 ";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int slID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string warehouseName = PQgetvalue(result, i, 1);
+						std::string productName = PQgetvalue(result, i, 2);
+						double minValue = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double maxValue = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int stockID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int productID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						rowTuple = std::make_tuple(slID, warehouseName, productName, minValue, maxValue, stockID, productID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for stock limit, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	// Get all subaccounts from DB
 	std::vector<subaccountsViewCollection> OrmasDal::GetSubaccounts(int offset, std::string& errorMessage, std::string filter)
 	{
@@ -14738,7 +16478,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".subaccounts_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY subaccount_id DESC LIMIT 1000 ";
+			sqlCommand += " ORDER BY subaccount_id DESC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -14785,6 +16525,63 @@ namespace DataLayer{
 				//WriteLog(logStr);
 				PQclear(result);
 				errorMessage = "Cannot get information from DB for subaccount, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get all subaccount limits from DB
+	std::vector<subaccountLimitViewCollection> OrmasDal::GetSubaccountLimit(int offset, std::string& errorMessage, std::string filter)
+	{
+		subaccountLimitViewCollection rowTuple;
+		std::vector<subaccountLimitViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".subaccount_limit_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY subaccount_limit_id DESC LIMIT 1000 ";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int subaccountLimitID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string subaccountNumber = PQgetvalue(result, i, 1);
+						int subaccountID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double minValue = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double maxValue = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						rowTuple = std::make_tuple(subaccountLimitID, subaccountNumber, subaccountID, minValue, maxValue);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for subaccount limit, please contact with appliction provider!";
 			}
 		}
 		return resultVector;
@@ -14873,7 +16670,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".stock_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY product_name ASC LIMIT 1000 ";
+			sqlCommand += " ORDER BY product_name ASC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -14930,6 +16727,70 @@ namespace DataLayer{
 	}
 
 	//Get stock
+	std::vector<stockChangeLogCollection> OrmasDal::GetStockChangeLog(int offset, std::string& errorMessage, std::string filter)
+	{
+		stockChangeLogCollection rowTuple;
+		std::vector<stockChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".stock_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY stock_change_log_id DESC";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int sclID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int sID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int productID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double count = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double sum = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						int warehouseID = std::stoi(std::string(PQgetvalue(result, i, 7)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 7)));
+						std::string logDate = std::string(PQgetvalue(result, i, 8));
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 9)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 10)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 10)));
+						rowTuple = std::make_tuple(sclID, sID, productID, count, sum, statusID, currencyID, warehouseID, logDate, userID,
+							operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for stock, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	//Get stock
 	std::vector<lowValueStockHistoryViewCollection> OrmasDal::GetLowValueStockHistory(int offset, std::string& errorMessage, std::string filter)
 	{
 		lowValueStockHistoryViewCollection rowTuple;
@@ -14943,7 +16804,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".low_value_stock_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY other_stock_name ASC LIMIT 1000 ";
+			sqlCommand += " ORDER BY other_stock_name ASC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -14999,6 +16860,70 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get stock change log
+	std::vector<lowValueStockChangeLogCollection> OrmasDal::GetLowValueStockChangeLog(int offset, std::string& errorMessage, std::string filter)
+	{
+		lowValueStockChangeLogCollection rowTuple;
+		std::vector<lowValueStockChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".low_value_stock_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY low_value_stock_change_log_id DESC ";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int lvsclID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int lvsID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int otherStocksID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double count = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double sum = std::stod(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						int warehouseID = std::stoi(std::string(PQgetvalue(result, i, 7)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 7)));
+						std::string logDate = std::string(PQgetvalue(result, i, 8));
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 9)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 10)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 10)));
+						rowTuple = std::make_tuple(lvsclID, lvsID, otherStocksID, count, sum, statusID, currencyID, warehouseID, logDate, userID,
+							operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for low value stock change log, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	// Get all subaccounts history from DB
 	std::vector<subaccountHistoryCollection> OrmasDal::GetSubaccountHistory(int offset, std::string& errorMessage, std::string filter)
 	{
@@ -15013,7 +16938,7 @@ namespace DataLayer{
 			PGresult* result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".subaccount_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY subaccount_history_id DESC LIMIT 1000 ";
+			sqlCommand += " ORDER BY subaccount_history_id DESC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -15052,6 +16977,65 @@ namespace DataLayer{
 				//WriteLog(logStr);
 				PQclear(result);
 				errorMessage = "Cannot get information from DB for subaccount, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get all subaccounts change log from DB
+	std::vector<subaccountChangeLogCollection> OrmasDal::GetSubaccountChangeLog(int offset, std::string& errorMessage, std::string filter)
+	{
+		subaccountChangeLogCollection rowTuple;
+		std::vector<subaccountChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult* result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".subaccount_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY subaccount_change_log_id DESC";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int shID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int subaccountID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						double startBalance = std::stod(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double currentBalance = std::stod(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						std::string logDate = PQgetvalue(result, i, 4);
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						rowTuple = std::make_tuple(shID, subaccountID, startBalance, currentBalance, logDate, userID, operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for subaccount change log, please contact with appliction provider!";
 			}
 		}
 		return resultVector;
@@ -15331,7 +17315,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".transport_history_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY product_name ASC LIMIT 1000 ";
+			sqlCommand += " ORDER BY transport_history_id ASC  ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -15353,8 +17337,9 @@ namespace DataLayer{
 						double sum = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
 						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
 						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
-						std::string historyDate = PQgetvalue(result, i, 7);
-						rowTuple = std::make_tuple(thID, transportID, productID, count, sum, statusID, currencyID, historyDate);
+						std::string fromDate = PQgetvalue(result, i, 7);
+						std::string tillDate = PQgetvalue(result, i, 8);
+						rowTuple = std::make_tuple(thID, transportID, productID, count, sum, statusID, currencyID, fromDate, tillDate);
 						resultVector.push_back(rowTuple);
 					}
 					PQclear(result);
@@ -15377,6 +17362,68 @@ namespace DataLayer{
 		return resultVector;
 	}
 
+	//Get transport history
+	std::vector<transportChangeLogCollection> OrmasDal::GetTransportChangeLog(int offset, std::string& errorMessage, std::string filter)
+	{
+		transportChangeLogCollection rowTuple;
+		std::vector<transportChangeLogCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".transport_change_log_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY transport_change_log_id DESC ";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int thID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						int transportID = std::stoi(std::string(PQgetvalue(result, i, 1)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 1)));
+						int productID = std::stoi(std::string(PQgetvalue(result, i, 2)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 2)));
+						double count = std::stoi(std::string(PQgetvalue(result, i, 3)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 3)));
+						double sum = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 4)));
+						int statusID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 5)));
+						int currencyID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 6)));
+						std::string logDate = PQgetvalue(result, i, 7);
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 8)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 8)));
+						int operationID = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 9)));
+						rowTuple = std::make_tuple(thID, transportID, productID, count, sum, statusID, currencyID, logDate, userID, operationID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+					PQclear(result);
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for transport change log, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
 	// Get user
 	std::vector<usersViewCollection> OrmasDal::GetUsers(int offset, std::string& errorMessage, std::string filter)
 	{
@@ -15391,7 +17438,7 @@ namespace DataLayer{
 			PGresult * result;
 			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".users_view ";
 			sqlCommand += filter;
-			sqlCommand += " ORDER BY user_id DESC LIMIT 1000 ";
+			sqlCommand += " ORDER BY user_id DESC ";
 			if (offset > 0)
 			{
 				sqlCommand += " OFFSET ";
@@ -15436,6 +17483,133 @@ namespace DataLayer{
 				//WriteLog(logStr);
 				PQclear(result);
 				errorMessage = "Cannot get information from DB for user, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get user extended
+	std::vector<userExtendedViewCollection> OrmasDal::GetUserExtended(int offset, std::string& errorMessage, std::string filter)
+	{
+		userExtendedViewCollection rowTuple;
+		std::vector<userExtendedViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".user_extended_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY user_id DESC ";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string userName = PQgetvalue(result, i, 1);
+						std::string userSurname = PQgetvalue(result, i, 2);
+						std::string userPhone = PQgetvalue(result, i, 3);
+						std::string userAddress = PQgetvalue(result, i, 4);
+						std::string companyName = PQgetvalue(result, i, 5);
+						std::string branchName = PQgetvalue(result, i, 6);
+						std::string roleName = PQgetvalue(result, i, 7);
+						std::string subaccountNumber = PQgetvalue(result, i, 8);
+						int roleID = std::stoi(std::string(PQgetvalue(result, i, 9)).length() == 0 ? "0" : PQgetvalue(result, i, 9));
+						int subaccountID = std::stoi(std::string(PQgetvalue(result, i, 10)).length() == 0 ? "0" : PQgetvalue(result, i, 10));
+						int accountID = std::stoi(std::string(PQgetvalue(result, i, 11)).length() == 0 ? "0" : PQgetvalue(result, i, 11));
+						int companyID = std::stoi(std::string(PQgetvalue(result, i, 12)).length() == 0 ? "0" : PQgetvalue(result, i, 12));
+						int branchID = std::stoi(std::string(PQgetvalue(result, i, 13)).length() == 0 ? "0" : PQgetvalue(result, i, 13));
+						rowTuple = std::make_tuple(userID, userName, userSurname, userPhone, userAddress, companyName, branchName,
+							roleName, subaccountNumber, roleID, subaccountID, accountID, companyID, branchID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					PQclear(result);
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for user branch, please contact with appliction provider!";
+			}
+		}
+		return resultVector;
+	}
+
+	// Get user
+	std::vector<userGroupViewCollection> OrmasDal::GetUserGroup(int offset, std::string& errorMessage, std::string filter)
+	{
+		userGroupViewCollection rowTuple;
+		std::vector<userGroupViewCollection> resultVector;
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+		}
+		else
+		{
+			PGresult * result;
+			std::string sqlCommand = "SELECT * FROM \"OrmasSchema\".user_group_view ";
+			sqlCommand += filter;
+			sqlCommand += " ORDER BY user_group_id DESC";
+			if (offset > 0)
+			{
+				sqlCommand += " OFFSET ";
+				sqlCommand += boost::lexical_cast<std::string>(offset);
+			}
+			sqlCommand += " ;";
+			result = PQexec(dbConnection, sqlCommand.c_str());
+
+			if (PQresultStatus(result) == PGRES_TUPLES_OK)
+			{
+				if (PQntuples(result) > 0)
+				{
+					for (int i = 0; i < PQntuples(result); i++)
+					{
+						int userGroupID = std::stoi(std::string(PQgetvalue(result, i, 0)).length() == 0 ? "0" : std::string(PQgetvalue(result, i, 0)));
+						std::string groupName = PQgetvalue(result, i, 1);
+						std::string userSurname = PQgetvalue(result, i, 2);
+						std::string userName = PQgetvalue(result, i, 3);
+						int roleID = std::stoi(std::string(PQgetvalue(result, i, 4)).length() == 0 ? "0" : PQgetvalue(result, i, 4));
+						int groupID = std::stoi(std::string(PQgetvalue(result, i, 5)).length() == 0 ? "0" : PQgetvalue(result, i, 5));
+						int userID = std::stoi(std::string(PQgetvalue(result, i, 6)).length() == 0 ? "0" : PQgetvalue(result, i, 6));
+						rowTuple = std::make_tuple(userGroupID, groupName, userSurname, userName, roleID, groupID,
+							userID);
+						resultVector.push_back(rowTuple);
+					}
+					PQclear(result);
+					return resultVector;
+				}
+				else
+				{
+					PQclear(result);
+					// if result of query does not contain information and have 0 row, then function return an empty vector;
+				}
+			}
+			else
+			{
+				std::string logStr = PQresultErrorMessage(result);
+				//WriteLog(logStr);
+				PQclear(result);
+				errorMessage = "Cannot get information from DB for user group, please contact with appliction provider!";
 			}
 		}
 		return resultVector;
@@ -16168,7 +18342,7 @@ namespace DataLayer{
 	}
 
 	// Create accountABLE
-	bool OrmasDal::CreateAccountable(int userID, std::string aInformation, std::string& errorMessage)
+	bool OrmasDal::CreateAccountable(int accountableID, int userID, std::string aInformation, std::string& errorMessage)
 	{
 		if (PQstatus(dbConnection) == CONNECTION_BAD)
 		{
@@ -16176,7 +18350,9 @@ namespace DataLayer{
 			return false;
 		}
 		PGresult * result;
-		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable(employee_id, information) VALUES(";
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountables(accountable_id, employee_id, information) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(accountableID);
+		sqlCommand += ", ";
 		sqlCommand += boost::lexical_cast<std::string>(userID);
 		sqlCommand += ", '";
 		sqlCommand += aInformation;
@@ -16195,8 +18371,9 @@ namespace DataLayer{
 		return true;
 	}
 
-	// Create accountable transaction
-	bool OrmasDal::CreateAccountableTransaction(int accTransID, int accountableID, double startValue, double endValue, int operationID, std::string& errorMessage)
+	// Create accountable approvement
+	bool OrmasDal::CreateAccountableApprovement(int approvementID, std::string approveDate, int directorID, 
+		int accountantID, int accountableDocumentID, std::string& errorMessage)
 	{
 		if (PQstatus(dbConnection) == CONNECTION_BAD)
 		{
@@ -16204,16 +18381,220 @@ namespace DataLayer{
 			return false;
 		}
 		PGresult * result;
-		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable_transaction(accountable_transaction_id, accountable_id, start_value, end_value, operation_id) VALUES(";
-		sqlCommand += boost::lexical_cast<std::string>(accTransID);
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable_approvement(accountable_approvement_id, approve_date, director_id, accontant_id, accountable_document_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(approvementID);
+		sqlCommand += ", '";
+		sqlCommand += approveDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(directorID);
 		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountantID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the accountable approvement creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+
+	// Create accountable 
+	bool OrmasDal::CreateAccountableDocumentList(int listID, int accountableDocumentID, int expenseDocumentID, std::string& errorMessage) 
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable_document_list(accountable_document_list_id, accountable_document_id, expense_document_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(listID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(expenseDocumentID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the accountable document list creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create accountable approvement
+	bool OrmasDal::CreateAccountableDocument(int documentID, std::string documentDate, double value, std::string expenseAssignment, int accountableID,
+		int statusID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable_documents(accountable_document_id, document_date, value, expense_assignment, accountable_id, status_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(documentID);
+		sqlCommand += ", '";
+		sqlCommand += documentDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(value);
+		sqlCommand += ", '";
+		sqlCommand += expenseAssignment;
+		sqlCommand += "', ";
 		sqlCommand += boost::lexical_cast<std::string>(accountableID);
 		sqlCommand += ", ";
-		sqlCommand += boost::lexical_cast<std::string>(startValue);
+		sqlCommand += boost::lexical_cast<std::string>(statusID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the accountable document creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create accountable approvement
+	bool OrmasDal::CreateAccountableEntry(int accountableEntryID, int debitAccountID, int debitSubaccountID, double value, int creditAccountID, 
+		int creditSubaccountID, int accountableDocumentID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable_entries(accountable_entry_id, debit_account_id, debit_subaccount_id, value , credit_account_id, credit_subaccount_id, accountable_document_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(accountableEntryID);
 		sqlCommand += ", ";
-		sqlCommand += boost::lexical_cast<std::string>(endValue);
+		sqlCommand += boost::lexical_cast<std::string>(debitAccountID);
 		sqlCommand += ", ";
-		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += boost::lexical_cast<std::string>(debitSubaccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(value);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(creditAccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(creditSubaccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the accountable entry creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create accountable approvement
+	bool OrmasDal::CreateAccountablePayment(int accountablePaymentID, int accountableDocumentID, int paymentID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable_payment(accountable_payment_id, accountable_document_id, payment_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(accountablePaymentID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(paymentID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the accountable payment creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create accountable withdrawal
+	bool OrmasDal::CreateAccountableWithdrawal(int accountableWithdrawalID, int accountableDocumentID, int withdrawalID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable_withdrawal(accountable_withdrawal_id, accountable_document_id, withdrawal_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(accountableWithdrawalID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(withdrawalID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the accountable withdrawal creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create accountable transaction
+	bool OrmasDal::CreateAccountableTransaction(int accTransID, double residualValue, double totalValue, double spentValue, 
+		double differenceValue, int accountableDocumentID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".accountable_transaction(accountable_transaction_id, residual_value, total_value, spent_value, difference_value, accountable_document_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(accTransID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(residualValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(totalValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(spentValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(differenceValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
 		sqlCommand += ");";
 		result = PQexec(dbConnection, sqlCommand.c_str());
 
@@ -16262,6 +18643,47 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "SQL command for the account creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create account change log
+	bool OrmasDal::CreateAccountChangeLog(int accountChangeLogID, int accountID, std::string accountNumber, double accountStartBalance,
+		double aCurrentBalance, std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".account_change_log(account_change_log_id, account_id, account_number, start_balance, current_balance, log_date, user_id, operation_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(accountChangeLogID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountID);
+		sqlCommand += ", '";
+		sqlCommand += accountNumber;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(accountStartBalance);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(aCurrentBalance);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the account change log creation is failed, please contact with application provider!";
 			return false;
 		}
 		PQclear(result);
@@ -16447,6 +18869,36 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "SQL command for the branch creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create branch subaccount
+	bool OrmasDal::CreateBranchSubaccount(int branchSubaccountID, int branchID, int subaccountID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".branch_subaccount(branch_subaccount_id, branch_id, subaccount_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(branchSubaccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(branchID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the branch subaccount creation is failed, please contact with application provider!";
 			return false;
 		}
 		PQclear(result);
@@ -17383,6 +19835,43 @@ namespace DataLayer{
 		return true;
 	}
 
+	//Create expense document
+	bool OrmasDal::CreateExpenseDocument(int expenseDocumentID, std::string expenseName, double count, double sum, int measureID, int currencyID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".expense_document(expense_document_id, name, count, \
+								 								 									sum , measure_id, currency_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(expenseDocumentID);
+		sqlCommand += ", '";
+		sqlCommand += expenseName;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(count);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(sum);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(measureID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the expense document creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	// Create financial report 
 	bool OrmasDal::CreateFinancialReport(int financialReportID, double account_44010, double account_55010, double account_552,
 		double account_55270, double account_553, double account_55321, double account_44020_90, double account_66010_66110,
@@ -17668,6 +20157,36 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "SQL command for the item creation in inventorization list is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create company
+	bool OrmasDal::CreateGroups(int groupID, std::string groupName, std::string groupDefinition, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".groups(group_id, group_name, definition) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(groupID);
+		sqlCommand += ", '";
+		sqlCommand += groupName;
+		sqlCommand += "', '";
+		sqlCommand += groupDefinition;
+		sqlCommand += "');";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the group creation is failed, please contact with application provider!";
 			return false;
 		}
 		PQclear(result);
@@ -17999,6 +20518,54 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "SQL command for the item creation in low value stock history is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create stock change log
+	bool OrmasDal::CreateLowValueStockChangeLog(int lwclStockID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
+		int warehouseID, std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".low_value_stock_change_log(low_value_stock_change_log_id,low_value_stock_id, other_stocks_id, \
+								 								 								 				count, sum, status_id, currency_id, warehouse_id, log_date, user_id, operation_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(lwclStockID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(lwStockID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(otherStocksID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockCount);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockSum);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(statusID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(warehouseID);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the item creation in low value stock change log is failed, please contact with application provider!";
 			return false;
 		}
 		PQclear(result);
@@ -19591,6 +22158,43 @@ namespace DataLayer{
 		return true;
 	}
 
+	bool OrmasDal::CreateSpecificationChangeLog(int specificationChangeLogID, int specificationID, int productID, double specificationCount, 
+		std::string logDate, int userID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".specification_change_log(specification_change_log_id, specification_id, \
+								 			product_id, count, log_date, user_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(specificationChangeLogID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(specificationID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(productID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(specificationCount);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the specification change log creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	bool OrmasDal::CreateSpecification(int specificationID, int productID, double specificationSum, int currencyID, int employeeID, 
 		std::string sDate, std::string& errorMessage)
 	{
@@ -19938,6 +22542,41 @@ namespace DataLayer{
 		return true;
 	}
 
+	// Create stock limit
+	bool OrmasDal::CreateStockLimit(int stockLimitID, int stockID, int productID, double minValue, double maxValue, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".stock_limit(stock_limit_id, stock_id, \
+								 								 								 product_id, min_value, max_value) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(stockLimitID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(productID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(minValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(maxValue);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the stock limit creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	// Create stock history
 	bool OrmasDal::CreateStockHistory(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
 		int warehouseID, std::string historyDate, std::string& errorMessage)
@@ -19974,6 +22613,54 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "SQL command for the item creation in stock history is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create stock change log
+	bool OrmasDal::CreateStockChangeLog(int stockChangeLogID, int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
+		int warehouseID, std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".stock_change_log(stock_change_log_id, stock_id, product_id, \
+								 								 				count, sum, status_id, currency_id, warehouse_id, log_date, user_id, operation_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(stockChangeLogID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(productID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockCount);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockSum);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(statusID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(warehouseID);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the stock change log is failed, please contact with application provider!";
 			return false;
 		}
 		PQclear(result);
@@ -20036,6 +22723,38 @@ namespace DataLayer{
 		return true;
 	}
 
+	// Create subaccount limit
+	bool OrmasDal::CreateSubaccountLimit(int subaccountLimitID, int subaccountID, double minValue, double maxValue, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".subaccount_limit(subaccount_limit_id, subaccount_id, min_value, max_value) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountLimitID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(minValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(maxValue);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the subaccount limit creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	// Create subaccount history
 	bool OrmasDal::CreateSubaccountHistory(int subaccountHistoryID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
 		std::string fromDate, std::string tillDate, std::string& errorMessage)
@@ -20068,6 +22787,46 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "SQL command for the subaccount history creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create subaccount history
+	bool OrmasDal::CreateSubaccountChangeLog(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
+		std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".subaccount_change_log(subaccount_change_log_id, subaccount_id, start_balance, \
+								 								 											current_balance, log_date, user_id, operation_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountChangeLogID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountStartBalance);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountCurrentBalance);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the subaccount change log creation is failed, please contact with application provider!";
 			return false;
 		}
 		PQclear(result);
@@ -20238,7 +22997,7 @@ namespace DataLayer{
 
 	// Create an item in transport history
 	bool OrmasDal::CreateTransportHistory(int transportHistoryID, int transportID, int productID, double transportHistoryCount, double transportHistorySum,
-		int statusID, int currencyID, std::string historyDate, std::string& errorMessage)
+		int statusID, int currencyID, std::string fromDate, std::string tillDate, std::string& errorMessage)
 	{
 		if (PQstatus(dbConnection) == CONNECTION_BAD)
 		{
@@ -20246,8 +23005,8 @@ namespace DataLayer{
 			return false;
 		}
 		PGresult * result;
-		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".transport_list(transport_list_id, transport_id, \
-								 				product_id, count, sum, status_id, currency_id, history_date) VALUES(";
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".transport_history(transport_history_id, transport_id, \
+								 				product_id, count, sum, status_id, currency_id, from_date, till_date) VALUES(";
 		sqlCommand += boost::lexical_cast<std::string>(transportHistoryID);
 		sqlCommand += ", ";
 		sqlCommand += boost::lexical_cast<std::string>(transportID);
@@ -20261,9 +23020,57 @@ namespace DataLayer{
 		sqlCommand += boost::lexical_cast<std::string>(statusID);
 		sqlCommand += ", ";
 		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ", '";
+		sqlCommand += fromDate;
 		sqlCommand += "', '";
-		sqlCommand += historyDate;
+		sqlCommand += tillDate;
 		sqlCommand += "');";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the item creation in transport history is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Create an item in transport history
+	bool OrmasDal::CreateTransportChangeLog(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+		int statusID, int currencyID, std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".transport_change_log(transport_change_log_id, transport_id, \
+								 								 				product_id, count, sum, status_id, currency_id, log_date, user_id, operation_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(transportChangeLogID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(transportID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(productID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(transportCount);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(transportSum);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(statusID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += ");";
 		result = PQexec(dbConnection, sqlCommand.c_str());
 
 		if (PQresultStatus(result) != PGRES_COMMAND_OK)
@@ -20315,6 +23122,36 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "SQL command for the user creation is failed, please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Create user group
+	bool OrmasDal::CreateUserGroup(int userGroupID, int groupID, int userID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "INSERT INTO \"OrmasSchema\".user_group(user_group_id, group_id, user_id) VALUES(";
+		sqlCommand += boost::lexical_cast<std::string>(userGroupID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(groupID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ");";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command for the user group creation is failed, please contact with application provider!";
 			return false;
 		}
 		PQclear(result);
@@ -20784,7 +23621,355 @@ namespace DataLayer{
 			return false;
 		}
 		PGresult * result;
-		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable where employee_id=";
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable where accountable_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable apporovement
+	bool OrmasDal::DeleteAccountableApprovement(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_approvement where accountable_approvement_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable approvement! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable apporovement
+	bool OrmasDal::DeleteAccountableApprovementByDocumentID(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_approvement where accountable_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable approvement! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable document list
+	bool OrmasDal::DeleteAccountableDocument(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_documents where accountable_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable document! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable document list
+	bool OrmasDal::DeleteAccountableDocumentList(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_document_list where accountable_document_list_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable document list! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable document list
+	bool OrmasDal::DeleteAccountableDocumentListByDocumentID(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_document_list where accountable_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable document list! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable
+	bool OrmasDal::DeleteAccountableEntry(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_entries where accountable_entry_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable entry! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable
+	bool OrmasDal::DeleteAccountableEntryByDocumentID(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_entries where accountable_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable entry! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable
+	bool OrmasDal::DeleteAccountablePayment(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_payment where accountable_payment_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable
+	bool OrmasDal::DeleteAccountablePaymentByDocumentID(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_payment where accountable_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable
+	bool OrmasDal::DeleteAccountableWithdrawal(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_withdrawal where accountable_withdrawal_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable withdrawal! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable
+	bool OrmasDal::DeleteAccountableWithdrawalByDocumentID(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_withdrawal where accountable_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete accountable withdrawal! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete accountable transaction
+	bool OrmasDal::DeleteAccountableTransaction(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_transaction where accountable_transaction_id=";
 		sqlCommand += boost::lexical_cast<std::string>(id);
 		sqlCommand += ";";
 		result = PQexec(dbConnection, sqlCommand.c_str());
@@ -20805,7 +23990,7 @@ namespace DataLayer{
 	}
 
 	// Delete accountable transaction
-	bool OrmasDal::DeleteAccountableTransaction(int id, std::string& errorMessage)
+	bool OrmasDal::DeleteAccountableTransactionByDocumentID(int id, std::string& errorMessage)
 	{
 		if (PQstatus(dbConnection) == CONNECTION_BAD)
 		{
@@ -20813,7 +23998,7 @@ namespace DataLayer{
 			return false;
 		}
 		PGresult * result;
-		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_transaction where accountable_transaction_id=";
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".accountable_transaction where accountable_document_id=";
 		sqlCommand += boost::lexical_cast<std::string>(id);
 		sqlCommand += ";";
 		result = PQexec(dbConnection, sqlCommand.c_str());
@@ -20914,6 +24099,35 @@ namespace DataLayer{
 			std::string logStr = PQresultErrorMessage(result);
 			//WriteLog(logStr);PQclear(result);
 			errorMessage = "Could not delete account history! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete account history
+	bool OrmasDal::DeleteAccountChangeLog(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".account_change_log where account_change_log_id = ";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete account change log! SQL command is failed. Please contact with application provider!";
 			return false;
 		}
 	}
@@ -21164,6 +24378,35 @@ namespace DataLayer{
 			std::string logStr = PQresultErrorMessage(result);
 			//WriteLog(logStr);PQclear(result);
 			errorMessage = "Could not delete branch! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete branch
+	bool OrmasDal::DeleteBranchSubaccount(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".branch_subaccount where branch_subaccount_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);PQclear(result);
+			errorMessage = "Could not delete branch subaccount! SQL command is failed. Please contact with application provider!";
 			return false;
 		}
 	}
@@ -22161,6 +25404,35 @@ namespace DataLayer{
 		}
 	}
 
+	// Delete financial report
+	bool OrmasDal::DeleteExpenseDocument(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".expense_document where expense_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete expense document! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
 	// Delete fixed assets
 	bool OrmasDal::DeleteFixedAssets(int id, std::string& errorMessage)
 	{
@@ -22259,6 +25531,32 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "Could not delete fixed assets specification! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Delete group
+	bool OrmasDal::DeleteGroup(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".groups where group_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete group! SQL command is failed. Please contact with application provider!";
 			return false;
 		}
 		PQclear(result);
@@ -22455,6 +25753,35 @@ namespace DataLayer{
 			//WriteLog(logStr);
 			PQclear(result);
 			errorMessage = "Could not delete low value stocks history! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete low value stocks histoty
+	bool OrmasDal::DeleteLowValueStockChangeLog(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".low_value_stock_change_log where low_value_stock_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete low value stocks change log! SQL command is failed. Please contact with application provider!";
 			return false;
 		}
 	}
@@ -24148,6 +27475,33 @@ namespace DataLayer{
 		return true;
 	}
 
+	// Delete return
+	bool OrmasDal::DeleteSpecificationChangeLog(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+
+		PGresult * result;
+		//cascading detele
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".specification_change_log where specification_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete specification change log! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 
 	// Delete item in spoilage list
 	bool OrmasDal::DeleteItemInSpoilageList(int id, std::string& errorMessage)
@@ -24377,6 +27731,33 @@ namespace DataLayer{
 		}
 	}
 
+	// Delete stock limit
+	bool OrmasDal::DeleteStockLimit(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".stock_limit where stock_limit_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete stock limit! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+
 	// Delete item in stock
 	bool OrmasDal::DeleteStockHistory(int id, std::string& errorMessage)
 	{
@@ -24406,6 +27787,36 @@ namespace DataLayer{
 		}
 	}
 
+	// Delete stock change log
+	bool OrmasDal::DeleteStockChangeLog(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".stock_change_log where stock_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete item from stock change log! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+
 	// Delete subaccount
 	bool OrmasDal::DeleteSubaccount(int id, std::string& errorMessage)
 	{
@@ -24431,6 +27842,64 @@ namespace DataLayer{
 			std::string logStr = PQresultErrorMessage(result);
 			//WriteLog(logStr);PQclear(result);
 			errorMessage = "Could not delete subaccount! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete subaccount limit
+	bool OrmasDal::DeleteSubaccountLimit(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".subaccount_limit where subaccount_limit_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete subaccount limit! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+	}
+
+	// Delete subaccount limit
+	bool OrmasDal::DeleteSubaccountChangeLog(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".subaccount_change_log where subaccount_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete subaccount change log! SQL command is failed. Please contact with application provider!";
 			return false;
 		}
 	}
@@ -24604,6 +28073,61 @@ namespace DataLayer{
 		}
 		PQclear(result);
 		return true;
+	}
+
+	// Delete transport
+	bool OrmasDal::DeleteTransportChangeLog(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".transport_change_log where transport_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete transport change log! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Delete user group
+	bool OrmasDal::DeleteUserGroup(int id, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+
+		PGresult * result;
+		std::string sqlCommand = "DELETE FROM \"OrmasSchema\".user_group where user_group_id=";
+		sqlCommand += boost::lexical_cast<std::string>(id);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+		if (PQresultStatus(result) == PGRES_COMMAND_OK)
+		{
+			PQclear(result);
+			return true;
+		}
+		else
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "Could not delete user group! SQL command is failed. Please contact with application provider!";
+			return false;
+		}
 	}
 
 	// Delete transport
@@ -25064,35 +28588,6 @@ namespace DataLayer{
 		return true;
 	}
 
-	//Update accountable
-	bool OrmasDal::UpdateAccountable(int userID, std::string aInformation, std::string& errorMessage)
-	{
-		if (PQstatus(dbConnection) == CONNECTION_BAD)
-		{
-			errorMessage = "DB connection was lost! Please restart application!";
-			return false;
-		}
-		PGresult * result;
-		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable SET(information) = ('";
-		sqlCommand += aInformation;
-		sqlCommand += "') WHERE employee_id=";
-		sqlCommand += boost::lexical_cast<std::string>(userID);
-		sqlCommand += ";";
-		result = PQexec(dbConnection, sqlCommand.c_str());
-
-		if (PQresultStatus(result) != PGRES_COMMAND_OK)
-		{
-			std::string logStr = PQresultErrorMessage(result);
-			//WriteLog(logStr);
-			PQclear(result);
-			errorMessage = "SQL command is failing while updating the accountable with this ID = ";
-			errorMessage += boost::lexical_cast<std::string>(userID);
-			errorMessage += " .Please contact with application provider!";
-			return false;
-		}
-		PQclear(result);
-		return true;
-	}
 
 	//Update account
 	bool OrmasDal::UpdateAccount(int accountID, std::string accountNumber, double accountStartBalance, double accountCurrentBalance, std::string& errorMessage)
@@ -25104,7 +28599,7 @@ namespace DataLayer{
 		}
 		PGresult * result;
 		std::string sqlCommand = "UPDATE \"OrmasSchema\".accounts SET(account_number, start_balance, \
-								 								  current_balance) = ('";
+								 								 								  current_balance) = ('";
 		sqlCommand += accountNumber;
 		sqlCommand += "', ";
 		sqlCommand += boost::lexical_cast<std::string>(accountStartBalance);
@@ -25129,8 +28624,8 @@ namespace DataLayer{
 		return true;
 	}
 
-	//Update accountable transaction
-	bool OrmasDal::UpdateAccountableTransaction(int accTransID, int accountableID, double startValue, double endValue, int operationID, std::string& errorMessage)
+	//Update accountable
+	bool OrmasDal::UpdateAccountable(int accountableID, int userID, std::string aInformation, std::string& errorMessage)
 	{
 		if (PQstatus(dbConnection) == CONNECTION_BAD)
 		{
@@ -25138,15 +28633,263 @@ namespace DataLayer{
 			return false;
 		}
 		PGresult * result;
-		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable_transaction SET(accountable_id, start_value, \
-								 								 			end_value, operation_id) = (";
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountables SET(user_id, information) = (";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", '";
+		sqlCommand += aInformation;
+		sqlCommand += "') WHERE accountable_id=";
+		sqlCommand += boost::lexical_cast<std::string>(accountableID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the accountable with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(accountableID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update accountable approvement
+	bool OrmasDal::UpdateAccountableApprovement(int approvementID, std::string approveDate, int directorID, int accountantID, 
+		int accountableDocumentID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable_approvement SET(approve_date, director_id, accontant_id, accountable_document_id) = ('";
+		sqlCommand += approveDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(directorID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountantID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ") WHERE accountable_approvement_id=";
+		sqlCommand += boost::lexical_cast<std::string>(approvementID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the accountable approvement with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(approvementID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update accountable approvement
+	bool OrmasDal::UpdateAccountableDocumentList(int listID, int accountableDocumentID, int expenseDocumentID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable_document_list SET(accountable_document_id, expense_document_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(expenseDocumentID);
+		sqlCommand += ") WHERE accountable_document_list_id=";
+		sqlCommand += boost::lexical_cast<std::string>(listID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the accountable document list with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(listID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update accountable approvement
+	bool OrmasDal::UpdateAccountableDocument(int documentID, std::string documentDate, double value, std::string expenseAssignment, int accountableID,
+		int statusID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable_documents SET(document_date, value, expense_assignment, accountable_id, status_id) = ('";
+		sqlCommand += documentDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(value);
+		sqlCommand += ", '";
+		sqlCommand += expenseAssignment;
+		sqlCommand += "', ";
 		sqlCommand += boost::lexical_cast<std::string>(accountableID);
 		sqlCommand += ", ";
-		sqlCommand += boost::lexical_cast<std::string>(startValue);
+		sqlCommand += boost::lexical_cast<std::string>(statusID);
+		sqlCommand += ") WHERE accountable_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(documentID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the accountable document with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(documentID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update accountable approvement
+	bool OrmasDal::UpdateAccountableEntry(int accountableEntryID, int debitAccountID, int debitSubaccountID, double value, int creditAccountID, 
+		int creditSubaccountID, int accountableDocumentID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable_entries SET(debit_account_id, debit_subaccount_id, value, credit_account_id, credit_subaccount_id, accountable_document_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(debitAccountID);
 		sqlCommand += ", ";
-		sqlCommand += boost::lexical_cast<std::string>(endValue);
+		sqlCommand += boost::lexical_cast<std::string>(debitSubaccountID);
 		sqlCommand += ", ";
-		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += boost::lexical_cast<std::string>(value);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(creditAccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(creditSubaccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ") WHERE accountable_entry_id=";
+		sqlCommand += boost::lexical_cast<std::string>(accountableEntryID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the accountable entry with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(accountableEntryID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update accountable approvement
+	bool OrmasDal::UpdateAccountablePayment(int accountablePaymentID, int accountableDocumentID, int paymentID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable_payment SET(accountable_document_id, payment_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(paymentID);
+		sqlCommand += ") WHERE accountable_entry_id=";
+		sqlCommand += boost::lexical_cast<std::string>(accountablePaymentID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the accountable payment with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(accountablePaymentID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update accountable withdrawal
+	bool OrmasDal::UpdateAccountableWithdrawal(int accountableWithrawalID, int accountableDocumentID, int withdrawalID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable_withdrawal SET(accountable_document_id, withdrawal_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(withdrawalID);
+		sqlCommand += ") WHERE accountable_entry_id=";
+		sqlCommand += boost::lexical_cast<std::string>(accountableWithrawalID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the accountable withdrawal with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(accountableWithrawalID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update accountable transaction
+	bool OrmasDal::UpdateAccountableTransaction(int accTransID, double residualValue, double totalValue, double spentValue,
+		double differenceValue, int accountableDocumentID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".accountable_transaction SET(residual_value, total_value, \
+								 								 			spent_value, difference_value, accountable_document_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(residualValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(totalValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(spentValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(differenceValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountableDocumentID);
 		sqlCommand += ") WHERE accountable_transaction_id=";
 		sqlCommand += boost::lexical_cast<std::string>(accTransID);
 		sqlCommand += ";";
@@ -25209,6 +28952,52 @@ namespace DataLayer{
 		return true;
 	}
 	
+	//Update account history
+	bool OrmasDal::UpdateAccountChangeLog(int accountChangeLogID, int accountID, std::string accountNumber, double accountStartBalance,
+		double accountCurrentBalance, std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".account_change_log SET(account_id, account_number, start_balance, \
+								 								 								  current_balance, log_date, user_id, operation_id) = (";
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountID);
+		sqlCommand += ", '";
+		sqlCommand += accountNumber;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(accountStartBalance);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(accountCurrentBalance);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += ") WHERE account_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(accountChangeLogID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the account change log with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(accountChangeLogID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+
 	//Update amortize group
 	bool OrmasDal::UpdateAmortizeGroup(int amortizeGroupID, int groupNumber, int fromMonth, int toMonth, std::string& errorMessage)
 	{
@@ -25336,6 +29125,38 @@ namespace DataLayer{
 			PQclear(result);
 			errorMessage = "SQL command is failing while updating the branch with this ID = ";
 			errorMessage += boost::lexical_cast<std::string>(branchID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update branch
+	bool OrmasDal::UpdateBranchSubaccount(int branchSubaccountID, int branchID, int subaccountID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".branch_subaccount SET(branch_id, subaccount_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(branchID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountID);
+		sqlCommand += ") WHERE branch_subaccount_id=";
+		sqlCommand += boost::lexical_cast<std::string>(branchSubaccountID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the branch subaccount with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(branchSubaccountID);
 			errorMessage += " .Please contact with application provider!";
 			return false;
 		}
@@ -25626,7 +29447,7 @@ namespace DataLayer{
 			return false;
 		}
 		PGresult * result;
-		std::string sqlCommand = "UPDATE \"OrmasSchema\".company_employee SET(company_id, employee_id, warehouse_id) = (";
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".company_employee SET(company_id, employee_id, branch_id) = (";
 		sqlCommand += boost::lexical_cast<std::string>(companyID);
 		sqlCommand += ", ";
 		sqlCommand += boost::lexical_cast<std::string>(employeeID);
@@ -26271,6 +30092,43 @@ namespace DataLayer{
 		return true;
 	}
 
+	bool OrmasDal::UpdateExpenseDocument(int expenseDocumentID, std::string expenseName, double count, double sum, int measureID, int currencyID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".expense_document SET(name, count, sum, measure_id, currency_id) = ('";
+		sqlCommand += expenseName;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(count);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(sum);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(measureID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ") WHERE expense_document_id=";
+		sqlCommand += boost::lexical_cast<std::string>(expenseDocumentID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the expense document with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(expenseDocumentID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	bool OrmasDal::UpdateFinancialReport(int financialReportID, double account_44010, double account_55010, double account_552,
 		double account_55270, double account_553, double account_55321, double account_44020_90, double account_66010_66110,
 		double account_66020_66120, double account_66040_66140, double account_66050_66150, double account_66060_66160,
@@ -26475,6 +30333,38 @@ namespace DataLayer{
 			PQclear(result);
 			errorMessage = "SQL command is failing while updating the fixed assets specification with this ID = ";
 			errorMessage += boost::lexical_cast<std::string>(fixedAssetsSpecID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	// Update company
+	bool OrmasDal::UpdateGroups(int groupID, std::string groupName, std::string groupDefinition, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".groups SET(group_name, definition) = ('";
+		sqlCommand += groupName;
+		sqlCommand += "', '";
+		sqlCommand += groupDefinition;
+		sqlCommand += "') WHERE group_id=";
+		sqlCommand += boost::lexical_cast<std::string>(groupID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the group with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(groupID);
 			errorMessage += " .Please contact with application provider!";
 			return false;
 		}
@@ -26902,6 +30792,55 @@ namespace DataLayer{
 			PQclear(result);
 			errorMessage = "SQL command is failing while updating the item in low valuw stock with this ID = ";
 			errorMessage += boost::lexical_cast<std::string>(lwStockID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	bool OrmasDal::UpdateLowValueStockChangeLog(int lwStockChangeLogID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
+		int warehouseID, std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".low_value_stock_change_log SET(low_value_stock_id, other_stocks_id, count, sum, status_id, currency_id,\
+								 								 								  warehouse_id, log_date, user_id, operation_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(lwStockID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(otherStocksID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockCount);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockSum);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(statusID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(warehouseID);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += "') WHERE low_value_stock_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(lwStockChangeLogID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the item in low valuw stock change log with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(lwStockChangeLogID);
 			errorMessage += " .Please contact with application provider!";
 			return false;
 		}
@@ -28574,6 +32513,44 @@ namespace DataLayer{
 		return true;
 	}
 
+	bool OrmasDal::UpdateSpecificationChangeLog(int specificationChangeLogID, int specificationID, int productID, double specificationCount, 
+		std::string logDate, int userID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".specification_change_log SET(specification_id, product_id, count, log_date, user_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(specificationID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(productID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(specificationCount);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ") WHERE specification_list_id=";
+		sqlCommand += boost::lexical_cast<std::string>(specificationChangeLogID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the intem in specification change log with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(specificationChangeLogID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	bool OrmasDal::UpdateSpecification(int specificationID, int productID, double specificationSum, int currencyID,
 		int employeeID, std::string sDate, std::string& errorMessage)
 	{
@@ -28829,6 +32806,41 @@ namespace DataLayer{
 		return true;
 	}
 
+	bool OrmasDal::UpdateStockLimit(int stockLimitID, int stockID, int productID, double minValue, double maxValue, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".stock_limit SET(stock_id, product_id, min_value, max_value) = (";
+		sqlCommand += boost::lexical_cast<std::string>(stockID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(productID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(minValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(maxValue);
+		sqlCommand += ") WHERE stock_limit_id=";
+		sqlCommand += boost::lexical_cast<std::string>(stockLimitID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the stock limit with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(stockLimitID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	bool OrmasDal::UpdateStockHistory(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
 		int warehouseID, std::string historyDate, std::string& errorMessage)
 	{
@@ -28865,6 +32877,55 @@ namespace DataLayer{
 			PQclear(result);
 			errorMessage = "SQL command is failing while updating the item in stock with this ID = ";
 			errorMessage += boost::lexical_cast<std::string>(stockID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	bool OrmasDal::UpdateStockChangeLog(int stockChangeLog, int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
+		int warehouseID, std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".stock_change_log SET(stock_id, product_id, count, sum, status_id, currency_id,\
+								 								  warehouse_id, log_date, user_id, operation_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(stockID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(productID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockCount);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(stockSum);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(statusID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(warehouseID);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += ") WHERE stock_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(stockChangeLog);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the item in stock with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(stockChangeLog);
 			errorMessage += " .Please contact with application provider!";
 			return false;
 		}
@@ -28930,6 +32991,40 @@ namespace DataLayer{
 		return true;
 	}
 
+	//Update subaccount
+	bool OrmasDal::UpdateSubaccountLimit(int subaccountLimitID, int subaccountID, double minValue, double maxValue, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".subaccount_limit SET(subaccount_id, min_value, max_value) = (";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(minValue);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(maxValue);	
+		sqlCommand += ") WHERE subaccount_limit_id=";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountLimitID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the subaccount limit with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(subaccountLimitID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
 	//Update subaccount history
 	bool OrmasDal::UpdateSubaccountHistory(int subaccountHistoryID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
 		std::string fromDate, std::string tillDate, std::string& errorMessage)
@@ -28941,7 +33036,7 @@ namespace DataLayer{
 		}
 		PGresult * result;
 		std::string sqlCommand = "UPDATE \"OrmasSchema\".subaccount_history SET(subaccount_id, start_balance, current_balance, \
-								 from_date, till_date,) = (";
+								 from_date, till_date) = (";
 		sqlCommand += boost::lexical_cast<std::string>(subaccountID);
 		sqlCommand += ", ";
 		sqlCommand += boost::lexical_cast<std::string>(subaccountStartBalance);
@@ -28963,6 +33058,48 @@ namespace DataLayer{
 			PQclear(result);
 			errorMessage = "SQL command is failing while updating the subaccount history with this ID = ";
 			errorMessage += boost::lexical_cast<std::string>(subaccountHistoryID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	//Update subaccount history
+	bool OrmasDal::UpdateSubaccountChangeLog(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
+		std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".subaccount_change_log SET(subaccount_id, start_balance, current_balance, \
+								 								 log_date, user_id, operation_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountStartBalance);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountCurrentBalance);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += "', ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += ") WHERE subaccount_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(subaccountChangeLogID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the subaccount change log with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(subaccountChangeLogID);
 			errorMessage += " .Please contact with application provider!";
 			return false;
 		}
@@ -29137,7 +33274,7 @@ namespace DataLayer{
 	}
 
 	bool OrmasDal::UpdateTransportHistory(int transportHistoryID, int transportID, int productID, double transportHistoryCount, double transportHistorySum,
-		int statusID, int currencyID, std::string historyDate, std::string& errorMessage)
+		int statusID, int currencyID, std::string fromDate, std::string tillDate, std::string& errorMessage)
 	{
 		if (PQstatus(dbConnection) == CONNECTION_BAD)
 		{
@@ -29145,7 +33282,7 @@ namespace DataLayer{
 			return false;
 		}
 		PGresult * result;
-		std::string sqlCommand = "UPDATE \"OrmasSchema\".transport_history SET(transport_id, product_id, count, sum, status_id, currency_id, history_date) = (";
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".transport_history SET(transport_id, product_id, count, sum, status_id, currency_id, from_date, till_date) = (";
 		sqlCommand += boost::lexical_cast<std::string>(transportID);
 		sqlCommand += ", ";
 		sqlCommand += boost::lexical_cast<std::string>(productID);
@@ -29158,7 +33295,9 @@ namespace DataLayer{
 		sqlCommand += ", ";
 		sqlCommand += boost::lexical_cast<std::string>(currencyID);
 		sqlCommand += ", '";
-		sqlCommand += historyDate;
+		sqlCommand += fromDate;
+		sqlCommand += "', '";
+		sqlCommand += tillDate;
 		sqlCommand += "') WHERE transport_history_id=";
 		sqlCommand += boost::lexical_cast<std::string>(transportHistoryID);
 		sqlCommand += ";";
@@ -29171,6 +33310,52 @@ namespace DataLayer{
 			PQclear(result);
 			errorMessage = "SQL command is failing while updating the item in transport list with this ID = ";
 			errorMessage += boost::lexical_cast<std::string>(transportHistoryID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	bool OrmasDal::UpdateTransportChangeLog(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+		int statusID, int currencyID, std::string logDate, int userID, int operationID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".transport_change_log SET(transport_id, product_id, count, sum, status_id, currency_id, log_date, user_id, operation_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(transportID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(productID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(transportCount);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(transportSum);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(statusID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(currencyID);
+		sqlCommand += ", '";
+		sqlCommand += logDate;
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(operationID);
+		sqlCommand += "') WHERE transport_change_log_id=";
+		sqlCommand += boost::lexical_cast<std::string>(transportChangeLogID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the item in transport change log with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(transportChangeLogID);
 			errorMessage += " .Please contact with application provider!";
 			return false;
 		}
@@ -29216,6 +33401,37 @@ namespace DataLayer{
 			PQclear(result);
 			errorMessage = "SQL command is failing while updating the user with this ID = ";
 			errorMessage += boost::lexical_cast<std::string>(userID);
+			errorMessage += " .Please contact with application provider!";
+			return false;
+		}
+		PQclear(result);
+		return true;
+	}
+
+	bool OrmasDal::UpdateUserGroup(int userGroupID, int groupID, int userID, std::string& errorMessage)
+	{
+		if (PQstatus(dbConnection) == CONNECTION_BAD)
+		{
+			errorMessage = "DB connection was lost! Please restart application!";
+			return false;
+		}
+		PGresult * result;
+		std::string sqlCommand = "UPDATE \"OrmasSchema\".user_group SET(group_id, user_id) = (";
+		sqlCommand += boost::lexical_cast<std::string>(groupID);
+		sqlCommand += ", ";
+		sqlCommand += boost::lexical_cast<std::string>(userID);
+		sqlCommand += ") WHERE user_group_id=";
+		sqlCommand += boost::lexical_cast<std::string>(userGroupID);
+		sqlCommand += ";";
+		result = PQexec(dbConnection, sqlCommand.c_str());
+
+		if (PQresultStatus(result) != PGRES_COMMAND_OK)
+		{
+			std::string logStr = PQresultErrorMessage(result);
+			//WriteLog(logStr);
+			PQclear(result);
+			errorMessage = "SQL command is failing while updating the user group with this ID = ";
+			errorMessage += boost::lexical_cast<std::string>(userGroupID);
 			errorMessage += " .Please contact with application provider!";
 			return false;
 		}
@@ -29799,58 +34015,57 @@ namespace DataLayer{
 		return filter;
 	}
 
-	std::string OrmasDal::GetFilterForAccountable(int userID, std::string name, std::string surname, std::string phone,
-		std::string address, int roleID, std::string aInformation)
+	std::string OrmasDal::GetLikeFilterForAccountNumber(std::string accountNumber)
 	{
 		std::string tempString = "";
 		std::string filter = " where ";
 		std::vector<std::string> conditionVec;
+		
+		std::string subNumber = accountNumber.substr(0, 3);
+		if (!subNumber.empty())
+		{
+			tempString = "";
+			tempString += " account_number like '";
+			tempString += subNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountable(int accountableID, int userID, std::string aInformation)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != accountableID)
+		{
+			tempString = "";
+			tempString += " accountable_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableID);
+			conditionVec.push_back(tempString);
+		}
 		if (0 != userID)
 		{
 			tempString = "";
-			tempString += " user_id = ";
+			tempString += " employee_id = ";
 			tempString += boost::lexical_cast<std::string>(userID);
 			conditionVec.push_back(tempString);
 		}
-		if (!name.empty())
-		{
-			tempString = "";
-			tempString += " user_name = '";
-			tempString += name;
-			tempString += "'";
-			conditionVec.push_back(tempString);
-		}
-		if (!surname.empty())
-		{
-			tempString = "";
-			tempString += " user_surname = '";
-			tempString += surname;
-			tempString += "'";
-			conditionVec.push_back(tempString);
-		}
-		if (!phone.empty())
-		{
-			tempString = "";
-			tempString += " user_phone = '";
-			tempString += phone;
-			tempString += "'";
-			conditionVec.push_back(tempString);
-		}
-		if (!address.empty())
-		{
-			tempString = "";
-			tempString += " user_address = '";
-			tempString += address;
-			tempString += "'";
-			conditionVec.push_back(tempString);
-		}
-		if (0 != roleID)
-		{
-			tempString = "";
-			tempString += " role_id = ";
-			tempString += boost::lexical_cast<std::string>(roleID);
-			conditionVec.push_back(tempString);
-		}
+		
 		if (!aInformation.empty())
 		{
 			tempString = "";
@@ -29875,8 +34090,396 @@ namespace DataLayer{
 		return filter;
 	}
 
-	std::string OrmasDal::GetFilterForAccountableTransaction(int accTransID, int accountableID, 
-		double startValue, double endValue, int operationID)
+	std::string OrmasDal::GetFilterForAccountableApprovement(int approvementID, std::string approveDate, int directorID, int accountantID,
+		int accountableDocumentID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != approvementID)
+		{
+			tempString = "";
+			tempString += " accountable_approvement_id = ";
+			tempString += boost::lexical_cast<std::string>(approvementID);
+			conditionVec.push_back(tempString);
+		}
+		if (!approveDate.empty())
+		{
+			tempString = "";
+			tempString += " approve_date = '";
+			tempString += approveDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != directorID)
+		{
+			tempString = "";
+			tempString += " director_id = ";
+			tempString += boost::lexical_cast<std::string>(directorID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountantID)
+		{
+			tempString = "";
+			tempString += " accontant_id = ";
+			tempString += boost::lexical_cast<std::string>(accountantID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableDocumentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountableDocumentList(int listID, int accountableDocumentID, int expenseDocumentID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != listID)
+		{
+			tempString = "";
+			tempString += " accountable_document_list_id = ";
+			tempString += boost::lexical_cast<std::string>(listID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableDocumentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != expenseDocumentID)
+		{
+			tempString = "";
+			tempString += " expense_document_id = ";
+			tempString += boost::lexical_cast<std::string>(expenseDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountableDocument(int documentID, std::string documentDate, double value, std::string expenseAssignment,
+		int accountableID, int statusID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != documentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(documentID);
+			conditionVec.push_back(tempString);
+		}
+		if (!documentDate.empty())
+		{
+			tempString = "";
+			tempString += " document_date = '";
+			tempString += documentDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!expenseAssignment.empty())
+		{
+			tempString = "";
+			tempString += " expense_assignment = '";
+			tempString += expenseAssignment;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableID)
+		{
+			tempString = "";
+			tempString += " accountable_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountableDocumentFieldBiggerThen(int documentID, std::string documentDate, double value, std::string expenseAssignment,
+		int accountableID, int statusID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != documentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id > ";
+			tempString += boost::lexical_cast<std::string>(documentID);
+			conditionVec.push_back(tempString);
+		}
+		if (!documentDate.empty())
+		{
+			tempString = "";
+			tempString += " document_date > '";
+			tempString += documentDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!expenseAssignment.empty())
+		{
+			tempString = "";
+			tempString += " expense_assignment > '";
+			tempString += expenseAssignment;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableID)
+		{
+			tempString = "";
+			tempString += " accountable_id > ";
+			tempString += boost::lexical_cast<std::string>(accountableID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id > ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountableEntry(int accountableEntryID, int debitAccountID, int debitSubaccountID, double value,
+		int creditAccountID, int creditSubaccountID, int accountableDocumentID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != accountableEntryID)
+		{
+			tempString = "";
+			tempString += " accountable_entry_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableEntryID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != debitAccountID)
+		{
+			tempString = "";
+			tempString += " debit_account_id = ";
+			tempString += boost::lexical_cast<std::string>(debitAccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != debitSubaccountID)
+		{
+			tempString = "";
+			tempString += " debit_subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(debitSubaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != creditAccountID)
+		{
+			tempString = "";
+			tempString += " credit_account_id = ";
+			tempString += boost::lexical_cast<std::string>(creditAccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != creditSubaccountID)
+		{
+			tempString = "";
+			tempString += " credit_subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(creditSubaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableDocumentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountablePayment(int accountablePaymentID, int accountableDocumentID, int paymentID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != accountablePaymentID)
+		{
+			tempString = "";
+			tempString += " accountable_payment_id = ";
+			tempString += boost::lexical_cast<std::string>(accountablePaymentID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableDocumentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != paymentID)
+		{
+			tempString = "";
+			tempString += " payment_id = ";
+			tempString += boost::lexical_cast<std::string>(paymentID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountableWithdrawal(int accountableWithdrawalID, int accountableDocumentID, int withdrawalID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != accountableWithdrawalID)
+		{
+			tempString = "";
+			tempString += " accountable_withdrawal_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableWithdrawalID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableDocumentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != withdrawalID)
+		{
+			tempString = "";
+			tempString += " withdrawal_id = ";
+			tempString += boost::lexical_cast<std::string>(withdrawalID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+
+	std::string OrmasDal::GetFilterForAccountableTransaction(int accTransID, double residualValue, double totalValue, double spentValue, 
+		double differenceValue, int accountableDocumentID)
 	{
 		std::string tempString = "";
 		std::string filter = " where ";
@@ -29888,32 +34491,102 @@ namespace DataLayer{
 			tempString += boost::lexical_cast<std::string>(accTransID);
 			conditionVec.push_back(tempString);
 		}
-		if (0 != accountableID)
+		if (0 != residualValue)
 		{
 			tempString = "";
-			tempString += " accountable_id = ";
-			tempString += boost::lexical_cast<std::string>(accountableID);
+			tempString += " residual_value = ";
+			tempString += boost::lexical_cast<std::string>(residualValue);
 			conditionVec.push_back(tempString);
 		}
-		if (0 != startValue)
+		if (0 != totalValue)
 		{
 			tempString = "";
-			tempString += " start_value = ";
-			tempString += boost::lexical_cast<std::string>(startValue);
+			tempString += " total_value = ";
+			tempString += boost::lexical_cast<std::string>(totalValue);
 			conditionVec.push_back(tempString);
 		}
-		if (0 != endValue)
+		if (0 != spentValue)
 		{
 			tempString = "";
-			tempString += " end_value = ";
-			tempString += boost::lexical_cast<std::string>(endValue);
+			tempString += " spent_value = ";
+			tempString += boost::lexical_cast<std::string>(spentValue);
 			conditionVec.push_back(tempString);
 		}
-		if (0 != operationID)
+		if (0 != differenceValue)
 		{
 			tempString = "";
-			tempString += " operation_id = ";
-			tempString += boost::lexical_cast<std::string>(operationID);
+			tempString += " difference_value = ";
+			tempString += boost::lexical_cast<std::string>(differenceValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableDocumentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accountableDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccTransFieldBiggerThen(int accTransID, double residualValue, double totalValue, double spentValue, double differenceValue, int accountableDocumentID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != accTransID)
+		{
+			tempString = "";
+			tempString += " accountable_transaction_id > ";
+			tempString += boost::lexical_cast<std::string>(accTransID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != residualValue)
+		{
+			tempString = "";
+			tempString += " residual_value > ";
+			tempString += boost::lexical_cast<std::string>(residualValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != totalValue)
+		{
+			tempString = "";
+			tempString += " total_value > ";
+			tempString += boost::lexical_cast<std::string>(totalValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != spentValue)
+		{
+			tempString = "";
+			tempString += " spent_value > ";
+			tempString += boost::lexical_cast<std::string>(spentValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != differenceValue)
+		{
+			tempString = "";
+			tempString += " difference_value > ";
+			tempString += boost::lexical_cast<std::string>(differenceValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountableDocumentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id > ";
+			tempString += boost::lexical_cast<std::string>(accountableDocumentID);
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -29988,6 +34661,86 @@ namespace DataLayer{
 			tempString += " till_date = '";
 			tempString += tillDate;
 			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountChangeLog(int accountChangeLogID, int accountID, std::string accountNumber, double accountStartBalance,
+		double aCurrentBalance, std::string logDate, int userID, int operationID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != accountChangeLogID)
+		{
+			tempString = "";
+			tempString += " account_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(accountChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(accountID);
+			conditionVec.push_back(tempString);
+		}
+		if (!accountNumber.empty())
+		{
+			tempString = "";
+			tempString += " account_number = '";
+			tempString += accountNumber;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountStartBalance)
+		{
+			tempString = "";
+			tempString += " start_balance = ";
+			tempString += boost::lexical_cast<std::string>(accountStartBalance);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != aCurrentBalance)
+		{
+			tempString = "";
+			tempString += " current_balance = ";
+			tempString += boost::lexical_cast<std::string>(aCurrentBalance);
+			conditionVec.push_back(tempString);
+		}
+		if (!logDate.empty())
+		{
+			tempString = "";
+			tempString += " log_date = '";
+			tempString += logDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -30468,6 +35221,48 @@ namespace DataLayer{
 			tempString += " commnet = '";
 			tempString += bComment;
 			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForBranchSubaccount(int branchSubaccountID, int branchID, int subaccountID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != branchSubaccountID)
+		{
+			tempString = "";
+			tempString += " branch_subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(branchSubaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != branchID)
+		{
+			tempString = "";
+			tempString += " branch_id = ";
+			tempString += boost::lexical_cast<std::string>(branchID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -32382,7 +37177,7 @@ namespace DataLayer{
 		int creditingAccountID, int operationID, int subaccountID, std::string description, int conProdID,
 		int conRawID, int fixAstID, int fixAstOperID, int invID, int orderID, int ordRawID, int paymentID, int payslipID,
 		int prodConRawID, int rcpProdID, int returnID, int spoilageID, int skTrID, int withdrawalID, int wofID, int wofRawID,
-		int productID, int othStID, int rcpOthStID, int conOthStID)
+		int productID, int othStID, int rcpOthStID, int conOthStID, int accDocID)
 	{
 		std::string tempString = "";
 		std::string filter = " where ";
@@ -32592,6 +37387,13 @@ namespace DataLayer{
 			tempString += boost::lexical_cast<std::string>(conOthStID);
 			conditionVec.push_back(tempString);
 		}
+		if (0 != accDocID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accDocID);
+			conditionVec.push_back(tempString);
+		}
 		if (conditionVec.size() >= 1)
 		{
 			filter += conditionVec.at(0);
@@ -32701,7 +37503,7 @@ namespace DataLayer{
 		int creditingAccountID, int operationID, int subaccountID, std::string description, int conProdID,
 		int conRawID, int fixAstID, int fixAstOperID, int invID, int orderID, int ordRawID, int paymentID, int payslipID,
 		int prodConRawID, int rcpProdID, int returnID, int spoilageID, int skTrID, int withdrawalID, int wofID, int wofRawID,
-		int productID, int othStID, int rcpOthStID, int conOthStID, std::string fromDate, std::string toDate)
+		int productID, int othStID, int rcpOthStID, int conOthStID, int accDocID, std::string fromDate, std::string toDate)
 	{
 		std::string tempString = "";
 		std::string filter = " where ";
@@ -32920,6 +37722,13 @@ namespace DataLayer{
 			tempString += boost::lexical_cast<std::string>(conOthStID);
 			conditionVec.push_back(tempString);
 		}
+		if (0 != accDocID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accDocID);
+			conditionVec.push_back(tempString);
+		}
 		if (conditionVec.size() >= 1)
 		{
 			filter += conditionVec.at(0);
@@ -33053,6 +37862,70 @@ namespace DataLayer{
 			tempString = "";
 			tempString += " operation_id = ";
 			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForExpenseDocument(int expenseDocumentID, std::string expenseName, double count, double sum, int measureID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != expenseDocumentID)
+		{
+			tempString = "";
+			tempString += " expense_document_id = ";
+			tempString += boost::lexical_cast<std::string>(expenseDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (!expenseName.empty())
+		{
+			tempString = "";
+			tempString += " name = '";
+			tempString += expenseName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != measureID)
+		{
+			tempString = "";
+			tempString += " measure_id = ";
+			tempString += boost::lexical_cast<std::string>(measureID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -33312,7 +38185,6 @@ namespace DataLayer{
 			tempString += boost::lexical_cast<std::string>(fixedAssetsDeID);
 			conditionVec.push_back(tempString);
 		}
-
 		if (conditionVec.size() >= 1)
 		{
 			filter += conditionVec.at(0);
@@ -33616,6 +38488,50 @@ namespace DataLayer{
 			tempString = "";
 			tempString += " currency_id = ";
 			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForGroups(int groupID, std::string groupName, std::string groupDefinition)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != groupID)
+		{
+			tempString = "";
+			tempString += "group_id = ";
+			tempString += boost::lexical_cast<std::string>(groupID);
+			conditionVec.push_back(tempString);
+		}
+		if (!groupName.empty())
+		{
+			tempString = "";
+			tempString += " group_name = '";
+			tempString += groupName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!groupDefinition.empty())
+		{
+			tempString = "";
+			tempString += " definition = '";
+			tempString += groupDefinition;
+			tempString += "'";
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -34265,9 +39181,218 @@ namespace DataLayer{
 		if (!historyDate.empty())
 		{
 			tempString = "";
-			tempString += " history_date = '";
+			tempString += " date(history_date) = '";
 			tempString += historyDate;
 			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForLowValueStockChangeLog(int lvStockChangeLogID, int lvStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
+		int warehouseID, std::string logDate, int userID, int operationID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != lvStockChangeLogID)
+		{
+			tempString = "";
+			tempString += " low_value_stock_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(lvStockChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != lvStockID)
+		{
+			tempString = "";
+			tempString += " low_value_stock_id = ";
+			tempString += boost::lexical_cast<std::string>(lvStockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != otherStocksID)
+		{
+			tempString = "";
+			tempString += " other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(otherStocksID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(stockCount);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockSum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(stockSum);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (!logDate.empty())
+		{
+			tempString = "";
+			tempString += " log_date = '";
+			tempString += logDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForLowValueStockChangeLogForPeriod(int lvStockChangeLogID, int lvStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
+		int warehouseID, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != lvStockChangeLogID)
+		{
+			tempString = "";
+			tempString += " low_value_stock_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(lvStockChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != lvStockID)
+		{
+			tempString = "";
+			tempString += " low_value_stock_id = ";
+			tempString += boost::lexical_cast<std::string>(lvStockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != otherStocksID)
+		{
+			tempString = "";
+			tempString += " other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(otherStocksID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(stockCount);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockSum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(stockSum);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (!fromDate.empty() && !tillDate.empty())
+		{
+			tempString = "";
+			tempString += " (DATE(log_date) BETWEEN '";
+			tempString += fromDate;
+			tempString += "' AND '";
+			if (tillDate.empty())
+			{
+				tempString += GetSystemDate();
+			}
+			else
+			{
+				tempString += tillDate;
+			}
+			tempString += "')";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -35136,6 +40261,108 @@ namespace DataLayer{
 		{
 			tempString = "";
 			tempString += " cashbox_account_id = ";
+			tempString += boost::lexical_cast<std::string>(cashboxAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForPaymentFieldBiggerThen(int paymentID, std::string paymentDate, double paymentValue, std::string paymentTarget,
+		int userID, int currencyID, int statusID, int accountID, int subaccountID, std::string paymentWho, int cashboxAccID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != paymentID)
+		{
+			tempString = "";
+			tempString += " payment_id > ";
+			tempString += boost::lexical_cast<std::string>(paymentID);
+			conditionVec.push_back(tempString);
+		}
+		if (!paymentDate.empty())
+		{
+			tempString = "";
+			tempString += " payment_date > '";
+			tempString += paymentDate;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != paymentValue)
+		{
+			tempString = "";
+			tempString += " payment_value > ";
+			tempString += boost::lexical_cast<std::string>(paymentValue);
+			conditionVec.push_back(tempString);
+		}
+		if (!paymentTarget.empty())
+		{
+			tempString = "";
+			tempString += " payment_target > '";
+			tempString += paymentTarget;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id > ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id > ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id > ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountID)
+		{
+			tempString = "";
+			tempString += " account_id > ";
+			tempString += boost::lexical_cast<std::string>(accountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id > ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (!paymentWho.empty())
+		{
+			tempString = "";
+			tempString += " who > '";
+			tempString += paymentWho;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cashboxAccID)
+		{
+			tempString = "";
+			tempString += " cashbox_account_id > ";
 			tempString += boost::lexical_cast<std::string>(cashboxAccID);
 			conditionVec.push_back(tempString);
 		}
@@ -38124,6 +43351,144 @@ namespace DataLayer{
 		return filter;
 	}
 
+	std::string OrmasDal::GetFilterForSpecificationChangeLog(int specificationChangeLogID, int specificationID, int productID, double specificationCount, std::string logDate, int userID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != specificationChangeLogID)
+		{
+			tempString = "";
+			tempString += " specification_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(specificationChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != specificationID)
+		{
+			tempString = "";
+			tempString += " specification_id = ";
+			tempString += boost::lexical_cast<std::string>(specificationID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != specificationCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(specificationCount);
+			conditionVec.push_back(tempString);
+		}
+		if (!logDate.empty())
+		{
+			tempString = "";
+			tempString += " log_date = '";
+			tempString += logDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSpecificationChangeLogForPeriod(int specificationChangeLogID, int specificationID, int productID, double specificationCount, 
+		std::string logDate, int userID, std::string fromDate, std::string tillDate)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != specificationChangeLogID)
+		{
+			tempString = "";
+			tempString += " specification_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(specificationChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != specificationID)
+		{
+			tempString = "";
+			tempString += " specification_id = ";
+			tempString += boost::lexical_cast<std::string>(specificationID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != specificationCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(specificationCount);
+			conditionVec.push_back(tempString);
+		}
+		if (!fromDate.empty() && !tillDate.empty())
+		{
+			tempString = "";
+			tempString += " (DATE(log_date) BETWEEN '";
+			tempString += fromDate;
+			tempString += "' AND '";
+			if (tillDate.empty())
+			{
+				tempString += GetSystemDate();
+			}
+			else
+			{
+				tempString += tillDate;
+			}
+			tempString += "')";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
 	std::string OrmasDal::GetFilterForSpecification(int specificationID, int productID, double specificationSum, int currencyID, 
 		int employeeID, std::string sDate)
 	{
@@ -38548,6 +43913,62 @@ namespace DataLayer{
 		return filter;
 	}
 
+	std::string OrmasDal::GetFilterForStockLimit(int stockLimitID, int stockID, int productID, double minValue, double maxValue)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != stockLimitID)
+		{
+			tempString = "";
+			tempString += " stock_limit_id = ";
+			tempString += boost::lexical_cast<std::string>(stockLimitID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockID)
+		{
+			tempString = "";
+			tempString += " stock_id = ";
+			tempString += boost::lexical_cast<std::string>(stockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != minValue)
+		{
+			tempString = "";
+			tempString += " min_value = ";
+			tempString += boost::lexical_cast<std::string>(minValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != maxValue)
+		{
+			tempString = "";
+			tempString += " max_value = ";
+			tempString += boost::lexical_cast<std::string>(maxValue);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
 	std::string OrmasDal::GetFilterForStockHistory(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
 		int warehouseID, std::string historyDate)
 	{
@@ -38606,9 +44027,218 @@ namespace DataLayer{
 		if (!historyDate.empty())
 		{
 			tempString = "";
-			tempString += " history_date = '";
+			tempString += " date(history_date) = '";
 			tempString += historyDate;
 			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForStockChangeLog(int stockChangeLog, int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
+		int warehouseID, std::string logDate, int userID, int operationID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != stockChangeLog)
+		{
+			tempString = "";
+			tempString += " stock_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(stockChangeLog);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockID)
+		{
+			tempString = "";
+			tempString += " stock_id = ";
+			tempString += boost::lexical_cast<std::string>(stockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(stockCount);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockSum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(stockSum);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (!logDate.empty())
+		{
+			tempString = "";
+			tempString += " log_date = '";
+			tempString += logDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForStockChangeLogForPeriod(int stockChangeLog, int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
+		int warehouseID, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != stockChangeLog)
+		{
+			tempString = "";
+			tempString += " stock_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(stockChangeLog);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockID)
+		{
+			tempString = "";
+			tempString += " stock_id = ";
+			tempString += boost::lexical_cast<std::string>(stockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(stockCount);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockSum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(stockSum);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (!fromDate.empty() && !tillDate.empty())
+		{
+			tempString = "";
+			tempString += " (DATE(log_date) BETWEEN '";
+			tempString += fromDate;
+			tempString += "' AND '";
+			if (tillDate.empty())
+			{
+				tempString += GetSystemDate();
+			}
+			else
+			{
+				tempString += tillDate;
+			}
+			tempString += "')";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -38724,6 +44354,27 @@ namespace DataLayer{
 		return filter;
 	}
 
+	std::string OrmasDal::GetINFilterForSubaccountID(std::vector<int> subaccountIDList)
+	{
+		std::string filter = " where subaccount_id IN(";
+		std::vector<std::string> conditionVec;
+		if (subaccountIDList.size() > 0)
+		{
+			filter += boost::lexical_cast<std::string>(subaccountIDList.at(0));
+			for (unsigned int i = 1; i < subaccountIDList.size(); i++)
+			{
+				filter += ", ";
+				filter += boost::lexical_cast<std::string>(subaccountIDList.at(i));
+			}
+			filter += ")";
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
 	std::string OrmasDal::GetFilterForSubaccountHistory(int subaccountHistoryID, int subaccountID, double subaccountStartBalance,
 		double subaccountCurrentBalance, std::string fromDate, std::string tillDate)
 	{
@@ -38772,6 +44423,208 @@ namespace DataLayer{
 			tempString += " till_date = '";
 			tempString += tillDate;
 			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSubaccountChangeLog(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
+		std::string logDate, int userID, int operationID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != subaccountChangeLogID)
+		{
+			tempString = "";
+			tempString += " subaccount_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountStartBalance)
+		{
+			tempString = "";
+			tempString += " start_balance = ";
+			tempString += boost::lexical_cast<std::string>(subaccountStartBalance);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountCurrentBalance)
+		{
+			tempString = "";
+			tempString += " current_balance = ";
+			tempString += boost::lexical_cast<std::string>(subaccountCurrentBalance);
+			conditionVec.push_back(tempString);
+		}
+		if (!logDate.empty())
+		{
+			tempString = "";
+			tempString += " log_date = '";
+			tempString += logDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSubaccountChangeLogForPeriod(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
+		std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != subaccountChangeLogID)
+		{
+			tempString = "";
+			tempString += " subaccount_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountStartBalance)
+		{
+			tempString = "";
+			tempString += " start_balance = ";
+			tempString += boost::lexical_cast<std::string>(subaccountStartBalance);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountCurrentBalance)
+		{
+			tempString = "";
+			tempString += " current_balance = ";
+			tempString += boost::lexical_cast<std::string>(subaccountCurrentBalance);
+			conditionVec.push_back(tempString);
+		}
+		if (!fromDate.empty() && !tillDate.empty())
+		{
+			tempString = "";
+			tempString += " (DATE(log_date) BETWEEN '";
+			tempString += fromDate;
+			tempString += "' AND '";
+			if (tillDate.empty())
+			{
+				tempString += GetSystemDate();
+			}
+			else
+			{
+				tempString += tillDate;
+			}
+			tempString += "')";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSubaccountLimit(int subaccountLimitID, int subaccountID, double minValue, double maxValue)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != subaccountLimitID)
+		{
+			tempString = "";
+			tempString += " subaccount_history_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountLimitID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != minValue)
+		{
+			tempString = "";
+			tempString += " start_balance = ";
+			tempString += boost::lexical_cast<std::string>(minValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != maxValue)
+		{
+			tempString = "";
+			tempString += " current_balance = ";
+			tempString += boost::lexical_cast<std::string>(maxValue);
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -39039,7 +44892,7 @@ namespace DataLayer{
 	}
 
 	std::string OrmasDal::GetFilterForTransportHistory(int transportHistoryID, int transportID, int productID, double transportHistoryCount, double transportHistorySum,
-		int statusID, int currencyID, std::string historyDate)
+		int statusID, int currencyID, std::string fromDate, std::string tillDate)
 	{
 		std::string tempString = "";
 		std::string filter = " where ";
@@ -39093,12 +44946,309 @@ namespace DataLayer{
 			tempString += boost::lexical_cast<std::string>(currencyID);
 			conditionVec.push_back(tempString);
 		}
-		if (!historyDate.empty())
+		if (!fromDate.empty())
 		{
 			tempString = "";
-			tempString += " history_date = '";
-			tempString += historyDate;
+			tempString += " from_date = '";
+			tempString += fromDate;
 			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!tillDate.empty())
+		{
+			tempString = "";
+			tempString += " till_date = '";
+			tempString += tillDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForTransportChangeLog(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+		int statusID, int currencyID, std::string logDate, int userID, int operationID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != transportChangeLogID)
+		{
+			tempString = "";
+			tempString += " transport_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(transportChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportID)
+		{
+			tempString = "";
+			tempString += " transport_id = ";
+			tempString += boost::lexical_cast<std::string>(transportID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(transportCount);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportSum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(transportSum);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (!logDate.empty())
+		{
+			tempString = "";
+			tempString += " log_date = '";
+			tempString += logDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	
+	std::string OrmasDal::GetFilterForTransportChangeLogForPeriod(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+		int statusID, int currencyID, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != transportChangeLogID)
+		{
+			tempString = "";
+			tempString += " transport_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(transportChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportID)
+		{
+			tempString = "";
+			tempString += " transport_id = ";
+			tempString += boost::lexical_cast<std::string>(transportID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(transportCount);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportSum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(transportSum);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (!fromDate.empty() && !tillDate.empty())
+		{
+			tempString = "";
+			tempString += " (DATE(log_date) BETWEEN '";
+			tempString += fromDate;
+			tempString += "' AND '";
+			if (tillDate.empty())
+			{
+				tempString += GetSystemDate();
+			}
+			else
+			{
+				tempString += tillDate;
+			}
+			tempString += "')";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForTransportChangeLogForDateLess(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+		int statusID, int currencyID, std::string logDate, int userID, int operationID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != transportChangeLogID)
+		{
+			tempString = "";
+			tempString += " transport_change_log_id = ";
+			tempString += boost::lexical_cast<std::string>(transportChangeLogID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportID)
+		{
+			tempString = "";
+			tempString += " transport_id = ";
+			tempString += boost::lexical_cast<std::string>(transportID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportCount)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(transportCount);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != transportSum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(transportSum);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (!logDate.empty())
+		{
+			tempString = "";
+			tempString += " date(log_date) < '";
+			tempString += logDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
 			conditionVec.push_back(tempString);
 		}
 		if (conditionVec.size() >= 1)
@@ -39289,6 +45439,49 @@ namespace DataLayer{
 		return filter;
 	}
 
+	std::string OrmasDal::GetFilterForUserGroup(int userGroupID, int groupID, int userID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != userGroupID)
+		{
+			tempString = "";
+			tempString += " user_group_id = ";
+			tempString += boost::lexical_cast<std::string>(userGroupID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != groupID)
+		{
+			tempString = "";
+			tempString += " group_id = ";
+			tempString += boost::lexical_cast<std::string>(groupID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
 	std::string OrmasDal::GetINFilterForUserID(std::vector<int> userIDList)
 	{
 		std::string filter = " where user_id IN(";
@@ -39369,6 +45562,27 @@ namespace DataLayer{
 				filter += " AND ";
 				filter += conditionVec.at(i);
 			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetINFilterForWarehouseID(std::vector<int> warehouseIDList)
+	{
+		std::string filter = " where warehouse_id IN(";
+		std::vector<std::string> conditionVec;
+		if (warehouseIDList.size() > 0)
+		{
+			filter += boost::lexical_cast<std::string>(warehouseIDList.at(0));
+			for (unsigned int i = 1; i < warehouseIDList.size(); i++)
+			{
+				filter += ", ";
+				filter += boost::lexical_cast<std::string>(warehouseIDList.at(i));
+			}
+			filter += ")";
 		}
 		else
 		{
@@ -39554,6 +45768,108 @@ namespace DataLayer{
 		{
 			tempString = "";
 			tempString += " cashbox_account_id = ";
+			tempString += boost::lexical_cast<std::string>(cashboxAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForWithdrawalFieldBiggerThen(int withdrawalID, std::string withdrawalDate, double withdrawalValue, int userID,
+		int sabID, std::string withdrawalTarget, int currencyID, int statusID, int accountID, std::string withdrawalWho, int cashboxAccID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != withdrawalID)
+		{
+			tempString = "";
+			tempString += " withdrawal_id > ";
+			tempString += boost::lexical_cast<std::string>(withdrawalID);
+			conditionVec.push_back(tempString);
+		}
+		if (!withdrawalDate.empty())
+		{
+			tempString = "";
+			tempString += " withdrawal_date > '";
+			tempString += withdrawalDate;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != withdrawalValue)
+		{
+			tempString = "";
+			tempString += " withdrawal_value > ";
+			tempString += boost::lexical_cast<std::string>(withdrawalValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sabID)
+		{
+			tempString = "";
+			tempString += " subaccount_id > ";
+			tempString += boost::lexical_cast<std::string>(sabID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (!withdrawalTarget.empty())
+		{
+			tempString = "";
+			tempString += " withdrawal_target > '";
+			tempString += withdrawalDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id > ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id > ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountID)
+		{
+			tempString = "";
+			tempString += " account_id > ";
+			tempString += boost::lexical_cast<std::string>(accountID);
+			conditionVec.push_back(tempString);
+		}
+		if (!withdrawalWho.empty())
+		{
+			tempString = "";
+			tempString += " who = '";
+			tempString += withdrawalWho;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cashboxAccID)
+		{
+			tempString = "";
+			tempString += " cashbox_account_id > ";
 			tempString += boost::lexical_cast<std::string>(cashboxAccID);
 			conditionVec.push_back(tempString);
 		}
@@ -40178,6 +46494,10534 @@ namespace DataLayer{
 		return filter;
 	}
 
+	// Generate filter view
+	std::string OrmasDal::GetFilterForAccessView(int aID, std::string roleName, std::string aItemEng, std::string aRusEng,
+		std::string division, int roleID, int accItemID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != aID)
+		{
+			tempString = "";
+			tempString += " access_id = ";
+			tempString += boost::lexical_cast<std::string>(aID);
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!aItemEng.empty())
+		{
+			tempString = "";
+			tempString += " access_item_eng like '%";
+			tempString += aItemEng;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!aRusEng.empty())
+		{
+			tempString = "";
+			tempString += " access_item_ru like '%";
+			tempString += aRusEng;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!division.empty())
+		{
+			tempString = "";
+			tempString += " access_division like '%";
+			tempString += division;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != roleID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(roleID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accItemID)
+		{
+			tempString = "";
+			tempString += " access_item_id = ";
+			tempString += boost::lexical_cast<std::string>(accItemID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForAccountableView(int aID, int eID, std::string eName, std::string eSurname, std::string info, std::string ePhone, 
+		std::string eAddress, std::string roleName)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != aID)
+		{
+			tempString = "";
+			tempString += " accountable_id = ";
+			tempString += boost::lexical_cast<std::string>(aID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != eID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(eID);
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!info.empty())
+		{
+			tempString = "";
+			tempString += " information = '";
+			tempString += info;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eAddress.empty())
+		{
+			tempString = "";
+			tempString += " employee_address like '%";
+			tempString += eAddress;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForBalancesView(int bID, std::string uName, std::string uSurname, std::string subNumber, double curBalance, std::string currencyName,
+		int userID, int subaccountID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != bID)
+		{
+			tempString = "";
+			tempString += " balance_id = ";
+			tempString += boost::lexical_cast<std::string>(bID);
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != curBalance)
+		{
+			tempString = "";
+			tempString += " current_balance = ";
+			tempString += boost::lexical_cast<std::string>(curBalance);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForBorrowersView(int bID, std::string uName, std::string uSurname, std::string comment, std::string uPhone, std::string uAddress,
+		std::string roleName, std::string password, std::string uEmail, int roleID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != bID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(bID);
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name = '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!comment.empty())
+		{
+			tempString = "";
+			tempString += " comment = '";
+			tempString += comment;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += uPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uAddress.empty())
+		{
+			tempString = "";
+			tempString += " user_address = '";
+			tempString += uAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!password.empty())
+		{
+			tempString = "";
+			tempString += " password = '";
+			tempString += password;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uEmail.empty())
+		{
+			tempString = "";
+			tempString += " user_email = '";
+			tempString += uEmail;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != roleID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(roleID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForBranchSubaccountView(int sID, std::string branchName, std::string subaccountNumber, int brachID, int subaccountID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " branch_subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (!branchName.empty())
+		{
+			tempString = "";
+			tempString += " branch_name like '%";
+			tempString += branchName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccountNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != brachID)
+		{
+			tempString = "";
+			tempString += " branch_id = ";
+			tempString += boost::lexical_cast<std::string>(brachID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForCashboxView(int cID, std::string sNumber, std::string info, std::string chashboxAddress, int subaccountID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cID)
+		{
+			tempString = "";
+			tempString += " cashbox_id = ";
+			tempString += boost::lexical_cast<std::string>(cID);
+			conditionVec.push_back(tempString);
+		}
+		if (!sNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += sNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!info.empty())
+		{
+			tempString = "";
+			tempString += " information = '";
+			tempString += info;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!chashboxAddress.empty())
+		{
+			tempString = "";
+			tempString += " cashbox_address = '";
+			tempString += chashboxAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForCashboxEmployeeView(int ceID, std::string sNumber, std::string chashboxAddress, std::string uName, std::string uSurname,
+		std::string uPhone, std::string roleName, int cashboxID, int subaccountID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != ceID)
+		{
+			tempString = "";
+			tempString += " cashbox_employee_id = ";
+			tempString += boost::lexical_cast<std::string>(ceID);
+			conditionVec.push_back(tempString);
+		}
+		if (!sNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += sNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!chashboxAddress.empty())
+		{
+			tempString = "";
+			tempString += " cashbox_address = '";
+			tempString += chashboxAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname  like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += uPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cashboxID)
+		{
+			tempString = "";
+			tempString += " cashbox_id = ";
+			tempString += boost::lexical_cast<std::string>(cashboxID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForChartOfAccountsView(int cID, std::string numberAccount, std::string name, std::string type, int aTypeID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cID)
+		{
+			tempString = "";
+			tempString += " chart_of_account_id = ";
+			tempString += boost::lexical_cast<std::string>(cID);
+			conditionVec.push_back(tempString);
+		}
+		if (!numberAccount.empty())
+		{
+			tempString = "";
+			tempString += " number_of_account = '";
+			tempString += numberAccount;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!name.empty())
+		{
+			tempString = "";
+			tempString += " name_of_account like '%";
+			tempString += name;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!type.empty())
+		{
+			tempString = "";
+			tempString += " account_type_name like '%";
+			tempString += type;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != aTypeID)
+		{
+			tempString = "";
+			tempString += " account_type_id = ";
+			tempString += boost::lexical_cast<std::string>(aTypeID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForClientView(int cID, std::string uName, std::string uSurname, std::string uPhone, std::string countryName, std::string regionName,
+		std::string cityName, std::string uAddress,	std::string firm, std::string firmNumber, std::string roleName, std::string password, std::string uEmail, 
+		int roleID, int locationID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(cID);
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += uPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!countryName.empty())
+		{
+			tempString = "";
+			tempString += " country_name like '%";
+			tempString += countryName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!regionName.empty())
+		{
+			tempString = "";
+			tempString += " region_name like '%";
+			tempString += regionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!cityName.empty())
+		{
+			tempString = "";
+			tempString += " city_name like '%";
+			tempString += cityName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uAddress.empty())
+		{
+			tempString = "";
+			tempString += " user_address = '";
+			tempString += uAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!firm.empty())
+		{
+			tempString = "";
+			tempString += " firm like '%";
+			tempString += firm;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!firmNumber.empty())
+		{
+			tempString = "";
+			tempString += " firm_number = '";
+			tempString += firmNumber;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		
+		
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!password.empty())
+		{
+			tempString = "";
+			tempString += " password = '";
+			tempString += password;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uEmail.empty())
+		{
+			tempString = "";
+			tempString += " user_email = '";
+			tempString += uEmail;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != roleID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(roleID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != locationID)
+		{
+			tempString = "";
+			tempString += " location_id = ";
+			tempString += boost::lexical_cast<std::string>(locationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForCompanyAccountView(int caID, std::string companyName, std::string accountNumber, int cID, int aID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != caID)
+		{
+			tempString = "";
+			tempString += " company_account_id = ";
+			tempString += boost::lexical_cast<std::string>(caID);
+			conditionVec.push_back(tempString);
+		}
+		if (!companyName.empty())
+		{
+			tempString = "";
+			tempString += " company_name like '%";
+			tempString += companyName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!accountNumber.empty())
+		{
+			tempString = "";
+			tempString += " account_number like '%";
+			tempString += accountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cID)
+		{
+			tempString = "";
+			tempString += " company_id = ";
+			tempString += boost::lexical_cast<std::string>(cID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != aID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(aID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForCompanyEmployeeView(int ceID, std::string companyName, std::string branchName, std::string uName, std::string uSurname,
+		std::string uPhone, int companyID, int employeeID, int branchID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != ceID)
+		{
+			tempString = "";
+			tempString += " company_employee_id = ";
+			tempString += boost::lexical_cast<std::string>(ceID);
+			conditionVec.push_back(tempString);
+		}
+		if (!companyName.empty())
+		{
+			tempString = "";
+			tempString += " company_name like '%";
+			tempString += companyName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!branchName.empty())
+		{
+			tempString = "";
+			tempString += " branch_name like '%";
+			tempString += branchName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += uPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != companyID)
+		{
+			tempString = "";
+			tempString += " company_id = ";
+			tempString += boost::lexical_cast<std::string>(companyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != branchID)
+		{
+			tempString = "";
+			tempString += " branch_id = ";
+			tempString += boost::lexical_cast<std::string>(branchID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForConProdListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " consume_product_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " consume_product_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForConProdView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " consume_product_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " consume_product_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForConRawListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " consume_raw_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " consume_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForConRawView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " consume_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " consume_raw_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForConOthStListView(int cpListID, int cpID, std::string otherStockName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int otherStockID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " consume_other_stocks_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " consume_other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!otherStockName.empty())
+		{
+			tempString = "";
+			tempString += " other_stocks_name like '%";
+			tempString += otherStockName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != otherStockID)
+		{
+			tempString = "";
+			tempString += " other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(otherStockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForConOthStView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " consume_other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " consume_other_stocks_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForDivisionAccountView(int daID, std::string divisionName, std::string accountNumber, std::string accountName, std::string accountCode,
+		int dID, int aID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != daID)
+		{
+			tempString = "";
+			tempString += " division_account_id = ";
+			tempString += boost::lexical_cast<std::string>(daID);
+			conditionVec.push_back(tempString);
+		}
+		if (!divisionName.empty())
+		{
+			tempString = "";
+			tempString += " division_name like '%";
+			tempString += divisionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!accountNumber.empty())
+		{
+			tempString = "";
+			tempString += " account_number like '%";
+			tempString += accountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!accountName.empty())
+		{
+			tempString = "";
+			tempString += " account_name like '%";
+			tempString += accountName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!accountCode.empty())
+		{
+			tempString = "";
+			tempString += " account_code = '";
+			tempString += accountCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != dID)
+		{
+			tempString = "";
+			tempString += " division_id = ";
+			tempString += boost::lexical_cast<std::string>(dID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != aID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(aID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForEmployeeView(int eID, std::string uName, std::string uSurname, std::string uPosition, std::string uPhone, std::string uAddress,
+		std::string birthdate, std::string roleName, std::string hireDate, std::string password, std::string uEmail, int roleID, int empPositionID, int divitionID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != eID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(eID);
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPosition.empty())
+		{
+			tempString = "";
+			tempString += " position_name like '%";
+			tempString += uPosition;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += uPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uAddress.empty())
+		{
+			tempString = "";
+			tempString += " user_address = '";
+			tempString += uAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!birthdate.empty())
+		{
+			tempString = "";
+			tempString += " birth_date = '";
+			tempString += birthdate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name = '";
+			tempString += roleName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!hireDate.empty())
+		{
+			tempString = "";
+			tempString += " hire_date = '";
+			tempString += hireDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!password.empty())
+		{
+			tempString = "";
+			tempString += " password = '";
+			tempString += password;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uEmail.empty())
+		{
+			tempString = "";
+			tempString += " user_email = '";
+			tempString += uEmail;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != roleID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(roleID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != empPositionID)
+		{
+			tempString = "";
+			tempString += " position_id = ";
+			tempString += boost::lexical_cast<std::string>(empPositionID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != divitionID)
+		{
+			tempString = "";
+			tempString += " division_id = ";
+			tempString += boost::lexical_cast<std::string>(divitionID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForEmpProductView(int epID, std::string uName, std::string uSurname, std::string uPhone, std::string productName, double price, int employeeID, int productID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != epID)
+		{
+			tempString = "";
+			tempString += " employee_product_id = ";
+			tempString += boost::lexical_cast<std::string>(epID);
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += uPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForEntryView(int eID, std::string entryDate, std::string debAccNumber, double value, std::string credAccNumber, int debAccID,
+		int credAccID, std::string description)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != eID)
+		{
+			tempString = "";
+			tempString += " entry_id = ";
+			tempString += boost::lexical_cast<std::string>(eID);
+			conditionVec.push_back(tempString);
+		}
+		if (!entryDate.empty())
+		{
+			tempString = "";
+			tempString += "  entry_date = '";
+			tempString += entryDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!debAccNumber.empty())
+		{
+			tempString = "";
+			tempString += " debiting_account_number like '%";
+			tempString += debAccNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!credAccNumber.empty())
+		{
+			tempString = "";
+			tempString += " crediting_account_number like '%";
+			tempString += credAccNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != debAccID)
+		{
+			tempString = "";
+			tempString += " debiting_account_id = ";
+			tempString += boost::lexical_cast<std::string>(debAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != credAccID)
+		{
+			tempString = "";
+			tempString += " crediting_account_id = ";
+			tempString += boost::lexical_cast<std::string>(credAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (!description.empty())
+		{
+			tempString = "";
+			tempString += " description like '%";
+			tempString += description;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForEntryFullView(int eID, std::string entryDate, std::string debAccNumber, double value, std::string credAccNumber, int operationID,
+		int subaccountID, int debAccID, int credAccID, std::string description)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != eID)
+		{
+			tempString = "";
+			tempString += " entry_id = ";
+			tempString += boost::lexical_cast<std::string>(eID);
+			conditionVec.push_back(tempString);
+		}
+		if (!entryDate.empty())
+		{
+			tempString = "";
+			tempString += "  entry_date = '";
+			tempString += entryDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!debAccNumber.empty())
+		{
+			tempString = "";
+			tempString += " debiting_account_number like '%";
+			tempString += debAccNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!credAccNumber.empty())
+		{
+			tempString = "";
+			tempString += " crediting_account_number like '%";
+			tempString += credAccNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != debAccID)
+		{
+			tempString = "";
+			tempString += " debiting_account_id = ";
+			tempString += boost::lexical_cast<std::string>(debAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != credAccID)
+		{
+			tempString = "";
+			tempString += " crediting_account_id = ";
+			tempString += boost::lexical_cast<std::string>(credAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (!description.empty())
+		{
+			tempString = "";
+			tempString += " description = '";
+			tempString += description;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForEntryAllView(int eID, std::string entryDate, std::string debAccNumber, double value, std::string credAccNumber, int operationID, int subaccountID, int debAccID, int credAccID, std::string description,
+		int conProdID, int conRawID, int fixedAssID, int fixedAssOperID, int inventoryID, int orderID, int orderRawID, int paymentID, int payslipID,
+		int prodnConRawID, int recProductID, int returnID, int spoilageID, int stockTrID, int withdrawalID, int wOffID, int wOffRawID, int productID,
+		int otherStockID, int recOthStID, int conOthStID, int accDocumentID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != eID)
+		{
+			tempString = "";
+			tempString += " entry_id = ";
+			tempString += boost::lexical_cast<std::string>(eID);
+			conditionVec.push_back(tempString);
+		}
+		if (!entryDate.empty())
+		{
+			tempString = "";
+			tempString += "  entry_date = '";
+			tempString += entryDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!debAccNumber.empty())
+		{
+			tempString = "";
+			tempString += " debiting_account_number like '%";
+			tempString += debAccNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!credAccNumber.empty())
+		{
+			tempString = "";
+			tempString += " crediting_account_number like '%";
+			tempString += credAccNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != operationID)
+		{
+			tempString = "";
+			tempString += " operation_id = ";
+			tempString += boost::lexical_cast<std::string>(operationID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != debAccID)
+		{
+			tempString = "";
+			tempString += " debiting_account_id = ";
+			tempString += boost::lexical_cast<std::string>(debAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != credAccID)
+		{
+			tempString = "";
+			tempString += " crediting_account_id = ";
+			tempString += boost::lexical_cast<std::string>(credAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (!description.empty())
+		{
+			tempString = "";
+			tempString += " description = '";
+			tempString += description;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != conProdID)
+		{
+			tempString = "";
+			tempString += " consume_product_id = ";
+			tempString += boost::lexical_cast<std::string>(conProdID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != conRawID)
+		{
+			tempString = "";
+			tempString += " consume_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(conRawID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != fixedAssID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_id = ";
+			tempString += boost::lexical_cast<std::string>(fixedAssID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != fixedAssOperID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_operation_id = ";
+			tempString += boost::lexical_cast<std::string>(fixedAssOperID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != inventoryID)
+		{
+			tempString = "";
+			tempString += " inventory_id = ";
+			tempString += boost::lexical_cast<std::string>(inventoryID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != orderID)
+		{
+			tempString = "";
+			tempString += " order_id = ";
+			tempString += boost::lexical_cast<std::string>(orderID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != orderRawID)
+		{
+			tempString = "";
+			tempString += " order_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(orderRawID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != paymentID)
+		{
+			tempString = "";
+			tempString += " payment_id = ";
+			tempString += boost::lexical_cast<std::string>(paymentID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != payslipID)
+		{
+			tempString = "";
+			tempString += " payslip_id = ";
+			tempString += boost::lexical_cast<std::string>(payslipID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != prodnConRawID)
+		{
+			tempString = "";
+			tempString += " production_consume_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(prodnConRawID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != recProductID)
+		{
+			tempString = "";
+			tempString += " receipt_product_id = ";
+			tempString += boost::lexical_cast<std::string>(recProductID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != returnID)
+		{
+			tempString = "";
+			tempString += " return_id = ";
+			tempString += boost::lexical_cast<std::string>(returnID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != spoilageID)
+		{
+			tempString = "";
+			tempString += " spoilage_id = ";
+			tempString += boost::lexical_cast<std::string>(spoilageID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockTrID)
+		{
+			tempString = "";
+			tempString += " stock_transfer_id = ";
+			tempString += boost::lexical_cast<std::string>(stockTrID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != withdrawalID)
+		{
+			tempString = "";
+			tempString += " withdrawal_id = ";
+			tempString += boost::lexical_cast<std::string>(withdrawalID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != wOffID)
+		{
+			tempString = "";
+			tempString += " write_off_id = ";
+			tempString += boost::lexical_cast<std::string>(wOffID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != wOffRawID)
+		{
+			tempString = "";
+			tempString += " write_off_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(wOffRawID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != credAccID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(credAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != recOthStID)
+		{
+			tempString = "";
+			tempString += " receipt_other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(recOthStID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != conOthStID)
+		{
+			tempString = "";
+			tempString += " consume_other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(conOthStID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accDocumentID)
+		{
+			tempString = "";
+			tempString += " accountable_document_id = ";
+			tempString += boost::lexical_cast<std::string>(accDocumentID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForFixedAssDetailView(int fadID, int groupNumber, std::string amorName, std::string amorCode, double amorValue, std::string divName,
+		double primValue, double amorAccValue, std::string barcodeNumber, std::string location, int primAccID, int amorAccID, int amorGroupID, int amorTypeID,
+		int departID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != fadID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_details_id = ";
+			tempString += boost::lexical_cast<std::string>(fadID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != groupNumber)
+		{
+			tempString = "";
+			tempString += " group_number = ";
+			tempString += boost::lexical_cast<std::string>(groupNumber);
+			conditionVec.push_back(tempString);
+		}
+		if (!amorName.empty())
+		{
+			tempString = "";
+			tempString += " amortize_type_name like '%";
+			tempString += amorName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!amorCode.empty())
+		{
+			tempString = "";
+			tempString += " amortize_type_code = '";
+			tempString += amorCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorValue)
+		{
+			tempString = "";
+			tempString += " amortize_value = ";
+			tempString += boost::lexical_cast<std::string>(amorValue);
+			conditionVec.push_back(tempString);
+		}
+		if (!divName.empty())
+		{
+			tempString = "";
+			tempString += " division_name like '%";
+			tempString += divName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != primValue)
+		{
+			tempString = "";
+			tempString += " primary_cost_value = ";
+			tempString += boost::lexical_cast<std::string>(primValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorAccValue)
+		{
+			tempString = "";
+			tempString += " amortize_acc_value = ";
+			tempString += boost::lexical_cast<std::string>(amorAccValue);
+			conditionVec.push_back(tempString);
+		}
+		if (!barcodeNumber.empty())
+		{
+			tempString = "";
+			tempString += " barcode_number = '";
+			tempString += barcodeNumber;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!location.empty())
+		{
+			tempString = "";
+			tempString += " fixed_assets_location like '%";
+			tempString += location;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != primAccID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_location = ";
+			tempString += boost::lexical_cast<std::string>(primAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorAccID)
+		{
+			tempString = "";
+			tempString += " amortize_account_id = ";
+			tempString += boost::lexical_cast<std::string>(amorAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorGroupID)
+		{
+			tempString = "";
+			tempString += " amortize_group_id = ";
+			tempString += boost::lexical_cast<std::string>(amorGroupID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorTypeID)
+		{
+			tempString = "";
+			tempString += " amortize_type_id = ";
+			tempString += boost::lexical_cast<std::string>(amorTypeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != departID)
+		{
+			tempString = "";
+			tempString += " department_id = ";
+			tempString += boost::lexical_cast<std::string>(departID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForFixedAssView(int faID, std::string aName, std::string invNumber, double primCost, double stopValue, double primCostValue,
+		double amortizeValue, std::string divisionName, std::string statusName, int serviceLife, std::string buyDate, std::string startOfOperDate,
+		std::string endOfOperDate, int fxAssSpecID, int statusID, int fxDetailID, int pAccID, int aAccID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != faID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_id = ";
+			tempString += boost::lexical_cast<std::string>(faID);
+			conditionVec.push_back(tempString);
+		}
+		if (!aName.empty())
+		{
+			tempString = "";
+			tempString += " fixed_assets_name like '%";
+			tempString += aName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!invNumber.empty())
+		{
+			tempString = "";
+			tempString += " inventory_number like '%";
+			tempString += invNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != primCost)
+		{
+			tempString = "";
+			tempString += " primary_cost = ";
+			tempString += boost::lexical_cast<std::string>(primCost);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stopValue)
+		{
+			tempString = "";
+			tempString += " stop_cost = ";
+			tempString += boost::lexical_cast<std::string>(stopValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != primCostValue)
+		{
+			tempString = "";
+			tempString += " primary_cost_value = ";
+			tempString += boost::lexical_cast<std::string>(primCostValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amortizeValue)
+		{
+			tempString = "";
+			tempString += " amortize_value = ";
+			tempString += boost::lexical_cast<std::string>(amortizeValue);
+			conditionVec.push_back(tempString);
+		}
+		if (!divisionName.empty())
+		{
+			tempString = "";
+			tempString += " division_name = '";
+			tempString += divisionName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != serviceLife)
+		{
+			tempString = "";
+			tempString += " service_life = ";
+			tempString += boost::lexical_cast<std::string>(serviceLife);
+			conditionVec.push_back(tempString);
+		}
+		if (!buyDate.empty())
+		{
+			tempString = "";
+			tempString += " buy_date = '";
+			tempString += buyDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!startOfOperDate.empty())
+		{
+			tempString = "";
+			tempString += " start_of_operation_date = '";
+			tempString += startOfOperDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!endOfOperDate.empty())
+		{
+			tempString = "";
+			tempString += " end_of_operation_date = '";
+			tempString += endOfOperDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != fxAssSpecID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_specification_id = ";
+			tempString += boost::lexical_cast<std::string>(fxAssSpecID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != fxDetailID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_details_id = ";
+			tempString += boost::lexical_cast<std::string>(fxDetailID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != pAccID)
+		{
+			tempString = "";
+			tempString += " primary_parent_account_id = ";
+			tempString += boost::lexical_cast<std::string>(pAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != aAccID)
+		{
+			tempString = "";
+			tempString += " amortize_parent_account_id = ";
+			tempString += boost::lexical_cast<std::string>(aAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForFixedAssUnionView(int faID, std::string faName, std::string divisionName, double primCost, double stopCost, double amorSum,
+		std::string invNumber, double amorValue, int serviceLife, std::string statusName, std::string buyDate, std::string startOfOperDate,
+		std::string endOfOperDate, std::string location, std::string barcodeNumber, std::string factoryNumber, std::string developer, std::string document,
+		std::string objChar, std::string condition, std::string dateOfCons, int fxSpecID, int statusID, int fxDetailID, int amgroupID, int amorTypeID, int deparID,
+		int primCostAccID, int amorAccID, int postingFAID, int userID, int subaccountID, int accountID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != faID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_id = ";
+			tempString += boost::lexical_cast<std::string>(faID);
+			conditionVec.push_back(tempString);
+		}
+		if (!faName.empty())
+		{
+			tempString = "";
+			tempString += " fixed_assets_name like '%";
+			tempString += faName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!invNumber.empty())
+		{
+			tempString = "";
+			tempString += " inventory_number like '%";
+			tempString += invNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!divisionName.empty())
+		{
+			tempString = "";
+			tempString += " divisionName like '%";
+			tempString += divisionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != primCost)
+		{
+			tempString = "";
+			tempString += " primary_cost = ";
+			tempString += boost::lexical_cast<std::string>(primCost);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stopCost)
+		{
+			tempString = "";
+			tempString += " stop_cost = ";
+			tempString += boost::lexical_cast<std::string>(stopCost);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorSum)
+		{
+			tempString = "";
+			tempString += " amortize_sum = ";
+			tempString += boost::lexical_cast<std::string>(amorSum);
+			conditionVec.push_back(tempString);
+		}
+		if (!invNumber.empty())
+		{
+			tempString = "";
+			tempString += " inventory_number like '%";
+			tempString += invNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorValue)
+		{
+			tempString = "";
+			tempString += " amortize_value = ";
+			tempString += boost::lexical_cast<std::string>(amorValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != serviceLife)
+		{
+			tempString = "";
+			tempString += " service_life = ";
+			tempString += boost::lexical_cast<std::string>(serviceLife);
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		
+		if (!buyDate.empty())
+		{
+			tempString = "";
+			tempString += " buy_date = '";
+			tempString += buyDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!startOfOperDate.empty())
+		{
+			tempString = "";
+			tempString += " start_of_operation_date = '";
+			tempString += startOfOperDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!endOfOperDate.empty())
+		{
+			tempString = "";
+			tempString += " end_of_operation_date = '";
+			tempString += endOfOperDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!location.empty())
+		{
+			tempString = "";
+			tempString += " fixed_assets_location = '";
+			tempString += location;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!barcodeNumber.empty())
+		{
+			tempString = "";
+			tempString += " barcode_number like '%";
+			tempString += barcodeNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!factoryNumber.empty())
+		{
+			tempString = "";
+			tempString += " factory_number = '";
+			tempString += factoryNumber;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!developer.empty())
+		{
+			tempString = "";
+			tempString += " developer = '";
+			tempString += developer;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!document.empty())
+		{
+			tempString = "";
+			tempString += " document = '";
+			tempString += document;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!objChar.empty())
+		{
+			tempString = "";
+			tempString += " object_characters = '";
+			tempString += objChar;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!condition.empty())
+		{
+			tempString = "";
+			tempString += " condition = '";
+			tempString += condition;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!dateOfCons.empty())
+		{
+			tempString = "";
+			tempString += " dateOfCons = '";
+			tempString += dateOfCons;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != fxSpecID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_specification_id = ";
+			tempString += boost::lexical_cast<std::string>(fxSpecID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != fxDetailID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_details_id = ";
+			tempString += boost::lexical_cast<std::string>(fxDetailID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amgroupID)
+		{
+			tempString = "";
+			tempString += " amortize_group_id = ";
+			tempString += boost::lexical_cast<std::string>(amgroupID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorTypeID)
+		{
+			tempString = "";
+			tempString += " amortize_type_id = ";
+			tempString += boost::lexical_cast<std::string>(amorTypeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != deparID)
+		{
+			tempString = "";
+			tempString += " department_id = ";
+			tempString += boost::lexical_cast<std::string>(deparID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != primCostAccID)
+		{
+			tempString = "";
+			tempString += " primary_cost_account_id = ";
+			tempString += boost::lexical_cast<std::string>(primCostAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != amorAccID)
+		{
+			tempString = "";
+			tempString += " amortize_account_id = ";
+			tempString += boost::lexical_cast<std::string>(amorAccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != postingFAID)
+		{
+			tempString = "";
+			tempString += " posting_fixed_assets_id = ";
+			tempString += boost::lexical_cast<std::string>(postingFAID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(accountID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForPostingFixAssetView(int pfID, std::string userSurname, std::string accountName, int userID, int subaccountID, int accountID,
+		int fixedAssID, int inventoryID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != pfID)
+		{
+			tempString = "";
+			tempString += " posting_fixed_assets_id = ";
+			tempString += boost::lexical_cast<std::string>(pfID);
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!accountName.empty())
+		{
+			tempString = "";
+			tempString += " name_of_account like '%";
+			tempString += accountName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(accountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != fixedAssID)
+		{
+			tempString = "";
+			tempString += " fixed_assets_id = ";
+			tempString += boost::lexical_cast<std::string>(fixedAssID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != inventoryID)
+		{
+			tempString = "";
+			tempString += " inventory_id = ";
+			tempString += boost::lexical_cast<std::string>(inventoryID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForInvListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " inventorization_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " inventorization_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForInvView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " inventorization_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " inventorization_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForInvnentoryView(int inventoryID, std::string inventoryName, double inventoryCost, std::string inventoryNumber, std::string barcodeNumber,
+		std::string divisionName, std::string statusName, std::string location, std::string startOfOperDate, std::string endOfOperDate, int statusID, int departamentID, int invSubID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != inventoryID)
+		{
+			tempString = "";
+			tempString += " inventory_id = ";
+			tempString += boost::lexical_cast<std::string>(inventoryID);
+			conditionVec.push_back(tempString);
+		}
+		if (!inventoryName.empty())
+		{
+			tempString = "";
+			tempString += " inventory_name = '";
+			tempString += inventoryName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != inventoryCost)
+		{
+			tempString = "";
+			tempString += " inventory_cost = ";
+			tempString += boost::lexical_cast<std::string>(inventoryCost);
+			conditionVec.push_back(tempString);
+		}
+		if (!inventoryNumber.empty())
+		{
+			tempString = "";
+			tempString += " inventory_number like '%";
+			tempString += inventoryNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!barcodeNumber.empty())
+		{
+			tempString = "";
+			tempString += " barcode_number like '%";
+			tempString += barcodeNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!divisionName.empty())
+		{
+			tempString = "";
+			tempString += " division_name like '%";
+			tempString += divisionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!location.empty())
+		{
+			tempString = "";
+			tempString += " location like '%";
+			tempString += location;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!startOfOperDate.empty())
+		{
+			tempString = "";
+			tempString += " start_of_operation_date = '";
+			tempString += startOfOperDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!endOfOperDate.empty())
+		{
+			tempString = "";
+			tempString += " end_of_operation_date = '";
+			tempString += endOfOperDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != departamentID)
+		{
+			tempString = "";
+			tempString += " department_id = ";
+			tempString += boost::lexical_cast<std::string>(departamentID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != invSubID)
+		{
+			tempString = "";
+			tempString += " inventory_subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(invSubID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForInvnentoryUnionView(int inventoryID, std::string inventoryName, double inventoryCost, std::string inventoryNumber, std::string barcodeNumber,
+		std::string divisionName, std::string statusName, std::string location, std::string startOfOperDate, std::string endOfOperDate, int statusID, int depatamentID,
+		int invSubID, int pfxID, int userID, int subaccID, int accID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != inventoryID)
+		{
+			tempString = "";
+			tempString += " inventory_id = ";
+			tempString += boost::lexical_cast<std::string>(inventoryID);
+			conditionVec.push_back(tempString);
+		}
+		if (!inventoryName.empty())
+		{
+			tempString = "";
+			tempString += " inventory_name like '%";
+			tempString += inventoryName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != inventoryCost)
+		{
+			tempString = "";
+			tempString += " inventory_cost = ";
+			tempString += boost::lexical_cast<std::string>(inventoryCost);
+			conditionVec.push_back(tempString);
+		}
+		if (!inventoryNumber.empty())
+		{
+			tempString = "";
+			tempString += " inventory_number like '%";
+			tempString += inventoryNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!barcodeNumber.empty())
+		{
+			tempString = "";
+			tempString += " barcode_number like '%";
+			tempString += barcodeNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!divisionName.empty())
+		{
+			tempString = "";
+			tempString += " division_name like '%";
+			tempString += divisionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!location.empty())
+		{
+			tempString = "";
+			tempString += " location like '%";
+			tempString += location;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!startOfOperDate.empty())
+		{
+			tempString = "";
+			tempString += " start_of_operation_date = '";
+			tempString += startOfOperDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!endOfOperDate.empty())
+		{
+			tempString = "";
+			tempString += " end_of_operation_date = '";
+			tempString += endOfOperDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != depatamentID)
+		{
+			tempString = "";
+			tempString += " department_id = ";
+			tempString += boost::lexical_cast<std::string>(depatamentID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != invSubID)
+		{
+			tempString = "";
+			tempString += " inventory_subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(invSubID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != pfxID)
+		{
+			tempString = "";
+			tempString += " posting_fixed_assets_id = ";
+			tempString += boost::lexical_cast<std::string>(pfxID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(accID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForJobpriceView(int jID, std::string productName, double value, std::string currencyName, double volume, std::string measureName, std::string positionName,
+		int productID, int currencyID, int measureID, int  positionID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != jID)
+		{
+			tempString = "";
+			tempString += " jobprice_id = ";
+			tempString += boost::lexical_cast<std::string>(jID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!positionName.empty())
+		{
+			tempString = "";
+			tempString += " position_name = '";
+			tempString += positionName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != measureID)
+		{
+			tempString = "";
+			tempString += " measure_id = ";
+			tempString += boost::lexical_cast<std::string>(measureID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != positionID)
+		{
+			tempString = "";
+			tempString += " position_id = ";
+			tempString += boost::lexical_cast<std::string>(positionID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForJobsheetView(int jID, std::string jDate, std::string uName, std::string uSurname, std::string uPhone, std::string productName,
+		double count, std::string measureName, int productID, int employeeID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != jID)
+		{
+			tempString = "";
+			tempString += " jobsheet_id = ";
+			tempString += boost::lexical_cast<std::string>(jID);
+			conditionVec.push_back(tempString);
+		}
+		if (!jDate.empty())
+		{
+			tempString = "";
+			tempString += " jobsheet_date = '";
+			tempString += jDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += uPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForLowValStockView(int sID, std::string otherStockName, double price, std::string currencyName, double volume, std::string measureName, double count,
+		double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int otherStockID, int statusID,
+		int currencyID, int warehouseID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " stock_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (!otherStockName.empty())
+		{
+			tempString = "";
+			tempString += " other_stocks_name like '%";
+			tempString += otherStockName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurrencyName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurrencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!warehouseName.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_name like '%";
+			tempString += warehouseName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != otherStockID)
+		{
+			tempString = "";
+			tempString += " other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(otherStockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForLowValStockHisView(int sID, std::string otherStockName, double price, std::string currencyName, double volume, std::string measureName, double count,
+		double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int otherStockID, int statusID,
+		int currencyID, int warehouseID, std::string historyDate)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " stock_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (!otherStockName.empty())
+		{
+			tempString = "";
+			tempString += " other_stocks_name like '%";
+			tempString += otherStockName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurrencyName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurrencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!warehouseName.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_name = '";
+			tempString += warehouseName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number = '";
+			tempString += subaccNumber;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != otherStockID)
+		{
+			tempString = "";
+			tempString += " other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(otherStockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (!historyDate.empty())
+		{
+			tempString = "";
+			tempString += " low_value_stock_history = '";
+			tempString += historyDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+
+	std::string OrmasDal::GetFilterForNetCostView(int nID, std::string netCostDate, std::string poroductName, double volume, std::string measureName,
+		double netCostValue, std::string curName, int curID, int productID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != nID)
+		{
+			tempString = "";
+			tempString += " net_cost_id = ";
+			tempString += boost::lexical_cast<std::string>(nID);
+			conditionVec.push_back(tempString);
+		}
+		if (!netCostDate.empty())
+		{
+			tempString = "";
+			tempString += " net_cost_date = '";
+			tempString += netCostDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!poroductName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += poroductName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != netCostValue)
+		{
+			tempString = "";
+			tempString += " net_cost_value = ";
+			tempString += boost::lexical_cast<std::string>(netCostValue);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != curID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(curID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForOrderListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " order_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " order_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForOrderView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string eAddres, std::string eFirm, std::string seName, std::string seSurname, std::string sePhone,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " order_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " order_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " client_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " client_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " client_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eAddres.empty())
+		{
+			tempString = "";
+			tempString += " clinet_address like '%";
+			tempString += eAddres;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eFirm.empty())
+		{
+			tempString = "";
+			tempString += " client_firm like '%";
+			tempString += eFirm;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForOrdRawListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " order_raw_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " order_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForOrdRawView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string eCompanyName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " order_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " order_raw_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " purveyor_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " purveyor_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " purveyor_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eCompanyName.empty())
+		{
+			tempString = "";
+			tempString += " purveyor_company_name like '%";
+			tempString += eCompanyName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " purveyor_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForOthStView(int othStID, std::string otherStockName, double price, std::string currencyName, double volume, std::string measureName,
+		std::string companyName, std::string typeName, int companyID, int measureID, int currencyID, int otherStockID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != othStID)
+		{
+			tempString = "";
+			tempString += " other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(othStID);
+			conditionVec.push_back(tempString);
+		}
+		if (!otherStockName.empty())
+		{
+			tempString = "";
+			tempString += " other_stocks_name like '%";
+			tempString += otherStockName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!companyName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += companyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!typeName.empty())
+		{
+			tempString = "";
+			tempString += " other_stocks_type_name = '";
+			tempString += typeName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != companyID)
+		{
+			tempString = "";
+			tempString += " company_id = ";
+			tempString += boost::lexical_cast<std::string>(companyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != measureID)
+		{
+			tempString = "";
+			tempString += " measure_id = ";
+			tempString += boost::lexical_cast<std::string>(measureID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != otherStockID)
+		{
+			tempString = "";
+			tempString += " other_stocks_type_id = ";
+			tempString += boost::lexical_cast<std::string>(otherStockID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForPaymentView(int paymentID, std::string paymentDate, std::string userName, std::string userSurname, std::string userPhone, double value,
+		std::string curName, std::string target, std::string accountNumber, std::string subaccountNumber, std::string who, std::string statusName, int userID,
+		int currID, int statusID, int accountID, int subaccountID, int cahboxAccID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != paymentID)
+		{
+			tempString = "";
+			tempString += " payment_id = ";
+			tempString += boost::lexical_cast<std::string>(paymentID);
+			conditionVec.push_back(tempString);
+		}
+		if (!paymentDate.empty())
+		{
+			tempString = "";
+			tempString += " payment_date = '";
+			tempString += paymentDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += userPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " payment_value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!target.empty())
+		{
+			tempString = "";
+			tempString += " payment_target like '%";
+			tempString += target;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!accountNumber.empty())
+		{
+			tempString = "";
+			tempString += " account_number like '%";
+			tempString += accountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccountNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!who.empty())
+		{
+			tempString = "";
+			tempString += " who like '%";
+			tempString += who;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(accountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cahboxAccID)
+		{
+			tempString = "";
+			tempString += " cashbox_account_id = ";
+			tempString += boost::lexical_cast<std::string>(cahboxAccID);
+			conditionVec.push_back(tempString);
+		}
+
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForPayslipView(int pID, std::string payslipDate, double payslipValue, std::string curName, int salaryID, int curID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != pID)
+		{
+			tempString = "";
+			tempString += " payslip_id = ";
+			tempString += boost::lexical_cast<std::string>(pID);
+			conditionVec.push_back(tempString);
+		}
+		if (!payslipDate.empty())
+		{
+			tempString = "";
+			tempString += " payslip_date = '";
+			tempString += payslipDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != payslipValue)
+		{
+			tempString = "";
+			tempString += " payslip_value = ";
+			tempString += boost::lexical_cast<std::string>(payslipValue);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != salaryID)
+		{
+			tempString = "";
+			tempString += " salary_id = ";
+			tempString += boost::lexical_cast<std::string>(salaryID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != curID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(curID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForPriceView(int pID, std::string priceDate, std::string productName, double volume, std::string measureName, double price,
+		std::string curName, int curID, int productID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != pID)
+		{
+			tempString = "";
+			tempString += " price_id = ";
+			tempString += boost::lexical_cast<std::string>(pID);
+			conditionVec.push_back(tempString);
+		}
+		if (!priceDate.empty())
+		{
+			tempString = "";
+			tempString += " price_date = '";
+			tempString += priceDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " measure_name = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != curID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(curID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForProdnListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " production_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " production_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForConProdnListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " consume_raw_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " consume_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForConProdnView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePosName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " consume_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " consume_raw_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePosName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePosName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForProdnPlanListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " production_plan_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " production_plan_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForProdnPlanView(int cpID, std::string conDate, double count, double sum, std::string curName, std::string satName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, int employeeID,  int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " production_plan_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " production_plan_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!satName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += satName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForProductBranchView(int pbID, std::string branchName, std::string branchAddress, std::string productName, double productPrice, int productID, int branchID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != pbID)
+		{
+			tempString = "";
+			tempString += " product_branch_id = ";
+			tempString += boost::lexical_cast<std::string>(pbID);
+			conditionVec.push_back(tempString);
+		}
+		if (!branchName.empty())
+		{
+			tempString = "";
+			tempString += " branch_name like '%";
+			tempString += branchName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!branchAddress.empty())
+		{
+			tempString = "";
+			tempString += " branch_address like '%";
+			tempString += branchAddress;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productPrice)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(productPrice);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != branchID)
+		{
+			tempString = "";
+			tempString += " branch_id = ";
+			tempString += boost::lexical_cast<std::string>(branchID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForProductsView(int pID, std::string productName, double price, std::string currencyName, double volume, std::string measureName,
+		std::string typeName, int shelfLife, std::string companyName, int companyID, int measureID, int typeID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != pID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(pID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		
+		if (!typeName.empty())
+		{
+			tempString = "";
+			tempString += " product_type_name = '";
+			tempString += typeName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != shelfLife)
+		{
+			tempString = "";
+			tempString += " shelf_life = ";
+			tempString += boost::lexical_cast<std::string>(shelfLife);
+			conditionVec.push_back(tempString);
+		}
+		if (!companyName.empty())
+		{
+			tempString = "";
+			tempString += " company_name = '";
+			tempString += companyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != companyID)
+		{
+			tempString = "";
+			tempString += " company_id = ";
+			tempString += boost::lexical_cast<std::string>(companyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != measureID)
+		{
+			tempString = "";
+			tempString += " measure_id = ";
+			tempString += boost::lexical_cast<std::string>(measureID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != typeID)
+		{
+			tempString = "";
+			tempString += " measure_id = ";
+			tempString += boost::lexical_cast<std::string>(typeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterFoPurveyorView(int pID, std::string uName, std::string uSurname, std::string uPhone, std::string countryName, std::string regionName, std::string cityName, std::string uAddress,
+		std::string companyName, std::string roleName, std::string password, std::string uEmail, int roleID, int locationID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != pID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(pID);
+			conditionVec.push_back(tempString);
+		}
+		if (!uName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += uName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += uSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += uPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!countryName.empty())
+		{
+			tempString = "";
+			tempString += " country_name like '%";
+			tempString += countryName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!regionName.empty())
+		{
+			tempString = "";
+			tempString += " region_name like '%";
+			tempString += regionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!cityName.empty())
+		{
+			tempString = "";
+			tempString += " city_name like '%";
+			tempString += cityName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uAddress.empty())
+		{
+			tempString = "";
+			tempString += " user_address = '";
+			tempString += uAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!companyName.empty())
+		{
+			tempString = "";
+			tempString += " company_name like '%";
+			tempString += companyName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!password.empty())
+		{
+			tempString = "";
+			tempString += " password = '";
+			tempString += password;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!uEmail.empty())
+		{
+			tempString = "";
+			tempString += " user_email = '";
+			tempString += uEmail;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != roleID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(roleID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != locationID)
+		{
+			tempString = "";
+			tempString += " location_id = ";
+			tempString += boost::lexical_cast<std::string>(locationID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+
+	std::string  OrmasDal::GetFilterForRcpProdListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " receipt_product_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " receipt_product_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForRcpProdView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " receipt_product_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " receipt_product_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname lie '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForRcpOthStListView(int cpListID, int cpID, std::string otherStockName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int otherStockID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " receipt_other_stocks_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " receipt_other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!otherStockName.empty())
+		{
+			tempString = "";
+			tempString += " other_stocks_name like '%";
+			tempString += otherStockName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != otherStockID)
+		{
+			tempString = "";
+			tempString += " other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(otherStockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForRcpOthStView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " receipt_other_stocks_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " receipt_other_stocks_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForStTranListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " stock_transfer_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " stock_transfer_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForStTranView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " stock_transfer_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " stock_transfer_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForRefundsView(int rID, std::string refundDate, double value, std::string currencyName, int userID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != rID)
+		{
+			tempString = "";
+			tempString += " refund_id = ";
+			tempString += boost::lexical_cast<std::string>(rID);
+			conditionVec.push_back(tempString);
+		}
+		if (!refundDate.empty())
+		{
+			tempString = "";
+			tempString += " refund_date = '";
+			tempString += refundDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " refund_value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForRelationView(int rID, std::string user1Name, std::string user1Surname, std::string user1Phone, std::string relationName, std::string user2Name,
+		std::string user2Surname, std::string user2Phone, int user1ID, int user2ID, int typeID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != rID)
+		{
+			tempString = "";
+			tempString += " relation_id = ";
+			tempString += boost::lexical_cast<std::string>(rID);
+			conditionVec.push_back(tempString);
+		}
+		if (!user1Name.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += user1Name;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!user1Surname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += user1Surname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!user1Phone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += user1Phone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!relationName.empty())
+		{
+			tempString = "";
+			tempString += " relation_name like '%";
+			tempString += relationName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!user2Name.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += user2Name;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!user2Surname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += user2Surname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!user2Phone.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += user2Phone;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != user1ID)
+		{
+			tempString = "";
+			tempString += " user_id_1 = ";
+			tempString += boost::lexical_cast<std::string>(user1ID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != user2ID)
+		{
+			tempString = "";
+			tempString += " user_id_1 = ";
+			tempString += boost::lexical_cast<std::string>(user2ID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != typeID)
+		{
+			tempString = "";
+			tempString += " relation_type_id = ";
+			tempString += boost::lexical_cast<std::string>(typeID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForReturnListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " return_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " return_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForReturnView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string eAddress, std::string eFirm, std::string seName, std::string seSurname, std::string sePhone, 
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " return_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " return_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " client_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " client_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " client_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eAddress.empty())
+		{
+			tempString = "";
+			tempString += " clinet_address = '";
+			tempString += eAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eFirm.empty())
+		{
+			tempString = "";
+			tempString += " client_firm like '%";
+			tempString += eFirm;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSalariesView(int sID, int userID, std::string userName, std::string userSurname, std::string userPhone, std::string salaryDate,
+		double value, std::string currencyName, std::string typeName, int currencyID, int typeID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " salary_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += userPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!salaryDate.empty())
+		{
+			tempString = "";
+			tempString += " salary_date = '";
+			tempString += salaryDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " salary_value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!typeName.empty())
+		{
+			tempString = "";
+			tempString += " salary_type_name like '%";
+			tempString += typeName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != typeID)
+		{
+			tempString = "";
+			tempString += " salary_type_id = ";
+			tempString += boost::lexical_cast<std::string>(typeID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForShareholderView(int sID, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
+		double countOfStock, std::string info)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += userPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userAddress.empty())
+		{
+			tempString = "";
+			tempString += " user_address = '";
+			tempString += userAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != countOfStock)
+		{
+			tempString = "";
+			tempString += " count_of_stock = ";
+			tempString += boost::lexical_cast<std::string>(countOfStock);
+			conditionVec.push_back(tempString);
+		}
+		if (!info.empty())
+		{
+			tempString = "";
+			tempString += " informaton = '";
+			tempString += info;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSpecListView(int cpListID, int cpID, std::string productName, double count, std::string measureName, int productID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " specification_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " specification_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSpecView(int cpID, std::string conDate, std::string productName, double sum, std::string curName,
+		std::string eName, std::string eSurname, std::string ePhone, std::string ePosition, int productID, int currnecyID, int employeeID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " specification_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " specification_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " specification_date = '";
+			tempString += productName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += "	sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name = '";
+			tempString += eName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname = '";
+			tempString += eSurname;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePosition.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name = '";
+			tempString += ePosition;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " employeeID = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForSpoilageListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " spoilage_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " spoilage_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSpoilageView(int cpID, std::string conDate, double count, double sum, std::string curName, std::string statusName,
+		std::string eName, std::string eSurname, std::string ePhone, std::string ePosition, int employeeID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " spoilage_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " spoilage_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " client_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " client_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " client_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePosition.empty())
+		{
+			tempString = "";
+			tempString += " clinet_address = '";
+			tempString += ePosition;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForStatusRuleView(int spID, std::string operation, std::string statusName, int statusID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != spID)
+		{
+			tempString = "";
+			tempString += " status_rule_id = ";
+			tempString += boost::lexical_cast<std::string>(spID);
+			conditionVec.push_back(tempString);
+		}
+		if (!operation.empty())
+		{
+			tempString = "";
+			tempString += " operation like '%";
+			tempString += operation;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForStockHistoryView(int sID, std::string productName, double price, std::string currencyName, double volume, std::string measureName,
+		double count, double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int productID,
+		int statusID, int currencyID, int warehouseID, std::string historyDate)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " stock_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurrencyName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurrencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!warehouseName.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_name = '";
+			tempString += warehouseName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number = '";
+			tempString += subaccNumber;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (!historyDate.empty())
+		{
+			tempString = "";
+			tempString += " date(history_date) = '";
+			tempString += historyDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForStockLimitView(int sID, std::string warehouseName, std::string productName, double minValue, double maxValue, int stockID, int productID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " stock_limit_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (!warehouseName.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_name like '%";
+			tempString += warehouseName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != minValue)
+		{
+			tempString = "";
+			tempString += " min_value = ";
+			tempString += boost::lexical_cast<std::string>(minValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != maxValue)
+		{
+			tempString = "";
+			tempString += " min_value = ";
+			tempString += boost::lexical_cast<std::string>(maxValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != stockID)
+		{
+			tempString = "";
+			tempString += " stock_id = ";
+			tempString += boost::lexical_cast<std::string>(stockID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForStockView(int sID, std::string productName, double price, std::string currencyName, double volume, std::string measureName,
+		double count, double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int productID, 
+		int statusID, int currencyID, int warehouseID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " stock_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != volume)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(volume);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurrencyName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurrencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!warehouseName.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_name = '";
+			tempString += warehouseName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number = '";
+			tempString += subaccNumber;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSubaccountLimitView(int sID, std::string subaccountNumber, int subaccountID, double minValue, double maxValue)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " subaccount_limit_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccountNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != minValue)
+		{
+			tempString = "";
+			tempString += " min_value = ";
+			tempString += boost::lexical_cast<std::string>(minValue);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != maxValue)
+		{
+			tempString = "";
+			tempString += " max_value = ";
+			tempString += boost::lexical_cast<std::string>(maxValue);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForSubaccountView(int sID, int accID, std::string accountNumber, std::string subaccountNumber, double startBalance, double currentBalace,
+		std::string currencyName, std::string statusName, int currencyID, int statusID, std::string dateOpened, std::string	dateClosed,
+		std::string detail)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != sID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(sID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(accID);
+			conditionVec.push_back(tempString);
+		}
+		if (!accountNumber.empty())
+		{
+			tempString = "";
+			tempString += " account_number like '%";
+			tempString += accountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccountNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != startBalance)
+		{
+			tempString = "";
+			tempString += " start_balance = ";
+			tempString += boost::lexical_cast<std::string>(startBalance);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currentBalace)
+		{
+			tempString = "";
+			tempString += " current_balance = ";
+			tempString += boost::lexical_cast<std::string>(currentBalace);
+			conditionVec.push_back(tempString);
+		}
+		if (!currencyName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += currencyName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (!dateOpened.empty())
+		{
+			tempString = "";
+			tempString += " date_opened = '";
+			tempString += dateOpened;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!dateClosed.empty())
+		{
+			tempString = "";
+			tempString += " date_closed = '";
+			tempString += dateClosed;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!detail.empty())
+		{
+			tempString = "";
+			tempString += " details = '";
+			tempString += detail;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForTimesheetView(int tID, std::string userName, std::string userSurname, std::string userPhone, std::string date, double workedTime, int salaryID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != tID)
+		{
+			tempString = "";
+			tempString += " timesheet_id = ";
+			tempString += boost::lexical_cast<std::string>(tID);
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += userPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!date.empty())
+		{
+			tempString = "";
+			tempString += " timesheet_date = '";
+			tempString += date;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != workedTime)
+		{
+			tempString = "";
+			tempString += " worked_time = ";
+			tempString += boost::lexical_cast<std::string>(workedTime);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != salaryID)
+		{
+			tempString = "";
+			tempString += " salary_id = ";
+			tempString += boost::lexical_cast<std::string>(salaryID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForTranListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " transport_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " transport_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForTranView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " transport_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " transport_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " user_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForGroupView(int gID, std::string groupName, std::string userSurname, std::string userName, int roleID, int groupID, int userID)
+	{
+
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != gID)
+		{
+			tempString = "";
+			tempString += " user_group_id = ";
+			tempString += boost::lexical_cast<std::string>(gID);
+			conditionVec.push_back(tempString);
+		}
+		if (!groupName.empty())
+		{
+			tempString = "";
+			tempString += " group_name like '%";
+			tempString += groupName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != roleID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(roleID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != groupID)
+		{
+			tempString = "";
+			tempString += " group_id = ";
+			tempString += boost::lexical_cast<std::string>(groupID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForUserView(int uID, std::string userEmail, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
+		std::string roleName, std::string password, int roleID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != uID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(uID);
+			conditionVec.push_back(tempString);
+		}
+		if (!userEmail.empty())
+		{
+			tempString = "";
+			tempString += " user_email = '";
+			tempString += userEmail;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += userPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userAddress.empty())
+		{
+			tempString = "";
+			tempString += " user_address = '";
+			tempString += userAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!password.empty())
+		{
+			tempString = "";
+			tempString += " password = '";
+			tempString += password;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != roleID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(roleID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForUserExtendedView(int uID, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
+		std::string companyName, std::string branchName, std::string roleName, std::string subaccountNumber, int roleID, int subaccouuntID, int accountID,
+		int companyID, int branchID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != uID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(uID);
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += userPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userAddress.empty())
+		{
+			tempString = "";
+			tempString += " user_address = '";
+			tempString += userAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!companyName.empty())
+		{
+			tempString = "";
+			tempString += " company_name like '%";
+			tempString += companyName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!branchName.empty())
+		{
+			tempString = "";
+			tempString += " branch_name like '%";
+			tempString += branchName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccountNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != roleID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(roleID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccouuntID)
+		{
+			tempString = "";
+			tempString += " role_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccouuntID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(accountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != companyID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(companyID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != branchID)
+		{
+			tempString = "";
+			tempString += " branch_id = ";
+			tempString += boost::lexical_cast<std::string>(branchID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+
+	std::string OrmasDal::GetFilterForWarehouseView(int wID, std::string warehouseName, std::string subaccountNumber, std::string typeName, std::string warehouseAddress,
+		std::string warehousePhone, int typeID, int subaccountID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != wID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(wID);
+			conditionVec.push_back(tempString);
+		}
+		if (!warehouseName.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_name like '%";
+			tempString += warehouseName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccountNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!typeName.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_type_name like '%";
+			tempString += typeName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!warehouseAddress.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_address = '";
+			tempString += warehouseAddress;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!warehousePhone.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_phone = '";
+			tempString += warehousePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != typeID)
+		{
+			tempString = "";
+			tempString += " warehouse_type_id = ";
+			tempString += boost::lexical_cast<std::string>(typeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForWarehouseEmployeeView(int wID, std::string userName, std::string userSurname, std::string userPhone, std::string roleName,
+		std::string warehouseName, std::string subaccountNumber, int warehouseID, int employeeID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != wID)
+		{
+			tempString = "";
+			tempString += " warehouse_employee_id = ";
+			tempString += boost::lexical_cast<std::string>(wID);
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += userPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!roleName.empty())
+		{
+			tempString = "";
+			tempString += " role_name like '%";
+			tempString += roleName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!warehouseName.empty())
+		{
+			tempString = "";
+			tempString += " warehouse_name like '%";
+			tempString += warehouseName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccountNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != warehouseID)
+		{
+			tempString = "";
+			tempString += " warehouse_id = ";
+			tempString += boost::lexical_cast<std::string>(warehouseID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForWithdrawalView(int withdarawalID, std::string withdrawalDate, double value, std::string curName, std::string userName, std::string userSurname, std::string userPhone,
+		std::string statusName, std::string accountNumber, std::string subaccountNumber, std::string who, std::string target, int userID,
+		int currID, int statusID, int accountID, int subaccountID, int cahboxAccID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != withdarawalID)
+		{
+			tempString = "";
+			tempString += " withdrawal_id = ";
+			tempString += boost::lexical_cast<std::string>(withdarawalID);
+			conditionVec.push_back(tempString);
+		}
+		if (!withdrawalDate.empty())
+		{
+			tempString = "";
+			tempString += " withdrawal_date = '";
+			tempString += withdrawalDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " withdrawal_value = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userName.empty())
+		{
+			tempString = "";
+			tempString += " user_name like '%";
+			tempString += userName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userSurname.empty())
+		{
+			tempString = "";
+			tempString += " user_surname like '%";
+			tempString += userSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!userPhone.empty())
+		{
+			tempString = "";
+			tempString += " user_phone = '";
+			tempString += userPhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		
+		if (!accountNumber.empty())
+		{
+			tempString = "";
+			tempString += " account_number like '%";
+			tempString += accountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!subaccountNumber.empty())
+		{
+			tempString = "";
+			tempString += " subaccount_number like '%";
+			tempString += subaccountNumber;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!who.empty())
+		{
+			tempString = "";
+			tempString += " who like '%";
+			tempString += who;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+
+		if (!target.empty())
+		{
+			tempString = "";
+			tempString += " withdrawal_target like '%";
+			tempString += target;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != subaccountID)
+		{
+			tempString = "";
+			tempString += " subaccount_id = ";
+			tempString += boost::lexical_cast<std::string>(subaccountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != accountID)
+		{
+			tempString = "";
+			tempString += " account_id = ";
+			tempString += boost::lexical_cast<std::string>(accountID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cahboxAccID)
+		{
+			tempString = "";
+			tempString += " cashbox_account_id = ";
+			tempString += boost::lexical_cast<std::string>(cahboxAccID);
+			conditionVec.push_back(tempString);
+		}
+
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForWOffListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " write_off_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " write_off_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForWOffView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " write_off_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " write_off_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string  OrmasDal::GetFilterForWOffRawListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+		double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpListID)
+		{
+			tempString = "";
+			tempString += " write_off_raw_list_id = ";
+			tempString += boost::lexical_cast<std::string>(cpListID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " write_off_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!productName.empty())
+		{
+			tempString = "";
+			tempString += " product_name like '%";
+			tempString += productName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != price)
+		{
+			tempString = "";
+			tempString += " price = ";
+			tempString += boost::lexical_cast<std::string>(price);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != value)
+		{
+			tempString = "";
+			tempString += " volume = ";
+			tempString += boost::lexical_cast<std::string>(value);
+			conditionVec.push_back(tempString);
+		}
+		if (!measureName.empty())
+		{
+			tempString = "";
+			tempString += " measure_name = '";
+			tempString += measureName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!sumCurName.empty())
+		{
+			tempString = "";
+			tempString += " sum_currency_name = '";
+			tempString += sumCurName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name = '";
+			tempString += statusName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != productID)
+		{
+			tempString = "";
+			tempString += " product_id = ";
+			tempString += boost::lexical_cast<std::string>(productID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currencyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currencyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	std::string OrmasDal::GetFilterForWOffRawView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+		std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+		double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID)
+	{
+		std::string tempString = "";
+		std::string filter = " where ";
+		std::vector<std::string> conditionVec;
+		if (0 != cpID)
+		{
+			tempString = "";
+			tempString += " write_off_raw_id = ";
+			tempString += boost::lexical_cast<std::string>(cpID);
+			conditionVec.push_back(tempString);
+		}
+		if (!conDate.empty())
+		{
+			tempString = "";
+			tempString += " write_off_raw_date = '";
+			tempString += conDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!execDate.empty())
+		{
+			tempString = "";
+			tempString += " execution_date = '";
+			tempString += execDate;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusCode.empty())
+		{
+			tempString = "";
+			tempString += " status_code = '";
+			tempString += statusCode;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!statusName.empty())
+		{
+			tempString = "";
+			tempString += " status_name like '%";
+			tempString += statusName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eName.empty())
+		{
+			tempString = "";
+			tempString += " employee_name like '%";
+			tempString += eName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!eSurname.empty())
+		{
+			tempString = "";
+			tempString += " employee_surname like '%";
+			tempString += eSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePhone.empty())
+		{
+			tempString = "";
+			tempString += " employee_phone = '";
+			tempString += ePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!ePositionName.empty())
+		{
+			tempString = "";
+			tempString += " employee_position_name like '%";
+			tempString += ePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_name like '%";
+			tempString += seName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!seSurname.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_surname like '%";
+			tempString += seSurname;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePhone.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_phone = '";
+			tempString += sePhone;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (!sePositionName.empty())
+		{
+			tempString = "";
+			tempString += " stock_employee_position_name like '%";
+			tempString += sePositionName;
+			tempString += "%'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != count)
+		{
+			tempString = "";
+			tempString += " count = ";
+			tempString += boost::lexical_cast<std::string>(count);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != sum)
+		{
+			tempString = "";
+			tempString += " sum = ";
+			tempString += boost::lexical_cast<std::string>(sum);
+			conditionVec.push_back(tempString);
+		}
+		if (!curName.empty())
+		{
+			tempString = "";
+			tempString += " currency_name = '";
+			tempString += curName;
+			tempString += "'";
+			conditionVec.push_back(tempString);
+		}
+		if (0 != employeeID)
+		{
+			tempString = "";
+			tempString += " employee_id = ";
+			tempString += boost::lexical_cast<std::string>(employeeID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != statusID)
+		{
+			tempString = "";
+			tempString += " status_id = ";
+			tempString += boost::lexical_cast<std::string>(statusID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != userID)
+		{
+			tempString = "";
+			tempString += " user_id = ";
+			tempString += boost::lexical_cast<std::string>(userID);
+			conditionVec.push_back(tempString);
+		}
+		if (0 != currnecyID)
+		{
+			tempString = "";
+			tempString += " currency_id = ";
+			tempString += boost::lexical_cast<std::string>(currnecyID);
+			conditionVec.push_back(tempString);
+		}
+		if (conditionVec.size() >= 1)
+		{
+			filter += conditionVec.at(0);
+			for (unsigned int i = 1; i < conditionVec.size(); i++)
+			{
+				filter += " AND ";
+				filter += conditionVec.at(i);
+			}
+		}
+		else
+		{
+			return "";
+		}
+		return filter;
+	}
+
+	//Have confirm
 	bool  OrmasDal::HaveChildAccount(std::string rootNumber)
 	{
 		PGresult * result;
@@ -40199,4 +57043,6 @@ namespace DataLayer{
 		}
 		return true;
 	}
+
+
 }

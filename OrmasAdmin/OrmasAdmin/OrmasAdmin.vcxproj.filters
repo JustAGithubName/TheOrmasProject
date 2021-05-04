@@ -423,8 +423,44 @@
     <ClInclude Include="ui_CreateOthSTypeDlg.h">
       <Filter>Header Files\UI Headers</Filter>
     </ClInclude>
-    <ClInclude Include="CreateOthSTypeDlg.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="ui_CreateGrpDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_CreateSAccLmDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_CreateStockLmDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_CreateUserGrDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_GenerateDailySalesRepDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_CreateAccblRepDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_CreateAccblEtrDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_CreateAccblExpDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_CreateBrSAccDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_GenerateAgentRepDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_GenerateComRepDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_GenerateFxAstRepDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_GenerateWrRepDlg.h">
+      <Filter>Header Files\UI Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1193,6 +1229,84 @@
     <ClCompile Include="CreateOthSTypeDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CreateGrpDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateSAccLmDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateUserGrDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateStockLmDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_CreateUserGrDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_CreateGrpDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_CreateSAccLmDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_CreateStockLmDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GenerateDailySalesRepDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_GenerateDailySalesRepDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateAccblRepDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_CreateAccblRepDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateAccblEtrDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateAccblExpDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_CreateAccblEtrDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_CreateAccblExpDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateBrSAccDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_CreateBrSAccDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GenerateAgentRepDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GenerateComRepDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_GenerateComRepDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_GenerateAgentRepDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_GenerateFxAstRepDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GenerateFxAstRepDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GenerateWrRepDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="moc_GenerateWrRepDlg.cpp">
+      <Filter>MOC Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainForm.ui">
@@ -1933,6 +2047,88 @@
     <CustomBuild Include="CreateRcpOthStListDlg.ui">
       <Filter>User Interface</Filter>
     </CustomBuild>
+    <CustomBuild Include="CreateOthSTypeDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateOthSTypeDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateGrpDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateStockLmDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateSAccLmDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateUserGrDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateGrpDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateSAccLmDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateStockLmDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateUserGrDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateDailySalesRepDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateDailySalesRepDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateAccblRepDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateAccblRepDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateAccblExpDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateAccblEtrDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateAccblExpDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateAccblEtrDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateBrSAccDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="CreateBrSAccDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateAgentRepDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateComRepDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateAgentRepDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateComRepDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateFxAstRepDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateFxAstRepDlg.ui" />
+    <CustomBuild Include="GenerateWrRepDlg.ui">
+      <Filter>User Interface</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GenerateWrRepDlg.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OrmasAdmin.rc">
@@ -1943,10 +2139,5 @@
     <Image Include="ormas.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CreateOthSTypeDlg.ui">
-      <Filter>User Interface</Filter>
-    </None>
   </ItemGroup>
 </Project>

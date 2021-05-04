@@ -55,7 +55,7 @@ void CreateRelDlg::SetID(int ID, QString childName)
 			{
 				user1Edit->setText(QString::number(ID));
 				BusinessLayer::User user1;
-				if (user1.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user1.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					user1NamePh->setText(user1.GetName().c_str());
 					user1SurnamePh->setText(user1.GetSurname().c_str());
@@ -66,7 +66,7 @@ void CreateRelDlg::SetID(int ID, QString childName)
 			{
 				user2Edit->setText(QString::number(ID));
 				BusinessLayer::User user2;
-				if (user2.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user2.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					user2NamePh->setText(user2.GetName().c_str());
 					user2SurnamePh->setText(user2.GetSurname().c_str());
@@ -91,14 +91,14 @@ void CreateRelDlg::FillEditElements(int rUser1ID, int rUser2ID, int rRelTypeID)
 	user2Edit->setText(QString::number(rUser2ID));
 	relTypeCmb->setCurrentIndex(relTypeCmb->findData(QVariant(rRelTypeID)));
 	BusinessLayer::User user1;
-	if (user1.GetUserByID(dialogBL->GetOrmasDal(), rUser1ID, errorMessage))
+	if (user1.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), rUser1ID, errorMessage))
 	{
 		user1NamePh->setText(user1.GetName().c_str());
 		user1SurnamePh->setText(user1.GetSurname().c_str());
 		user1PhonePh->setText(user1.GetPhone().c_str());
 	}
 	BusinessLayer::User user2;
-	if (user2.GetUserByID(dialogBL->GetOrmasDal(), rUser2ID, errorMessage))
+	if (user2.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), rUser2ID, errorMessage))
 	{
 		user2NamePh->setText(user2.GetName().c_str());
 		user2SurnamePh->setText(user2.GetSurname().c_str());
@@ -133,7 +133,7 @@ void CreateRelDlg::CreateRelation()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetRelationParams(user1Edit->text().toInt(), user2Edit->text().toInt(), relTypeCmb->currentData().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateRelation(relation, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -143,9 +143,9 @@ void CreateRelDlg::CreateRelation()
 					BusinessLayer::User *user1 = new BusinessLayer::User();
 					BusinessLayer::User *user2 = new BusinessLayer::User();
 					BusinessLayer::RelationType *rType = new BusinessLayer::RelationType();
-					if (!user1->GetUserByID(dialogBL->GetOrmasDal(), relation->GetUser1ID(), errorMessage)
-						|| !user2->GetUserByID(dialogBL->GetOrmasDal(), relation->GetUser2ID(), errorMessage)
-						|| !rType->GetRelationTypeByID(dialogBL->GetOrmasDal(), relation->GetRelationTypeID(), errorMessage))
+					if (!user1->GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), relation->GetUser1ID(), errorMessage)
+						|| !user2->GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), relation->GetUser2ID(), errorMessage)
+						|| !rType->GetRelationTypeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), relation->GetRelationTypeID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -178,7 +178,13 @@ void CreateRelDlg::CreateRelation()
 					delete rType;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 			
 			Close();
@@ -212,7 +218,7 @@ void CreateRelDlg::EditRelation()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetRelationParams(user1Edit->text().toInt(), user2Edit->text().toInt(), relTypeCmb->currentData().toInt(), relation->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateRelation(relation, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -222,9 +228,9 @@ void CreateRelDlg::EditRelation()
 						BusinessLayer::User *user1 = new BusinessLayer::User();
 						BusinessLayer::User *user2 = new BusinessLayer::User();
 						BusinessLayer::RelationType *rType = new BusinessLayer::RelationType();
-						if (!user1->GetUserByID(dialogBL->GetOrmasDal(), relation->GetUser1ID(), errorMessage)
-							|| !user2->GetUserByID(dialogBL->GetOrmasDal(), relation->GetUser2ID(), errorMessage)
-							|| !rType->GetRelationTypeByID(dialogBL->GetOrmasDal(), relation->GetRelationTypeID(), errorMessage))
+						if (!user1->GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), relation->GetUser1ID(), errorMessage)
+							|| !user2->GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), relation->GetUser2ID(), errorMessage)
+							|| !rType->GetRelationTypeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), relation->GetRelationTypeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -252,7 +258,13 @@ void CreateRelDlg::EditRelation()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 				
 			}

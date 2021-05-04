@@ -36,4 +36,33 @@ namespace BusinessLayer
 	{
 		return currencyName;
 	}
+
+	void ProductView::SetCompanyName(std::string pCompanyName)
+	{
+		companyName = pCompanyName;
+	}
+	void ProductView::SetMeasureName(std::string pMeasureName)
+	{
+		measureName = pMeasureName;
+	}
+	void ProductView::SetProductTypeName(std::string pProductTypeName)
+	{
+		productTypeName = pProductTypeName;
+	}
+	void ProductView::SetCurrencyName(std::string pCurrencyName)
+	{
+		currencyName = pCurrencyName;
+	}
+
+	std::string ProductView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !name.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty() || !productTypeName.empty()
+			|| 0 != shelfLife || !companyName.empty() || 0 != companyID || 0 != productTypeID || 0 != measureID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForProductsView(id, name, price, currencyName, volume, measureName, productTypeName, shelfLife, companyName, companyID,
+				productTypeID, measureID, currencyID);
+		}
+		return "";
+	}
+
 }

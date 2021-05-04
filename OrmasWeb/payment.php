@@ -58,7 +58,7 @@
 						<input type='hidden' name='status' value='".$status_id."'/>
 						<input type='hidden' name='currency' value='".$currency_id."'/>
 						<div id='form-content'>
-							<div class='row'>
+							<div class='my-row'>
 								<div class='float-left'>
 									<label class='float-left form-label'>Виберите клиента:</label>
 									<select class='form-client' name='selected_clinet' id='selected-clinet'>
@@ -70,7 +70,7 @@
 								<!--<div class='close-img'>
 								</div>-->
 							</div>
-							<div class='row'>
+							<div class='my-row'>
 								<div>
 									<label class='float-left form-label'>Сумма к оплате:</label>
 									<input class ='form-count' type='number' min='0' name='value' id='value' step='.01'/>

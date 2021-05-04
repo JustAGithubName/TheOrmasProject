@@ -59,9 +59,9 @@ namespace BusinessLayer{
 
 	
 
-	bool PercentRate::CreatePercentRate(DataLayer::OrmasDal &ormasDal, double pValue, std::string pCondition, int pID, std::string& errorMessage)
+	bool PercentRate::CreatePercentRate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double pValue, std::string pCondition, int pID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pValue, pCondition, pID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pValue, pCondition, pID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(pCondition);
@@ -79,9 +79,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool PercentRate::CreatePercentRate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PercentRate::CreatePercentRate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreatePercentRate(id, value, condition, positionID, errorMessage))
@@ -94,7 +94,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool PercentRate::DeletePercentRate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PercentRate::DeletePercentRate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeletePercentRate(id, errorMessage))
 		{
@@ -108,7 +108,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool PercentRate::UpdatePercentRate(DataLayer::OrmasDal &ormasDal, double pValue, std::string pCondition, int pID, std::string& errorMessage)
+	bool PercentRate::UpdatePercentRate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double pValue, std::string pCondition, int pID, std::string& errorMessage)
 	{
 		TrimStrings(pCondition);
 		value = pValue;
@@ -124,7 +124,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool PercentRate::UpdatePercentRate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PercentRate::UpdatePercentRate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdatePercentRate(id, value, condition, positionID, errorMessage))
 		{
@@ -146,7 +146,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool PercentRate::GetPercentRateByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool PercentRate::GetPercentRateByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -189,7 +189,7 @@ namespace BusinessLayer{
 			boost::trim(pCondition);
 	}
 
-	bool PercentRate::IsDuplicate(DataLayer::OrmasDal& ormasDal, double pValue, std::string pCondition, int pID, std::string& errorMessage)
+	bool PercentRate::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double pValue, std::string pCondition, int pID, std::string& errorMessage)
 	{
 		PercentRate percentRate;
 		percentRate.Clear();
@@ -209,7 +209,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool PercentRate::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PercentRate::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		PercentRate percentRate;
 		percentRate.Clear();

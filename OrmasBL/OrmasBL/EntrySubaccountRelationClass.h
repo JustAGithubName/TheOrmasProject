@@ -28,20 +28,20 @@ namespace BusinessLayer{
 		void SetEntryID(int);
 
 		// Create, delete and update Access
-		bool CreateEntrySubaccountRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteEntrySubaccountRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateEntrySubaccountRelation(DataLayer::OrmasDal &ormasDal, int eID, int sID, std::string& errorMessage);
+		bool CreateEntrySubaccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteEntrySubaccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateEntrySubaccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int sID, std::string& errorMessage);
 
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::vector<int> GetAllSubaccountByEntryID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
-		std::vector<int> GetAllEntryBySubaccountID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
+		std::vector<int> GetAllSubaccountByEntryID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
+		std::vector<int> GetAllEntryBySubaccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, int sID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, int sID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

@@ -72,10 +72,10 @@ namespace BusinessLayer{
 		comment = cComment;
 	}
 
-	bool Branch::CreateBranch(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cAddress, std::string cPhone,
+	bool Branch::CreateBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone,
 		std::string cComment, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, cName, cAddress, cPhone, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, cName, cAddress, cPhone, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(cName, cAddress, cPhone);
@@ -93,9 +93,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Branch::CreateBranch(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Branch::CreateBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateBranch(id, name, address, phone, comment, errorMessage))
@@ -108,7 +108,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Branch::DeleteBranch(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Branch::DeleteBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteBranch(id, errorMessage))
 		{
@@ -122,7 +122,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Branch::UpdateBranch(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cAddress, std::string cPhone
+	bool Branch::UpdateBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone
 		, std::string cComment, std::string& errorMessage)
 	{
 		TrimStrings(cName, cAddress, cPhone);
@@ -140,7 +140,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Branch::UpdateBranch(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Branch::UpdateBranch(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateBranch(id, name, address, phone, comment, errorMessage))
 		{
@@ -162,7 +162,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Branch::GetBranchByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool Branch::GetBranchByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -185,7 +185,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	int Branch::GetBranchID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	int Branch::GetBranchID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::string filter = this->GenerateFilter(ormasDal);
 		std::vector<DataLayer::branchesCollection> branchVector = ormasDal.GetBranches(errorMessage, filter);
@@ -226,7 +226,7 @@ namespace BusinessLayer{
 			boost::trim(cPhone);
 	}
 
-	bool Branch::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cAddress, std::string cPhone, std::string& errorMessage)
+	bool Branch::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, std::string& errorMessage)
 	{
 		Branch branch;
 		branch.Clear();
@@ -246,7 +246,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Branch::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Branch::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Branch branch;
 		branch.Clear();

@@ -27,7 +27,7 @@ CashBookListDlg::~CashBookListDlg()
 void CashBookListDlg::Generate()
 {
 	BusinessLayer::Status status;
-	if (!status.GetStatusByName(dialogBL->GetOrmasDal(), "EXECUTED", errorMessage))
+	if (!status.GetStatusByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "EXECUTED", errorMessage))
 		return;
 	std::string errorMessage = "";
 	BusinessLayer::Payment payment;
@@ -82,7 +82,7 @@ void CashBookListDlg::Generate()
 		BusinessLayer::Subaccount subAcc;
 		BusinessLayer::Balance balance;
 
-		if (0 == role.GetRoleIDByName(dialogBL->GetOrmasDal(), "CHIEF ACCOUNTANT", errorMessage))
+		if (0 == role.GetRoleIDByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "CHIEF ACCOUNTANT", errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CHIEF ACCOUNTANT' role!")),
@@ -106,7 +106,7 @@ void CashBookListDlg::Generate()
 			accountant.SetSurname(vecEmpRep.at(0).GetSurname());
 		}
 
-		if (!cashier.GetEmployeeByID(dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage))
+		if (!cashier.GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CASHIER' employee!")),
@@ -115,9 +115,9 @@ void CashBookListDlg::Generate()
 		}
 
 		BusinessLayer::CashboxEmployeeRelation ceRel;
-		int cashboxID = ceRel.GetCashboxIDByEmployeeID(dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage);
+		int cashboxID = ceRel.GetCashboxIDByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage);
 		BusinessLayer::Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(dialogBL->GetOrmasDal(), cashboxID, errorMessage))
+		if (!cashbox.GetCashboxByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashboxID, errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CASHBOX' for this employee!")),
@@ -126,7 +126,7 @@ void CashBookListDlg::Generate()
 		}
 
 		BusinessLayer::Subaccount cahsboxSubacc;
-		if (!cahsboxSubacc.GetSubaccountByID(dialogBL->GetOrmasDal(), cashbox.GetSubaccountID(), errorMessage))
+		if (!cahsboxSubacc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cashbox.GetSubaccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find subaccount for this employee!")),
@@ -174,14 +174,14 @@ void CashBookListDlg::Generate()
 		entry.Clear();
 		vecEntryDeb.clear();
 		entry.SetDebitingAccountID(cahsboxSubacc.GetParentAccountID());
-		filterDebit = entry.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDate, currentDate);
+		filterDebit = entry.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDate, currentDate);
 		vecEntryDeb = dialogBL->GetAllDataForClass<BusinessLayer::ExtendedEntryView>(errorMessage, filterDebit);
 
 		filterCredit.clear();
 		entry.Clear();
 		vecEntryCred.clear();
 		entry.SetCreditingAccountID(cahsboxSubacc.GetParentAccountID());
-		filterCredit = entry.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDate, currentDate);
+		filterCredit = entry.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDate, currentDate);
 		vecEntryCred = dialogBL->GetAllDataForClass<BusinessLayer::ExtendedEntryView>(errorMessage, filterCredit);*/
 
 		QDate selectDate = QDate::fromString(currentDate.c_str(), "dd.MM.yyyy");
@@ -201,13 +201,13 @@ void CashBookListDlg::Generate()
 			pmtFilter.clear();
 			paymentMonth.SetCashboxAccountID(cashbox.GetSubaccountID());
 			paymentMonth.SetStatusID(status.GetID());
-			std::string pmtFilter = paymentMonth.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDate, prevDate);
+			std::string pmtFilter = paymentMonth.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDate, prevDate);
 			std::vector<BusinessLayer::PaymentView> vecPmtRepMonth = dialogBL->GetAllDataForClass<BusinessLayer::PaymentView>(errorMessage, pmtFilter);
 
 			wthFilter.clear();
 			withdrowalMonth.SetStatusID(status.GetID());
 			withdrowalMonth.SetCashboxAccountID(cashbox.GetSubaccountID());
-			std::string wthFilter = withdrowalMonth.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDate, prevDate);
+			std::string wthFilter = withdrowalMonth.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDate, prevDate);
 			std::vector<BusinessLayer::WithdrawalView> vecWthRepMonth = dialogBL->GetAllDataForClass<BusinessLayer::WithdrawalView>(errorMessage, wthFilter);
 			
 			if (vecSubAccHistoryEnd.size() > 0)
@@ -254,7 +254,7 @@ void CashBookListDlg::Generate()
 					subAcc.Clear();
 					balance.Clear();
 					user.Clear();
-					if (!payment.GetPaymentByID(dialogBL->GetOrmasDal(), item.GetID(), errorMessage))
+					if (!payment.GetPaymentByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetID(), errorMessage))
 					{
 						QMessageBox::information(NULL, QString(tr("Info")),
 							QString(tr("Payment is wrong!")),
@@ -263,14 +263,14 @@ void CashBookListDlg::Generate()
 					}
 					if (item.GetUserID() > 0)
 					{
-						if (!user.GetUserByID(dialogBL->GetOrmasDal(), item.GetUserID(), errorMessage))
+						if (!user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetUserID(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Info")),
 								QString(tr("Can't find this user!")),
 								QString(tr("Ok")));
 							return;
 						}
-						if (!balance.GetBalanceByUserID(dialogBL->GetOrmasDal(), item.GetUserID(), errorMessage))
+						if (!balance.GetBalanceByUserID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetUserID(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Info")),
 								QString(tr("Can't find balance for this user!")),
@@ -279,7 +279,7 @@ void CashBookListDlg::Generate()
 						}
 						if (item.GetSubaccountID() > 0)
 						{
-							if (!subAcc.GetSubaccountByID(dialogBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
+							if (!subAcc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
 							{
 								QMessageBox::information(NULL, QString(tr("Info")),
 									QString(tr("Can't find subaccount for this user!")),
@@ -289,7 +289,7 @@ void CashBookListDlg::Generate()
 						}
 						else
 						{
-							if (!subAcc.GetSubaccountByID(dialogBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
+							if (!subAcc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
 							{
 								QMessageBox::information(NULL, QString(tr("Info")),
 									QString(tr("Can't find subaccount for this user!")),
@@ -308,7 +308,7 @@ void CashBookListDlg::Generate()
 					}
 					else
 					{
-						acc.GetAccountByID(dialogBL->GetOrmasDal(), item.GetAccountID(), errorMessage);
+						acc.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetAccountID(), errorMessage);
 						tableBody += "<td>" + QString::fromWCharArray(L"Принято от: ") + QString(item.GetWho().c_str()) + "</td>";
 						tableBody += "<td>" + QString(acc.GetNumber().c_str()) + "</td>";
 					}
@@ -333,7 +333,7 @@ void CashBookListDlg::Generate()
 					subAcc.Clear();
 					balance.Clear();
 					user.Clear();
-					if (!withdrowal.GetWithdrawalByID(dialogBL->GetOrmasDal(), item.GetID(), errorMessage))
+					if (!withdrowal.GetWithdrawalByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetID(), errorMessage))
 					{
 						QMessageBox::information(NULL, QString(tr("Info")),
 							QString(tr("Withdrawal is wrong!")),
@@ -342,14 +342,14 @@ void CashBookListDlg::Generate()
 					}
 					if (item.GetUserID() > 0)
 					{
-						if (!user.GetUserByID(dialogBL->GetOrmasDal(), item.GetUserID(), errorMessage))
+						if (!user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetUserID(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Info")),
 								QString(tr("Can't find this user!")),
 								QString(tr("Ok")));
 							return;
 						}
-						if (!balance.GetBalanceByUserID(dialogBL->GetOrmasDal(), item.GetUserID(), errorMessage))
+						if (!balance.GetBalanceByUserID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetUserID(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Info")),
 								QString(tr("Can't find balance for this user!")),
@@ -358,7 +358,7 @@ void CashBookListDlg::Generate()
 						}
 						if (item.GetSubaccountID() > 0)
 						{
-							if (!subAcc.GetSubaccountByID(dialogBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
+							if (!subAcc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
 							{
 								QMessageBox::information(NULL, QString(tr("Info")),
 									QString(tr("Can't find subaccount for this user!")),
@@ -368,7 +368,7 @@ void CashBookListDlg::Generate()
 						}
 						else
 						{
-							if (!subAcc.GetSubaccountByID(dialogBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
+							if (!subAcc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
 							{
 								QMessageBox::information(NULL, QString(tr("Info")),
 									QString(tr("Can't find subaccount for this user!")),
@@ -386,7 +386,7 @@ void CashBookListDlg::Generate()
 					}
 					else
 					{
-						acc.GetAccountByID(dialogBL->GetOrmasDal(), item.GetAccountID(), errorMessage);
+						acc.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), item.GetAccountID(), errorMessage);
 						tableBody += "<td>" + QString::fromWCharArray(L"Выдано: ") + QString(item.GetWho().c_str()) + "</td>";
 						tableBody += "<td>" + QString(acc.GetNumber().c_str()) + "</td>";
 					}

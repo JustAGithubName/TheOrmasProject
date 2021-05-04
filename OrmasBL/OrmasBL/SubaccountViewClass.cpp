@@ -31,4 +31,29 @@ namespace BusinessLayer{
 	{
 		return statusName;
 	}
+
+	void SubaccountView::SetParentAccountNumber(std::string sParentAccountNumber)
+	{
+		parentAccountNumber = sParentAccountNumber;
+	}
+	void SubaccountView::SetCurrencyName(std::string sCurrencyName)
+	{
+		currencyName = sCurrencyName;
+	}
+	void SubaccountView::SetStatusName(std::string sStatusName)
+	{
+		statusName = sStatusName;
+	}
+
+	std::string SubaccountView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != parentSubaccountID || !parentAccountNumber.empty() || !number.empty() || 0.0 != startBalance || 0.0 != currentBalance || !currencyName.empty()
+			|| !statusName.empty() || 0 != currencyID || 0 != statusID 	|| !openedDate.empty() || !closedDate.empty() || !details.empty())
+		{
+			return ormasDal.GetFilterForSubaccountView(id, parentSubaccountID, parentAccountNumber, number, startBalance, currentBalance, statusName, currencyName,
+				currencyID, statusID, openedDate, closedDate, details);
+		}
+		return "";
+	}
+
 }

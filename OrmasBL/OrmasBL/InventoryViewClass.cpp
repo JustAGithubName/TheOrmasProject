@@ -29,4 +29,26 @@ namespace BusinessLayer{
 		return statusName;
 	}
 
+	void InventoryView::SetDivisionName(std::string iDivisionName)
+	{
+		divisionName = iDivisionName;
+	}
+
+	void InventoryView::SetStatusName(std::string iStatusName)
+	{
+		statusName = iStatusName;
+	}
+
+
+	std::string InventoryView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !name.empty() || 0 != cost || 0 != departmentID || !location.empty() || 0 != statusID || !startOfOperationDate.empty()
+			|| !endOfOperationDate.empty() || !inventoryNumber.empty() || !barcodeNumber.empty() || !divisionName.empty() || !statusName.empty() || 0 != subaccountID)
+		{
+			return ormasDal.GetFilterForInvnentoryView(id, name, cost, inventoryNumber, barcodeNumber, divisionName, statusName, location, startOfOperationDate,
+				endOfOperationDate, statusID, departmentID, subaccountID);
+		}
+		return "";
+	}
+
 }

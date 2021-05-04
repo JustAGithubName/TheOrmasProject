@@ -33,9 +33,9 @@ namespace BusinessLayer{
 		name = pName;
 	}
 
-	bool Position::CreatePosition(DataLayer::OrmasDal &ormasDal, std::string pName, std::string& errorMessage)
+	bool Position::CreatePosition(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pName, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pName, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pName, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(pName);
@@ -50,9 +50,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Position::CreatePosition(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Position::CreatePosition(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreatePosition(id, name, errorMessage))
@@ -65,7 +65,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Position::DeletePosition(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Position::DeletePosition(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeletePosition(id, errorMessage))
 		{
@@ -79,7 +79,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Position::UpdatePosition(DataLayer::OrmasDal &ormasDal, std::string pName, std::string& errorMessage)
+	bool Position::UpdatePosition(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pName, std::string& errorMessage)
 	{
 		TrimStrings(pName);
 		name = pName;
@@ -93,7 +93,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Position::UpdatePosition(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Position::UpdatePosition(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdatePosition(id, name, errorMessage))
 		{
@@ -115,7 +115,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Position::GetPositionByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Position::GetPositionByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -154,7 +154,7 @@ namespace BusinessLayer{
 			boost::trim(pName);
 	}
 
-	bool Position::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pName, std::string& errorMessage)
+	bool Position::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pName, std::string& errorMessage)
 	{
 		Position position;
 		position.Clear();
@@ -172,7 +172,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Position::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Position::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Position position;
 		position.Clear();

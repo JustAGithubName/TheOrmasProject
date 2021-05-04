@@ -101,7 +101,7 @@ void CreateAcsDlg::CreateAccess()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetAccessParams(roleEdit->text().toInt(), acsItemEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateAccess(access, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -110,8 +110,8 @@ void CreateAcsDlg::CreateAccess()
 				{
 					BusinessLayer::Role *role = new BusinessLayer::Role();
 					BusinessLayer::AccessItem *acItem = new BusinessLayer::AccessItem();
-					if (!role->GetRoleByID(dialogBL->GetOrmasDal(), access->GetRoleID(), errorMessage)
-						|| !acItem->GetAccessItemByID(dialogBL->GetOrmasDal(), access->GetAccessItemID(), errorMessage))
+					if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), access->GetRoleID(), errorMessage)
+						|| !acItem->GetAccessItemByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), access->GetAccessItemID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -141,7 +141,13 @@ void CreateAcsDlg::CreateAccess()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -172,7 +178,7 @@ void CreateAcsDlg::EditAccess()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetAccessParams(roleEdit->text().toInt(), acsItemEdit->text().toInt(), access->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateAccess(access, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -181,8 +187,8 @@ void CreateAcsDlg::EditAccess()
 					{
 						BusinessLayer::Role *role = new BusinessLayer::Role();
 						BusinessLayer::AccessItem *acItem = new BusinessLayer::AccessItem();
-						if (!role->GetRoleByID(dialogBL->GetOrmasDal(), access->GetRoleID(), errorMessage)
-							|| !acItem->GetAccessItemByID(dialogBL->GetOrmasDal(), access->GetAccessItemID(), errorMessage))
+						if (!role->GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), access->GetRoleID(), errorMessage)
+							|| !acItem->GetAccessItemByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), access->GetAccessItemID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -208,7 +214,13 @@ void CreateAcsDlg::EditAccess()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}

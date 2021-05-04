@@ -66,7 +66,7 @@ void CreateDivDlg::CreateDivision()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetDivisionParams(nameEdit->text(), codeEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateDivision(division, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -81,7 +81,13 @@ void CreateDivDlg::CreateDivision()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -112,7 +118,7 @@ void CreateDivDlg::EditDivision()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetDivisionParams(nameEdit->text(), codeEdit->text(), division->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateDivision(division, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -125,7 +131,13 @@ void CreateDivDlg::EditDivision()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

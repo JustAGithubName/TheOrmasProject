@@ -28,22 +28,22 @@ namespace BusinessLayer
 		void SetName(std::string);
 
 		//Create, delete, update methods
-		bool CreateSalaryType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateSalaryType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteSalaryType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateSalaryType(DataLayer::OrmasDal& ormasDal, std::string stCode, std::string stName, std::string& errorMessage);
-		bool UpdateSalaryType(DataLayer::OrmasDal& ormasDal, std::string stCode, std::string stName, std::string& errorMessage);
+		bool CreateSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string stCode, std::string stName, std::string& errorMessage);
+		bool UpdateSalaryType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string stCode, std::string stName, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetSalaryTypeByID(DataLayer::OrmasDal& ormasDal, int stID, std::string& errorMessage);
+		bool GetSalaryTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int stID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		static std::map<std::string, int> GetSalaryTypesAsMap(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		static std::map<std::string, int> GetSalaryTypesAsMap(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string stCode, std::string stName, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string stCode, std::string stName, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

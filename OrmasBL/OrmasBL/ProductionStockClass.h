@@ -41,36 +41,36 @@ namespace BusinessLayer
 		void SetWarehouseID(int);
 
 		//Create, delete, update methods
-		bool CreateProductionStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateProductionStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteProductionStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateProductionStock(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+		bool CreateProductionStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateProductionStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteProductionStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateProductionStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 			int sID, int cID, int wID, std::string& errorMessage);
-		bool UpdateProductionStock(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+		bool UpdateProductionStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 			int sID, int cID, int wID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetProductionStockByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool GetProductionStockByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetProductionStockByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool GetProductionStockByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 
-		bool ChangingByProduction(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
-		bool ChangingByProduction(DataLayer::OrmasDal& ormasDal, int cpID, std::map<int, double> pProdCountMap, std::string& errorMessage);
-		bool ChangingByStockTransfer(DataLayer::OrmasDal& ormasDal, int rrID, std::string& errorMessage);
-		bool ChangingByStockTransfer(DataLayer::OrmasDal& ormasDal, int rrID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
-		bool ChangingByConsumeProduct(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
-		bool ChangingByConsumeProduct(DataLayer::OrmasDal& ormasDal, int cpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
-		bool ChangingByConsumeRaw(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
-		bool ChangingByConsumeRaw(DataLayer::OrmasDal& ormasDal, int crID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
-		bool ChangingByReworkRawDec(DataLayer::OrmasDal& ormasDal, int pID, double count, double sum, std::string& errorMessage);
-		bool ChangingByReworkRawInc(DataLayer::OrmasDal& ormasDal, int pID, double count, double sum, std::string& errorMessage);
+		bool ChangingByProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
+		bool ChangingByProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::map<int, double> pProdCountMap, std::string& errorMessage);
+		bool ChangingByStockTransfer(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, std::string& errorMessage);
+		bool ChangingByStockTransfer(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		bool ChangingByConsumeProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
+		bool ChangingByConsumeProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		bool ChangingByConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
+		bool ChangingByConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		bool ChangingByReworkRawDec(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double count, double sum, std::string& errorMessage);
+		bool ChangingByReworkRawInc(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double count, double sum, std::string& errorMessage);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};
 }

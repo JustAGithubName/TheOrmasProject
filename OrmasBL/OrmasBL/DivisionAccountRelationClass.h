@@ -32,22 +32,22 @@ namespace BusinessLayer{
 		void SetCode(std::string);
 
 		// Create, delete and update DivisionAccountRelation
-		bool CreateDivisionAccountRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateDivisionAccountRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteDivisionAccountRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateDivisionAccountRelation(DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID, std::string dCode, std::string& errorMessage);
-		bool UpdateDivisionAccountRelation(DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID, std::string dCode, std::string& errorMessage);
+		bool CreateDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID, std::string dCode, std::string& errorMessage);
+		bool UpdateDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID, std::string dCode, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetDivisionAccountRelationByID(DataLayer::OrmasDal& ormasDal, int daID, std::string& errorMessage);
-		bool GetDARelationByDivisionIDAndCode(DataLayer::OrmasDal& ormasDal, int dID, std::string code, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetDivisionAccountRelationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int daID, std::string& errorMessage);
+		bool GetDARelationByDivisionIDAndCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dID, std::string code, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int dDivisionID, std::string cCode, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, std::string cCode, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //DIVISIONACCOUNTRELATIONCLASS_H

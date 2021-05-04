@@ -74,10 +74,10 @@ namespace BusinessLayer{
 		currencyID = cID;
 	}
 
-	bool Refund::CreateRefund(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
+	bool Refund::CreateRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
 		std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pDate, pValue, uID, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pDate, pValue, uID, cID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		date = pDate;
@@ -87,7 +87,7 @@ namespace BusinessLayer{
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.CreateRefund(id, date, value, userID, currencyID, errorMessage))
 		{
-			if (Replenishment(ormasDal, userID, currencyID, errorMessage))
+			if (Replenishment(globalVar, ormasDal, userID, currencyID, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -100,15 +100,15 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Refund::CreateRefund(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Refund::CreateRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.CreateRefund(id, date, value, userID, currencyID, errorMessage))
 		{
-			if (Replenishment(ormasDal, userID, currencyID, errorMessage))
+			if (Replenishment(globalVar, ormasDal, userID, currencyID, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				return true;
@@ -121,14 +121,14 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Refund::DeleteRefund(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Refund::DeleteRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (!this->GetRefundByID(ormasDal, id, errorMessage))
+		if (!this->GetRefundByID(globalVar, ormasDal, id, errorMessage))
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
 		if (ormasDal.DeleteRefund(id, errorMessage))
 		{
-			if (CancelRefund(ormasDal, userID, currencyID, errorMessage))
+			if (CancelRefund(globalVar, ormasDal, userID, currencyID, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				Clear();
@@ -143,18 +143,18 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Refund::UpdateRefund(DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
+	bool Refund::UpdateRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
 		std::string& errorMessage)
 	{
 		date = pDate;
 		value = pValue;
 		userID = uID;
 		currencyID = cID;
-		currentValue = GetCurrentValue(ormasDal, id, errorMessage);
+		currentValue = GetCurrentValue(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.UpdateRefund(id, date, value, userID, currencyID, errorMessage))
 		{
-			if (Replenishment(ormasDal, userID, currencyID, currentValue, errorMessage))
+			if (Replenishment(globalVar, ormasDal, userID, currencyID, currentValue, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				currentValue = 0.0;
@@ -168,13 +168,13 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Refund::UpdateRefund(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Refund::UpdateRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		currentValue = GetCurrentValue(ormasDal, id, errorMessage);
+		currentValue = GetCurrentValue(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.UpdateRefund(id, date, value, userID, currencyID, errorMessage))
 		{
-			if (Replenishment(ormasDal, userID, currencyID, currentValue, errorMessage))
+			if (Replenishment(globalVar, ormasDal, userID, currencyID, currentValue, errorMessage))
 			{
 				//ormasDal.CommitTransaction(errorMessage);
 				currentValue = 0.0;
@@ -198,7 +198,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Refund::GetRefundByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Refund::GetRefundByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -237,7 +237,7 @@ namespace BusinessLayer{
 		currencyID = 0;
 	}
 
-	bool Refund::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pDate, double pValue, int uID, int cID,
+	bool Refund::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int uID, int cID,
 		std::string& errorMessage)
 	{
 		Refund refund;
@@ -259,7 +259,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Refund::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Refund::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Refund refund;
 		refund.Clear();
@@ -280,10 +280,10 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Refund::Replenishment(DataLayer::OrmasDal& ormasDal, int uID, int cID, std::string& errorMessage)
+	bool Refund::Replenishment(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, std::string& errorMessage)
 	{
 		CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxEmployeeByEmployeeID(ormasDal, loggedUserID, errorMessage))
+		if (!cashEmpRel.GetCashboxEmployeeByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
 		{
 			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
 			return false;
@@ -291,12 +291,12 @@ namespace BusinessLayer{
 
 		Balance balance;
 		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
+		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
 		{
 			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
 			return false;
 		}
-		if (balance.GetBalanceByUserID(ormasDal, uID, errorMessage))
+		if (balance.GetBalanceByUserID(globalVar, ormasDal, uID, errorMessage))
 		{
 			int debAccID = balance.GetSubaccountID();
 			int credAccID = cashbox.GetSubaccountID();
@@ -304,22 +304,22 @@ namespace BusinessLayer{
 			{
 				return false;
 			}
-			if (this->CreateEntry(ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
 			{
 				BalanceRefundRelation brRelation;
 				brRelation.SetBalanceID(balance.GetID());
 				brRelation.SetRefundID(this->id);
-				if (brRelation.CreateBalanceRefundRelation(ormasDal, errorMessage))
+				if (brRelation.CreateBalanceRefundRelation(globalVar, ormasDal, errorMessage))
 					return true;
 			}
 		}
 		return false;
 	}
 
-	bool Refund::Replenishment(DataLayer::OrmasDal& ormasDal, int uID, int cID, double previousValue, std::string& errorMessage)
+	bool Refund::Replenishment(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, double previousValue, std::string& errorMessage)
 	{
 		CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxEmployeeByEmployeeID(ormasDal, loggedUserID, errorMessage))
+		if (!cashEmpRel.GetCashboxEmployeeByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
 		{
 			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
 			return false;
@@ -327,12 +327,12 @@ namespace BusinessLayer{
 
 		Balance balance;
 		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
+		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
 		{
 			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
 			return false;
 		}
-		if (balance.GetBalanceByUserID(ormasDal, uID, errorMessage))
+		if (balance.GetBalanceByUserID(globalVar, ormasDal, uID, errorMessage))
 		{
 			int debAccID = balance.GetSubaccountID();
 			int credAccID = cashbox.GetSubaccountID();
@@ -340,7 +340,7 @@ namespace BusinessLayer{
 			{
 				return false;
 			}
-			if (this->CreateEntry(ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
 			{
 				return true;
 			}
@@ -348,18 +348,18 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	double Refund::GetCurrentValue(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	double Refund::GetCurrentValue(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		Refund refund;
-		if (refund.GetRefundByID(ormasDal, pID, errorMessage))
+		if (refund.GetRefundByID(globalVar, ormasDal, pID, errorMessage))
 			return refund.GetValue();
 		return 0;
 	}
 
-	bool Refund::CancelRefund(DataLayer::OrmasDal& ormasDal, int uID, int cID, std::string& errorMessage)
+	bool Refund::CancelRefund(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, std::string& errorMessage)
 	{
 		CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxEmployeeByEmployeeID(ormasDal, loggedUserID, errorMessage))
+		if (!cashEmpRel.GetCashboxEmployeeByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
 		{
 			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
 			return false;
@@ -367,12 +367,12 @@ namespace BusinessLayer{
 
 		Balance balance;
 		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
+		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
 		{
 			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
 			return false;
 		}
-		if (balance.GetBalanceByUserID(ormasDal, uID, errorMessage))
+		if (balance.GetBalanceByUserID(globalVar, ormasDal, uID, errorMessage))
 		{
 			int debAccID = balance.GetSubaccountID();
 			int credAccID = cashbox.GetSubaccountID();
@@ -380,19 +380,19 @@ namespace BusinessLayer{
 			{
 				return false;
 			}
-			if (this->CorrectingEntry(ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			if (this->CorrectingEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
 			{
 				BalanceRefundRelation brRelation;
 				brRelation.SetBalanceID(balance.GetID());
 				brRelation.SetRefundID(this->id);
-				if (brRelation.DeleteBalanceRefundRelation(ormasDal, errorMessage))
+				if (brRelation.DeleteBalanceRefundRelation(globalVar, ormasDal, errorMessage))
 					return true;
 			}
 		}
 		return false;
 	}
 
-	bool Refund::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Refund::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -401,11 +401,11 @@ namespace BusinessLayer{
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена возврата суммы клиенту"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -416,7 +416,7 @@ namespace BusinessLayer{
 		}
 		return true;
 	}
-	bool Refund::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage)
+	bool Refund::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -425,11 +425,11 @@ namespace BusinessLayer{
 		entry.SetValue(previousSum);
 		entry.SetCreditingAccountID(debAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена возврата суммы клиенту"));
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -445,11 +445,11 @@ namespace BusinessLayer{
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена возврата суммы клиенту"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -460,7 +460,7 @@ namespace BusinessLayer{
 		}
 		return true;
 	}
-	bool Refund::CorrectingEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Refund::CorrectingEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -469,11 +469,11 @@ namespace BusinessLayer{
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(debAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена возврата суммы клиенту"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}

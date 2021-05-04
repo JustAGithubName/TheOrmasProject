@@ -158,7 +158,7 @@ GenerateSalesRep::~GenerateSalesRep()
 void GenerateSalesRep::Generate()
 {
 	BusinessLayer::Status status;
-	if (!status.GetStatusByName(dialogBL->GetOrmasDal(), "EXECUTED", errorMessage))
+	if (!status.GetStatusByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "EXECUTED", errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Info")),
 			QString(tr("Please contact with administrator, you have same troubles with statuses!")),
@@ -179,9 +179,44 @@ void GenerateSalesRep::Generate()
 		return;
 	}
 
-	employee.SetRoleID(vecRole.at(0).GetID());
-	std::string filterEmployee = employee.GenerateFilter(dialogBL->GetOrmasDal());
-	std::vector<BusinessLayer::EmployeeView> vecEmployee = dialogBL->GetAllDataForClass<BusinessLayer::EmployeeView>(errorMessage, filterEmployee);
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), errorMessage);
+	if (0 == rolesMap.size())
+		return;
+
+	std::string filter = "";
+
+	if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
+		mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
+	{
+		employee.SetRoleID(vecRole.at(0).GetID());
+		filter = employee.GenerateFilter(dialogBL->GetOrmasDal());
+	}
+	else
+	{
+		BusinessLayer::Employee emp;
+		BusinessLayer::CompanyEmployeeRelation ceRel;
+		int branchID = ceRel.GetBranchByEmployeeID(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), mainForm->GetLoggedUser()->GetID(), errorMessage);
+		if (0 < branchID)
+		{
+			//get list of employees in branch
+			ceRel.Clear();
+			std::vector<int> empIDVec = ceRel.GetAllEmployeeIDByBranchID(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), branchID, errorMessage);
+			std::string inEmployeeFilter= emp.GenerateINFilter(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), empIDVec);
+			
+			//get employees for specific role
+			emp.SetRoleID(vecRole.at(0).GetID());
+			std::string filterEmp = emp.GenerateFilter(dialogBL->GetOrmasDal());
+
+			//marge filters
+			std::vector<std::string> filterVec;
+			filterVec.push_back(filterEmp);
+			filterVec.push_back(inEmployeeFilter);
+			filter = mainForm->oBL->ConcatenateFilters(filterVec);
+		}
+	}
+
+	
+	std::vector<BusinessLayer::EmployeeView> vecEmployee = dialogBL->GetAllDataForClass<BusinessLayer::EmployeeView>(errorMessage, filter);
 	if (vecEmployee.size() == 0)
 	{
 		QMessageBox::information(NULL, QString(tr("Info")),
@@ -193,7 +228,7 @@ void GenerateSalesRep::Generate()
 	{
 		DocForm *docForm = new DocForm(dialogBL, this);
 		docForm->setAttribute(Qt::WA_DeleteOnClose);
-		docForm->setWindowTitle(tr("Print products profitability report"));
+		docForm->setWindowTitle(tr("Print sales report"));
 		QMdiSubWindow *generateProfRepWindow = new QMdiSubWindow;
 		generateProfRepWindow->setWidget(docForm);
 		generateProfRepWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -239,6 +274,8 @@ void GenerateSalesRep::Generate()
 		std::map<int, double> totalReturnCount;
 		std::map<int, double> totalReturnSum;
 
+
+
 		reportText.replace(QString("fromDatePh"), fromDateEdit->text(), Qt::CaseInsensitive);
 		reportText.replace(QString("tillDatePh"), tillDateEdit->text(), Qt::CaseInsensitive);
 
@@ -251,13 +288,13 @@ void GenerateSalesRep::Generate()
 				ret.Clear();
 				ret.SetStatusID(status.GetID());
 				ret.SetEmployeeID(expeditor.GetID());
-				std::string filterRet = ret.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
+				std::string filterRet = ret.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
 				std::vector<BusinessLayer::ReturnView> vecReturn = dialogBL->GetAllDataForClass<BusinessLayer::ReturnView>(errorMessage, filterRet);
 
 				order.Clear();
 				order.SetStatusID(status.GetID());
 				order.SetEmployeeID(expeditor.GetID());
-				std::string filter = order.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
+				std::string filter = order.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
 				std::vector<BusinessLayer::OrderView> vecOrder = dialogBL->GetAllDataForClass<BusinessLayer::OrderView>(errorMessage, filter);
 				if (vecOrder.size() == 0)
 				{
@@ -283,9 +320,9 @@ void GenerateSalesRep::Generate()
 						tableBody += expeditor.GetPhone().c_str();
 						tableBody += "<br/>";
 
-						tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-						tableBody += "<th><b>" + QString::fromWCharArray(L"ID продукта") + "< / b>< / th>";
-						tableBody += "<th><b>" + QString::fromWCharArray(L"Наименование продукта")+"< / b>< / th>";
+						tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px;'>";
+						tableBody += "<th><b>" + QString::fromWCharArray(L"ID продукта") + "</b></th>";
+						tableBody += "<th><b>" + QString::fromWCharArray(L"Наименование продукта")+"</b></th>";
 						tableBody += "<th><b>" + QString::fromWCharArray(L"Продажа количество") + "</b></th>";
 						tableBody += "<th><b>" + QString::fromWCharArray(L"Продажа сумма") + "</b></th>";
 						tableBody += "<th><b>" + QString::fromWCharArray(L"Возврат количество")+"</b></th>";
@@ -357,9 +394,9 @@ void GenerateSalesRep::Generate()
 						for each (auto mapCountItem in productCount)
 						{
 							product.Clear();
-							product.GetProductByID(dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
+							product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
 							nCost.Clear();
-							nCost.GetNetCostByProductID(dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
+							nCost.GetNetCostByProductID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
 
 							if (productCountRet.find(mapCountItem.first) != productCountRet.end())
 							{
@@ -409,18 +446,52 @@ void GenerateSalesRep::Generate()
 							tableBody += "</tr>";
 						}
 
+						BusinessLayer::Relation rel;
+						BusinessLayer::User user;
+						BusinessLayer::Payment payment;
+						double sumCashier = 0;
+						std::string filterCients = "";
+						std::string filterPayments = "";
+						std::string allFilters = "";
+						std::vector<int> allClients;
+						std::vector<BusinessLayer::PaymentView> allPaymens;
+						std::vector<std::string> filterList;
+						allClients.clear();
+						allClients = rel.GetUser2IDByUser1ID(dialogBL->globalVar, dialogBL->GetOrmasDal(), expeditor.GetID(), errorMessage);
+						if (allClients.size() > 0)
+						{
+							filterPayments.clear();
+							payment.SetStatusID(status.GetID());
+							filterPayments = payment.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toStdString(), tillDateEdit->text().toStdString());
+							filterCients.clear();
+							filterCients = user.GenerateINFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), allClients);
+
+							filterList.push_back(filterPayments);
+							filterList.push_back(filterCients);
+							allFilters.clear();
+							allFilters = dialogBL->GetOrmasDal().ConcatenateFilters(filterList);
+							allPaymens.clear();
+							allPaymens = dialogBL->GetAllDataForClass<BusinessLayer::PaymentView>(errorMessage, allFilters);
+							if (allPaymens.size() > 0)
+							{
+								for each (auto paymenyItem in allPaymens)
+								{
+									sumCashier += paymenyItem.GetValue();
+								}
+							}
+						}
 						tableBody += "<tr>";
-						tableBody += "<td></td>";
-						tableBody += "<td></td>";
 						tableBody += "<td></td>";
 						tableBody += "<td></td>";
 						tableBody += "<td>" + QString::fromWCharArray(L"Вся выручка") + "</td>";
 						tableBody += "<td>" + QString::number(sum, 'f', 3) + "</td>";
 						tableBody += "<td>" + QString::fromWCharArray(L"Вся выручка с вычетом возврата") + "</td>";
 						tableBody += "<td>" + QString::number(sum - sumRet, 'f', 3) + "</td>";
+						tableBody += "<td>" + QString::fromWCharArray(L"Оплачено в кассу") + "</td>";
+						tableBody += "<td>" + QString::number(sumCashier, 'f', 3) + "</td>";
 						tableBody += "</tr>";
 						tableBody += "</table>";
-						tableBody += "<br/><br/>";
+						
 
 					}
 					else
@@ -428,6 +499,28 @@ void GenerateSalesRep::Generate()
 						tableBody += "Нет данных!";
 					}
 				}
+				BusinessLayer::Relation relation;
+				relation.SetUser1ID(expeditor.GetID());
+				std::string relFilter = relation.GenerateFilter(dialogBL->GetOrmasDal());
+				std::vector<BusinessLayer::RelationView> relVec = dialogBL->GetAllDataForClass<BusinessLayer::RelationView>(errorMessage, relFilter);
+				std::vector<int> clientIDVec;
+				for each (auto relItem in relVec)
+				{
+					clientIDVec.push_back(relItem.GetUser2ID());
+				}
+				BusinessLayer::User user;
+				std::string userINFilter = user.GenerateINFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), clientIDVec);
+				std::vector<BusinessLayer::BalanceView> balaceVec = dialogBL->GetAllDataForClass<BusinessLayer::BalanceView>(errorMessage, userINFilter);
+				double clientBalance = 0;
+				for each (auto balanceItem in balaceVec)
+				{
+					clientBalance += balanceItem.GetCurrentBalance();
+				}
+				tableBody += "<div>";
+				tableBody += "<label>" + QString::fromWCharArray(L"Суммарная задолженность всех клиентов этого экспедитора:") + "</label>";
+				tableBody += "<b>" + QString::number(clientBalance, 'f', 3) + "</b>";
+				tableBody += "</div>";
+				tableBody += "<br/><br/>";
 				documentBody += tableBody;
 			}
 		}
@@ -439,11 +532,11 @@ void GenerateSalesRep::Generate()
 			{
 				employeeIDList.push_back(expeditor.GetID());
 			}
-			std::string empIDListFilter = employee.GenerateINFilterForEmployee(dialogBL->GetOrmasDal(), employeeIDList);
+			std::string empIDListFilter = employee.GenerateINFilterForEmployee(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeIDList);
 			
 			ret.Clear();
 			ret.SetStatusID(status.GetID());
-			std::string filterRet = ret.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
+			std::string filterRet = ret.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
 			std::vector<std::string> filterList;
 			filterList.push_back(filterRet);
 			filterList.push_back(empIDListFilter);
@@ -452,7 +545,7 @@ void GenerateSalesRep::Generate()
 			
 			order.Clear();
 			order.SetStatusID(status.GetID());
-			std::string filter = order.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
+			std::string filter = order.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
 			std::vector<std::string> filterRetList;
 			filterRetList.push_back(filter);
 			filterRetList.push_back(empIDListFilter);
@@ -537,9 +630,9 @@ void GenerateSalesRep::Generate()
 				for each (auto mapCountItem in totalCount)
 				{
 					product.Clear();
-					product.GetProductByID(dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
+					product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
 					nCost.Clear();
-					nCost.GetNetCostByProductID(dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
+					nCost.GetNetCostByProductID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
 					
 					if (totalReturnCount.find(mapCountItem.first) != totalReturnCount.end())
 					{
@@ -599,16 +692,48 @@ void GenerateSalesRep::Generate()
 				tableBody += "<td>" + QString::number(sum - sumRet, 'f', 3) + "</td>";
 				tableBody += "</tr>";
 				tableBody += "</table>";
-				tableBody += "<br/><br/>";
+			
 
 			}
 			else
 			{
 				tableBody += "Нет данных!";
 			}
+			
+			double clientBalance = 0;
+			for each (auto expID in employeeIDList)
+			{
+				BusinessLayer::Relation relation;
+				relation.SetUser1ID(expID);
+				std::string relFilter = relation.GenerateFilter(dialogBL->GetOrmasDal());
+				std::vector<BusinessLayer::RelationView> relVec = dialogBL->GetAllDataForClass<BusinessLayer::RelationView>(errorMessage, relFilter);
+				std::vector<int> clientIDVec;
+				for each (auto relItem in relVec)
+				{
+					clientIDVec.push_back(relItem.GetUser2ID());
+				}
+				BusinessLayer::User user;
+				std::string userINFilter = user.GenerateINFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), clientIDVec);
+				std::vector<BusinessLayer::BalanceView> balaceVec = dialogBL->GetAllDataForClass<BusinessLayer::BalanceView>(errorMessage, userINFilter);
+				
+				for each (auto balanceItem in balaceVec)
+				{
+					clientBalance += balanceItem.GetCurrentBalance();
+				}
+				
+			}
+			tableBody += "<div>";
+			tableBody += "<label>" + QString::fromWCharArray(L"Суммарная задолженность всех клиентов:") + "</label>";
+			tableBody += "<b>" + QString::number(clientBalance, 'f', 3) + "</b>";
+			tableBody += "</div>";
+			tableBody += "<br/><br/>";
 			documentBody += tableBody;
 		}
+		QDateTime currentDateTime = QDateTime::currentDateTime();
 		reportText.replace(QString("DocumentBodyPh"), documentBody, Qt::CaseInsensitive);
+		reportText.replace(QString("ReportDatePh"), currentDateTime.toString("dd.MM.yyyy hh:mm"), Qt::CaseInsensitive);
+		reportText.replace(QString("UserNamePh"), dialogBL->loggedUser->GetName().c_str(), Qt::CaseInsensitive);
+		reportText.replace(QString("UserSurnamePh"), dialogBL->loggedUser->GetName().c_str(), Qt::CaseInsensitive);
 		docForm->webEngineView->setHtml(reportText);
 		docForm->SetContent(reportText);
 		docForm->webEngineView->show();

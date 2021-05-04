@@ -14,12 +14,18 @@ namespace BusinessLayer{
 		PriceView(DataLayer::pricesViewCollection);
 		PriceView(){};
 		~PriceView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// PriceView class Accessors
 		std::string GetProductName();
 		double GetVolume();
 		std::string GetMeasureName();
 		std::string GetCurrencyName();
+
+		void SetProductName(std::string);
+		void SetVolume(double);
+		void SetMeasureName(std::string);
+		void SetCurrencyName(std::string);
 		
 	};
 }

@@ -112,12 +112,12 @@ namespace BusinessLayer
 		currencyID = oCurrencyID;
 	}
 
-	bool Order::CreateOrder(DataLayer::OrmasDal& ormasDal, int uID, std::string oDate, std::string oExecDate, int eID, double oCount,
+	bool Order::CreateOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string oDate, std::string oExecDate, int eID, double oCount,
 		double oSum, int sID, int cID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uID, oDate, oCount, oSum, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, oDate, oCount, oSum, cID, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		clientID = uID;
@@ -129,13 +129,14 @@ namespace BusinessLayer
 		statusID = sID;
 		currencyID = cID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateOrder(id, clientID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
-				if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+				if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 				{
-					if (ChangesAtTransport(ormasDal, id, errorMessage))
+					if (ChangesAtTransport(globalVar, ormasDal, id, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -159,9 +160,9 @@ namespace BusinessLayer
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
-				if (CreateOrderEntryReverse(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+				if (CreateOrderEntryReverse(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 				{
-					if (ChangesAtTransportReverse(ormasDal, id, errorMessage))
+					if (ChangesAtTransportReverse(globalVar, ormasDal, id, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -194,21 +195,22 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Order::CreateOrder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Order::CreateOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateOrder(id, clientID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
-				if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+				if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 				{
-					if (ChangesAtTransport(ormasDal, id, errorMessage))
+					if (ChangesAtTransport(globalVar, ormasDal, id, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -232,9 +234,9 @@ namespace BusinessLayer
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
-				if (CreateOrderEntryReverse(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+				if (CreateOrderEntryReverse(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 				{
-					if (ChangesAtTransportReverse(ormasDal, id, errorMessage))
+					if (ChangesAtTransportReverse(globalVar, ormasDal, id, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -266,16 +268,16 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Order::DeleteOrder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Order::DeleteOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
 		Order ord;
-		if (!ord.GetOrderByID(ormasDal, id, errorMessage))
+		if (!ord.GetOrderByID(globalVar, ormasDal, id, errorMessage))
 		{
 			return false;
 		}
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (ord.GetStatusID() == statusMap.find("EXECUTED")->second)
@@ -316,10 +318,10 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Order::UpdateOrder(DataLayer::OrmasDal& ormasDal, int uID, std::string oDate, std::string oExecnDate, int eID, double oCount,
+	bool Order::UpdateOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string oDate, std::string oExecnDate, int eID, double oCount,
 		double oSum, int sID, int cID, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		clientID = uID;
@@ -330,10 +332,11 @@ namespace BusinessLayer
 		sum = oSum;
 		statusID = sID;
 		currencyID = cID;
-		previousSum = GetCurrentSum(ormasDal, id, errorMessage);
-		prevCount = GetCurrentCount(ormasDal, id, errorMessage);
-		previousStatusID = GetCurrentStatusID(ormasDal, id, errorMessage);
+		previousSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
+		prevCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateOrder(id, clientID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID != statusMap.find("ERROR")->second &&
@@ -342,9 +345,9 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
-					if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+					if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 					{
-						if (ChangesAtTransport(ormasDal, id, errorMessage))
+						if (ChangesAtTransport(globalVar, ormasDal, id, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -368,9 +371,9 @@ namespace BusinessLayer
 				}
 				else if (statusID == statusMap.find("RETURN")->second)
 				{
-					if (CreateOrderEntryReverse(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+					if (CreateOrderEntryReverse(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 					{
-						if (ChangesAtTransportReverse(ormasDal, id, errorMessage))
+						if (ChangesAtTransportReverse(globalVar, ormasDal, id, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -403,9 +406,9 @@ namespace BusinessLayer
 				{
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
-						if (CreateOrderEntryReverse(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+						if (CreateOrderEntryReverse(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 						{
-							if (ChangesAtTransportReverse(ormasDal, id, errorMessage))
+							if (ChangesAtTransportReverse(globalVar, ormasDal, id, errorMessage))
 							{
 								if (!CheckDocumentCorrectness(ormasDal))
 								{
@@ -429,9 +432,9 @@ namespace BusinessLayer
 					}
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
-						if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+						if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 						{
-							if (ChangesAtTransport(ormasDal, id, errorMessage))
+							if (ChangesAtTransport(globalVar, ormasDal, id, errorMessage))
 							{
 								if (!CheckDocumentCorrectness(ormasDal))
 								{
@@ -462,9 +465,9 @@ namespace BusinessLayer
 			}
 			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+				if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 				{
-					if (ChangesAtTransport(ormasDal, id, errorMessage))
+					if (ChangesAtTransport(globalVar, ormasDal, id, errorMessage))
 					{
 						//ormasDal.CommitTransaction(errorMessage);
 						return true;
@@ -487,7 +490,7 @@ namespace BusinessLayer
 				{
 					if (count != prevCount || sum != previousSum)
 					{
-						if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, previousSum, currencyID, executionDate, errorMessage))
+						if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, previousSum, currencyID, executionDate, errorMessage))
 						{
 							//ormasDal.CommitTransaction(errorMessage);
 							return true;
@@ -510,15 +513,16 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Order::UpdateOrder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Order::UpdateOrder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
-		previousSum = GetCurrentSum(ormasDal, id, errorMessage);
-		previousStatusID = GetCurrentStatusID(ormasDal, id, errorMessage);
-		prevCount = GetCurrentCount(ormasDal, id, errorMessage);
+		previousSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
+		prevCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateOrder(id, clientID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID != statusMap.find("ERROR")->second &&
@@ -527,9 +531,9 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
-					if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+					if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 					{
-						if (ChangesAtTransport(ormasDal, id, errorMessage))
+						if (ChangesAtTransport(globalVar, ormasDal, id, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -553,9 +557,9 @@ namespace BusinessLayer
 				}
 				else if (statusID == statusMap.find("RETURN")->second)
 				{
-					if (CreateOrderEntryReverse(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+					if (CreateOrderEntryReverse(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 					{
-						if (ChangesAtTransportReverse(ormasDal, id, errorMessage))
+						if (ChangesAtTransportReverse(globalVar, ormasDal, id, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -588,9 +592,9 @@ namespace BusinessLayer
 				{
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
-						if (CreateOrderEntryReverse(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+						if (CreateOrderEntryReverse(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 						{
-							if (ChangesAtTransportReverse(ormasDal, id, errorMessage))
+							if (ChangesAtTransportReverse(globalVar, ormasDal, id, errorMessage))
 							{
 								if (!CheckDocumentCorrectness(ormasDal))
 								{
@@ -614,9 +618,9 @@ namespace BusinessLayer
 					}
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
-						if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+						if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 						{
-							if (ChangesAtTransport(ormasDal, id, errorMessage))
+							if (ChangesAtTransport(globalVar, ormasDal, id, errorMessage))
 							{
 								if (!CheckDocumentCorrectness(ormasDal))
 								{
@@ -647,9 +651,9 @@ namespace BusinessLayer
 			}
 			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
+				if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, currencyID, executionDate, errorMessage))
 				{
-					if (ChangesAtTransport(ormasDal, id, errorMessage))
+					if (ChangesAtTransport(globalVar, ormasDal, id, errorMessage))
 					{
 						//ormasDal.CommitTransaction(errorMessage);
 						return true;
@@ -670,7 +674,7 @@ namespace BusinessLayer
 			{
 				if (count != prevCount || sum != previousSum)
 				{
-					if (CreateOrderEntry(ormasDal, clientID, employeeID, sum, previousSum, currencyID, executionDate, errorMessage))
+					if (CreateOrderEntry(globalVar, ormasDal, clientID, employeeID, sum, previousSum, currencyID, executionDate, errorMessage))
 					{
 						//ormasDal.CommitTransaction(errorMessage);
 						return true;
@@ -702,7 +706,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	std::string Order::GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string fromDate, std::string toDate)
+	std::string Order::GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string toDate)
 	{
 		if (!toDate.empty() && !fromDate.empty())
 		{
@@ -711,7 +715,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Order::GetOrderByID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool Order::GetOrderByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		if (oID <= 0)
 			return false;
@@ -742,8 +746,8 @@ namespace BusinessLayer
 	{
 		if (0 == id && date == "" && executionDate == "" && 0 == count && 0 == sum && 0 == employeeID && 0 == clientID && 0 == statusID 
 			&& 0 == currencyID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void Order::Clear()
@@ -759,7 +763,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 	
-	bool Order::IsDuplicate(DataLayer::OrmasDal& ormasDal, int clID, std::string oDate, double oCount, double oSum,
+	bool Order::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, std::string oDate, double oCount, double oSum,
 		int cID, std::string& errorMessage)
 	{
 		Order order;
@@ -782,7 +786,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Order::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Order::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Order order;
 		order.Clear();
@@ -804,20 +808,20 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Order::CreateOrderEntry(DataLayer::OrmasDal& ormasDal, int clID, int eID, double oSum, int cID, std::string oExecDate, std::string& errorMessage)
+	bool Order::CreateOrderEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, int eID, double oSum, int cID, std::string oExecDate, std::string& errorMessage)
 	{
 		Balance balance;
 		CompanyAccountRelation cAccRel;
 		CompanyEmployeeRelation cEmpRel;
 
-		if(balance.GetBalanceByUserID(ormasDal, clID, errorMessage))
+		if(balance.GetBalanceByUserID(globalVar, ormasDal, clID, errorMessage))
 		{
 			int debAccID = 0;
 			int credAccID = 0;
-			int companyID = cEmpRel.GetCompanyByEmployeeID(ormasDal, eID, errorMessage);
+			int companyID = cEmpRel.GetCompanyByEmployeeID(globalVar, ormasDal, eID, errorMessage);
 			debAccID = balance.GetSubaccountID();
-			credAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "44010", errorMessage);
-			if (this->CreateEntry(ormasDal, debAccID, oSum, credAccID, oExecDate, errorMessage))
+			credAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44010", errorMessage);
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, oSum, credAccID, oExecDate, errorMessage))
 			{
 				return true;
 			}
@@ -825,20 +829,20 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Order::CreateOrderEntryReverse(DataLayer::OrmasDal& ormasDal, int clID, int eID, double oSum, int cID, std::string oExecDate, std::string& errorMessage)
+	bool Order::CreateOrderEntryReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, int eID, double oSum, int cID, std::string oExecDate, std::string& errorMessage)
 	{
 		Balance balance;
 		CompanyAccountRelation cAccRel;
 		CompanyEmployeeRelation cEmpRel;
 
-		if (balance.GetBalanceByUserID(ormasDal, clID, errorMessage))
+		if (balance.GetBalanceByUserID(globalVar, ormasDal, clID, errorMessage))
 		{
 			int debAccID = 0;
 			int credAccID = 0;
-			int companyID = cEmpRel.GetCompanyByEmployeeID(ormasDal, eID, errorMessage);
+			int companyID = cEmpRel.GetCompanyByEmployeeID(globalVar, ormasDal, eID, errorMessage);
 			debAccID = balance.GetSubaccountID();
-			credAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "44010", errorMessage);
-			if (this->CreateEntryCancel(ormasDal, credAccID, oSum, debAccID, oExecDate, errorMessage))
+			credAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44010", errorMessage);
+			if (this->CreateEntryCancel(globalVar, ormasDal, credAccID, oSum, debAccID, oExecDate, errorMessage))
 			{
 				return true;
 			}
@@ -846,20 +850,20 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Order::CreateOrderEntry(DataLayer::OrmasDal& ormasDal, int clID, int eID, double oSum, double prevSum, int cID, std::string oExecDate, std::string& errorMessage)
+	bool Order::CreateOrderEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int clID, int eID, double oSum, double prevSum, int cID, std::string oExecDate, std::string& errorMessage)
 	{
 		Balance balance;
 		CompanyAccountRelation cAccRel;
 		CompanyEmployeeRelation cEmpRel;
 
-		if (balance.GetBalanceByUserID(ormasDal, clID, errorMessage))
+		if (balance.GetBalanceByUserID(globalVar, ormasDal, clID, errorMessage))
 		{
 			int debAccID = 0;
 			int credAccID = 0;
-			int companyID = cEmpRel.GetCompanyByEmployeeID(ormasDal, eID, errorMessage);
+			int companyID = cEmpRel.GetCompanyByEmployeeID(globalVar, ormasDal, eID, errorMessage);
 			debAccID = balance.GetSubaccountID();
-			credAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "44010", errorMessage);
-			if (this->CreateEntry(ormasDal, debAccID, oSum, credAccID, prevSum, oExecDate, errorMessage))
+			credAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44010", errorMessage);
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, oSum, credAccID, prevSum, oExecDate, errorMessage))
 			{
 				return true;
 			}
@@ -867,31 +871,31 @@ namespace BusinessLayer
 		return false;
 	}
 
-	double Order::GetCurrentSum(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	double Order::GetCurrentSum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Order order;
-		if (order.GetOrderByID(ormasDal, oID, errorMessage))
+		if (order.GetOrderByID(globalVar, ormasDal, oID, errorMessage))
 			return order.GetSum();
 		return 0;
 	}
 
-	double Order::GetCurrentCount(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	double Order::GetCurrentCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Order order;
-		if (order.GetOrderByID(ormasDal, oID, errorMessage))
+		if (order.GetOrderByID(globalVar, ormasDal, oID, errorMessage))
 			return order.GetCount();
 		return 0;
 	}
 
-	int Order::GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	int Order::GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Order order;
-		if (order.GetOrderByID(ormasDal, oID, errorMessage))
+		if (order.GetOrderByID(globalVar, ormasDal, oID, errorMessage))
 			return order.GetStatusID();
 		return 0;
 	}
 
-	bool Order::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Order::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -900,11 +904,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Товар продан и отгружен клиенту с ID =") + std::to_string(clientID));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -916,7 +920,7 @@ namespace BusinessLayer
 		return true;
 	}
 	
-	bool Order::CreateEntryCancel(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Order::CreateEntryCancel(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -925,11 +929,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена продажи товара клиенту с ID =") + std::to_string(clientID));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -941,7 +945,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Order::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage)
+	bool Order::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -950,11 +954,11 @@ namespace BusinessLayer
 		entry.SetValue(previousSum);
 		entry.SetCreditingAccountID(debAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена продажи или отгрузки товара клиенту с ID =") + std::to_string(clientID));
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -970,11 +974,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Товар продан и отгружен клиенту с ID =") + std::to_string(clientID));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -986,22 +990,22 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Order::ChangesAtTransport(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool Order::ChangesAtTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Transport transport;
-		return transport.ChangingByConsumeProduct(ormasDal, oID, errorMessage);
+		return transport.ChangingByConsumeProduct(globalVar, ormasDal, oID, errorMessage);
 	}
 
-	bool Order::ChangesAtTransportReverse(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool Order::ChangesAtTransportReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Transport transport;
-		return transport.ChangingByConsumeProductReverse(ormasDal, oID, errorMessage);
+		return transport.ChangingByConsumeProductReverse(globalVar, ormasDal, oID, errorMessage);
 	}
 
-	bool Order::ChangesAtTransport(DataLayer::OrmasDal& ormasDal, int oID, std::map<int, double> pProdCountMap, double previousSum, std::string& errorMessage)
+	bool Order::ChangesAtTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::map<int, double> pProdCountMap, double previousSum, std::string& errorMessage)
 	{
 		Transport transport;
-		return transport.ChangingByConsumeProduct(ormasDal, oID, pProdCountMap, previousSum, errorMessage);
+		return transport.ChangingByConsumeProduct(globalVar, ormasDal, oID, pProdCountMap, previousSum, errorMessage);
 	}
 
 	std::string Order::wstring_to_utf8(const std::wstring& str)

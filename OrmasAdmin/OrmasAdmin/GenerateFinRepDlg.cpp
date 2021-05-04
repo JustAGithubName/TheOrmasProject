@@ -348,7 +348,16 @@ void GenerateFinRep::CalculatePrevMonth(std::string fromMonth, std::string tilMo
 	else
 	{
 		prevFromMonth = "01.";
-		prevFromMonth += std::to_string(month-1);
+		if (month < 11)
+		{
+			prevFromMonth += "0";
+			prevFromMonth += std::to_string(month - 1);
+		}
+		else
+		{
+			prevFromMonth += std::to_string(month - 1);
+		}
+		
 		prevFromMonth += ".";
 		prevFromMonth += std::to_string(year);
 	}
@@ -359,7 +368,15 @@ void GenerateFinRep::CalculatePrevMonth(std::string fromMonth, std::string tilMo
 	year = pastMonthDate.year();
 	tillFromMonth = std::to_string(coundOfDays);
 	tillFromMonth += ".";
-	tillFromMonth += std::to_string(month);
+	if (month < 11)
+	{
+		tillFromMonth += "0";
+		tillFromMonth += std::to_string(month);
+	}
+	else
+	{
+		tillFromMonth += std::to_string(month);
+	}
 	tillFromMonth += ".";
 	tillFromMonth += std::to_string(year);
 

@@ -42,23 +42,23 @@ namespace BusinessLayer{
 		void SetTillDate(std::string);
 
 		// Create, delete and update AccountHistory
-		bool CreateAccountHistory(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateAccountHistory(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteAccountHistory(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateAccountHistory(DataLayer::OrmasDal &ormasDal, int aID, std::string aNumber, double aStartBalance, 
+		bool CreateAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string aNumber, double aStartBalance, 
 			double aCurrentBalance, std::string aFromDate, std::string aTillDate, std::string& errorMessage);
-		bool UpdateAccountHistory(DataLayer::OrmasDal &ormasDal, int aID, std::string aNumber, double aStartBalance,
+		bool UpdateAccountHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string aNumber, double aStartBalance,
 			double aCurrentBalance, std::string aFromDate, std::string aTillDate, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetAccountHistoryByID(DataLayer::OrmasDal& ormasDal, int ahID, std::string& errorMessage);
-		bool GetAccountHistoryByAccountID(DataLayer::OrmasDal& ormasDal, int aAccountID, std::string& errorMessage);
+		bool GetAccountHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int ahID, std::string& errorMessage);
+		bool GetAccountHistoryByAccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aAccountID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int aID, std::string aFromDate, std::string aTillDate, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string aFromDate, std::string aTillDate, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //ACCOUNTHISTORYCLASS_H

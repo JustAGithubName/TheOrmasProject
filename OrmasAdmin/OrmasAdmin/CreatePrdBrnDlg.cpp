@@ -55,7 +55,7 @@ void CreatePrdBrnDlg::SetID(int ID, QString childName)
 				branchEdit->setText(QString::number(ID));
 			}
 			BusinessLayer::Branch branch;
-			if (branch.GetBranchByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+			if (branch.GetBranchByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 			{
 				branchNamePh->setText(branch.GetName().c_str());
 				addressPh->setText(branch.GetAddress().c_str());
@@ -65,7 +65,7 @@ void CreatePrdBrnDlg::SetID(int ID, QString childName)
 				productEdit->setText(QString::number(ID));
 			}
 			BusinessLayer::Product product;
-			if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+			if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 			{
 				productNamePh->setText(product.GetName().c_str());
 				pricePh->setText(QString::number(product.GetPrice(), 'f', 2));
@@ -87,13 +87,13 @@ void CreatePrdBrnDlg::FillEditElements(int pProductID, int pBranchID)
 	branchEdit->setText(QString::number(pBranchID));
 	productEdit->setText(QString::number(pProductID));
 	BusinessLayer::Branch branch;
-	if (branch.GetBranchByID(dialogBL->GetOrmasDal(), pBranchID, errorMessage))
+	if (branch.GetBranchByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pBranchID, errorMessage))
 	{
 		branchNamePh->setText(branch.GetName().c_str());
 		addressPh->setText(branch.GetAddress().c_str());
 	}
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), pProductID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pProductID, errorMessage))
 	{
 		productNamePh->setText(product.GetName().c_str());
 		pricePh->setText(QString::number(product.GetPrice(), 'f', 2));
@@ -125,7 +125,7 @@ void CreatePrdBrnDlg::CreateProductBranch()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetProductBranchParams(productEdit->text().toInt(), branchEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateProductBranchRelation(productBranch, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -134,8 +134,8 @@ void CreatePrdBrnDlg::CreateProductBranch()
 				{
 					BusinessLayer::Branch *branch = new BusinessLayer::Branch();
 					BusinessLayer::Product *product = new BusinessLayer::Product();
-					if (!branch->GetBranchByID(dialogBL->GetOrmasDal(), productBranch->GetBranchID(), errorMessage)
-						|| !product->GetProductByID(dialogBL->GetOrmasDal(), productBranch->GetProductID(), errorMessage))
+					if (!branch->GetBranchByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productBranch->GetBranchID(), errorMessage)
+						|| !product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productBranch->GetProductID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -162,7 +162,13 @@ void CreatePrdBrnDlg::CreateProductBranch()
 					delete branch;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 
 			Close();
@@ -195,7 +201,7 @@ void CreatePrdBrnDlg::EditProductBranch()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetProductBranchParams(productEdit->text().toInt(), branchEdit->text().toInt(), productBranch->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateProductBranchRelation(productBranch, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -204,8 +210,8 @@ void CreatePrdBrnDlg::EditProductBranch()
 					{
 						BusinessLayer::Branch *branch = new BusinessLayer::Branch();
 						BusinessLayer::Product *product = new BusinessLayer::Product();
-						if (!branch->GetBranchByID(dialogBL->GetOrmasDal(), productBranch->GetBranchID(), errorMessage)
-							|| !product->GetProductByID(dialogBL->GetOrmasDal(), productBranch->GetProductID(), errorMessage))
+						if (!branch->GetBranchByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productBranch->GetBranchID(), errorMessage)
+							|| !product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productBranch->GetProductID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -230,7 +236,13 @@ void CreatePrdBrnDlg::EditProductBranch()
 						delete product;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				Close();
 			}

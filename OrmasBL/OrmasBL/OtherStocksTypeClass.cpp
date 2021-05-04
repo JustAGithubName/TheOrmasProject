@@ -55,10 +55,10 @@ namespace BusinessLayer
 		code = boost::to_upper_copy(pCode);
 	}
 
-	bool OtherStocksType::CreateOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
+	bool OtherStocksType::CreateOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
 		std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pTypeName, pTypeShortName, pTypeCode, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pTypeName, pTypeShortName, pTypeCode, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(pTypeName, pTypeShortName, pTypeCode);
@@ -75,9 +75,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OtherStocksType::CreateOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OtherStocksType::CreateOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id &&ormasDal.CreateOtherStocksType(id, name, shortName, code, errorMessage))
@@ -90,7 +90,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OtherStocksType::DeleteOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OtherStocksType::DeleteOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteOtherStocksType(id, errorMessage))
 		{
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OtherStocksType::UpdateOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
+	bool OtherStocksType::UpdateOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode,
 		std::string& errorMessage)
 	{
 		TrimStrings(pTypeName, pTypeShortName, pTypeCode);
@@ -120,7 +120,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OtherStocksType::UpdateOtherStocksType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OtherStocksType::UpdateOtherStocksType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateOtherStocksType(id, name, shortName, code, errorMessage))
 		{
@@ -142,7 +142,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool OtherStocksType::GetOtherStocksTypeByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool OtherStocksType::GetOtherStocksTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -164,7 +164,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool OtherStocksType::GetOtherStocksTypeByCode(DataLayer::OrmasDal& ormasDal, std::string pCode, std::string& errorMessage)
+	bool OtherStocksType::GetOtherStocksTypeByCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pCode, std::string& errorMessage)
 	{
 		if (pCode.empty())
 			return false;
@@ -211,7 +211,7 @@ namespace BusinessLayer
 			boost::trim(pTypeCode);
 	}
 
-	bool OtherStocksType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode, std::string& errorMessage)
+	bool OtherStocksType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pTypeName, std::string pTypeShortName, std::string pTypeCode, std::string& errorMessage)
 	{
 		OtherStocksType otherStocksType;
 		otherStocksType.Clear();
@@ -231,7 +231,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool OtherStocksType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OtherStocksType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		OtherStocksType otherStocksType;
 		otherStocksType.Clear();

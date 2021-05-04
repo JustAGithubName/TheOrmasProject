@@ -73,9 +73,9 @@ namespace BusinessLayer
 		inventoryID = iID;
 	}
 
-	bool PostingFixedAssets::CreatePostingFixedAssets(DataLayer::OrmasDal& ormasDal, int uID, int sID, int aID, int faID, int iID, std::string& errorMessage)
+	bool PostingFixedAssets::CreatePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int sID, int aID, int faID, int iID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uID, sID, aID, faID, iID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, sID, aID, faID, iID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		userID = uID;
@@ -96,9 +96,9 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool PostingFixedAssets::CreatePostingFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PostingFixedAssets::CreatePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
@@ -113,7 +113,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool PostingFixedAssets::DeletePostingFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PostingFixedAssets::DeletePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -127,7 +127,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool PostingFixedAssets::UpdatePostingFixedAssets(DataLayer::OrmasDal& ormasDal, int uID, int sID, int aID, int faID, int iID, std::string& errorMessage)
+	bool PostingFixedAssets::UpdatePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int sID, int aID, int faID, int iID, std::string& errorMessage)
 	{
 		userID = uID;
 		subaccountID = sID;
@@ -146,7 +146,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool PostingFixedAssets::UpdatePostingFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PostingFixedAssets::UpdatePostingFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.UpdatePostingFixedAssets(id, userID, subaccountID, accountID, fixedAssetsID, inventoryID, errorMessage))
@@ -170,7 +170,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool PostingFixedAssets::GetPostingFixedAssetsByID(DataLayer::OrmasDal& ormasDal, int fID, std::string& errorMessage)
+	bool PostingFixedAssets::GetPostingFixedAssetsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fID, std::string& errorMessage)
 	{
 		if (fID <= 0)
 			return false;
@@ -194,7 +194,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool PostingFixedAssets::GetPostingFixedAssetsByUserID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool PostingFixedAssets::GetPostingFixedAssetsByUserID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		if (uID <= 0)
 			return false;
@@ -218,7 +218,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool PostingFixedAssets::GetPostingFixedAssetsByAccountID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool PostingFixedAssets::GetPostingFixedAssetsByAccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -242,7 +242,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool PostingFixedAssets::GetPostingFixedAssetsBySubaccountID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool PostingFixedAssets::GetPostingFixedAssetsBySubaccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -266,7 +266,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool PostingFixedAssets::GetPostingFixedAssetsByFixedAssetsID(DataLayer::OrmasDal& ormasDal, int faID, std::string& errorMessage)
+	bool PostingFixedAssets::GetPostingFixedAssetsByFixedAssetsID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int faID, std::string& errorMessage)
 	{
 		if (faID <= 0)
 			return false;
@@ -290,7 +290,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool PostingFixedAssets::GetPostingFixedAssetsByInventoryID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage)
+	bool PostingFixedAssets::GetPostingFixedAssetsByInventoryID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage)
 	{
 		if (iID <= 0)
 			return false;
@@ -317,8 +317,8 @@ namespace BusinessLayer
 	bool PostingFixedAssets::IsEmpty()
 	{
 		if (0 == id && 0 == userID && 0 == subaccountID && 0 == accountID && 0 == fixedAssetsID && 0 == inventoryID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void PostingFixedAssets::Clear()
@@ -331,7 +331,7 @@ namespace BusinessLayer
 		inventoryID = 0;
 	}
 
-	bool PostingFixedAssets::IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, int sID, int aID, int fID, int iID, std::string& errorMessage)
+	bool PostingFixedAssets::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int sID, int aID, int fID, int iID, std::string& errorMessage)
 	{
 		PostingFixedAssets postingFixedAssets;
 		postingFixedAssets.Clear();
@@ -358,7 +358,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool PostingFixedAssets::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PostingFixedAssets::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		PostingFixedAssets postingFixedAssets;
 		postingFixedAssets.Clear();

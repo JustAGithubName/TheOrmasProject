@@ -66,7 +66,7 @@ void CreateOthStDlg::SetID(int ID, QString childName)
 			{
 				companyEdit->setText(QString::number(ID));
 				BusinessLayer::Company company;
-				if (company.GetCompanyByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (company.GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					companyNamePh->setText(company.GetName().c_str());
 				}
@@ -97,7 +97,7 @@ void CreateOthStDlg::FillEditElements(int pCompanyID, QString pOtherStocksName, 
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(pCurrencyID)));
 	measureCmb->setCurrentIndex(measureCmb->findData(QVariant(pMeasureID)));
 	BusinessLayer::Company company;
-	if (company.GetCompanyByID(dialogBL->GetOrmasDal(), pCompanyID, errorMessage))
+	if (company.GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pCompanyID, errorMessage))
 	{
 		companyNamePh->setText(company.GetName().c_str());
 	}
@@ -138,7 +138,7 @@ void CreateOthStDlg::CreateOtherStocks()
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetOtherStocksParams(companyEdit->text().toInt(), nameEdit->text(), volumeEdit->text().toDouble(), measureCmb->currentData().toInt(),
 			priceEdit->text().toDouble(), currencyCmb->currentData().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateOtherStocks(otherStocks, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -149,9 +149,9 @@ void CreateOthStDlg::CreateOtherStocks()
 					BusinessLayer::Measure *measure = new BusinessLayer::Measure();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 
-					if (!company->GetCompanyByID(dialogBL->GetOrmasDal(), otherStocks->GetCompanyID(), errorMessage)
-						|| !measure->GetMeasureByID(dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage))
+					if (!company->GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCompanyID(), errorMessage)
+						|| !measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -182,7 +182,13 @@ void CreateOthStDlg::CreateOtherStocks()
 					delete currency;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 
 			Close();
@@ -220,7 +226,7 @@ void CreateOthStDlg::EditOtherStocks()
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetOtherStocksParams(companyEdit->text().toInt(), nameEdit->text(), volumeEdit->text().toDouble(), measureCmb->currentData().toInt(),
 				priceEdit->text().toDouble(), currencyCmb->currentData().toInt(), otherStocks->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateOtherStocks(otherStocks, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -235,9 +241,9 @@ void CreateOthStDlg::EditOtherStocks()
 						BusinessLayer::Measure *measure = new BusinessLayer::Measure();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 
-						if (!company->GetCompanyByID(dialogBL->GetOrmasDal(), otherStocks->GetCompanyID(), errorMessage)
-							|| !measure->GetMeasureByID(dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage))
+						if (!company->GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCompanyID(), errorMessage)
+							|| !measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -265,8 +271,13 @@ void CreateOthStDlg::EditOtherStocks()
 						delete currency;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
-
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 				Close();
 			}

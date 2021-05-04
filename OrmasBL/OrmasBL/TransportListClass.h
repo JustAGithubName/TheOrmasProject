@@ -40,29 +40,32 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateTransportList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateTransportList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteTransportList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByTransportID(DataLayer::OrmasDal& ormasDal, int tID, std::string& errorMessage);
-		bool CreateTransportList(DataLayer::OrmasDal& ormasDal, int tID, int pID, double tlCount, double tlSum,
+		bool CreateTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByTransportID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage);
+		bool CreateTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double tlCount, double tlSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateTransportList(DataLayer::OrmasDal& ormasDal, int tID, int pID, double tlCount, double tlSum,
+		bool UpdateTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double tlCount, double tlSum,
+			int sID, int cID, std::string& errorMessage);
+
+		bool CreateTransportChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double tlCount, double tlSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetTransportListByID(DataLayer::OrmasDal& ormasDal, int tID, std::string& errorMessage);
-		bool GetTransportListByTransportAndProductID(DataLayer::OrmasDal& ormasDal, int tID, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetTransportListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage);
+		bool GetTransportListByTransportAndProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, std::string& errorMessage);
 
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
 		
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int tID, int pID, double tlCount, double tlSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double tlCount, double tlSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};
 }

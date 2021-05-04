@@ -51,9 +51,9 @@ namespace BusinessLayer{
 		code = aCode;
 	}
 
-	bool AmortizeType::CreateAmortizeType(DataLayer::OrmasDal &ormasDal, std::string aName, std::string aCode, std::string& errorMessage)
+	bool AmortizeType::CreateAmortizeType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aName, std::string aCode, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, aCode, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, aCode, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(aName, aCode);
@@ -69,9 +69,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AmortizeType::CreateAmortizeType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AmortizeType::CreateAmortizeType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateAmortizeType(id, name, code, errorMessage))
@@ -84,7 +84,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AmortizeType::DeleteAmortizeType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AmortizeType::DeleteAmortizeType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteAmortizeType(id, errorMessage))
 		{
@@ -98,7 +98,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AmortizeType::UpdateAmortizeType(DataLayer::OrmasDal &ormasDal, std::string aName, std::string aCode, std::string& errorMessage)
+	bool AmortizeType::UpdateAmortizeType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aName, std::string aCode, std::string& errorMessage)
 	{
 		TrimStrings(aName, aCode);
 		name = aName;
@@ -113,7 +113,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AmortizeType::UpdateAmortizeType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AmortizeType::UpdateAmortizeType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.UpdateAmortizeType(id, name, code, errorMessage))
 		{
@@ -135,7 +135,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool AmortizeType::GetAmortizeTypeByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool AmortizeType::GetAmortizeTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -156,7 +156,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AmortizeType::GetAmortizeTypeByCode(DataLayer::OrmasDal& ormasDal, std::string aCode, std::string& errorMessage)
+	bool AmortizeType::GetAmortizeTypeByCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aCode, std::string& errorMessage)
 	{
 		if (!aCode.empty())
 			return false;
@@ -191,7 +191,7 @@ namespace BusinessLayer{
 		code="";
 	}
 
-	bool AmortizeType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string aCode, std::string& errorMessage)
+	bool AmortizeType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aCode, std::string& errorMessage)
 	{
 		AmortizeType amortizeType;
 		amortizeType.Clear();
@@ -209,7 +209,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool AmortizeType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AmortizeType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		AmortizeType amortizeType;
 		amortizeType.Clear();

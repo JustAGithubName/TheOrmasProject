@@ -53,37 +53,38 @@ namespace BusinessLayer{
 		void SetWho(std::string);
 		void SetCashboxAccountID(int);
 		// Create, delete and update Withdrawal
-		bool CreateWithdrawal(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateWithdrawal(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteWithdrawal(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateWithdrawal(DataLayer::OrmasDal &ormasDal, std::string wDate, double wValue, int uID, int sID, std::string wTaeget,
+		bool CreateWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wDate, double wValue, int uID, int sID, std::string wTaeget,
 			int cID, int stsID, int aID, std::string wWho,  int cashboxAccID, std::string& errorMessage);
-		bool UpdateWithdrawal(DataLayer::OrmasDal &ormasDal, std::string wDate, double wValue, int uID, int sID, std::string wTaeget,
+		bool UpdateWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wDate, double wValue, int uID, int sID, std::string wTaeget,
 			int cID, int stsID, int aID,std::string wWho, int cashboxAccID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string formDate, std::string toDate);
-		bool GetWithdrawalByID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateFilterFieldBiggerThen(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string formDate, std::string toDate);
+		bool GetWithdrawalByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		double currentValue = 0.0;
 		int previousStatusID = 0;
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string wDate, double wValue, int uID, int cID, int aID,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wDate, double wValue, int uID, int cID, int aID,
 			std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool Payout(DataLayer::OrmasDal& ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage);
-		bool Payout(DataLayer::OrmasDal& ormasDal, int uID, int cID, int aID, int cashboxAccID, double previousValue, std::string& errorMessage);
-		bool Payout(DataLayer::OrmasDal& ormasDal, int sID, int cashboxAccID, std::string& errorMessage);
-		bool Payout(DataLayer::OrmasDal& ormasDal, int sID, int cashboxAccID, double previousValue, std::string& errorMessage);
-		double GetCurrentValue(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool CancelWithdrawal(DataLayer::OrmasDal& ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage);
-		bool CancelWithdrawal(DataLayer::OrmasDal& ormasDal, int sID, int cashboxAccID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage);
-		bool CorrectingEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		int GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage);
+		bool Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, double previousValue, std::string& errorMessage);
+		bool Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage);
+		bool Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, double previousValue, std::string& errorMessage);
+		double GetCurrentValue(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool CancelWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage);
+		bool CancelWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage);
+		bool CorrectingEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		int GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};
 }

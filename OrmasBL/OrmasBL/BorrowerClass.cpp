@@ -34,14 +34,14 @@ namespace BusinessLayer{
 		comment = bComment;
 	}
 	
-	bool Borrower::CreateBorrower(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+	bool Borrower::CreateBorrower(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 		std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string bComment, std::string& errorMessage)
 	{
 		if (0 == id)
 		{
-			if (IsDuplicate(ormasDal, uName, uSurname, uPhone, errorMessage))
+			if (IsDuplicate(globalVar, ormasDal, uName, uSurname, uPhone, errorMessage))
 				return false;
-			if (!IsUnique(ormasDal, uPhone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, uPhone, errorMessage))
 				return false;
 			id = ormasDal.GenerateID();
 			TrimStrings(uEmail, uName, uSurname, uPhone, uAddress, uPassword, comment);
@@ -57,9 +57,9 @@ namespace BusinessLayer{
 			comment = bComment;
 			if (0 != id && ormasDal.CreateUser(id, email, name, surname, phone, address, roleID, password, activated, errorMessage))
 			{
-				if (ormasDal.CreateBorrower(userID, comment, errorMessage) && this->CreateCompanyEmployeeRelation(ormasDal, errorMessage))
+				if (ormasDal.CreateBorrower(userID, comment, errorMessage) && this->CreateCompanyEmployeeRelation(globalVar, ormasDal, errorMessage))
 				{
-					if (CreateBalance(ormasDal, errorMessage) && CreateBalanceForBorrower(ormasDal, userID, errorMessage))
+					if (CreateBalance(globalVar, ormasDal, errorMessage) && CreateBalanceForBorrower(globalVar, ormasDal, userID, errorMessage))
 						return true;
 					return false;
 				}
@@ -75,7 +75,7 @@ namespace BusinessLayer{
 			comment = bComment;
 			if (ormasDal.CreateBorrower(userID, comment, errorMessage))
 			{
-				if (CreateBalanceForBorrower(ormasDal, userID, errorMessage))
+				if (CreateBalanceForBorrower(globalVar, ormasDal, userID, errorMessage))
 					return true;
 				return false;
 			}
@@ -83,21 +83,21 @@ namespace BusinessLayer{
 			return false;
 		}
 	}
-	bool Borrower::CreateBorrower(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Borrower::CreateBorrower(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 == id)
 		{
-			if (IsDuplicate(ormasDal, name, surname, phone, errorMessage))
+			if (IsDuplicate(globalVar, ormasDal, name, surname, phone, errorMessage))
 				return false;
-			if (!IsUnique(ormasDal, phone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, phone, errorMessage))
 				return false;
 			id = ormasDal.GenerateID();
 			userID = id;
 			if (0 != id && ormasDal.CreateUser(id, email, name, surname, phone, address, roleID, password, activated, errorMessage))
 			{
-				if (ormasDal.CreateBorrower(userID, comment, errorMessage) && this->CreateCompanyEmployeeRelation(ormasDal, errorMessage))
+				if (ormasDal.CreateBorrower(userID, comment, errorMessage) && this->CreateCompanyEmployeeRelation(globalVar, ormasDal, errorMessage))
 				{
-					if (CreateBalance(ormasDal, errorMessage) && CreateBalanceForBorrower(ormasDal, userID, errorMessage))
+					if (CreateBalance(globalVar, ormasDal, errorMessage) && CreateBalanceForBorrower(globalVar, ormasDal, userID, errorMessage))
 						return true;
 					return false;
 				}
@@ -112,7 +112,7 @@ namespace BusinessLayer{
 			userID = id;
 			if (ormasDal.CreateBorrower(userID, comment, errorMessage))
 			{
-				if (CreateBalanceForBorrower(ormasDal, userID, errorMessage))
+				if (CreateBalanceForBorrower(globalVar, ormasDal, userID, errorMessage))
 					return true;
 				return false;
 			}
@@ -121,7 +121,7 @@ namespace BusinessLayer{
 		}
 	}
 
-	bool Borrower::DeleteBorrower(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Borrower::DeleteBorrower(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (!errorMessage.empty())
@@ -129,22 +129,22 @@ namespace BusinessLayer{
 		if (ormasDal.DeleteBorrower(id, errorMessage))
 		{
 			User user;
-			if (user.GetUserByID(ormasDal, id, errorMessage))
+			if (user.GetUserByID(globalVar, ormasDal, id, errorMessage))
 			{
-				if (user.DeleteUser(ormasDal, errorMessage))
+				if (user.DeleteUser(globalVar, ormasDal, errorMessage))
 					return true;
 			}
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Borrower::UpdateBorrower(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+	bool Borrower::UpdateBorrower(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 		std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string bComment, std::string& errorMessage)
 	{
-		std::string prevPhone = GetCurrentPhone(ormasDal, id, errorMessage);
+		std::string prevPhone = GetCurrentPhone(globalVar, ormasDal, id, errorMessage);
 		if (0 != prevPhone.compare(uPhone))
 		{
-			if (!IsUnique(ormasDal, uPhone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, uPhone, errorMessage))
 				return false;
 		}
 		TrimStrings(uEmail, uName, uSurname, uPhone, uAddress, uPassword, comment);
@@ -179,12 +179,12 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Borrower::UpdateBorrower(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Borrower::UpdateBorrower(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::string prevPhone = GetCurrentPhone(ormasDal, id, errorMessage);
+		std::string prevPhone = GetCurrentPhone(globalVar, ormasDal, id, errorMessage);
 		if (0 != prevPhone.compare(phone))
 		{
-			if (!IsUnique(ormasDal, phone, errorMessage))
+			if (!IsUnique(globalVar, ormasDal, phone, errorMessage))
 				return false;
 		}
 		//ormasDal.StartTransaction(errorMessage);
@@ -219,7 +219,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Borrower::GetBorrowerByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool Borrower::GetBorrowerByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		if (uID <= 0)
 			return false;
@@ -239,7 +239,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Borrower::GetBorrowerByCredentials(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string uEmail, std::string uPassword)
+	bool Borrower::GetBorrowerByCredentials(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string uEmail, std::string uPassword)
 	{
 		std::string errorMessage = "";
 		if (!uPhone.empty())
@@ -303,7 +303,7 @@ namespace BusinessLayer{
 			boost::trim(bCommnet);
 	}
 
-	bool Borrower::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string uName, std::string uSurname, std::string uPhone, std::string& errorMessage)
+	bool Borrower::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uName, std::string uSurname, std::string uPhone, std::string& errorMessage)
 	{
 		Borrower borrower;
 		borrower.Clear();
@@ -323,7 +323,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Borrower::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Borrower::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Borrower borrower;
 		borrower.Clear();
@@ -343,15 +343,15 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	std::string Borrower::GetCurrentPhone(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	std::string Borrower::GetCurrentPhone(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		User user;
-		if (user.GetUserByID(ormasDal, uID, errorMessage))
+		if (user.GetUserByID(globalVar, ormasDal, uID, errorMessage))
 			return user.GetPhone();
 		return 0;
 	}
 
-	bool Borrower::CreateCompanyEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Borrower::CreateCompanyEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Company company;
 		Branch branch;
@@ -365,14 +365,14 @@ namespace BusinessLayer{
 		{
 			branchID = std::get<0>(vecBranch.at(0));
 		}
-		int companyID = company.GetCompanyID(ormasDal, errorMessage);
+		int companyID = company.GetCompanyID(globalVar, ormasDal, errorMessage);
 		if (0 == companyID)
 			return false;
 		CompanyEmployeeRelation ceRelation;
 		ceRelation.SetEmployeeID(id);
 		ceRelation.SetCompanyID(companyID);
 		ceRelation.SetBranchID(branchID);
-		return ceRelation.CreateCompanyEmployeeRelation(ormasDal, errorMessage);
+		return ceRelation.CreateCompanyEmployeeRelation(globalVar, ormasDal, errorMessage);
 	}
 
 

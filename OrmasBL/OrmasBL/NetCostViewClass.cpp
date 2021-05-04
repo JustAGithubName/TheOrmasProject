@@ -36,4 +36,36 @@ namespace BusinessLayer{
 	{
 		return currencyName;
 	}
+
+	void NetCostView::SetProductName(std::string jProductName)
+	{
+		productName = jProductName;
+	}
+
+	void NetCostView::SetVolume(double jVolume)
+	{
+		volume = jVolume;
+	}
+
+	void NetCostView::SetMeasureName(std::string jMeasureName)
+	{
+		measureName = jMeasureName;
+	}
+
+
+	void NetCostView::SetCurrencyName(std::string jCurrencyName)
+	{
+		currencyName = jCurrencyName;
+	}
+
+
+	std::string NetCostView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || date.empty() || productName.empty() || 0 != volume || measureName.empty() || 0 != value || currencyName.empty()  || 0 != currencyID 
+			|| 0 != productID)
+		{
+			return ormasDal.GetFilterForNetCostView(id, date, productName, volume, measureName, value, currencyName, currencyID, productID);
+		}
+		return "";
+	}
 }

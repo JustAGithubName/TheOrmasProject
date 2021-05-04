@@ -34,24 +34,24 @@ namespace BusinessLayer
 		void SetCityName(std::string);
 		
 		//Create, delete, update methods
-		bool CreateLocation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateLocation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteLocation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateLocation(DataLayer::OrmasDal& ormasDal, std::string lCountryName, std::string lCountryCode,
+		bool CreateLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string lCountryName, std::string lCountryCode,
 			std::string lRegionName, std::string lCityName, std::string& errorMessage);
-		bool UpdateLocation(DataLayer::OrmasDal& ormasDal, std::string lCountryName, std::string lCountryCode,
+		bool UpdateLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string lCountryName, std::string lCountryCode,
 			std::string lRegionName, std::string lCityName, std::string& errorMessage);
 		
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetLocationByID(DataLayer::OrmasDal& ormasDal, int lID, std::string& errorMessage);
+		bool GetLocationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int lID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string lCountryName, 
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string lCountryName, 
 			std::string lRegionName, std::string lCityName, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif // LOCATIONCLASS_H

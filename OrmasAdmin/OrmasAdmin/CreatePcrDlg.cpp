@@ -55,7 +55,7 @@ void CreatePcrDlg::SetID(int ID, QString childName)
 			{
 				positionEdit->setText(QString::number(ID));
 				BusinessLayer::Position position;
-				if (position.GetPositionByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (position.GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					positionPh->setText(position.GetName().c_str());
 				}
@@ -78,7 +78,7 @@ void CreatePcrDlg::FillEditElements(double pValue, QString pCondition, int posID
 	conditionEdit->setText(pCondition);
 	positionEdit->setText(QString::number(posID));
 	BusinessLayer::Position position;
-	if (position.GetPositionByID(dialogBL->GetOrmasDal(), posID, errorMessage))
+	if (position.GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), posID, errorMessage))
 	{
 		positionPh->setText(position.GetName().c_str());
 	}
@@ -112,7 +112,7 @@ void CreatePcrDlg::CreatePercentRate()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetPercentRateParams(valueEdit->text().toDouble(), conditionEdit->text(), positionEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreatePercentRate(percentRate, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -120,7 +120,7 @@ void CreatePcrDlg::CreatePercentRate()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Position *position = new BusinessLayer::Position;
-					if (!position->GetPositionByID(dialogBL->GetOrmasDal(), percentRate->GetPositionID(), errorMessage))
+					if (!position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), percentRate->GetPositionID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -140,7 +140,13 @@ void CreatePcrDlg::CreatePercentRate()
 					delete position;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -175,7 +181,7 @@ void CreatePcrDlg::EditPercentRate()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetPercentRateParams(valueEdit->text().toDouble(), conditionEdit->text(), positionEdit->text().toInt(), percentRate->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdatePercentRate(percentRate, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -183,7 +189,7 @@ void CreatePcrDlg::EditPercentRate()
 					if (!parentDataForm->IsClosed())
 					{
 						BusinessLayer::Position *position = new BusinessLayer::Position;
-						if (!position->GetPositionByID(dialogBL->GetOrmasDal(), percentRate->GetPositionID(), errorMessage))
+						if (!position->GetPositionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), percentRate->GetPositionID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -202,7 +208,13 @@ void CreatePcrDlg::EditPercentRate()
 						delete position;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}

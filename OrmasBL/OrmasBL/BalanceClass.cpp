@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "BalanceClass.h"
+#include "EmployeeClass.h"
 
 namespace BusinessLayer{
 	Balance::Balance(DataLayer::balancesCollection balCollection)
@@ -41,10 +42,10 @@ namespace BusinessLayer{
 		subaccountID = cID;
 	}
 
-	bool Balance::CreateBalance(DataLayer::OrmasDal &ormasDal, int uID,  int saID, std::string& errorMessage)
+	bool Balance::CreateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID,  int saID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
-		if (IsDuplicate(ormasDal, uID, saID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, saID, errorMessage))
 			return false;
 		userID = uID;
 		subaccountID = saID;
@@ -59,9 +60,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Balance::CreateBalance(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Balance::CreateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateBalance(id, userID, subaccountID, errorMessage))
@@ -74,7 +75,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Balance::DeleteBalance(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Balance::DeleteBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteBalance(id, errorMessage))
 		{
@@ -88,7 +89,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Balance::UpdateBalance(DataLayer::OrmasDal &ormasDal, int uID, int aID, std::string& errorMessage)
+	bool Balance::UpdateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int aID, std::string& errorMessage)
 	{
 		userID = uID;
 		subaccountID = aID;
@@ -102,7 +103,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Balance::UpdateBalance(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Balance::UpdateBalance(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateBalance(id, userID, subaccountID, errorMessage))
 		{
@@ -124,7 +125,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Balance::GetBalanceByID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	bool Balance::GetBalanceByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
 			return false;
@@ -145,7 +146,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Balance::GetBalanceByUserID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool Balance::GetBalanceByUserID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -166,7 +167,27 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Balance::GetBalanceBySubaccountID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	std::vector<int> Balance::GetSubaccountIDlistByUserIDList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> cID, std::string& errorMessage)
+	{
+		std::vector<int> subaccID;
+		if (cID.size()<=0)
+			return subaccID;
+		Employee employee;
+		std::string filterClient = employee.GenerateINFilter(globalVar, ormasDal, cID);
+		std::string filter = GenerateFilter(ormasDal);
+		std::vector<std::string> filterList;
+		filterList.push_back(filterClient);
+		filterList.push_back(filter);
+		filter = ormasDal.ConcatenateFilters(filterList);
+		std::vector<DataLayer::balancesViewCollection> balanceVector = ormasDal.GetBalances(errorMessage, filter);
+		if (0 != balanceVector.size())
+		{
+			subaccID.push_back(std::get<7>(balanceVector.at(0)));
+		}
+		return subaccID;
+	}
+
+	bool Balance::GetBalanceBySubaccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -201,7 +222,7 @@ namespace BusinessLayer{
 		subaccountID = 0;
 	}
 
-	bool Balance::IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, int aID, std::string& errorMessage)
+	bool Balance::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int aID, std::string& errorMessage)
 	{
 		Balance balance;
 		balance.Clear();
@@ -220,7 +241,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Balance::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Balance::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Balance balance;
 		balance.Clear();

@@ -48,7 +48,7 @@ void CreateBrwDlg::SetID(int ID, QString childName)
 			{
 				userEdit->setText(QString::number(ID));
 				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					namePh->setText(user.GetName().c_str());
 					surnamePh->setText(user.GetSurname().c_str());
@@ -70,7 +70,7 @@ void CreateBrwDlg::FillEditElements(QString aInformation, int aUserID)
 	userEdit->setText(QString::number(aUserID));
 	commnetEdit->setText(aInformation);
 	BusinessLayer::User user;
-	if (user.GetUserByID(dialogBL->GetOrmasDal(), aUserID, errorMessage))
+	if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), aUserID, errorMessage))
 	{
 		namePh->setText(user.GetName().c_str());
 		surnamePh->setText(user.GetSurname().c_str());
@@ -102,11 +102,11 @@ void CreateBrwDlg::CreateBorrower()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetBorrowerParams(commnetEdit->text(), userEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateBorrower(borrower, errorMessage))
 		{
 			BusinessLayer::Employee employee;
-			if (!employee.GetEmployeeByID(dialogBL->GetOrmasDal(), borrower->GetUserID(), errorMessage))
+			if (!employee.GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), borrower->GetUserID(), errorMessage))
 			{
 				dialogBL->CancelTransaction(errorMessage);
 				QMessageBox::information(NULL, QString(tr("Warning")),
@@ -118,7 +118,7 @@ void CreateBrwDlg::CreateBorrower()
 			BusinessLayer::Role role;
 			if (!employee.IsEmpty())
 			{
-				if (!role.GetRoleByID(dialogBL->GetOrmasDal(), employee.GetRoleID(), errorMessage))
+				if (!role.GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee.GetRoleID(), errorMessage))
 				{
 					dialogBL->CancelTransaction(errorMessage);
 					QMessageBox::information(NULL, QString(tr("Warning")),
@@ -150,7 +150,13 @@ void CreateBrwDlg::CreateBorrower()
 					itemModel->appendRow(BorrowerItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -182,11 +188,11 @@ void CreateBrwDlg::EditBorrower()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetBorrowerParams(commnetEdit->text(), userEdit->text().toInt());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateBorrower(borrower, errorMessage))
 			{
 				BusinessLayer::Employee employee;
-				if (!employee.GetEmployeeByID(dialogBL->GetOrmasDal(), borrower->GetUserID(), errorMessage))
+				if (!employee.GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), borrower->GetUserID(), errorMessage))
 				{
 					dialogBL->CancelTransaction(errorMessage);
 					QMessageBox::information(NULL, QString(tr("Warning")),
@@ -198,7 +204,7 @@ void CreateBrwDlg::EditBorrower()
 				BusinessLayer::Role role;
 				if (!employee.IsEmpty())
 				{
-					if (!role.GetRoleByID(dialogBL->GetOrmasDal(), employee.GetRoleID(), errorMessage))
+					if (!role.GetRoleByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employee.GetRoleID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -225,7 +231,13 @@ void CreateBrwDlg::EditBorrower()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else
@@ -282,7 +294,7 @@ void CreateBrwDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

@@ -14,7 +14,6 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDateEdit>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QGridLayout>
@@ -23,6 +22,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QWidget>
 
@@ -32,8 +32,13 @@ class Ui_GenerateAccountCardReport
 {
 public:
     QGridLayout *gridLayout;
-    QDateEdit *tillDateEdit;
-    QDateEdit *fromDateEdit;
+    QLabel *fromLb;
+    QLabel *label_2;
+    QHBoxLayout *horizontalLayout;
+    QSpacerItem *horizontalSpacer;
+    QPushButton *okBtn;
+    QPushButton *cancelBtn;
+    QLabel *label;
     QWidget *oneAccWidget;
     QGridLayout *gridLayout_2;
     QLabel *accLb;
@@ -44,33 +49,59 @@ public:
     QLabel *accNameLb;
     QLineEdit *accNumberEdit;
     QLabel *accNamePh;
-    QHBoxLayout *horizontalLayout;
-    QSpacerItem *horizontalSpacer;
-    QPushButton *okBtn;
-    QPushButton *cancelBtn;
-    QLabel *fromLb;
-    QLabel *label_2;
-    QCheckBox *oneAccCbx;
+    QDateEdit *fromDateEdit;
+    QDateEdit *tillDateEdit;
+    QRadioButton *allAccRb;
+    QRadioButton *oneAccRb;
 
     void setupUi(QDialog *GenerateAccountCardReport)
     {
         if (GenerateAccountCardReport->objectName().isEmpty())
             GenerateAccountCardReport->setObjectName(QStringLiteral("GenerateAccountCardReport"));
-        GenerateAccountCardReport->resize(634, 217);
+        GenerateAccountCardReport->resize(644, 302);
         GenerateAccountCardReport->setLocale(QLocale(QLocale::English, QLocale::UnitedStates));
         GenerateAccountCardReport->setModal(false);
         gridLayout = new QGridLayout(GenerateAccountCardReport);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
         gridLayout->setContentsMargins(11, 11, 11, 11);
-        tillDateEdit = new QDateEdit(GenerateAccountCardReport);
-        tillDateEdit->setObjectName(QStringLiteral("tillDateEdit"));
+        fromLb = new QLabel(GenerateAccountCardReport);
+        fromLb->setObjectName(QStringLiteral("fromLb"));
 
-        gridLayout->addWidget(tillDateEdit, 0, 4, 1, 1);
+        gridLayout->addWidget(fromLb, 1, 1, 1, 1);
 
-        fromDateEdit = new QDateEdit(GenerateAccountCardReport);
-        fromDateEdit->setObjectName(QStringLiteral("fromDateEdit"));
+        label_2 = new QLabel(GenerateAccountCardReport);
+        label_2->setObjectName(QStringLiteral("label_2"));
 
-        gridLayout->addWidget(fromDateEdit, 0, 2, 1, 1);
+        gridLayout->addWidget(label_2, 1, 3, 1, 1);
+
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout->addItem(horizontalSpacer);
+
+        okBtn = new QPushButton(GenerateAccountCardReport);
+        okBtn->setObjectName(QStringLiteral("okBtn"));
+
+        horizontalLayout->addWidget(okBtn);
+
+        cancelBtn = new QPushButton(GenerateAccountCardReport);
+        cancelBtn->setObjectName(QStringLiteral("cancelBtn"));
+
+        horizontalLayout->addWidget(cancelBtn);
+
+
+        gridLayout->addLayout(horizontalLayout, 8, 1, 1, 5);
+
+        label = new QLabel(GenerateAccountCardReport);
+        label->setObjectName(QStringLiteral("label"));
+        QFont font;
+        font.setPointSize(9);
+        font.setBold(true);
+        font.setWeight(75);
+        label->setFont(font);
+
+        gridLayout->addWidget(label, 0, 1, 1, 5);
 
         oneAccWidget = new QWidget(GenerateAccountCardReport);
         oneAccWidget->setObjectName(QStringLiteral("oneAccWidget"));
@@ -85,11 +116,11 @@ public:
         orLb = new QLabel(oneAccWidget);
         orLb->setObjectName(QStringLiteral("orLb"));
         orLb->setMinimumSize(QSize(40, 0));
-        QFont font;
-        font.setPointSize(10);
-        font.setBold(true);
-        font.setWeight(75);
-        orLb->setFont(font);
+        QFont font1;
+        font1.setPointSize(10);
+        font1.setBold(true);
+        font1.setWeight(75);
+        orLb->setFont(font1);
         orLb->setAlignment(Qt::AlignCenter);
 
         gridLayout_2->addWidget(orLb, 0, 2, 1, 1);
@@ -130,54 +161,41 @@ public:
         sizePolicy.setVerticalStretch(0);
         sizePolicy.setHeightForWidth(accNamePh->sizePolicy().hasHeightForWidth());
         accNamePh->setSizePolicy(sizePolicy);
-        QFont font1;
-        font1.setFamily(QStringLiteral("Times New Roman"));
-        font1.setPointSize(12);
-        font1.setBold(true);
-        font1.setItalic(true);
-        font1.setWeight(75);
-        accNamePh->setFont(font1);
+        QFont font2;
+        font2.setFamily(QStringLiteral("Times New Roman"));
+        font2.setPointSize(12);
+        font2.setBold(true);
+        font2.setItalic(true);
+        font2.setWeight(75);
+        accNamePh->setFont(font2);
         accNamePh->setTextFormat(Qt::RichText);
         accNamePh->setScaledContents(true);
 
-        gridLayout_2->addWidget(accNamePh, 3, 0, 1, 1);
+        gridLayout_2->addWidget(accNamePh, 3, 0, 1, 5);
 
 
-        gridLayout->addWidget(oneAccWidget, 2, 1, 1, 5);
+        gridLayout->addWidget(oneAccWidget, 3, 1, 1, 5);
 
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+        fromDateEdit = new QDateEdit(GenerateAccountCardReport);
+        fromDateEdit->setObjectName(QStringLiteral("fromDateEdit"));
 
-        horizontalLayout->addItem(horizontalSpacer);
+        gridLayout->addWidget(fromDateEdit, 1, 2, 1, 1);
 
-        okBtn = new QPushButton(GenerateAccountCardReport);
-        okBtn->setObjectName(QStringLiteral("okBtn"));
+        tillDateEdit = new QDateEdit(GenerateAccountCardReport);
+        tillDateEdit->setObjectName(QStringLiteral("tillDateEdit"));
 
-        horizontalLayout->addWidget(okBtn);
+        gridLayout->addWidget(tillDateEdit, 1, 4, 1, 1);
 
-        cancelBtn = new QPushButton(GenerateAccountCardReport);
-        cancelBtn->setObjectName(QStringLiteral("cancelBtn"));
+        allAccRb = new QRadioButton(GenerateAccountCardReport);
+        allAccRb->setObjectName(QStringLiteral("allAccRb"));
+        allAccRb->setChecked(true);
 
-        horizontalLayout->addWidget(cancelBtn);
+        gridLayout->addWidget(allAccRb, 2, 1, 1, 2);
 
+        oneAccRb = new QRadioButton(GenerateAccountCardReport);
+        oneAccRb->setObjectName(QStringLiteral("oneAccRb"));
 
-        gridLayout->addLayout(horizontalLayout, 7, 1, 1, 5);
-
-        fromLb = new QLabel(GenerateAccountCardReport);
-        fromLb->setObjectName(QStringLiteral("fromLb"));
-
-        gridLayout->addWidget(fromLb, 0, 1, 1, 1);
-
-        label_2 = new QLabel(GenerateAccountCardReport);
-        label_2->setObjectName(QStringLiteral("label_2"));
-
-        gridLayout->addWidget(label_2, 0, 3, 1, 1);
-
-        oneAccCbx = new QCheckBox(GenerateAccountCardReport);
-        oneAccCbx->setObjectName(QStringLiteral("oneAccCbx"));
-
-        gridLayout->addWidget(oneAccCbx, 1, 1, 1, 1);
+        gridLayout->addWidget(oneAccRb, 2, 3, 1, 2);
 
         QWidget::setTabOrder(fromDateEdit, tillDateEdit);
         QWidget::setTabOrder(tillDateEdit, okBtn);
@@ -191,6 +209,11 @@ public:
     void retranslateUi(QDialog *GenerateAccountCardReport)
     {
         GenerateAccountCardReport->setWindowTitle(QApplication::translate("GenerateAccountCardReport", "Generate account card report", 0));
+        fromLb->setText(QApplication::translate("GenerateAccountCardReport", "From date:", 0));
+        label_2->setText(QApplication::translate("GenerateAccountCardReport", "till date:", 0));
+        okBtn->setText(QApplication::translate("GenerateAccountCardReport", "OK", 0));
+        cancelBtn->setText(QApplication::translate("GenerateAccountCardReport", "Cancel", 0));
+        label->setText(QApplication::translate("GenerateAccountCardReport", "Generate account card report for period", 0));
         accLb->setText(QApplication::translate("GenerateAccountCardReport", "Enter account number:", 0));
         orLb->setText(QApplication::translate("GenerateAccountCardReport", "OR", 0));
         sAccBtn->setText(QApplication::translate("GenerateAccountCardReport", "Select subaccount", 0));
@@ -198,11 +221,8 @@ public:
         accNameLb->setText(QApplication::translate("GenerateAccountCardReport", "Account name:", 0));
         accNumberEdit->setText(QString());
         accNamePh->setText(QString());
-        okBtn->setText(QApplication::translate("GenerateAccountCardReport", "OK", 0));
-        cancelBtn->setText(QApplication::translate("GenerateAccountCardReport", "Cancel", 0));
-        fromLb->setText(QApplication::translate("GenerateAccountCardReport", "From date:", 0));
-        label_2->setText(QApplication::translate("GenerateAccountCardReport", "Till date:", 0));
-        oneAccCbx->setText(QApplication::translate("GenerateAccountCardReport", "For one account or subaccount", 0));
+        allAccRb->setText(QApplication::translate("GenerateAccountCardReport", "For all accounts", 0));
+        oneAccRb->setText(QApplication::translate("GenerateAccountCardReport", "For one account or subaccount", 0));
     } // retranslateUi
 
 };

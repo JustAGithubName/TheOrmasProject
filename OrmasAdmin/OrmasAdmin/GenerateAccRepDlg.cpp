@@ -3,6 +3,7 @@
 #include "MainForm.h"
 #include "ReportForm.h"
 #include "DataForm.h"
+#include "QRadioButton.h"
 
 
 GenerateAccCardRep::GenerateAccCardRep(BusinessLayer::OrmasBL *ormasBL, QWidget *parent) :QDialog(parent)
@@ -157,7 +158,22 @@ GenerateAccCardRep::GenerateAccCardRep(BusinessLayer::OrmasBL *ormasBL, QWidget 
 	QObject::connect(okBtn, &QPushButton::released, this, &GenerateAccCardRep::Generate);
 	QObject::connect(this, SIGNAL(CloseCreatedForms()), ((MainForm*)((DataForm*)parent)->GetParent()), SLOT(CloseChildsByName()));
 	QObject::connect(cancelBtn, &QPushButton::released, this, &GenerateAccCardRep::Close);
-	QObject::connect(oneAccCbx, &QCheckBox::released, this, &GenerateAccCardRep::CheckBoxChanged);
+	QObject::connect(oneAccRb, &QRadioButton::released, this, &GenerateAccCardRep::CheckBoxChanged);
+	QObject::connect(allAccRb, &QRadioButton::released, this, &GenerateAccCardRep::CheckBoxChanged);
+
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), errorMessage);
+	if (0 == rolesMap.size())
+		return;
+
+	
+
+	if (mainForm->GetLoggedUser()->GetRoleID() != rolesMap.find("SUPERUSER")->second ||
+		mainForm->GetLoggedUser()->GetRoleID() != rolesMap.find("CHIEF ACCOUNTANT")->second)
+	{
+		allAccRb->hide();
+		oneAccRb->setChecked(true);
+		CheckBoxChanged();
+	}
 }
 
 GenerateAccCardRep::~GenerateAccCardRep()
@@ -183,7 +199,7 @@ void GenerateAccCardRep::SetID(int ID, QString childName)
 			{
 				accIDEdit->setText(QString::number(ID));
 				BusinessLayer::Account account;
-				if (account.GetAccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					accNumberEdit->setReadOnly(true);
 					accNumberEdit->setText(account.GetNumber().c_str());
@@ -193,7 +209,7 @@ void GenerateAccCardRep::SetID(int ID, QString childName)
 			{
 				accIDEdit->setText(QString::number(ID));
 				BusinessLayer::Subaccount subaccount;
-				if (subaccount.GetSubaccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (subaccount.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					accNumberEdit->setReadOnly(true);
 					accNumberEdit->setText(subaccount.GetNumber().c_str());
@@ -206,13 +222,13 @@ void GenerateAccCardRep::SetID(int ID, QString childName)
 void GenerateAccCardRep::Generate()
 {
 	QString message = tr("Loading...");
-	QWidget* checkedWidget = IsWindowExist(((MainForm*)parentForm)->mdiArea->subWindowList(), QString("generateAccRepForm"));
-	if (checkedWidget == nullptr)
-	{
-		ReportForm *rForm = new ReportForm(dialogBL, this);
+	//QWidget* checkedWidget = IsWindowExist(((MainForm*)parentForm)->mdiArea->subWindowList(), QString("generateAccRepForm"));
+	//if (checkedWidget == nullptr)
+	//{
+	ReportForm *rForm = new ReportForm(dialogBL, mainForm);
 		rForm->setWindowTitle(tr("Account turnover balance sheet"));
 		std::string prevMonthLastDate = GetPrevMonthEnd(fromDateEdit->text().toUtf8().constData());
-		if (oneAccCbx->isChecked())
+		if (oneAccRb->isChecked())
 		{
 			if (accIDEdit->text().toInt() >0)
 			{
@@ -233,7 +249,7 @@ void GenerateAccCardRep::Generate()
 		}
 		if (errorMessage.empty())
 		{
-			rForm->setObjectName("generateAccRepForm");
+			//rForm->setObjectName("generateAccRepForm");
 			QMdiSubWindow *accountWindow = new QMdiSubWindow;
 			accountWindow->setWidget(rForm);
 			accountWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -253,12 +269,12 @@ void GenerateAccCardRep::Generate()
 				QString(tr("Ok")));
 			errorMessage = "";
 		}
-	}
-	else
-	{
-		checkedWidget->topLevelWidget();
-		checkedWidget->activateWindow();
-	}
+	//}
+	//else
+	//{
+	//	checkedWidget->topLevelWidget();
+	//	checkedWidget->activateWindow();
+	//}
 	Close();
 }
 
@@ -269,16 +285,34 @@ void GenerateAccCardRep::Close()
 
 void GenerateAccCardRep::OpenAccDlg()
 {
-	this->hide();
-	this->setModal(false);
-	this->show();
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), errorMessage);
+	if (0 == rolesMap.size())
+		return;
+
+	std::string filter = "";
+
+	if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
+		mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
+	{
+		filter = "";
+	}
+	else
+	{
+		BusinessLayer::Account account;
+		if (account.GetAccountByNumber(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), "10250", errorMessage))
+		{
+			BusinessLayer::Account accountForFilter;
+			accountForFilter.SetID(account.GetID());
+			filter = accountForFilter.GenerateFilter(mainForm->oBL->GetOrmasDal());
+		}
+	}
 	QString message = tr("Loading...");
 	mainForm->statusBar()->showMessage(message);
 	DataForm *dForm = new DataForm(dialogBL, mainForm);
 	dForm->setWindowTitle(tr("Accounts"));
 	dForm->hide();
 	dForm->setWindowModality(Qt::WindowModal);
-	dForm->FillTable<BusinessLayer::Account>(errorMessage);
+	dForm->FillTable<BusinessLayer::Account>(errorMessage, filter);
 	if (errorMessage.empty())
 	{
 		dForm->parentDialog = this;
@@ -312,16 +346,39 @@ void GenerateAccCardRep::OpenAccDlg()
 
 void GenerateAccCardRep::OpenSAccDlg()
 {
-	this->hide();
-	this->setModal(false);
-	this->show();
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), errorMessage);
+	if (0 == rolesMap.size())
+		return;
+
+	std::string filter = "";
+
+	if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
+		mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
+	{
+		filter = "";
+	}
+	else
+	{
+		BusinessLayer::Subaccount subaccount;
+		BusinessLayer::BranchSubaccountRelation bsRel;
+		BusinessLayer::CompanyEmployeeRelation ceRel;
+		int branchID = ceRel.GetBranchByEmployeeID(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), mainForm->GetLoggedUser()->GetID(), errorMessage);
+		if (0 < branchID)
+		{
+			std::vector<int> subaccountIDVec = bsRel.GetSubaccountIDsbyBranchID(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), branchID, errorMessage);
+			if (subaccountIDVec.size() > 0)
+			{
+				filter = subaccount.GenerateINFilter(mainForm->oBL->globalVar, mainForm->oBL->GetOrmasDal(), subaccountIDVec);
+			}
+		}
+	}
 	QString message = tr("Loading...");
 	mainForm->statusBar()->showMessage(message);
 	DataForm *dForm = new DataForm(dialogBL, mainForm);
 	dForm->setWindowTitle(tr("Subccounts"));
 	dForm->hide();
 	dForm->setWindowModality(Qt::WindowModal);
-	dForm->FillTable<BusinessLayer::SubaccountView>(errorMessage);
+	dForm->FillTable<BusinessLayer::SubaccountView>(errorMessage, filter);
 	if (errorMessage.empty())
 	{
 		dForm->parentDialog = this;
@@ -335,6 +392,7 @@ void GenerateAccCardRep::OpenSAccDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
+		dForm->SetDecoration();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -355,10 +413,18 @@ void GenerateAccCardRep::OpenSAccDlg()
 
 void GenerateAccCardRep::CheckBoxChanged()
 {
-	if (oneAccCbx->isChecked())
+	if (oneAccRb->isChecked())
+	{
 		oneAccWidget->setEnabled(true);
-	if (!oneAccCbx->isChecked())
-		oneAccWidget->setEnabled(false);
+		
+	}
+	else if (allAccRb->isChecked())
+	{
+		oneAccWidget->setDisabled(true);
+		accIDEdit->setText("");
+		accNumberEdit->setText("");
+		accNamePh->setText("");
+	}
 }
 
 
@@ -367,7 +433,7 @@ void GenerateAccCardRep::AccTextChanged()
 	if (accNumberEdit->text().length() == 5 || accNumberEdit->text().length() == 6)
 	{
 		BusinessLayer::Account account;
-		if (account.GetAccountByNumber(dialogBL->GetOrmasDal(), accNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), accNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			accIDEdit->setText(QString::number(account.GetID()));
 			if (account.GetName(dialogBL->GetOrmasDal()).c_str() != nullptr)
@@ -382,7 +448,7 @@ void GenerateAccCardRep::AccTextChanged()
 	else if (accNumberEdit->text().length() == 15)
 	{
 		BusinessLayer::Subaccount subaccount;
-		if (subaccount.GetSubaccountByNumber(dialogBL->GetOrmasDal(), accNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (subaccount.GetSubaccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), accNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			accIDEdit->setText(QString::number(subaccount.GetID()));
 			if (subaccount.GetName(dialogBL->GetOrmasDal()).c_str() != nullptr)
@@ -431,14 +497,30 @@ std::string GenerateAccCardRep::GetPrevMonthEnd(std::string date)
 	if (month > 1)
 	{
 		startDate = "01.";
-		startDate += std::to_string(month - 1);
+		if (month < 11)
+		{
+			startDate += "0";
+			startDate += std::to_string(month - 1);
+		}
+		else
+		{
+			startDate += std::to_string(month - 1);
+		}
 		startDate += ".";
 		startDate += std::to_string(year);
 		pastMonthDate = (QDate::fromString(startDate.c_str(), "dd.MM.yyyy"));
 		coundOfDays = pastMonthDate.daysInMonth();
 		endDate = std::to_string(coundOfDays);
 		endDate += ".";
-		endDate += std::to_string(month - 1);
+		if (month < 11)
+		{
+			endDate += "0";
+			endDate += std::to_string(month - 1);
+		}
+		else
+		{
+			endDate += std::to_string(month - 1);
+		}
 		endDate += ".";
 		endDate += std::to_string(year);
 		return endDate;

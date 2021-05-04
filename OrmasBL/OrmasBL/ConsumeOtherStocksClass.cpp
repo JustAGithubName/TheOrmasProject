@@ -107,12 +107,12 @@ namespace BusinessLayer
 		currencyID = cCurrencyID;
 	}
 
-	bool ConsumeOtherStocks::CreateConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, int uID, std::string cpDate, std::string cpExecDate,
+	bool ConsumeOtherStocks::CreateConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string cpDate, std::string cpExecDate,
 		int seID, double cpCount, double cpSum, int sID, int cID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uID, cpDate, seID, cpCount, cpSum, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, cpDate, seID, cpCount, cpSum, cID, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		employeeID = uID;
@@ -123,12 +123,13 @@ namespace BusinessLayer
 		sum = cpSum;
 		statusID = sID;
 		currencyID = cID;
+		globalVar->currentOperationID = id;
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.CreateConsumeOtherStocks(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
-				if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 				{
 					if (!CheckDocumentCorrectness(ormasDal))
 					{
@@ -145,7 +146,7 @@ namespace BusinessLayer
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
-				if (ChangesAtStockReverse(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+				if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 				{
 					if (!CheckDocumentCorrectness(ormasDal))
 					{
@@ -171,19 +172,20 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ConsumeOtherStocks::CreateConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeOtherStocks::CreateConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateConsumeOtherStocks(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
-				if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 				{
 					if (!CheckDocumentCorrectness(ormasDal))
 					{
@@ -200,7 +202,7 @@ namespace BusinessLayer
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
-				if (ChangesAtStockReverse(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+				if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 				{
 					if (!CheckDocumentCorrectness(ormasDal))
 					{
@@ -225,16 +227,16 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool ConsumeOtherStocks::DeleteConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeOtherStocks::DeleteConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
 		ConsumeOtherStocks cOtherStocks;
-		if (!cOtherStocks.GetConsumeOtherStocksByID(ormasDal, id, errorMessage))
+		if (!cOtherStocks.GetConsumeOtherStocksByID(globalVar, ormasDal, id, errorMessage))
 		{
 			return false;
 		}
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (cOtherStocks.GetStatusID() == statusMap.find("EXECUTED")->second)
@@ -275,13 +277,13 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeOtherStocks::UpdateConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, int uID, std::string cpDate, std::string cpExecnDate,
+	bool ConsumeOtherStocks::UpdateConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string cpDate, std::string cpExecnDate,
 		int eID, double cpCount, double cpSum, int sID, int cID, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
-		std::map<int, double> prodCountMap = GetOtherStocksCount(ormasDal, id, errorMessage);
+		std::map<int, double> prodCountMap = GetOtherStocksCount(globalVar, ormasDal, id, errorMessage);
 		if (0 == prodCountMap.size())
 			return false;
 		employeeID = uID;
@@ -292,10 +294,11 @@ namespace BusinessLayer
 		sum = cpSum;
 		statusID = sID;
 		currencyID = cID;
-		prevSum = GetCurrentSum(ormasDal, id, errorMessage);
-		prevCount = GetCurrentCount(ormasDal, id, errorMessage);
-		previousStatusID = GetCurrentStatusID(ormasDal, id, errorMessage);
+		prevSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
+		prevCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateConsumeOtherStocks(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID != statusMap.find("ERROR")->second &&
@@ -304,7 +307,7 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
-					if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -322,7 +325,7 @@ namespace BusinessLayer
 				}
 				if (statusID == statusMap.find("RETURN")->second)
 				{
-					if (ChangesAtStockReverse(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -349,7 +352,7 @@ namespace BusinessLayer
 				{
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
-						if (ChangesAtStockReverse(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -367,7 +370,7 @@ namespace BusinessLayer
 					}
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
-						if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -393,7 +396,7 @@ namespace BusinessLayer
 			}
 			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-			if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 			{
 			return true;
 			}
@@ -407,7 +410,7 @@ namespace BusinessLayer
 			{
 			if (count != prevCount || sum != prevSum)
 			{
-			if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, prodCountMap, prevSum, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, prodCountMap, prevSum, errorMessage))
 			{
 			return true;
 			}
@@ -434,18 +437,19 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool ConsumeOtherStocks::UpdateConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeOtherStocks::UpdateConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
-		std::map<int, double> prodCountMap = GetOtherStocksCount(ormasDal, id, errorMessage);
+		std::map<int, double> prodCountMap = GetOtherStocksCount(globalVar, ormasDal, id, errorMessage);
 		if (0 == prodCountMap.size())
 			return false;
-		prevSum = GetCurrentSum(ormasDal, id, errorMessage);
-		prevCount = GetCurrentCount(ormasDal, id, errorMessage);
-		previousStatusID = GetCurrentStatusID(ormasDal, id, errorMessage);
+		prevSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
+		prevCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateConsumeOtherStocks(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID != statusMap.find("ERROR")->second &&
@@ -454,7 +458,7 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
-					if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -477,7 +481,7 @@ namespace BusinessLayer
 				}
 				else if (statusID == statusMap.find("RETURN")->second)
 				{
-					if (ChangesAtStockReverse(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 					{
 						if (!CheckDocumentCorrectness(ormasDal))
 						{
@@ -504,7 +508,7 @@ namespace BusinessLayer
 				{
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
-						if (ChangesAtStockReverse(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -522,7 +526,7 @@ namespace BusinessLayer
 					}
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
-						if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 						{
 							if (!CheckDocumentCorrectness(ormasDal))
 							{
@@ -547,7 +551,7 @@ namespace BusinessLayer
 			}
 			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-			if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 			{
 			return true;
 			}
@@ -561,7 +565,7 @@ namespace BusinessLayer
 			{
 			if (count != prevCount || sum != prevSum)
 			{
-			if (ChangesAtStock(ormasDal, id, employeeID, stockEmployeeID, prodCountMap, prevSum, errorMessage))
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, prodCountMap, prevSum, errorMessage))
 			{
 			return true;
 			}
@@ -597,7 +601,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	std::string ConsumeOtherStocks::GenerateINFilterForStockEmployee(DataLayer::OrmasDal& ormasDal, std::vector<int> sEmpIDList)
+	std::string ConsumeOtherStocks::GenerateINFilterForStockEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> sEmpIDList)
 	{
 		if (sEmpIDList.size()>0)
 		{
@@ -606,7 +610,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	std::string ConsumeOtherStocks::GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string fromDate, std::string toDate)
+	std::string ConsumeOtherStocks::GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string toDate)
 	{
 		if (!toDate.empty() && !fromDate.empty())
 		{
@@ -615,7 +619,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ConsumeOtherStocks::GetConsumeOtherStocksByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool ConsumeOtherStocks::GetConsumeOtherStocksByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -646,8 +650,8 @@ namespace BusinessLayer
 	{
 		if (0 == id && date == "" && executionDate == "" && 0 == count && 0 == sum && 0 == stockEmployeeID && 0 == employeeID && 0 == statusID
 			&& 0 == currencyID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void ConsumeOtherStocks::Clear()
@@ -663,7 +667,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ConsumeOtherStocks::IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, std::string cDate, int seID, double cCount, double cSum,
+	bool ConsumeOtherStocks::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string cDate, int seID, double cCount, double cSum,
 		int cID, std::string& errorMessage)
 	{
 		ConsumeOtherStocks consumeOtherStocks;
@@ -687,7 +691,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ConsumeOtherStocks::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeOtherStocks::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ConsumeOtherStocks consumeOtherStocks;
 		consumeOtherStocks.Clear();
@@ -710,49 +714,49 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ConsumeOtherStocks::ChangesAtStock(DataLayer::OrmasDal& ormasDal, int crID, int empID, int stockEmpID, std::string& errorMessage)
+	bool ConsumeOtherStocks::ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int empID, int stockEmpID, std::string& errorMessage)
 	{
 		LowValueStock stock;
-		return  true;//stock.ChangingByConsumeOtherStocks(ormasDal, crID, empID, stockEmpID, errorMessage);
+		return  true;//stock.ChangingByConsumeOtherStocks(globalVar, ormasDal, crID, empID, stockEmpID, errorMessage);
 	}
 
-	bool ConsumeOtherStocks::ChangesAtStockReverse(DataLayer::OrmasDal& ormasDal, int crID, int empID, int stockEmpID, std::string& errorMessage)
+	bool ConsumeOtherStocks::ChangesAtStockReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int empID, int stockEmpID, std::string& errorMessage)
 	{
 		LowValueStock stock;
-		return  true;//stock.ChangingByConsumeOtherStocksReverse(ormasDal, crID, empID, stockEmpID, errorMessage);
+		return  true;//stock.ChangingByConsumeOtherStocksReverse(globalVar, ormasDal, crID, empID, stockEmpID, errorMessage);
 	}
 
-	bool ConsumeOtherStocks::ChangesAtStock(DataLayer::OrmasDal& ormasDal, int crID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool ConsumeOtherStocks::ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
 		LowValueStock stock;
-		return true;// stock.ChangingByConsumeOtherStocks(ormasDal, crID, empID, stockEmpID, pProdCountMap, pSum, errorMessage);
+		return true;// stock.ChangingByConsumeOtherStocks(globalVar, ormasDal, crID, empID, stockEmpID, pProdCountMap, pSum, errorMessage);
 	}
 
-	double ConsumeOtherStocks::GetCurrentSum(DataLayer::OrmasDal& ormasDal, int crID, std::string& errorMessage)
+	double ConsumeOtherStocks::GetCurrentSum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, std::string& errorMessage)
 	{
 		ConsumeOtherStocks cOtherStocks;
-		if (cOtherStocks.GetConsumeOtherStocksByID(ormasDal, crID, errorMessage))
+		if (cOtherStocks.GetConsumeOtherStocksByID(globalVar, ormasDal, crID, errorMessage))
 			return cOtherStocks.GetSum();
 		return 0;
 	}
 
-	double ConsumeOtherStocks::GetCurrentCount(DataLayer::OrmasDal& ormasDal, int crID, std::string& errorMessage)
+	double ConsumeOtherStocks::GetCurrentCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, std::string& errorMessage)
 	{
 		ConsumeOtherStocks cOtherStocks;
-		if (cOtherStocks.GetConsumeOtherStocksByID(ormasDal, crID, errorMessage))
+		if (cOtherStocks.GetConsumeOtherStocksByID(globalVar, ormasDal, crID, errorMessage))
 			return cOtherStocks.GetCount();
 		return 0;
 	}
 
-	int ConsumeOtherStocks::GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	int ConsumeOtherStocks::GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		ConsumeOtherStocks cOtherStocks;
-		if (cOtherStocks.GetConsumeOtherStocksByID(ormasDal, cID, errorMessage))
+		if (cOtherStocks.GetConsumeOtherStocksByID(globalVar, ormasDal, cID, errorMessage))
 			return cOtherStocks.GetStatusID();
 		return 0;
 	}
 
-	std::map<int, double> ConsumeOtherStocks::GetOtherStocksCount(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage)
+	std::map<int, double> ConsumeOtherStocks::GetOtherStocksCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage)
 	{
 		std::map<int, double> mapOthStockCount;
 		ConsumeOtherStocksList rPList;

@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		address = cAddress;
 	}
 
-	bool Cashbox::CreateCashbox(DataLayer::OrmasDal &ormasDal, int subaccID, std::string cInfo, std::string cAddress, std::string& errorMessage)
+	bool Cashbox::CreateCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccID, std::string cInfo, std::string cAddress, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, subaccID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, subaccID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		subaccountID = subaccID;
@@ -81,9 +81,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Cashbox::CreateCashbox(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Cashbox::CreateCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateCashbox(id, subaccountID, information, address, errorMessage))
@@ -96,7 +96,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Cashbox::DeleteCashbox(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Cashbox::DeleteCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteCashbox(id, errorMessage))
 		{
@@ -110,7 +110,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Cashbox::UpdateCashbox(DataLayer::OrmasDal &ormasDal, int subaccID, std::string cInfo, std::string cAddress, std::string& errorMessage)
+	bool Cashbox::UpdateCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccID, std::string cInfo, std::string cAddress, std::string& errorMessage)
 	{
 		subaccountID = subaccID;
 		TrimStrings(cInfo, cAddress);
@@ -126,7 +126,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Cashbox::UpdateCashbox(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Cashbox::UpdateCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateCashbox(id, subaccountID, information, address, errorMessage))
 		{
@@ -148,7 +148,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Cashbox::GetCashboxByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool Cashbox::GetCashboxByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -170,7 +170,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	int Cashbox::GetCashboxID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	int Cashbox::GetCashboxID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::string filter = this->GenerateFilter(ormasDal);
 		std::vector<DataLayer::cashboxViewCollection> cashboxVector = ormasDal.GetCashbox(errorMessage, filter);
@@ -209,7 +209,7 @@ namespace BusinessLayer{
 			boost::trim(cAddress);
 	}
 
-	bool Cashbox::IsDuplicate(DataLayer::OrmasDal& ormasDal, int subaccID, std::string& errorMessage)
+	bool Cashbox::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccID, std::string& errorMessage)
 	{
 		Cashbox cashbox;
 		cashbox.Clear();
@@ -227,7 +227,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Cashbox::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Cashbox::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Cashbox cashbox;
 		cashbox.Clear();

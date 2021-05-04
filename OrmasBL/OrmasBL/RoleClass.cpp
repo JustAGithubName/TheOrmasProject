@@ -53,9 +53,9 @@ namespace BusinessLayer
 		comment = rComment;
 	}
 
-	bool Role::CreateRole(DataLayer::OrmasDal& ormasDal, std::string rCode, std::string rName, std::string rComment, std::string& errorMessage)
+	bool Role::CreateRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rCode, std::string rName, std::string rComment, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, rCode, rName, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, rCode, rName, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(rCode, rName);
@@ -72,9 +72,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Role::CreateRole(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Role::CreateRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateRole(id, code, name, comment, errorMessage))
@@ -87,7 +87,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Role::DeleteRole(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Role::DeleteRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteRole(id, errorMessage))
 		{
@@ -100,7 +100,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Role::UpdateRole(DataLayer::OrmasDal& ormasDal, std::string rCode, std::string rName, std::string rComment, std::string& errorMessage)
+	bool Role::UpdateRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rCode, std::string rName, std::string rComment, std::string& errorMessage)
 	{
 		TrimStrings(rCode, rName);
 		code = boost::to_upper_copy(rCode);
@@ -116,7 +116,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Role::UpdateRole(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Role::UpdateRole(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateRole(id, code, name, comment, errorMessage))
 		{
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Role::GetRoleByID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage)
+	bool Role::GetRoleByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage)
 	{
 		if (rID <= 0)
 			return false;
@@ -160,7 +160,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	int Role::GetRoleIDByName(DataLayer::OrmasDal& ormasDal, std::string rName, std::string& errorMessage)
+	int Role::GetRoleIDByName(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rName, std::string& errorMessage)
 	{
 		if (rName.empty())
 			return 0;
@@ -205,7 +205,7 @@ namespace BusinessLayer
 			boost::trim(rName);
 	}
 
-	bool Role::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string rCode, std::string rName, std::string& errorMessage)
+	bool Role::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rCode, std::string rName, std::string& errorMessage)
 	{
 		Role role;
 		role.Clear();
@@ -224,7 +224,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Role::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Role::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Role role;
 		role.Clear();
@@ -243,7 +243,7 @@ namespace BusinessLayer
 		return true;
 	}
 	
-	std::map<std::string, int> Role::GetRolesAsMap(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	std::map<std::string, int> Role::GetRolesAsMap(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::map<std::string, int> roleMap;
 		std::vector<DataLayer::rolesCollection> roleVector = ormasDal.GetRoles(errorMessage);

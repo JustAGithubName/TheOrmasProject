@@ -39,7 +39,7 @@ void CreateStsRuleDlg::FillEditElements(QString sOperation, int sID)
 	operationEdit->setText(sOperation);
 	statusEdit->setText(QString::number(sID));
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), sID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), sID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -70,7 +70,7 @@ void CreateStsRuleDlg::CreateStatusRule()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetStatusRuleParams(operationEdit->text(), statusEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateStatusRule(statusRule, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -78,7 +78,7 @@ void CreateStsRuleDlg::CreateStatusRule()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), statusRule->GetStatusID(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), statusRule->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -97,7 +97,13 @@ void CreateStsRuleDlg::CreateStatusRule()
 					itemModel->appendRow(StatusRuleItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -127,7 +133,7 @@ void CreateStsRuleDlg::EditStatusRule()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetStatusRuleParams(operationEdit->text(), statusEdit->text().toInt(), statusRule->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateStatusRule(statusRule, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -135,7 +141,7 @@ void CreateStsRuleDlg::EditStatusRule()
 					if (!parentDataForm->IsClosed())
 					{
 						BusinessLayer::Status *status = new BusinessLayer::Status;
-						if (!status->GetStatusByID(dialogBL->GetOrmasDal(), statusRule->GetStatusID(), errorMessage))
+						if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), statusRule->GetStatusID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -152,7 +158,13 @@ void CreateStsRuleDlg::EditStatusRule()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

@@ -6,7 +6,7 @@ namespace BusinessLayer
 	StockTransferListView::StockTransferListView(DataLayer::stockTransferListViewCollection rCollection)
 	{
 		id = std::get<0>(rCollection);
-		StockTransferID = std::get<1>(rCollection);
+		stockTransferID = std::get<1>(rCollection);
 		productName = std::get<2>(rCollection);
 		price = std::get<3>(rCollection);
 		currencyName = std::get<4>(rCollection);
@@ -50,4 +50,43 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+	void StockTransferListView::SetProductName(std::string cProductName)
+	{
+		productName = cProductName;
+	}
+	void StockTransferListView::SetPrice(double cPrice)
+	{
+		price = cPrice;
+	}
+	void  StockTransferListView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+	void StockTransferListView::SetVolume(double cVolume)
+	{
+		volume = cVolume;
+	}
+	void StockTransferListView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void StockTransferListView::SetSumCurrencyName(std::string cSumCurrencyName)
+	{
+		sumCurrencyName = cSumCurrencyName;
+	}
+	void StockTransferListView::SetMeasureName(std::string cMeasureName)
+	{
+		measureName = cMeasureName;
+	}
+
+	std::string StockTransferListView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != stockTransferID || !productName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty()
+			|| 0 != count || 0 != sum || !sumCurrencyName.empty() || !statusName.empty() || 0 != productID || 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForStTranListView(id, stockTransferID, productName, price, currencyName, volume, measureName, count, sum,
+				sumCurrencyName, statusName, productID, statusID, currencyID);
+		}
+		return "";
+	}
 }

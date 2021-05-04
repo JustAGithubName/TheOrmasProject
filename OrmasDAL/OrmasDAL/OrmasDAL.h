@@ -34,6 +34,7 @@ namespace DataLayer{
 
 		//work with transaction
 		bool StartTransaction(std::string& errorMessage);
+		bool StartIsolatedTransaction(std::string& errorMessage);
 		bool CommitTransaction(std::string& errorMessage);
 		bool CancelTransaction(std::string& errorMessage);
 
@@ -43,7 +44,14 @@ namespace DataLayer{
 		std::vector<accountTypeCollection> GetAccountType(std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountHistoryCollection> GetAccountHistory(std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountsCollection> GetAccounts(std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountChangeLogCollection> GetAccountChangeLog(std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountableViewCollection> GetAccountable(std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableApprovementCollection> GetAccountableApprovement(std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableDocumentListCollection> GetAccountableDocumentList(std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableDocumentCollection> GetAccountableDocument(std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableEntryCollection> GetAccountableEntry(std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountablePaymentCollection> GetAccountablePayment(std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableWithdrawalCollection> GetAccountableWithdrawal(std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountableTransactionCollection> GetAccountableTransaction(std::string& errorMessage, std::string filter = std::string());
 		std::vector<amortizeGroupCollection> GetAmortizeGroup(std::string& errorMessage, std::string filter = std::string());
 		std::vector<amortizeTypeCollection> GetAmortizeType(std::string& errorMessage, std::string filter = std::string());
@@ -53,6 +61,7 @@ namespace DataLayer{
 		std::vector<balanceWithdrawalCollection> GetBalanceWithdrawal(std::string& errorMessage, std::string filter = std::string());
 		std::vector<balancesViewCollection> GetBalances(std::string& errorMessage, std::string filter = std::string());
 		std::vector<branchesCollection> GetBranches(std::string& errorMessage, std::string filter = std::string());
+		std::vector<branchSubaccountViewCollection> GetBranchSubaccount(std::string& errorMessage, std::string filter = std::string());
 		std::vector<borrowersViewCollection> GetBorrowers(std::string& errorMessage, std::string filter = std::string());
 		std::vector<cashboxViewCollection> GetCashbox(std::string& errorMessage, std::string filter = std::string());
 		std::vector<cashboxEmployeeViewCollection> GetCashboxEmployee(std::string& errorMessage, std::string filter = std::string());
@@ -81,12 +90,14 @@ namespace DataLayer{
 		std::vector<entrySubaccountCollection> GetEntrySubaccount(std::string& errorMessage, std::string filter = std::string());
 		std::vector<entryOperationCollection> GetEntryOperation(std::string& errorMessage, std::string filter = std::string());
 		std::vector<entryRoutingCollection> GetEntryRouting(std::string& errorMessage, std::string filter = std::string());
+		std::vector<expenseDocumentCollection> GetExpenseDocument(std::string& errorMessage, std::string filter = std::string());
 		std::vector<financialReportCollection> GetFinancialReport(std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsViewCollection> GetFixedAssets(std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsUnionCollection> GetFixedAssetsUnion(std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsDetailsViewCollection> GetFixedAssetsDetails(std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsSpecificationCollection> GetFixedAssetsSpecification(std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsOperationsCollection> GetFixedAssetsOperation(std::string& errorMessage, std::string filter = std::string());
+		std::vector<groupsCollection> GetGroups(std::string& errorMessage, std::string filter = std::string());
 		std::vector<inventorizationListViewCollection> GetInventorizationList(std::string& errorMessage, std::string filter = std::string());
 		std::vector<inventorizationsViewCollection> GetInventorizations(std::string& errorMessage, std::string filter = std::string());
 		std::vector<inventoryViewCollection> GetInventory(std::string& errorMessage, std::string filter = std::string());
@@ -97,6 +108,7 @@ namespace DataLayer{
 		std::vector<locationsCollection> GetLocations(std::string& errorMessage, std::string filter = std::string());
 		std::vector<lowValueStockViewCollection> GetLowValueStock(std::string& errorMessage, std::string filter = std::string());
 		std::vector<lowValueStockHistoryViewCollection> GetLowValueStockHistory(std::string& errorMessage, std::string filter = std::string());
+		std::vector<lowValueStockChangeLogCollection> GetLowValueStockChangeLog(std::string& errorMessage, std::string filter = std::string());
 		std::vector<measuresCollection> GetMeasures(std::string& errorMessage, std::string filter = std::string());
 		std::vector<netCostViewCollection> GetNetCost(std::string& errorMessage, std::string filter = std::string());
 		std::vector<orderListViewCollection> GetOrderList(std::string& errorMessage, std::string filter = std::string());
@@ -141,6 +153,7 @@ namespace DataLayer{
 		std::vector<salaryTypeCollection> GetSalaryType(std::string& errorMessage, std::string filter = std::string());
 		std::vector<shareholdersViewCollection> GetShareholders(std::string& errorMessage, std::string filter = std::string());
 		std::vector<specificationListViewCollection> GetSpecificationList(std::string& errorMessage, std::string filter = std::string());
+		std::vector<specificationChangeLogCollection> GetSpecificationChangeLog(std::string& errorMessage, std::string filter = std::string());
 		std::vector<specificationsViewCollection> GetSpecifications(std::string& errorMessage, std::string filter = std::string());
 		std::vector<spoilageListViewCollection> GetSpoilageList(std::string& errorMessage, std::string filter = std::string());
 		std::vector<spoilageViewCollection> GetSpoilage(std::string& errorMessage, std::string filter = std::string());
@@ -148,15 +161,22 @@ namespace DataLayer{
 		std::vector<statusCollection> GetStatus(std::string& errorMessage, std::string filter = std::string());
 		std::vector<statusRuleViewCollection> GetStatusRule(std::string& errorMessage, std::string filter = std::string());
 		std::vector<stockViewCollection> GetStock(std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockLimitViewCollection> GetStockLimit(std::string& errorMessage, std::string filter = std::string());
 		std::vector<stockHistoryViewCollection> GetStockHistory(std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockChangeLogCollection> GetStockChangeLog(std::string& errorMessage, std::string filter = std::string());
 		std::vector<subaccountsViewCollection> GetSubaccounts(std::string& errorMessage, std::string filter = std::string());
+		std::vector<subaccountLimitViewCollection> GetSubaccountLimit(std::string& errorMessage, std::string filter = std::string());
 		std::vector<subaccountHistoryCollection> GetSubaccountHistory(std::string& errorMessage, std::string filter = std::string());
+		std::vector<subaccountChangeLogCollection> GetSubaccountChangeLog(std::string& errorMessage, std::string filter = std::string());
 		std::vector<taxesCollection> GetTaxes(std::string& errorMessage, std::string filter = std::string());
 		std::vector<timesheetViewCollection> GetTimesheet(std::string& errorMessage, std::string filter = std::string());
 		std::vector<transportListViewCollection> GetTransportList(std::string& errorMessage, std::string filter = std::string());
 		std::vector<transportHistoryCollection> GetTransportHistory(std::string& errorMessage, std::string filter = std::string());
+		std::vector<transportChangeLogCollection> GetTransportChangeLog(std::string& errorMessage, std::string filter = std::string());
 		std::vector<transportsViewCollection> GetTransports(std::string& errorMessage, std::string filter = std::string());
 		std::vector<usersViewCollection> GetUsers(std::string& errorMessage, std::string filter = std::string());
+		std::vector<userExtendedViewCollection> GetUserExtended(std::string& errorMessage, std::string filter = std::string());
+		std::vector<userGroupViewCollection> GetUserGroup(std::string& errorMessage, std::string filter = std::string());
 		std::vector<warehouseViewCollection> GetWarehouse(std::string& errorMessage, std::string filter = std::string());
 		std::vector<warehouseTypeCollection> GetWarehouseType(std::string& errorMessage, std::string filter = std::string());
 		std::vector<warehouseEmployeeViewCollection> GetWarehouseEmployee(std::string& errorMessage, std::string filter = std::string());
@@ -171,8 +191,15 @@ namespace DataLayer{
 		std::vector<accessesViewCollection> GetAccesses(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountTypeCollection> GetAccountType(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountHistoryCollection> GetAccountHistory(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountChangeLogCollection> GetAccountChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountsCollection> GetAccounts(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountableViewCollection> GetAccountable(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableApprovementCollection> GetAccountableApprovement(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableDocumentListCollection> GetAccountableDocumentList(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableDocumentCollection> GetAccountableDocument(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableEntryCollection> GetAccountableEntry(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountablePaymentCollection> GetAccountablePayment(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableWithdrawalCollection> GetAccountableWithdrawal(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<accountableTransactionCollection> GetAccountableTransaction(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<amortizeGroupCollection> GetAmortizeGroup(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<amortizeTypeCollection> GetAmortizeType(int offset, std::string& errorMessage, std::string filter = std::string());
@@ -182,6 +209,7 @@ namespace DataLayer{
 		std::vector<balanceWithdrawalCollection> GetBalanceWithdrawal(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<balancesViewCollection> GetBalances(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<branchesCollection> GetBranches(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<branchSubaccountViewCollection> GetBranchSubaccount(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<borrowersViewCollection> GetBorrowers(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<cashboxViewCollection> GetCashbox(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<cashboxEmployeeViewCollection> GetCashboxEmployee(int offset, std::string& errorMessage, std::string filter = std::string());
@@ -210,12 +238,14 @@ namespace DataLayer{
 		std::vector<employeeProductViewCollection> GetEmployeeProduct(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<entryRoutingCollection> GetEntryRouting(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<entryOperationCollection> GetEntryOperation(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<expenseDocumentCollection> GetExpenseDocument(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<financialReportCollection> GetFinancialReport(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsViewCollection> GetFixedAssets(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsUnionCollection> GetFixedAssetsUnion(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsDetailsViewCollection> GetFixedAssetsDetails(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsSpecificationCollection> GetFixedAssetsSpecification(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<fixedAssetsOperationsCollection> GetFixedAssetsOperation(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<groupsCollection> GetGroups(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<inventorizationListViewCollection> GetInventorizationList(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<inventorizationsViewCollection> GetInventorizations(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<inventoryViewCollection> GetInventory(int offset, std::string& errorMessage, std::string filter = std::string());
@@ -226,6 +256,7 @@ namespace DataLayer{
 		std::vector<locationsCollection> GetLocations(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<lowValueStockViewCollection> GetLowValueStock(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<lowValueStockHistoryViewCollection> GetLowValueStockHistory(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<lowValueStockChangeLogCollection> GetLowValueStockChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<measuresCollection> GetMeasures(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<netCostViewCollection> GetNetCost(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<orderListViewCollection> GetOrderList(int offset, std::string& errorMessage, std::string filter = std::string());
@@ -271,21 +302,29 @@ namespace DataLayer{
 		std::vector<shareholdersViewCollection> GetShareholders(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<specificationListViewCollection> GetSpecificationList(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<specificationsViewCollection> GetSpecifications(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<specificationChangeLogCollection> GetSpecificationChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<spoilageListViewCollection> GetSpoilageList(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<spoilageViewCollection> GetSpoilage(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<stateCollection> GetState(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<statusCollection> GetStatus(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<statusRuleViewCollection> GetStatusRule(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<stockViewCollection> GetStock(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockLimitViewCollection> GetStockLimit(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<stockHistoryViewCollection> GetStockHistory(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockChangeLogCollection> GetStockChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<subaccountsViewCollection> GetSubaccounts(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<subaccountLimitViewCollection> GetSubaccountLimit(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<subaccountHistoryCollection> GetSubaccountHistory(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<subaccountChangeLogCollection> GetSubaccountChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<taxesCollection> GetTaxes(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<timesheetViewCollection> GetTimesheet(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<transportListViewCollection> GetTransportList(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<transportsViewCollection> GetTransports(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<transportHistoryCollection> GetTransportHistory(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<transportChangeLogCollection> GetTransportChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<usersViewCollection> GetUsers(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<userExtendedViewCollection> GetUserExtended(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<userGroupViewCollection> GetUserGroup(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<warehouseViewCollection> GetWarehouse(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<warehouseTypeCollection> GetWarehouseType(int offset, std::string& errorMessage, std::string filter = std::string());
 		std::vector<warehouseEmployeeViewCollection> GetWarehouseEmployee(int offset, std::string& errorMessage, std::string filter = std::string());
@@ -302,8 +341,16 @@ namespace DataLayer{
 		bool CreateAccount(int accountID, std::string accountNumber, double accountStartBalance, double accountCurrentBalance, std::string& errorMessage);
 		bool CreateAccountHistory(int accountHistoryID, int accountID, std::string accountNumber, double accountStartBalance, 
 			double aCurrentBalance, std::string fromDate, std::string tillDate, std::string& errorMessage);
-		bool CreateAccountable(int userID, std::string aInformation, std::string& errorMessage);
-		bool CreateAccountableTransaction(int accTransID, int accountableID, double startValue, double endValue, int operationID, std::string& errorMessage);
+		bool CreateAccountChangeLog(int accountChangeLogID, int accountID, std::string accountNumber, double accountStartBalance,
+			double aCurrentBalance, std::string logDate, int userID, int operationID, std::string& errorMessage);
+		bool CreateAccountable(int accountableID, int userID, std::string aInformation, std::string& errorMessage);
+		bool CreateAccountableApprovement(int approvementID, std::string approveDate, int directorID, int accountantID, int accountableDocumentID, std::string& errorMessage);
+		bool CreateAccountableDocumentList(int listID, int accountableDocumentID, int expenseDocumentID, std::string& errorMessage);
+		bool CreateAccountableDocument(int documentID, std::string documentDate, double value, std::string expenseAssignment,int userID, int statusID, std::string& errorMessage);
+		bool CreateAccountableEntry(int accountableEntryID, int debitAccountID, int debitSubaccountID, double value, int creditAccountID, int creditSubaccountID, int accountableDocumentID, std::string& errorMessage);
+		bool CreateAccountablePayment(int accountablePaymentID, int accountableDocumentID, int paymentID, std::string& errorMessage);
+		bool CreateAccountableWithdrawal(int accountableWithdrawalID, int accountableDocumentID, int withdrawalID, std::string& errorMessage);
+		bool CreateAccountableTransaction(int accTransID, double residualValue, double totalValue, double spentValue, double differenceValue, int accountableDocumentID, std::string& errorMessage);
 		bool CreateAmortizeGroup(int amortizeGroupID, int groupNumber, int fromMonth, int toMonth, std::string& errorMessage);
 		bool CreateAmortizeType(int amortizeTypeID, std::string typeName, std::string typeCode, std::string& errorMessage);
 		bool CreateBalancePayment(int balancePaymentID, int balanceID, int paymentID, std::string& errorMessage);
@@ -312,6 +359,7 @@ namespace DataLayer{
 		bool CreateBalanceWithdrawal(int balanceWithdrawalID, int balanceID, int withdrawalID, std::string& errorMessage);
 		bool CreateBalance(int balanceID, int userID, int subaccountID, std::string& errorMessage);
 		bool CreateBranch(int branchID, std::string branchName, std::string branchAddress, std::string branchPhone, std::string bCommnet, std::string& errorMessage);
+		bool CreateBranchSubaccount(int branchSubaccountID, int branchID, int subaccountID, std::string& errorMessage);
 		bool CreateBorrower(int userID, std::string bComment, std::string& errorMessage);
 		bool CreateCashbox(int cashboxID, int subAccID, std::string information, std::string cashboxAddress, std::string& errorMessage);
 		bool CreateCashboxTransaction(int cashboxTransactionID, int cashboxID, int cashierID, int accountantID, int ownerID, int paymentID, int withdrawalID, std::string& errorMessage);
@@ -345,6 +393,7 @@ namespace DataLayer{
 		bool CreateEntryRouting(int entryRoutingID, std::string entryRoutingOperation, int debbitingAccountID, int creditingAccountID, std::string& errorMessage);
 		bool CreateEntryOperation(int eoID, int entryID, int operationID, std::string& errorMessage);
 		bool CreateEntrySubaccount(int entrySubaccountID, int entryID, int subaccountID, std::string& errorMessage);
+		bool CreateExpenseDocument(int expenseDocumentID, std::string expenseName, double count, double sum, int measureID, int currencyID, std::string& errorMessage);
 		bool CreateFinancialReport(int financialReportID, double account_44010, double account_55010, double account_552, 
 			double account_55270, double account_553, double account_55321, double account_44020_90, double account_66010_66110, 
 			double account_66020_66120, double account_66040_66140, double account_66050_66150, double account_66060_66160, 
@@ -358,6 +407,7 @@ namespace DataLayer{
 			int primaryAccID, int amortizeAccID, std::string barcodeNumber, double amValue, std::string& errorMessage);
 		bool CreateFixedAssetsOperations(int fixedAssetsOperID, std::string operationDate, std::string operationName,
 			double operationValue, bool increment, bool decrement, int fixedAssetsID, std::string& errorMessage);
+		bool CreateGroups(int groupID, std::string groupName, std::string groupDefinition, std::string& errorMessage);
 		bool CreateInventorizationList(int inventorizationListID, int inventorizationID, int productID, double inventorizationListCount, 
 			double inventorizationListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool CreateInventorization(int inventorizationID, int userID, std::string inventorizationDate, std::string inventorizationExecutionDate, 
@@ -373,6 +423,8 @@ namespace DataLayer{
 			int warehouseID, std::string& errorMessage);
 		bool CreateLowValueStockHistory(int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string historyDate, std::string& errorMessage);
+		bool CreateLowValueStockChangeLog(int lwStockChangeLogID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
+			int warehouseID, std::string logDate, int userId, int operationID, std::string& errorMessage);
 		bool CreateMeasure(int measureID, std::string measureName, std::string measureShortName, int measureUnit, std::string& errorMessage);
 		bool CreateNetCost(int netCostID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated, std::string& errorMessage);
 		bool CreateOrderList(int orderListID, int orderID, int productID, double orderListCount, double orderListSum, int statusID, int currencyID, std::string& errorMessage);
@@ -433,6 +485,7 @@ namespace DataLayer{
 		bool CreateSalaryType(int salaryTypeID, std::string salaryTypeCode, std::string salaryTypeName, std::string& errorMessage);
 		bool CreateShareholder(int userID, double countOfStock, std::string sInformation, std::string& errorMessage);
 		bool CreateSpecificationList(int specificationListID, int specificationID, int productID, double specificationListCount, std::string& errorMessage);
+		bool CreateSpecificationChangeLog(int specificationChangeLogID, int specificationID, int productID, double specificationCount, std::string logDate, int userID, std::string& errorMessage);
 		bool CreateSpecification(int specificationID, int productID, double specificationSum, int currencyID, int employeeID, std::string sDate, std::string& errorMessage);
 		bool CreateSpoilageList(int spoilageListID, int spoilageID, int productID, double spoilageListCount, double spoilageListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool CreateSpoilage(int spoilageID, std::string spoilageDate, int employeeID, double spoilageCount, double spoilageSum, int statusID, int currencyID, std::string& errorMessage);
@@ -441,12 +494,18 @@ namespace DataLayer{
 		bool CreateStatusRule(int statusRuleID, std::string statusRuleOperation, int statusID, std::string& errorMessage);
 		bool CreateStock(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID, 
 			int warehouseID, std::string& errorMessage);
+		bool CreateStockLimit(int stockLimitID, int stockID, int productID, double minValue, double maxValue, std::string& errorMessage);
 		bool CreateStockHistory(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string historyDate, std::string& errorMessage);
+		bool CreateStockChangeLog(int stockChangeLogID, int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
+			int warehouseID, std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool CreateSubaccount(int subaccountID, int accountID, std::string subaccountNumber, double subaccountStartBalance, double subaccountCurrentBalance, int currencyID, int statusID,
 			std::string subaccountOpenDate, std::string subaccountCloseDate, std::string subaccountDetails, std::string& errorMessage);
+		bool CreateSubaccountLimit(int subaccountLimitID, int subaccountID, double minValue, double maxValue, std::string& errorMessage);
 		bool CreateSubaccountHistory(int subaccountHistoryID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
 			std::string fromDate, std::string tillDate, std::string& errorMessage);
+		bool CreateSubaccountChangeLog(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
+			std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool CreateTax(int taxID, std::string taxName, std::string taxCode, double fixedValue, int percentValue,
 			std::string formulaValue, std::string& errorMessage);
 		bool CreateTimesheet(int timesheetID, int salaryID, double workedTime, std::string timesheetDate, std::string& errorMessage);
@@ -454,9 +513,12 @@ namespace DataLayer{
 		bool CreateTransport(int transportID, int employeeID, std::string transportDate, std::string transportExecutionDate, 
 			int stockEmployeeID, double transportCount, double transportSum, int statusID, int currencyID, std::string& errorMessage);
 		bool CreateTransportHistory(int transportHistoryID, int transportID, int productID, double transportHistoryCount, double transportHistorySum, 
-			int statusID, int currencyID, std::string historyDate, std::string& errorMessage);
+			int statusID, int currencyID, std::string fromDate, std::string tillDate, std::string& errorMessage);
+		bool CreateTransportChangeLog(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+			int statusID, int currencyID, std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool CreateUser(int userID, std::string userEmail, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
 			int roleID, std::string userPassword, bool userActivated, std::string& errorMessage);
+		bool CreateUserGroup(int userGroupID, int groupID, int userID, std::string& errorMessage);
 		bool CreateWarehouse(int warehouseID, std::string warehouseName, std::string warehouseAddress, std::string warehousePhone,
 			int warehouseTypeID, int subaccountID, std::string& errorMessage);
 		bool CreateWarehouseType(int warehouseTypeID, std::string wTypeCode, std::string wTypePurpose, std::string wTypeName, std::string& errorMessage);
@@ -473,8 +535,21 @@ namespace DataLayer{
 		bool DeleteAccess(int id, std::string& errorMessage);
 		bool DeleteAccountType(int id, std::string& errorMessage);
 		bool DeleteAccount(int id, std::string& errorMessage);
+		bool DeleteAccountChangeLog(int id, std::string& errorMessage);
 		bool DeleteAccountable(int id, std::string& errorMessage);
+		bool DeleteAccountableApprovement(int id, std::string& errorMessage);
+		bool DeleteAccountableApprovementByDocumentID(int id, std::string& errorMessage);
+		bool DeleteAccountableDocumentList(int id, std::string& errorMessage);
+		bool DeleteAccountableDocumentListByDocumentID(int id, std::string& errorMessage);
+		bool DeleteAccountableDocument(int id, std::string& errorMessage);
+		bool DeleteAccountableEntry(int id, std::string& errorMessage);
+		bool DeleteAccountableEntryByDocumentID(int id, std::string& errorMessage);
+		bool DeleteAccountablePayment(int id, std::string& errorMessage);
+		bool DeleteAccountablePaymentByDocumentID(int id, std::string& errorMessage);
+		bool DeleteAccountableWithdrawal(int id, std::string& errorMessage);
+		bool DeleteAccountableWithdrawalByDocumentID(int id, std::string& errorMessage);
 		bool DeleteAccountableTransaction(int id, std::string& errorMessage);
+		bool DeleteAccountableTransactionByDocumentID(int id, std::string& errorMessage);
 		bool DeleteAmortizeGroup(int id, std::string& errorMessage);
 		bool DeleteAmortizeType(int id, std::string& errorMessage);
 		bool DeleteAccountHistory(int id, std::string& errorMessage);
@@ -484,6 +559,7 @@ namespace DataLayer{
 		bool DeleteBalanceWithdrawal(int bID, int wID, std::string& errorMessage);
 		bool DeleteBalance(int id, std::string& errorMessage);
 		bool DeleteBranch(int id, std::string& errorMessage);
+		bool DeleteBranchSubaccount(int id, std::string& errorMessage);
 		bool DeleteBorrower(int id, std::string& errorMessage);
 		bool DeleteCashbox(int id, std::string& errorMessage);
 		bool DeleteCashboxTransaction(int id, std::string& errorMessage);
@@ -513,11 +589,13 @@ namespace DataLayer{
 		bool DeleteEntrySubaccount(int eID, int sID, std::string& errorMessage); 
 		bool DeleteEntryOperation(int eID, int oID, std::string& errorMessage);
 		bool DeleteEntryRouting(int id, std::string& errorMessage);
+		bool DeleteExpenseDocument(int id, std::string& errorMessage);
 		bool DeleteFinancialReport(int id, std::string& errorMessage);
 		bool DeleteFixedAssets(int id, std::string& errorMessage);
 		bool DeleteFixedAssetsOperation(int id, std::string& errorMessage);
 		bool DeleteFixedAssetsDetails(int id, std::string& errorMessage);
 		bool DeleteFixedAssetsSpecification(int id, std::string& errorMessage);
+		bool DeleteGroup(int id, std::string& errorMessage);
 		bool DeleteItemInInventorizationList(int id, std::string& errorMessage);
 		bool DeleteListByInventorizationID(int id, std::string& errorMessage);
 		bool DeleteInventorization(int id, std::string& errorMessage);
@@ -527,6 +605,7 @@ namespace DataLayer{
 		bool DeleteJobsheet(int id, std::string& errorMessage);
 		bool DeleteLowValueStock(int id, std::string& errorMessage);
 		bool DeleteLowValueStockHistory(int id, std::string& errorMessage);
+		bool DeleteLowValueStockChangeLog(int id, std::string& errorMessage);
 		bool DeleteLocation(int id, std::string& errorMessage);
 		bool DeleteMeasure(int id, std::string& errorMessage);
 		bool DeleteNetCost(int id, std::string& errorMessage);
@@ -581,6 +660,7 @@ namespace DataLayer{
 		bool DeleteSalaryType(int id, std::string& errorMessage);
 		bool DeleteShareholder(int id, std::string& errorMessage);
 		bool DeleteSpecification(int id, std::string& errorMessage);
+		bool DeleteSpecificationChangeLog(int id, std::string& errorMessage);
 		bool DeleteItemInSpecificationList(int id, std::string& errorMessage);
 		bool DeleteListBySpecificationID(int id, std::string& errorMessage);
 		bool DeleteSpoilage(int id, std::string& errorMessage);
@@ -590,16 +670,22 @@ namespace DataLayer{
 		bool DeleteStatus(int id, std::string& errorMessage);
 		bool DeleteStatusRule(int id, std::string& errorMessage);
 		bool DeleteStock(int id, std::string& errorMessage);
+		bool DeleteStockLimit(int id, std::string& errorMessage);
 		bool DeleteStockHistory(int id, std::string& errorMessage);
+		bool DeleteStockChangeLog(int id, std::string& errorMessage);
 		bool DeleteSubaccount(int id, std::string& errorMessage);
+		bool DeleteSubaccountLimit(int id, std::string& errorMessage);
 		bool DeleteSubaccountHistory(int id, std::string& errorMessage);
+		bool DeleteSubaccountChangeLog(int id, std::string& errorMessage);
 		bool DeleteTax(int id, std::string& errorMessage);
 		bool DeleteTimesheet(int id, std::string& errorMessage);
 		bool DeleteTransport(int id, std::string& errorMessage);
 		bool DeleteTransportHistory(int id, std::string& errorMessage);
+		bool DeleteTransportChangeLog(int id, std::string& errorMessage);
 		bool DeleteListByTransportID(int id, std::string& errorMessage);
 		bool DeleteItemInTransportList(int id, std::string& errorMessage);
 		bool DeleteUser(int id, std::string& errorMessage);
+		bool DeleteUserGroup(int id, std::string& errorMessage);
 		bool DeleteWarehouse(int id, std::string& errorMessage);
 		bool DeleteWarehouseType(int id, std::string& errorMessage);
 		bool DeleteWarehouseEmployee(int wID, int eID, std::string& errorMessage);
@@ -616,10 +702,18 @@ namespace DataLayer{
 		bool UpdateAccess(int accessID, int roleID, int accessItemID, std::string& errorMessage);
 		bool UpdateAccountType(int accountTypeID, std::string accountTypeName, int accountTypeNumber, std::string accountTypeComment, std::string& errorMessage);
 		bool UpdateAccount(int accountID, std::string accountNumber, double accountStartBalance, double accountCurrentBalance, std::string& errorMessage);
-		bool UpdateAccountable(int userID, std::string aInformation, std::string& errorMessage);
-		bool UpdateAccountableTransaction(int accTransID, int accountableID, double startValue, double endValue, int operationID, std::string& errorMessage);
+		bool UpdateAccountable(int accountableID, int userID, std::string aInformation, std::string& errorMessage);
+		bool UpdateAccountableApprovement(int approvementID, std::string approveDate, int directorID, int accountantID, int accountableDocumentID, std::string& errorMessage);
+		bool UpdateAccountableDocumentList(int listID, int accountableDocumentID, int expenseDocumentID, std::string& errorMessage);
+		bool UpdateAccountableDocument(int documentID, std::string documentDate, double value, std::string expenseAssignment, int userID, int statusID, std::string& errorMessage);
+		bool UpdateAccountableEntry(int accountableEntryID, int debitAccountID, int debitSubaccountID, double value, int creditAccountID, int creditSubaccountID, int accountableDocumentID, std::string& errorMessage);
+		bool UpdateAccountablePayment(int accountablePaymentID, int accountableDocumentID, int paymentID, std::string& errorMessage);
+		bool UpdateAccountableWithdrawal(int accountableWithdrawalID, int accountableDocumentID, int withdrawalID, std::string& errorMessage);
+		bool UpdateAccountableTransaction(int accTransID, double residualValue, double totalValue, double spentValue, double differenceValue, int accountableDocumentID, std::string& errorMessage);
 		bool UpdateAccountHistory(int accountHistoryID, int accountID, std::string accountNumber, double accountStartBalance,
 			double accountCurrentBalance, std::string fromDate, std::string tillDate, std::string& errorMessage);
+		bool UpdateAccountChangeLog(int accountChangeLogID, int accountID, std::string accountNumber, double accountStartBalance,
+			double accountCurrentBalance, std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool UpdateAmortizeGroup(int amortizeGroupID, int groupNumber, int fromMonth, int toMonth, std::string& errorMessage);
 		bool UpdateAmortizeType(int amortizeTypeID, std::string typeName, std::string typeCode, std::string& errorMessage);
 		bool UpdateBalancePayment(int balancePaymentID, int balanceID, int paymentID, std::string& errorMessage);
@@ -628,6 +722,7 @@ namespace DataLayer{
 		bool UpdateBalanceWithdrawal(int balanceWithdrawalID, int balanceID, int withdrawalID, std::string& errorMessage);
 		bool UpdateBalance(int balanceID, int userID, int subaccountID, std::string& errorMessage);
 		bool UpdateBranch(int branchID, std::string branchName, std::string branchAddress, std::string branchPhone, std::string bCommnet, std::string& errorMessage);
+		bool UpdateBranchSubaccount(int branchSubaccountID, int branchID, int subaccountID, std::string& errorMessage);
 		bool UpdateBorrower(int userID, std::string bComment, std::string& errorMessage);
 		bool UpdateCashbox(int cashboxID, int subAccID, std::string information, std::string cashboxAddress, std::string& errorMessage);
 		bool UpdateCashboxTransaction(int cashboxTransactionID, int cashboxID, int cashierID, int accountantID, int ownerID, int paymentID, int withdrawalID, std::string& errorMessage);
@@ -661,6 +756,7 @@ namespace DataLayer{
 		bool UpdateEntryRouting(int entryRoutingID, std::string entryRoutingOperation, int debbitingAccountID, int creditingAccountID, std::string& errorMessage);
 		bool UpdateEntryOperation(int eoID, int entryID, int operationID, std::string& errorMessage);
 		bool UpdateEntrySubaccount(int entrySubaccountID, int entryID, int subaccountID, std::string& errorMessage);
+		bool UpdateExpenseDocument(int expenseDocumentID, std::string expenseName, double count, double sum, int measureID, int currencyID, std::string& errorMessage);
 		bool UpdateFinancialReport(int financialReportID, double account_44010, double account_55010, double account_552,
 			double account_55270, double account_553, double account_55321, double account_44020_90, double account_66010_66110,
 			double account_66020_66120, double account_66040_66140, double account_66050_66150, double account_66060_66160,
@@ -674,6 +770,7 @@ namespace DataLayer{
 			int primaryAccID, int amortizeAccID, std::string barcodeNumber, double amVlaue, std::string& errorMessage);
 		bool UpdateFixedAssetsOperations(int fixedAssetsOperID, std::string operationDate, std::string operationName,
 			double operationValue, bool increment, bool decrement, int fixedAssetsID, std::string& errorMessage);
+		bool UpdateGroups(int groupID, std::string groupName, std::string groupDefinition, std::string& errorMessage);
 		bool UpdateInventorizationList(int inventorizationListID, int inventorizationID, int productID, double inventorizationListCount,
 			double inventorizationListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateInventorization(int inventorizationID, int userID, std::string inventorizationDate, std::string inventorizationExecutionDate,
@@ -689,6 +786,8 @@ namespace DataLayer{
 			int warehouseID, std::string& errorMessage);
 		bool UpdateLowValueStockHistory(int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string historyDate, std::string& errorMessage);
+		bool UpdateLowValueStockChangeLog(int lwStockChangeLogID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
+			int warehouseID, std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool UpdateMeasure(int measureID, std::string measureName, std::string measureShortName, int measureUnit, std::string& errorMessage);
 		bool UpdateNetCost(int netCostID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated, std::string& errorMessage);
 		bool UpdateOrderList(int orderListID, int orderID, int productID, double orderListCount, double orderListSum, int statusID, int currencyID, std::string& errorMessage);
@@ -747,6 +846,7 @@ namespace DataLayer{
 		bool UpdateSalaryType(int salaryTypeID, std::string salaryTypeCode, std::string salaryTypeName, std::string& errorMessage);
 		bool UpdateShareholder(int userID, double countOfStock, std::string sInformation, std::string& errorMessage);
 		bool UpdateSpecificationList(int specificationListID, int specificationID, int productID, double specificationListCount, std::string& errorMessage);
+		bool UpdateSpecificationChangeLog(int specificationChangeLogID, int specificationID, int productID, double specificationCount, std::string logDate, int userID, std::string& errorMessage);
 		bool UpdateSpecification(int specificationID, int productID, double specificationSum, int currencyID, int employeeID, std::string sDate, std::string& errorMessage);
 		bool UpdateSpoilageList(int spoilageListID, int spoilageID, int productID, double spoilageListCount, double spoilageListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateSpoilage(int spoilageID, std::string spoilageDate, int employeeID, double spoilageCount, double spoilageSum, int statusID, int currencyID, std::string& errorMessage);
@@ -755,22 +855,31 @@ namespace DataLayer{
 		bool UpdateStatusRule(int statusRuleID, std::string statusRuleOperation, int statusID, std::string& errorMessage);
 		bool UpdateStock(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID, 
 			int warehouseID, std::string& errorMessage);
+		bool UpdateStockLimit(int stockLimitID, int stockID, int productID, double minValue, double maxValue, std::string& errorMessage);
 		bool UpdateStockHistory(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string historyDate, std::string& errorMessage);
+		bool UpdateStockChangeLog(int stockChangeLog, int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
+			int warehouseID, std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool UpdateSubaccount(int subaccountID, int accountID, std::string subaccountNumber, double subaccountStartBalance, double subaccountCurrentBalance, int currencyID, int statusID,
 			std::string subaccountOpenDate, std::string subaccountCloseDate, std::string subaccountDetails, std::string& errorMessage);
+		bool UpdateSubaccountLimit(int subaccountLimitID, int subaccountID, double minValue, double maxValue, std::string& errorMessage);
 		bool UpdateSubaccountHistory(int subaccountHistoryID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
 			std::string fromDate, std::string tillDate, std::string& errorMessage);
+		bool UpdateSubaccountChangeLog(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
+			std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool UpdateTax(int taxID, std::string taxName, std::string taxCode, double fixedValue, int percentValue,
 			std::string formulaValue, std::string& errorMessage);
 		bool UpdateTimesheet(int timesheetID, int salaryID, double workedTime, std::string timesheetDate, std::string& errorMessage);
 		bool UpdateTransportList(int transportListID, int transportID, int productID, double transportListCount, double transportListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateTransportHistory(int transportHistoryID, int transportID, int productID, double transportHistoryCount, double transportHistorySum,
-			int statusID, int currencyID, std::string historyDate, std::string& errorMessage);
+			int statusID, int currencyID, std::string fromDate, std::string tillDate, std::string& errorMessage);
+		bool UpdateTransportChangeLog(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+			int statusID, int currencyID, std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool UpdateTransport(int transportID, int employeeID, std::string transportDate, std::string transportExecutionDate,
 			int stockEmployeeID, double transportCount, double transportSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateUser(int userID, std::string userEmail, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
 			int roleID, std::string userPassword, bool userActivated, std::string& errorMessage);
+		bool UpdateUserGroup(int userGroupID, int groupID, int userID, std::string& errorMessage);
 		bool UpdateWarehouse(int warehouseID, std::string warehouseName, std::string warehouseAddress, std::string warehousePhone,
 			int warehouseTypeID, int subaccountID, std::string& errorMessage);
 		bool UpdateWarehouseType(int warehouseTypeID, std::string wTypeCode, std::string wTypePurpose, std::string wTypeName, std::string& errorMessage);
@@ -790,11 +899,23 @@ namespace DataLayer{
 		std::string GetFilterForAccess(int accessID, int roleID, int accessItemID);
 		std::string GetFilterForAccountType(int accountTypeID, std::string accountTypeName, int accountTypeNumber, std::string accountTypeComment);
 		std::string GetFilterForAccount(int accountID, std::string accountNumber, double accountStartBalance, double accountCurrentBalance);
-		std::string GetFilterForAccountable(int userID, std::string name, std::string surname, std::string phone,
-			std::string address, int roleID, std::string aInformation);
-		std::string GetFilterForAccountableTransaction(int accTransID, int accountableID, double startValue, double endValue, int operationID);
+		std::string GetLikeFilterForAccountNumber(std::string accountNumber);
+		std::string GetFilterForAccountable(int accountableID, int userID, std::string aInformation);
+		std::string GetFilterForAccountableApprovement(int approvementID, std::string approveDate, int directorID, int accountantID, int accountableDocumentID);
+		std::string GetFilterForAccountableDocumentList(int listID, int accountableDocumentID, int expenseDocumentID);
+		std::string GetFilterForAccountableDocument(int documentID, std::string documentDate, double value, std::string expenseAssignment, int userID, int statusID);
+		std::string GetFilterForAccountableDocumentFieldBiggerThen(int documentID, std::string documentDate, double value, std::string expenseAssignment, int userID, int statusID);
+		std::string GetFilterForAccountableEntry(int accountableEntryID, int debitAccountID, int debitSubaccountID, double value, int creditAccountID, int creditSubaccountID, int accountableDocumentID);
+		std::string GetFilterForAccountablePayment(int accountablePaymentID, int accountableDocumentID, int paymentID);
+		std::string GetFilterForAccountableWithdrawal(int accountableWithdrawalID, int accountableDocumentID, int withdrawalID);
+		std::string GetFilterForAccountableTransaction(int accTransID, double residualValue, double totalValue, double spentValue, double differenceValue, int accountableDocumentID);
+		std::string GetFilterForAccTransFieldBiggerThen(int accTransID, double residualValue, double totalValue, double spentValue, double differenceValue, int accountableDocumentID);
 		std::string GetFilterForAccountHistory(int accountHistoryID, int accountID, std::string accountNumber, double accountStartBalance,
 			double aCurrentBalance, std::string fromDate, std::string tillDate);
+		std::string GetFilterForAccountChangeLog(int accountChangeLogID, int accountID, std::string accountNumber, double accountStartBalance,
+			double aCurrentBalance, std::string logDate, int userID, int operationID);
+		std::string GetFilterForAccountChangeLogForPeriod(int accountChangeLogID, int accountID, std::string accountNumber, double accountStartBalance,
+			double aCurrentBalance, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate);
 		std::string GetFilterForAmortizeGroup(int amortizeGroupID, int groupNumber, int fromMonth, int toMonth);
 		std::string GetFilterForAmortizeType(int amortizeTypeID, std::string typeName, std::string typeCode);
 		std::string GetFilterForBalancePayment(int balancePaymentID, int balanceID, int paymentID);
@@ -803,6 +924,7 @@ namespace DataLayer{
 		std::string GetFilterForBalanceWithdrawal(int balanceWithdrawalID, int balanceID, int withdrawalID);
 		std::string GetFilterForBalance(int balanceID, int userID, int subaccountID);
 		std::string GetFilterForBranch(int branchID, std::string branchName, std::string branchAddress, std::string branchPhone, std::string bCommnet);
+		std::string GetFilterForBranchSubaccount(int branchSubaccountID, int branchID, int subaccountID);
 		std::string GetFilterForBorrower(int userID, std::string name, std::string surname, std::string phone,
 			std::string address, int roleID, std::string bComment);
 		std::string GetFilterForCashbox(int cashboxID, int subAccID, std::string information, std::string cashboxAddress);
@@ -854,14 +976,15 @@ namespace DataLayer{
 		std::string GetFilterForFullExtendedEntry(int entryID, std::string entryDate, int debbitingAccountID, double entryValue, int creditingAccountID, int operationID, int subaccountID, std::string description, int conProdID,
 			int conRawID, int fixAstID, int fixAstOperID, int invID, int orderID, int ordRawID, int paymentID, int payslipID,
 			int prodConRawID, int rcpProdID, int returnID, int spoilageID, int skTrID, int withdrawalID, int wofID, int wofRawID,
-			int productID, int othStID, int rcpOthStID, int conOthStID);
+			int productID, int othStID, int rcpOthStID, int conOthStID, int accDocID);
 		std::string GetFilterForFullExtendedEntry(int entryID, std::string entryDate, int debbitingAccountID, double entryValue, int creditingAccountID, int operationID, int subaccountID, std::string description, int conProdID,
 			int conRawID, int fixAstID, int fixAstOperID, int invID, int orderID, int ordRawID, int paymentID, int payslipID,
 			int prodConRawID, int rcpProdID, int returnID, int spoilageID, int skTrID, int withdrawalID, int wofID, int wofRawID,
-			int productID, int othStID, int rcpOthStID, int conOthStID, std::string fromDate, std::string toDate);
+			int productID, int othStID, int rcpOthStID, int conOthStID, int accDocID, std::string fromDate, std::string toDate);
 		std::string GetFilterForEntryRouting(int entryRoutingID, std::string entryRoutingOperation, int debbitingAccountID, int creditingAccountID);
 		std::string GetFilterForEntryOperation(int eoID, int entryID, int operationID);
 		std::string GetFilterForEntrySubaccount(int entrySubaccountID, int entryID, int subaccountID);
+		std::string GetFilterForExpenseDocument(int expenseDocumentID, std::string expenseName, double count, double sum, int measureID, int currencyID);
 		std::string GetFilterForFinancialReport(int financialReportID, double account_44010, double account_55010, double account_552,
 			double account_55270, double account_553, double account_55321, double account_44020_90, double account_66010_66110,
 			double account_66020_66120, double account_66040_66140, double account_66050_66150, double account_66060_66160,
@@ -877,6 +1000,7 @@ namespace DataLayer{
 			double operationValue, bool increment, bool decrement, int fixedAssetsID);
 		std::string GetFilterForInventorizationList(int inventorizationListID, int inventorizationID, int productID, double inventorizationListCount,
 			double inventorizationListSum, int statusID, int currencyID);
+		std::string GetFilterForGroups(int groupID, std::string groupName, std::string groupDefinition);
 		std::string GetFilterForInventorization(int inventorizationID, int userID, std::string inventorizationDate, std::string inventorizationExecutionDate,
 			int stockEmployeeID, double inventorizationCount, double inventorizationSum, int statusID, int currencyID);
 		std::string GetFilterForInventory(int inventoryID, std::string inventoryName, double inventoryCost, int departamentID, std::string location,
@@ -891,6 +1015,10 @@ namespace DataLayer{
 			int warehouseID);
 		std::string GetFilterForLowValueStockHistory(int lvStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string historyDate);
+		std::string GetFilterForLowValueStockChangeLog(int lvStockChangeLogID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
+			int warehouseID, std::string logDate, int userID, int operationID);
+		std::string GetFilterForLowValueStockChangeLogForPeriod(int lvStockChangeLogID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
+			int warehouseID, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate);
 		std::string GetFilterForMeasure(int measureID, std::string measureName, std::string measureShortName, int measureUnit);
 		std::string GetFilterForNetCost(int netCostID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated);
 		std::string GetFilterForOrderList(int orderListID, int orderID, int productID, double orderListCount, double orderListSum, int statusID, int currencyID);
@@ -910,6 +1038,8 @@ namespace DataLayer{
 		std::string GetINFilterForOtherStocksID(std::vector<int> otherStocksIDList);
 		std::string GetLikeFilterForOtherStocksName(std::string searchKey);
 		std::string GetFilterForPayment(int paymentID, std::string paymentDate, double paymentValue, std::string paymentTarget, int userID,
+			int currencyID, int statusID, int accountID, int subaccountID, std::string pWho, int cashboxAccID);
+		std::string GetFilterForPaymentFieldBiggerThen(int paymentID, std::string paymentDate, double paymentValue, std::string paymentTarget, int userID,
 			int currencyID, int statusID, int accountID, int subaccountID, std::string pWho, int cashboxAccID);
 		std::string GetFilterForPaymentForPeriod(int paymentID, std::string paymentDate, double paymentValue, std::string paymentTarget, int userID,
 			int currencyID, int statusID, int accountID, int subaccountID, std::string pWho, int cashboxAccID, std::string fromDate, std::string toDate);
@@ -979,6 +1109,8 @@ namespace DataLayer{
 		std::string GetFilterForSalaryType(int salaryTypeID, std::string salaryTypeCode, std::string salaryTypeName);
 		std::string GetFilterForShareholder(int shareholderID, int userID, double countOfStock, std::string sInformation);
 		std::string GetFilterForSpecificationList(int specificationListID, int specificationID, int productID, double specificationListCount);
+		std::string GetFilterForSpecificationChangeLog(int specificationChangeLogID, int specificationID, int productID, double specificationCount, std::string logDate, int userID);
+		std::string GetFilterForSpecificationChangeLogForPeriod(int specificationChangeLogID, int specificationID, int productID, double specificationCount, std::string logDate, int userID, std::string fromDate, std::string tillDate);
 		std::string GetFilterForSpecification(int specificationID, int productID, double specificationSum, int currencyID, int employeeID, std::string sDate);
 		std::string GetFilterForSpoilageList(int spoilageListID, int spoilageID, int productID, double spoilageListCount, double spoilageListSum, int statusID, int currencyID);
 		std::string GetFilterForSpoilage(int spoilageID, std::string spoilageDate, int employeeID, double spoilageCount, double spoilageSum, int statusID, int currencyID);
@@ -986,12 +1118,23 @@ namespace DataLayer{
 		std::string GetFilterForStatus(int statusID, std::string statusCode, std::string statusName, std::string comment);
 		std::string GetFilterForStatusRule(int statusRuleID, std::string statusRuleOperation, int statusID);
 		std::string GetFilterForStock(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID, int warehouseID);
+		std::string GetFilterForStockLimit(int stockLimitID, int stockID, int productID, double minValue, double maxValue);
 		std::string GetFilterForStockHistory(int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string historyDate);
+		std::string GetFilterForStockChangeLog(int stockChangeLog, int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
+			int warehouseID, std::string logDate, int userID, int operationID);
+		std::string GetFilterForStockChangeLogForPeriod(int stockChangeLog, int stockID, int productID, double stockCount, double stockSum, int statusID, int currencyID,
+			int warehouseID, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate);
 		std::string GetFilterForSubaccount(int subaccountID, int accountID, std::string subaccountNumber, double subaccountStartBalance, double subaccountCurrentBalance, int currencyID, int statusID,
 			std::string subaccountOpenDate, std::string subaccountCloseDate, std::string subaccountDetails);
+		std::string GetFilterForSubaccountLimit(int subaccountLimitID, int subaccountID, double minValue, double maxValue);
 		std::string GetFilterForSubaccountHistory(int subaccountHistoryID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
 			std::string fromDate, std::string tillDate);
+		std::string GetFilterForSubaccountChangeLog(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
+			std::string logDate, int userID, int operationID);
+		std::string GetFilterForSubaccountChangeLogForPeriod(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
+			std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate);
+		std::string GetINFilterForSubaccountID(std::vector<int> subaccountIDList);
 		std::string GetFilterForTax(int taxID, std::string taxName, std::string taxCode, double fixedValue, int percentValue,
 			std::string formulaValue);
 		std::string GetFilterForTimesheet(int timesheetID, int salaryID, double workedTime, std::string timesheetDate);
@@ -1000,15 +1143,25 @@ namespace DataLayer{
 		std::string GetFilterForTransport(int transportID, int employeeID, std::string transportDate, std::string transportExecutionDate,
 			int stockEmployeeID, double transportCount, double transportSum, int statusID, int currencyID);
 		std::string GetFilterForTransportHistory(int transportHistoryID, int transportID, int productID, double transportHistoryCount, double transportHistorySum,
-			int statusID, int currencyID, std::string historyDate);
+			int statusID, int currencyID, std::string fromDate, std::string tillDate);
+		std::string GetFilterForTransportChangeLog(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+			int statusID, int currencyID, std::string logDate, int userID, int operationID);
+		std::string GetFilterForTransportChangeLogForDateLess(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+			int statusID, int currencyID, std::string logDate, int userID, int operationID);
+		std::string GetFilterForTransportChangeLogForPeriod(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
+			int statusID, int currencyID, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate);
 		std::string GetFilterForUser(int userID, std::string userEmail, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
 			int roleID, std::string userPassword, bool userActivated);
 		std::string GetINFilterForUserID(std::vector<int> userIDList);
+		std::string GetFilterForUserGroup(int userGroupID, int groupID, int userID);
 		std::string GetFilterForWarehouse(int warehouseID, std::string warehouseName, std::string warehouseAddress, std::string warehousePhone,
 			int warehouseTypeID, int subaccountID);
+		std::string GetINFilterForWarehouseID(std::vector<int> warehouseIDList);
 		std::string GetFilterForWarehouseType(int warehouseTypeID, std::string wTypeCode, std::string wTypePurpose, std::string wTypeName);
 		std::string GetFilterForWarehouseEmployee(int weID, int weWarehouseID, int weEmployeeID);
 		std::string GetFilterForWithdrawal(int withdrawalID, std::string withdrawalDate, double withdrawalValue, 
+			int userID, int sabID, std::string withdrawalTarget, int currencyID, int statusID, int accountID, std::string pWho, int cashboxAccID);
+		std::string GetFilterForWithdrawalFieldBiggerThen(int withdrawalID, std::string withdrawalDate, double withdrawalValue,
 			int userID, int sabID, std::string withdrawalTarget, int currencyID, int statusID, int accountID, std::string pWho, int cashboxAccID);
 		std::string GetFilterForWithdrawalForPeriod(int withdrawalID, std::string withdrawalDate, double withdrawalValue, int userID, int sabID, std::string withdrawalTarget,
 			int currencyID, int statusID, int accountID, std::string pWho, int cashboxAccID, std::string fromDate, std::string toDate);
@@ -1022,6 +1175,191 @@ namespace DataLayer{
 		std::string GetFilterForWriteOffRawForPeriod(int writeOffRawID, int employeeID, std::string writeOffRawDate, std::string executionDate, int stockEmployeeID, double writeOffRawListCount, double writeOffRawListSum, 
 			int statusID, int currencyID, std::string fromDate, std::string toDate);
 
+		//Generate filter for view
+		std::string GetFilterForAccessView(int aID, std::string roleName, std::string aItemEng, std::string aRusEng, std::string division, int roleID, int accItemID);
+		std::string GetFilterForAccountableView(int aID, int eID, std::string eName, std::string eSurname, std::string info, std::string ePhone, std::string eAddress, std::string roleName);
+		std::string GetFilterForBalancesView(int bID, std::string uName, std::string uSurname, std::string subNumber , double curBalance, std::string currencyName, int userID, int subaccountID);
+		std::string GetFilterForBorrowersView(int bID, std::string uName, std::string uSurname, std::string comment, std::string uPhone, std::string uAddress, std::string roleName, std::string password,
+			std::string uEmail, int roleID);
+		std::string GetFilterForBranchSubaccountView(int sID, std::string branchName, std::string subaccountNumber, int brachID, int subaccountID);
+		std::string GetFilterForCashboxView(int cID, std::string sNumber, std::string info, std::string chashboxAddress, int subaccountID);
+		std::string GetFilterForCashboxEmployeeView(int ceID, std::string sNumber, std::string chashboxAddress, std::string uName, std::string uSurname, std::string uPhone, std::string roleName, int cashboxID, int subaccountID);
+		std::string GetFilterForChartOfAccountsView(int cID, std::string numberAccount, std::string name, std::string type, int aTypeID);
+		std::string GetFilterForClientView(int cID, std::string uName, std::string uSurname, std::string uPhone, std::string countryName, std::string regionName, std::string cityName, std::string uAddress,
+			std::string firm, std::string firmNumber, std::string roleName, std::string password, std::string uEmail, int roleID, int locationID);
+		std::string GetFilterForCompanyAccountView(int caID, std::string companyName, std::string accountNumber, int cID, int aID);
+		std::string GetFilterForCompanyEmployeeView(int ceID, std::string companyName, std::string branchName, std::string uName, std::string uSurname, 
+			std::string uPhone, int companyID, int employeeID, int branchID);
+		std::string GetFilterForConProdListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForConProdView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName, 
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForConRawListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForConRawView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForConOthStListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForConOthStView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForDivisionAccountView(int daID, std::string divisionName, std::string accountNumber, std::string accountName, std::string accountCode, int dID, int aID);
+		std::string GetFilterForEmployeeView(int eID, std::string uName, std::string uSurname, std::string uPosition, std::string uPhone, std::string uAddress, 
+			std::string birthdate, std::string roleName, std::string hireDate, std::string password, std::string uEmail, int roleID, int empPositionID, int divitionID);
+		std::string GetFilterForEmpProductView(int epID, std::string uName, std::string uSurname, std::string uPhone, std::string productName, double price, int empoyeeID, int productID);
+		std::string GetFilterForEntryView(int eID, std::string entryDate, std::string debAccNumber, double value, std::string credAccNumber, int debAccID, int credAccID, std::string description);
+		std::string GetFilterForEntryFullView(int eID, std::string entryDate, std::string debAccNumber, double value, std::string credAccNumber, int operationID, int subaccountID, int debAccID, int credAccID, std::string description);
+		std::string GetFilterForEntryAllView(int eID, std::string entryDate, std::string debAccNumber, double value, std::string credAccNumber, int operationID, int subaccountID, int debAccID, int credAccID, std::string description,
+			int conProdID, int conRawID, int fixedAssID, int fixedAssOperID, int inventoryID, int orderID, int orderRawID, int paymentID, int payslipID,
+			int prodnConRawID, int recProductID, int returnID, int spoilageID, int stockTrID, int withdrawalID, int wOffID, int wOffRawID, int productID, 
+			int otherStockID, int recOthStID, int conOthStID, int accDocumentID);
+		std::string GetFilterForFixedAssDetailView(int fadID, int groupNumber, std::string amorName,  std::string amorCode,  double amorValue, std::string divName,
+			double primValue, double amorAccValue, std::string barcodeNumber, std::string location, int primAccID, int amorAccID, int amorGroupID, int amorTypeID,
+			int departID);
+		std::string GetFilterForFixedAssView(int faID, std::string aName, std::string invNumber, double primCost, double stopValue,  double primCostValue,
+			double amortizeValue, std::string divisionName, std::string statusName, int serviceLife,  std::string buyDate, std::string startOfOperDate, 
+			std::string endOfOperDate, int fxAssSpecID, int statusID, int fxDetailID, int pAccID, int aAccID);
+		std::string GetFilterForFixedAssUnionView(int faID, std::string faName, std::string divisionName, double primCost, double stopCost, double amorSum,
+			std::string invNumber, double amorValue, int serviceLife, std::string statusName, std::string buyDate, std::string startOfOperDate, 
+			std::string endOfOperDate, std::string location, std::string barcodeNumber, std::string factoryNumber, std::string developer, std::string document, 
+			std::string objChar, std::string condition, std::string dateOfCons, int fxSpecID, int statusID, int fxDetailID, int amgroupID, int amorTypeID, int deparID, 
+			int primCostAccID, int amorAccID, int postingFAID, int userID, int subaccountID, int accountID);
+		std::string GetFilterForInvListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForInvView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForInvnentoryView(int inventoryID, std::string inventoryName, double inventoryCost, std::string inventoryNumber, std::string barcodeNumber,
+			std::string divisionName, std::string statusName, std::string location, std::string startOfOperDate, std::string endOfOperDate, int statusID, int departamentID, int invSubID);
+		std::string GetFilterForInvnentoryUnionView(int inventoryID, std::string inventoryName, double inventoryCost, std::string inventoryNumber, std::string barcodeNumber,
+			std::string divisionName, std::string statusName, std::string location, std::string startOfOperDate, std::string endOfOperDate, int statusID, int departamentID, 
+			int invSubID, int pfxID, int userID, int subaccID, int accID);
+		std::string GetFilterForJobpriceView(int jID, std::string productName, double value, std::string currencyName, double volume, std::string measureName, std::string positionName,
+			int productID, int currencyID, int measureID, int  positionID);
+		std::string GetFilterForJobsheetView(int jID, std::string jDate, std::string uName, std::string uSurname, std::string uPhone, std::string productName, 
+			double count, std::string measureName, int productID, int employeeID);
+		std::string GetFilterForLowValStockView(int sID, std::string otherStockName, double price, std::string currencyName, double volume, std::string measureName, double count,
+			double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int otherStockID, int statusID,
+			int currencyID, int warehouseID);
+		std::string GetFilterForLowValStockHisView(int sID, std::string otherStockName, double price, std::string currencyName, double volume, std::string measureName, double count,
+			double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int otherStockID, int statusID,
+			int currencyID, int warehouseID, std::string histiryDate);
+		std::string GetFilterForNetCostView(int nID, std::string netCostDate, std::string poroductName, double volume, std::string measureName, double netCostValue, std::string curName, int curID, int productID);
+		std::string GetFilterForOrderListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForOrderView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string eAddres, std::string eFirm, std::string seName, std::string seSurname, std::string sePhone,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForOrdRawListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForOrdRawView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string eCompanyName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForOthStView(int othStID, std::string otherStockName, double price, std::string currencyName,  double volume, std::string measureName,
+			std::string companyName, std::string typeName, int companyID, int measureID, int currencyID, int otherStockTypeID);
+		std::string GetFilterForPaymentView(int paymentID, std::string paymentDate, std::string userName, std::string userSurname, std::string userPhone, double value,
+			std::string curName, std::string target, std::string accountNumber, std::string subaccountNumber, std::string who, std::string statusName, int userID,
+			int currID, int statusID, int accountID, int subaccountID, int cahboxAccID);
+		std::string GetFilterForPayslipView(int pID, std::string payslipDate, double payslipValue, std::string curName, int salaryID, int curID);
+		std::string GetFilterForPostingFixAssetView(int pfID, std::string userSurname, std::string accountName, int userID, int subaccountID, int accountID, int fixedAssID, int inventoryID);
+		std::string GetFilterForPriceView(int pID, std::string priceDate, std::string productName, double volume, std::string measureName, double price,
+			std::string curName, int curID, int productID);
+		std::string GetFilterForProdnListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForConProdnListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForConProdnView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePosName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForProdnPlanListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForProdnPlanView(int cpID, std::string conDate, double count, double sum, std::string curName, std::string satName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, int employeeID,  int statusID, int currnecyID);
+		/*std::string GetFilterForProdnStockView(int sID, std::string productName, double price, std::string currencyName, double volume, std::string measureName, double count,
+			double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int productID, int statusID,
+			int currencyID, int warehouseID);*/
+		std::string GetFilterForProductBranchView(int pbID, std::string branchName, std::string branchAddress, std::string productName, double productPrice,  int productID, int branchID);
+		std::string GetFilterForProductsView(int pID, std::string productName, double price, std::string currencyName, double volume, std::string measureName,
+			std::string typeName, int shelfLife, std::string companyName, int companyID, int measureID, int typeID, int currencyID);
+		std::string GetFilterFoPurveyorView(int pID, std::string uName, std::string uSurname, std::string uPhone, std::string countryName, std::string regionName, std::string cityName, std::string uAddress,
+			std::string companyName, std::string roleName, std::string password, std::string uEmail, int roleID, int locationID);
+		std::string GetFilterForRcpProdListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForRcpProdView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForRcpOthStListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForRcpOthStView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForStTranListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForStTranView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForRefundsView(int rID, std::string refundDate, double value,  std::string currencyName, int userID, int currencyID);
+		std::string GetFilterForRelationView(int rID, std::string user1Name, std::string user1surname, std::string userPhone, std::string relationName, std::string user2Name,
+			std::string user2Surname, std::string user2Phone, int user1ID, int user2ID, int typeID);
+		std::string GetFilterForReturnListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForReturnView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string eAddress, std::string eFirm, std::string seName, std::string seSurname, std::string sePhone, 
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForSalariesView(int sID, int userID, std::string userName, std::string userSurname, std::string userPhone, std::string salaryDate,
+			double value, std::string currencyName, std::string typeName, int currencyID, int typeID);
+		std::string GetFilterForShareholderView(int sID, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
+			double countOfStock, std::string info);
+		std::string GetFilterForSpecListView(int cpListID, int cpID, std::string productName, double count, std::string measureName, int productID);
+		std::string GetFilterForSpecView(int cpID, std::string conDate, std::string productName, double sum, std::string curName,
+			std::string eName, std::string eSurname, std::string ePhone, std::string ePosition, int productID, int currnecyID, int employeeID);
+		std::string GetFilterForSpoilageListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForSpoilageView(int cpID, std::string conDate, double count, double sum, std::string curName,  std::string statusName, 
+			std::string eName,  std::string eSurname, std::string ePhone, std::string ePosition, int employeeID,  int statusID, int currnecyID);
+		std::string GetFilterForStatusRuleView(int spID,  std::string operation, std::string statusName, int statusID);
+		std::string GetFilterForStockHistoryView(int sID, std::string productName, double price, std::string currencyName, double volume, std::string measureName, double count,
+			double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int productID, int statusID,
+			int currencyID, int warehouseID, std::string historyDate);
+		std::string GetFilterForStockLimitView(int sID, std::string warehouseName, std::string productName, double minValue, double maxValue, int stockID,  int productID);
+		std::string GetFilterForStockView(int sID, std::string productName, double price, std::string currencyName, double volume, std::string measureName, double count,
+			double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int productID, int statusID,
+			int currencyID, int warehouseID);
+		std::string GetFilterForSubaccountLimitView(int sID, std::string subaccountNumber, int subaccountID, double minValue, double maxValue);
+		std::string GetFilterForSubaccountView(int sID, int accID, std::string accountNumber, std::string subaccountNumver, double startBalance, double currentBalace,
+			std::string currencyName, std::string statusName, int currencyID, int statusID, std::string dateOpened, std::string	dateClosed, 
+			std::string detail);
+		std::string GetFilterForTimesheetView(int tID, std::string userName, std::string userSurname, std::string userPhone, std::string date, double workedTime, int salaryID);
+		std::string GetFilterForTranListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForTranView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForGroupView(int gID, std::string groupName, std::string userSurname, std::string userName, int roleID, int groupID, int userID);
+		std::string GetFilterForUserView(int uID, std::string userEmail, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
+			std::string roleName, std::string password, int roleID);
+		std::string GetFilterForUserExtendedView(int uID,  std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
+			std::string companyName, std::string branchName, std::string roleName, std::string subaccountNumber, int roleID, int subaccouuntID, int accountID,
+			int companyID, int branchID);
+		std::string GetFilterForWarehouseView(int wID, std::string warehouseName, std::string subaccountNumber, std::string typeName, std::string warehouseAddress, 
+			std::string warehousePhone, int typeID, int subaccountID);
+		std::string GetFilterForWarehouseEmployeeView(int wID, std::string userName, std::string userSurname, std::string userPhone, std::string roleName, 
+			std::string warehouseName,  std::string subaccountNumber, int warehouseID, int employeeID);
+		std::string GetFilterForWithdrawalView(int withdarawalID, std::string withdrawalDate, double value, std::string curName, std::string userName, std::string userSurname, std::string userPhone,
+			std::string statusName, std::string accountNumber, std::string subaccountNumber, std::string who, std::string target, int userID,
+			int currID, int statusID, int accountID, int subaccountID, int cahboxAccID);
+		std::string GetFilterForWOffListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForWOffView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForWOffRawListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
+			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
+		std::string GetFilterForWOffRawView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
+			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
+			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
 		//counting methods
 		bool HaveChildAccount(std::string rootNumber);
 

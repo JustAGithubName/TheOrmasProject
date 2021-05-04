@@ -12,10 +12,14 @@ namespace BusinessLayer{
 		WarehouseView(DataLayer::warehouseViewCollection);
 		WarehouseView(){};
 		~WarehouseView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
 
 		// Warehouse View class Accessors
 		std::string GetWarehouseTypeName();
 		std::string GetSubaccountNumber();
+
+		void SetWarehouseTypeName(std::string);
+		void SetSubaccountNumber(std::string);
 	};
 }
 

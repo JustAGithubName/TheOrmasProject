@@ -49,10 +49,10 @@ namespace BusinessLayer
 	}
 
 
-	bool State::CreateState(DataLayer::OrmasDal& ormasDal, int uID, int stsID, std::string sLastChange,
+	bool State::CreateState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int stsID, std::string sLastChange,
 		std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uID, stsID, sLastChange, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, stsID, sLastChange, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		universalID = uID;
@@ -68,9 +68,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool State::CreateState(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool State::CreateState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateState(id, universalID, statusID, lastChange, errorMessage))
@@ -83,7 +83,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool State::DeleteState(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool State::DeleteState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteState(id, errorMessage))
 		{
@@ -96,7 +96,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool State::UpdateState(DataLayer::OrmasDal& ormasDal, int uID, int stsID, std::string sLastChange,
+	bool State::UpdateState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int stsID, std::string sLastChange,
 		std::string& errorMessage)
 	{
 		universalID = uID;
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool State::UpdateState(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool State::UpdateState(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateState(id, universalID, statusID, lastChange, errorMessage))
 		{
@@ -134,7 +134,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool State::GetStateByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool State::GetStateByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool State::GetStateByUniversalID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage)
+	bool State::GetStateByUniversalID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage)
 	{
 		if (uID <= 0)
 			return false;
@@ -193,7 +193,7 @@ namespace BusinessLayer
 		lastChange.clear();
 	}
 
-	bool State::IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, int stsID, std::string sLastChange, std::string& errorMessage)
+	bool State::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int stsID, std::string sLastChange, std::string& errorMessage)
 	{
 		State state;
 		state.Clear();
@@ -213,7 +213,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool State::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool State::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		State state;
 		state.Clear();

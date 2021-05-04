@@ -91,7 +91,7 @@ namespace BusinessLayer
 		historyDate = date;
 	}
 
-	bool LowValueStockHistory::CreateLowValueStockHistory(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+	bool LowValueStockHistory::CreateLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 		int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -108,7 +108,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool LowValueStockHistory::CreateLowValueStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool LowValueStockHistory::CreateLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateLowValueStockHistory(id, otherStocksID, count, sum, statusID, currencyID, warehouseID, historyDate, errorMessage))
@@ -117,7 +117,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool LowValueStockHistory::DeleteLowValueStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool LowValueStockHistory::DeleteLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteLowValueStockHistory(id, errorMessage))
 		{
@@ -127,7 +127,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool LowValueStockHistory::UpdateLowValueStockHistory(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+	bool LowValueStockHistory::UpdateLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 		int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage)
 	{
 		otherStocksID = pID;
@@ -148,7 +148,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool LowValueStockHistory::UpdateLowValueStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool LowValueStockHistory::UpdateLowValueStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (count < 0 || sum < 0)
 		{
@@ -171,7 +171,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool LowValueStockHistory::GetLowValueStockHistoryByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool LowValueStockHistory::GetLowValueStockHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -197,7 +197,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool LowValueStockHistory::GetLowValueStockHistoryByOtherStocksID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool LowValueStockHistory::GetLowValueStockHistoryByOtherStocksID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -223,7 +223,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool LowValueStockHistory::GetLowValueStockHistoryByOtherStocksAndWarehouseID(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool LowValueStockHistory::GetLowValueStockHistoryByOtherStocksAndWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -271,7 +271,7 @@ namespace BusinessLayer
 		historyDate.empty();
 	}
 
-	bool LowValueStockHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool LowValueStockHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		LowValueStockHistory lowValueStockHistory;
 		lowValueStockHistory.Clear();
@@ -290,7 +290,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool LowValueStockHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool LowValueStockHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		LowValueStockHistory lowValueStockHistory;
 		lowValueStockHistory.Clear();

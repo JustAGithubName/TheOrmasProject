@@ -66,10 +66,10 @@ namespace BusinessLayer
 		cityName = lCityName;
 	}
 
-	bool Location::CreateLocation(DataLayer::OrmasDal& ormasDal, std::string lCountryName, std::string lCountryCode,
+	bool Location::CreateLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string lCountryName, std::string lCountryCode,
 		std::string lRegionName, std::string lCityName, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, lCountryName, lRegionName, lCityName, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, lCountryName, lRegionName, lCityName, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(lCountryName, lCountryCode, lRegionName, lCityName);
@@ -87,9 +87,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Location::CreateLocation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Location::CreateLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateLocation(id, countryName, countryCode, regionName, cityName, errorMessage))
@@ -102,7 +102,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Location::DeleteLocation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Location::DeleteLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteLocation(id, errorMessage))
 		{
@@ -115,7 +115,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Location::UpdateLocation(DataLayer::OrmasDal& ormasDal, std::string lCountryName, std::string lCountryCode,
+	bool Location::UpdateLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string lCountryName, std::string lCountryCode,
 		std::string lRegionName, std::string lCityName, std::string& errorMessage)
 	{
 		TrimStrings(lCountryName, lCountryCode, lRegionName, lCityName);
@@ -133,7 +133,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Location::UpdateLocation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Location::UpdateLocation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateLocation(id, countryName, countryCode, regionName, cityName, errorMessage))
 		{
@@ -155,7 +155,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Location::GetLocationByID(DataLayer::OrmasDal& ormasDal, int lID, std::string& errorMessage)
+	bool Location::GetLocationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int lID, std::string& errorMessage)
 	{
 		if (lID <= 0)
 			return false;
@@ -206,7 +206,7 @@ namespace BusinessLayer
 			boost::trim(lCityName);
 	}
 
-	bool Location::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string lCountryName, 
+	bool Location::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string lCountryName, 
 		std::string lRegionName, std::string lCityName, std::string& errorMessage)
 	{
 		Location location;
@@ -227,7 +227,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Location::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Location::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Location location;
 		location.Clear();

@@ -60,28 +60,28 @@ namespace BusinessLayer
 
 
 		//Create, delete, update methods
-		bool CreateFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteFixedAssets(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateFixedAssets(DataLayer::OrmasDal& ormasDal, int sID, std::string iNumber, double pCost, double sCost, int sLife, bool isAmor, std::string bDate,
+		bool CreateFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string iNumber, double pCost, double sCost, int sLife, bool isAmor, std::string bDate,
 			std::string sOfDate, std::string eOfDate, int statID, int fadID, std::string& errorMessage);
-		bool UpdateFixedAssets(DataLayer::OrmasDal& ormasDal, int sID, std::string iNumber, double pCost, double sCost, int sLife, bool isAmor, std::string bDate,
+		bool UpdateFixedAssets(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string iNumber, double pCost, double sCost, int sLife, bool isAmor, std::string bDate,
 			std::string sOfDate, std::string eOfDate, int statID, int fadID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetFixedAssetsByID(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetFixedAssetsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		bool CreatePostingFixedAssetsEntry(DataLayer::OrmasDal& ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage);
-		bool CreatePostingFixedAssetsEntryReverce(DataLayer::OrmasDal& ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage);
-		bool CreatePostingFixedAssetsEntryWriteOFF(DataLayer::OrmasDal& ormasDal, int fixedAssetsID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntryWriteOFF(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
-		bool CreateEntryCancel(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreatePostingFixedAssetsEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage);
+		bool CreatePostingFixedAssetsEntryReverce(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage);
+		bool CreatePostingFixedAssetsEntryWriteOFF(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fixedAssetsID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntryWriteOFF(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
+		bool CreateEntryCancel(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int sID, std::string iNumber, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string iNumber, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};
 }

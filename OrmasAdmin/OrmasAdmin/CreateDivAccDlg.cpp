@@ -104,7 +104,7 @@ void CreateDivAccDlg::CreateDivisionAccount()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetDivisionAccountParams(divisionCmb->currentData().toInt(), accountEdit->text().toInt(), codeEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateDivisionAccountRelation(divisionAccount, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -112,7 +112,7 @@ void CreateDivAccDlg::CreateDivisionAccount()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::Account *account = new BusinessLayer::Account;
-					if (!account->GetAccountByID(dialogBL->GetOrmasDal(), divisionAccount->GetAccountID(), errorMessage))
+					if (!account->GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), divisionAccount->GetAccountID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -123,7 +123,7 @@ void CreateDivAccDlg::CreateDivisionAccount()
 						return;
 					}
 					BusinessLayer::ChartOfAccounts *coAcc = new BusinessLayer::ChartOfAccounts;
-					if (!coAcc->GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), account->GetNumber(), errorMessage))
+					if (!coAcc->GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), account->GetNumber(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -135,7 +135,7 @@ void CreateDivAccDlg::CreateDivisionAccount()
 						return;
 					}
 					BusinessLayer::Division *division = new BusinessLayer::Division;
-					if (!division->GetDivisionByID(dialogBL->GetOrmasDal(), divisionAccount->GetDivisionID(), errorMessage))
+					if (!division->GetDivisionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), divisionAccount->GetDivisionID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -164,7 +164,13 @@ void CreateDivAccDlg::CreateDivisionAccount()
 					delete coAcc;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 			Close();
 		}
@@ -197,7 +203,7 @@ void CreateDivAccDlg::EditDivisionAccount()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetDivisionAccountParams(divisionCmb->currentData().toInt(), accountEdit->text().toInt(), codeEdit->text(), divisionAccount->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateDivisionAccountRelation(divisionAccount, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -205,7 +211,7 @@ void CreateDivAccDlg::EditDivisionAccount()
 					if (!parentDataForm->IsClosed())
 					{
 						BusinessLayer::Account *account = new BusinessLayer::Account;
-						if (!account->GetAccountByID(dialogBL->GetOrmasDal(), divisionAccount->GetAccountID(), errorMessage))
+						if (!account->GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), divisionAccount->GetAccountID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -216,7 +222,7 @@ void CreateDivAccDlg::EditDivisionAccount()
 							return;
 						}
 						BusinessLayer::ChartOfAccounts *coAcc = new BusinessLayer::ChartOfAccounts;
-						if (!coAcc->GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), account->GetNumber(), errorMessage))
+						if (!coAcc->GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), account->GetNumber(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -228,7 +234,7 @@ void CreateDivAccDlg::EditDivisionAccount()
 							return;
 						}
 						BusinessLayer::Division *division = new BusinessLayer::Division;
-						if (!division->GetDivisionByID(dialogBL->GetOrmasDal(), divisionAccount->GetDivisionID(), errorMessage))
+						if (!division->GetDivisionByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), divisionAccount->GetDivisionID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -254,7 +260,13 @@ void CreateDivAccDlg::EditDivisionAccount()
 						delete coAcc;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 
 				Close();

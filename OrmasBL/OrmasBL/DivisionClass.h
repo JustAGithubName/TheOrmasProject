@@ -27,21 +27,21 @@ namespace BusinessLayer{
 		void SetCode(std::string);
 
 		// Create, delete and update Division
-		bool CreateDivision(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateDivision(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteDivision(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateDivision(DataLayer::OrmasDal &ormasDal, std::string cName, std::string cCode, std::string& errorMessage);
-		bool UpdateDivision(DataLayer::OrmasDal &ormasDal, std::string cName, std::string cCode, std::string& errorMessage);
+		bool CreateDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cCode, std::string& errorMessage);
+		bool UpdateDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cCode, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetDivisionByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
+		bool GetDivisionByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cCode, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cCode, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //DIVISIONCLASS_H

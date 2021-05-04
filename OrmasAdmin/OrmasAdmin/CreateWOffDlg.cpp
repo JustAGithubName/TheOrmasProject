@@ -124,21 +124,21 @@ void CreateWOffDlg::FillEditElements(int wClientID, QString wDate, QString wExec
 	statusEdit->setText(QString::number(wStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(wCurrencyID)));
 	BusinessLayer::User employee;
-	if (employee.GetUserByID(dialogBL->GetOrmasDal(), wEmployeeID, errorMessage))
+	if (employee.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wEmployeeID, errorMessage))
 	{
 		empNamePh->setText(employee.GetName().c_str());
 		empSurnamePh->setText(employee.GetSurname().c_str());
 		empPhonePh->setText(employee.GetPhone().c_str());
 	}
 	BusinessLayer::User client;
-	if (client.GetUserByID(dialogBL->GetOrmasDal(), wClientID, errorMessage))
+	if (client.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wClientID, errorMessage))
 	{
 		clNamePh->setText(client.GetName().c_str());
 		clSurnamePh->setText(client.GetSurname().c_str());
 		clPhonePh->setText(client.GetPhone().c_str());
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), wStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), wStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -161,7 +161,7 @@ void CreateWOffDlg::SetID(int ID, QString childName)
 			{
 				clientEdit->setText(QString::number(ID));
 				BusinessLayer::User client;
-				if (client.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (client.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					clNamePh->setText(client.GetName().c_str());
 					clSurnamePh->setText(client.GetSurname().c_str());
@@ -172,7 +172,7 @@ void CreateWOffDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -181,7 +181,7 @@ void CreateWOffDlg::SetID(int ID, QString childName)
 			{
 				employeeEdit->setText(QString::number(ID));
 				BusinessLayer::User employee;
-				if (employee.GetUserByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (employee.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					empNamePh->setText(employee.GetName().c_str());
 					empSurnamePh->setText(employee.GetSurname().c_str());
@@ -242,7 +242,7 @@ void CreateWOffDlg::CreateWriteOff()
 				sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), writeOff->GetID());
 		}
 
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateWriteOff(writeOff, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -258,8 +258,8 @@ void CreateWOffDlg::CreateWriteOff()
 					BusinessLayer::Employee *employee = new BusinessLayer::Employee();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 					BusinessLayer::Status *status = new BusinessLayer::Status;
-					if (!currency->GetCurrencyByID(dialogBL->GetOrmasDal(), writeOff->GetCurrencyID(), errorMessage)
-						|| !status->GetStatusByID(dialogBL->GetOrmasDal(), writeOff->GetStatusID(), errorMessage))
+					if (!currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), writeOff->GetCurrencyID(), errorMessage)
+						|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), writeOff->GetStatusID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -277,7 +277,7 @@ void CreateWOffDlg::CreateWriteOff()
 
 					if (writeOff->GetEmployeeID() > 0)
 					{
-						if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), writeOff->GetEmployeeID(), errorMessage))
+						if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), writeOff->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -335,7 +335,13 @@ void CreateWOffDlg::CreateWriteOff()
 					delete status;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			
 			Close();
 		}
@@ -378,7 +384,7 @@ void CreateWOffDlg::EditWriteOff()
 				SetWriteOffParams(clientEdit->text().toInt(), dateEdit->text(), execDateEdit->text(), employeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 					sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), writeOff->GetID());
 			}
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateWriteOff(writeOff, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -413,7 +419,7 @@ void CreateWOffDlg::EditWriteOff()
 
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 
-						if (!currency->GetCurrencyByID(dialogBL->GetOrmasDal(), writeOff->GetCurrencyID(), errorMessage))
+						if (!currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), writeOff->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -428,7 +434,7 @@ void CreateWOffDlg::EditWriteOff()
 
 						if (writeOff->GetEmployeeID() > 0)
 						{
-							if (!employee->GetEmployeeByID(dialogBL->GetOrmasDal(), writeOff->GetEmployeeID(), errorMessage))
+							if (!employee->GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), writeOff->GetEmployeeID(), errorMessage))
 							{
 								dialogBL->CancelTransaction(errorMessage);
 								QMessageBox::information(NULL, QString(tr("Warning")),
@@ -484,7 +490,13 @@ void CreateWOffDlg::EditWriteOff()
 						delete status;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 			
 				Close();
@@ -574,7 +586,7 @@ void CreateWOffDlg::OpenCltDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -661,7 +673,7 @@ void CreateWOffDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
@@ -818,7 +830,7 @@ void CreateWOffDlg::TextEditChanged()
 void CreateWOffDlg::StatusWasChenged()
 {
 	errorMessage = "";
-	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (statusEdit->text().toInt() == statusMap.find("EXECUTED")->second
 		|| statusEdit->text().toInt() == statusMap.find("RETURN")->second
 		|| statusEdit->text().toInt() == statusMap.find("ERROR")->second)
@@ -835,11 +847,11 @@ void CreateWOffDlg::StatusWasChenged()
 
 bool CreateWOffDlg::CheckAccess()
 {
-	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (0 == rolesMap.size())
 		return false;
 	BusinessLayer::Status *status = new BusinessLayer::Status;
-	if (!status->GetStatusByID(dialogBL->GetOrmasDal(), writeOff->GetStatusID(), errorMessage))
+	if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), writeOff->GetStatusID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr(errorMessage.c_str())),
@@ -852,8 +864,7 @@ bool CreateWOffDlg::CheckAccess()
 	if (0 == status->GetName().compare("EXECUTED"))
 	{
 		if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("ACCOUNTANT")->second)
+			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
 		{
 			return true;
 		}
@@ -871,8 +882,7 @@ bool CreateWOffDlg::CheckAccess()
 	if (0 == status->GetName().compare("RETURN"))
 	{
 		if (mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second ||
-			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("ACCOUNTANT")->second)
+			mainForm->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
 		{
 			return true;
 		}

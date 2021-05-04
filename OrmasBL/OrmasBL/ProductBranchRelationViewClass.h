@@ -14,12 +14,18 @@ namespace BusinessLayer{
 		ProductBranchRelationView(DataLayer::productBranchViewCollection);
 		ProductBranchRelationView(){};
 		~ProductBranchRelationView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// ProductBranchRelationView class ProductBranchRelationors
 		std::string GetBranchName();
 		std::string GetBranchAddress();
 		std::string GetProductName();
 		double GetPrice();
+
+		void SetBranchName(std::string);
+		void SetBranchAddress(std::string);
+		void SetProductName(std::string);
+		void SetPrice(double);
 	};
 }
 #endif

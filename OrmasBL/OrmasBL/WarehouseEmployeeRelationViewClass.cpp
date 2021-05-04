@@ -39,4 +39,39 @@ namespace BusinessLayer{
 	{
 		return subaccountNumber;
 	}
+
+	void WarehouseEmployeeRelationView::SetUsername(std::string sUserName)
+	{
+		userName = sUserName;
+	}
+	void WarehouseEmployeeRelationView::SetUserSurname(std::string sUserSurname)
+	{
+		userSurname = sUserSurname;
+	}
+	void WarehouseEmployeeRelationView::SetUserPhone(std::string sUserPhone)
+	{
+		userPhone = sUserPhone;
+	}
+	void WarehouseEmployeeRelationView::SetRoleName(std::string sRoleName)
+	{
+		roleName = sRoleName;
+	}
+	void WarehouseEmployeeRelationView::SetWarehouseName(std::string sWarehouseName)
+	{
+		warehouseName = sWarehouseName;
+	}
+	void WarehouseEmployeeRelationView::SetSubaccountNumber(std::string sSubaccountNumber)
+	{
+		subaccountNumber = sSubaccountNumber;
+	}
+
+	std::string WarehouseEmployeeRelationView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !userName.empty() || !userSurname.empty() || !userPhone.empty() || !roleName.empty() || !warehouseName.empty() || !subaccountNumber.empty() 
+			|| 0 != warehouseID || 0 != employeeID)
+		{
+			return ormasDal.GetFilterForWarehouseEmployeeView(id, userName, userSurname, userPhone, roleName, warehouseName, subaccountNumber, warehouseID, employeeID);
+		}
+		return "";
+	}
 }

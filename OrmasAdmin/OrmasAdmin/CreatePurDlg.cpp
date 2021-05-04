@@ -162,7 +162,7 @@ void CreatePurDlg::CreatePurveyor()
 		SetPurveyorParams(emailEdit->text(), nameEdit->text(), surnameEdit->text(), phoneEdit->text(), addressEdit->text(),
 			roleVector.at(0).GetID(), passwordEdit->text(), activatedCmbBox->currentText(), companyEdit->text(),
 		    locationEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreatePurveyor(purveyor, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -171,7 +171,7 @@ void CreatePurDlg::CreatePurveyor()
 				{
 					BusinessLayer::Location *location = new BusinessLayer::Location();
 					if (roleVector.size() < 1
-						|| !location->GetLocationByID(dialogBL->GetOrmasDal(), purveyor->GetLocationID(), errorMessage))
+						|| !location->GetLocationByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), purveyor->GetLocationID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -206,7 +206,13 @@ void CreatePurDlg::CreatePurveyor()
 			}
 			
 			delete role;
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 			Close();
 		}
@@ -259,7 +265,7 @@ void CreatePurDlg::EditPurveyor()
 			SetPurveyorParams(emailEdit->text(), nameEdit->text(), surnameEdit->text(), phoneEdit->text(), addressEdit->text(),
 				roleVector.at(0).GetID(), passwordEdit->text(), activatedCmbBox->currentText(), companyEdit->text(),
 			    locationEdit->text().toInt(), purveyor->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdatePurveyor(purveyor, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -276,7 +282,7 @@ void CreatePurDlg::EditPurveyor()
 						BusinessLayer::Location *location = new BusinessLayer::Location();
 
 						if (roleVector.size() < 1
-							|| !location->GetLocationByID(dialogBL->GetOrmasDal(), purveyor->GetLocationID(), errorMessage))
+							|| !location->GetLocationByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), purveyor->GetLocationID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -308,7 +314,13 @@ void CreatePurDlg::EditPurveyor()
 
 				
 				delete role;
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

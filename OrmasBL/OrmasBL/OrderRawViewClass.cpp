@@ -72,5 +72,63 @@ namespace BusinessLayer
 		return currencyName;
 	}
 
+	void OrderRawView::SetStatusCode(std::string oStatusCode)
+	{
+		statusCode = oStatusCode;
+	}
+	void OrderRawView::SetStatusName(std::string oStatusName)
+	{
+		statusName = oStatusName;
+	}
+	void OrderRawView::SetPurveyorName(std::string oPurveyorName)
+	{
+		purveyorName = oPurveyorName;
+	}
+	void OrderRawView::SetPurveyorSurname(std::string oPurveyorSurname)
+	{
+		purveyorSurname = oPurveyorSurname;
+	}
+	void OrderRawView::SetPurveyorPhone(std::string oPurveyorPhone)
+	{
+		purveyorPhone = oPurveyorPhone;
+	}
+	void OrderRawView::SetPurveyorCompanyName(std::string oPurveyorCompanyName)
+	{
+		purveyorCompanyName = oPurveyorCompanyName;
+	}
+	void OrderRawView::SetEmployeeName(std::string oEmployeeName)
+	{
+		employeeName = oEmployeeName;
+	}
+	void OrderRawView::SetEmployeeSurname(std::string oEmployeeSurname)
+	{
+		employeeSurname = oEmployeeSurname;
+	}
+	void OrderRawView::SetEmployeePhone(std::string oEmployeePhone)
+	{
+		employeePhone = oEmployeePhone;
+	}
+	void OrderRawView::SetEmployeePosition(std::string oEmployeePosition)
+	{
+		employeePosition = oEmployeePosition;
+	}
+	void OrderRawView::SetCurrencyName(std::string oCurrencyName)
+	{
+		currencyName = oCurrencyName;
+	}
+
+	std::string OrderRawView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !date.empty() || !executionDate.empty() || !statusCode.empty() || !statusName.empty() || !purveyorName.empty() || !purveyorSurname.empty()
+			|| !purveyorPhone.empty() || !purveyorCompanyName.empty() || !employeeName.empty() || !employeeSurname.empty()
+			|| !employeePhone.empty() || !employeePosition.empty() || 0 != count || 0 != sum || !currencyName.empty() || 0 != employeeID || 0 != purveyorID
+			|| 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForOrdRawView(id, date, executionDate, statusCode, statusName, purveyorName,
+				purveyorSurname, purveyorPhone, purveyorCompanyName, employeeName, employeeSurname, employeePhone, employeePosition, count, sum, currencyName, employeeID,
+				purveyorID, statusID, currencyID);
+		}
+		return "";
+	}
 }
 

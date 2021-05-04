@@ -38,25 +38,25 @@ namespace BusinessLayer{
 		void SetDescription(std::string);
 
 		// Create, delete and update Entry
-		bool CreateEntry(DataLayer::OrmasDal &ormasDal, std::string& errorMessage, bool corrEntry = false);
-		bool UpdateEntry(DataLayer::OrmasDal &ormasDal, std::string& errorMessage, bool corrEntry = false);
-		bool DeleteEntry(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, std::string eDescription, std::string& errorMessage, bool corrEntry = false);
-		bool UpdateEntry(DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, std::string eDescription, std::string& errorMessage, bool corrEntry = false);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage, bool corrEntry = false);
+		bool UpdateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage, bool corrEntry = false);
+		bool DeleteEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, std::string eDescription, std::string& errorMessage, bool corrEntry = false);
+		bool UpdateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, std::string eDescription, std::string& errorMessage, bool corrEntry = false);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateFilterForPeriod(DataLayer::OrmasDal& ormasDal, std::string formDate, std::string toDate);
-		bool GetEntryByID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string formDate, std::string toDate);
+		bool GetEntryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string eDate, int daID, double eValue, int caID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool EntryRoutingValidation(DataLayer::OrmasDal& ormasDal, int daID, int caID, std::string& errorMessage);
-		bool DebitAccount(DataLayer::OrmasDal& ormasDal, int accountID, double value);
-		bool CreditAccount(DataLayer::OrmasDal& ormasDal, int accountID, double value);
-		bool ReCalculateParentAccount(DataLayer::OrmasDal& ormasDal, int dAccID, int cAccID, double value, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool EntryRoutingValidation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int daID, int caID, std::string& errorMessage);
+		bool DebitAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, double value);
+		bool CreditAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, double value);
+		bool ReCalculateParentAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dAccID, int cAccID, double value, std::string& errorMessage);
 	};
 }
 

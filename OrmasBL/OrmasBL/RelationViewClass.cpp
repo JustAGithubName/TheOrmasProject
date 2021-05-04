@@ -46,5 +46,45 @@ namespace BusinessLayer
 	{
 		return userPhone;
 	}
+
+	void RelationView::SetEmployeeName(std::string rEmployeeName)
+	{
+		employeeName = rEmployeeName;
+	}
+	void RelationView::SetEmployeeSurname(std::string rEmployeeSurname)
+	{
+		employeeSurname = rEmployeeSurname;
+	}
+	void RelationView::SetEmployeePhone(std::string rEemployeePhone)
+	{
+		employeePhone = rEemployeePhone;
+	}
+	void RelationView::SetRelationName(std::string rRelationName)
+	{
+		relationName = rRelationName;
+	}
+	void RelationView::SetUsername(std::string rUserName)
+	{
+		userName = rUserName;
+	}
+	void RelationView::SetUserSurname(std::string rUserSurname)
+	{
+		userSurname = rUserSurname;
+	}
+	void RelationView::SetUserPhone(std::string rUserPhone)
+	{
+		userPhone = rUserPhone;
+	}
+
+	std::string RelationView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !employeeName.empty() || !employeeSurname.empty() || !employeePhone.empty() || !relationName.empty() || !userName.empty()
+			|| !userSurname.empty() || !userPhone.empty()  || 0 != user1ID || 0 != user2ID || 0 != relationTypeID)
+		{
+			return ormasDal.GetFilterForRelationView(id, employeeName, employeeSurname, employeePhone, relationName, userName, userSurname, userPhone, user1ID, user2ID, relationTypeID);
+		}
+		return "";
+	}
+
 }
 

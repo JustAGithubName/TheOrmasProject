@@ -16,4 +16,18 @@ namespace BusinessLayer{
 	{
 		return currencyName;
 	}
+
+	void PayslipView::SetCurrencyName(std::string pCurrencyName)
+	{
+		currencyName=pCurrencyName;
+	}
+
+	std::string PayslipView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || date.empty() || 0 != value || currencyName.empty() || 0 != salaryID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForPayslipView(id, date, value, currencyName, salaryID, currencyID);
+		}
+		return "";
+	}
 }

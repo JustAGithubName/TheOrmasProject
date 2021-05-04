@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = cCurrencyID;
 	}
 
-	bool ConsumeOtherStocksList::CreateConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, int crID, int osID, double crlCount, double crlSum,
+	bool ConsumeOtherStocksList::CreateConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int osID, double crlCount, double crlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeOtherStocksList::CreateConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeOtherStocksList::CreateConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateConsumeOtherStocksList(id, consumeOtherStocksID, otherStocksID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeOtherStocksList::DeleteConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeOtherStocksList::DeleteConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInConsumeOtherStocksList(id, errorMessage))
 		{
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeOtherStocksList::DeleteListByConsumeOtherStocksID(DataLayer::OrmasDal& ormasDal, int crID, std::string& errorMessage)
+	bool ConsumeOtherStocksList::DeleteListByConsumeOtherStocksID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, std::string& errorMessage)
 	{
 		consumeOtherStocksID = crID;
 		if (ormasDal.DeleteListByConsumeOtherStocksID(consumeOtherStocksID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ConsumeOtherStocksList::UpdateConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, int crID, int osID, double crlCount, double crlSum,
+	bool ConsumeOtherStocksList::UpdateConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int osID, double crlCount, double crlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		consumeOtherStocksID = crID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeOtherStocksList::UpdateConsumeOtherStocksList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeOtherStocksList::UpdateConsumeOtherStocksList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateConsumeOtherStocksList(id, consumeOtherStocksID, otherStocksID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ConsumeOtherStocksList::GetConsumeOtherStocksListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool ConsumeOtherStocksList::GetConsumeOtherStocksListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ConsumeOtherStocksList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int crID, int osID, double crlCount, double crlSum,
+	bool ConsumeOtherStocksList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int osID, double crlCount, double crlSum,
 		int cID, std::string& errorMessage)
 	{
 		ConsumeOtherStocksList consumeOtherStocksList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ConsumeOtherStocksList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeOtherStocksList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ConsumeOtherStocksList consumeOtherStocksList;
 		consumeOtherStocksList.Clear();

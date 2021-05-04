@@ -28,24 +28,24 @@ namespace BusinessLayer{
 		void SetAccountID(int);
 
 		// Create, delete Company-Access relation
-		bool CreateCompanyAccountRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteCompanyAccountRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateCompanyAccountRelation(DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage);
-		bool UpdateCompanyAccountRelation(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateCompanyAccountRelation(DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage);
+		bool CreateCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage);
+		bool UpdateCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateCompanyAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage);
 
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetCompanyAccountByID(DataLayer::OrmasDal& ormasDal, int id, std::string& errorMessage);
-		std::vector<int> GetAllCompanyByAccountID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage);
-		std::vector<int> GetAllAccountByCompanyID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		int GetAccountIDByCompanyID(DataLayer::OrmasDal& ormasDal, int cID, std::string parentNumber, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetCompanyAccountByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int id, std::string& errorMessage);
+		std::vector<int> GetAllCompanyByAccountID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage);
+		std::vector<int> GetAllAccountByCompanyID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		int GetAccountIDByCompanyID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string parentNumber, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int cID, int aID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, int aID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

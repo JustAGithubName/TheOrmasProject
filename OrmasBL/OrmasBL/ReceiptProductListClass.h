@@ -41,24 +41,24 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateReceiptProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateReceiptProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteReceiptProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByReceiptProductID(DataLayer::OrmasDal& ormasDal, int rpID, std::string& errorMessage);
-		bool CreateReceiptProductList(DataLayer::OrmasDal& ormasDal, int rpID, int pID, double rlCount, double rlSum,
+		bool CreateReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByReceiptProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, std::string& errorMessage);
+		bool CreateReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int pID, double rlCount, double rlSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateReceiptProductList(DataLayer::OrmasDal& ormasDal, int rpID, int pID, double rlCount, double rlSum,
+		bool UpdateReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int pID, double rlCount, double rlSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetReceiptProductListByID(DataLayer::OrmasDal& ormasDal, int rpID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetReceiptProductListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int rpID, int pID, double rlCount, double rlSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int pID, double rlCount, double rlSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //RECEIPTPRODUCTLISTCLASS_H

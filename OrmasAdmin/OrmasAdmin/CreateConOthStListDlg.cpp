@@ -60,12 +60,12 @@ CreateConOthStListDlg::~CreateConOthStListDlg()
 {
 	OtherStocksEdit->setText(QString::number(OtherStocksID));
 	BusinessLayer::OtherStocks OtherStocks;
-	if (OtherStocks.GetOtherStocksByID(dialogBL->GetOrmasDal(), OtherStocksID, errorMessage))
+	if (OtherStocks.GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), OtherStocksID, errorMessage))
 	{
 		prodNamePh->setText(OtherStocks.GetName().c_str());
 		volumePh->setText(QString::number(OtherStocks.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), OtherStocks.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), OtherStocks.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
@@ -90,12 +90,12 @@ void CreateConOthStListDlg::SetID(int ID, QString childName)
 			{
 				otherStocksEdit->setText(QString::number(ID));
 				BusinessLayer::OtherStocks OtherStocks;
-				if (OtherStocks.GetOtherStocksByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (OtherStocks.GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					othStNamePh->setText(OtherStocks.GetName().c_str());
 					volumePh->setText(QString::number(OtherStocks.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), OtherStocks.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), OtherStocks.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
@@ -109,7 +109,7 @@ void CreateConOthStListDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -138,18 +138,18 @@ void CreateConOthStListDlg::FillEditElements(int cConsumeOtherStocksID, int cOth
 	statusEdit->setText(QString::number(cStatusID));
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(cCurrencyID)));
 	BusinessLayer::OtherStocks OtherStocks;
-	if (OtherStocks.GetOtherStocksByID(dialogBL->GetOrmasDal(), cOtherStocksID, errorMessage))
+	if (OtherStocks.GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cOtherStocksID, errorMessage))
 	{
 		othStNamePh->setText(OtherStocks.GetName().c_str());
 		volumePh->setText(QString::number(OtherStocks.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), OtherStocks.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), OtherStocks.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), cStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), cStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -210,7 +210,7 @@ void CreateConOthStListDlg::AddOtherStocksToList()
 		BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 		BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
 
-		if (!otherStocks->GetOtherStocksByID(dialogBL->GetOrmasDal(), otherStocksEdit->text().toInt(), errorMessage))
+		if (!otherStocks->GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocksEdit->text().toInt(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr(errorMessage.c_str())),
@@ -223,9 +223,9 @@ void CreateConOthStListDlg::AddOtherStocksToList()
 		}
 		else
 		{
-			if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
-				|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage)
-				|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage))
+			if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
+				|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage)
+				|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -306,7 +306,7 @@ void CreateConOthStListDlg::EditOtherStocksInList()
 			|| statusEdit->text().toInt() != consumeOtherStocksList->GetStatusID() || currencyCmb->currentData().toInt() != consumeOtherStocksList->GetCurrencyID())
 		{
 			BusinessLayer::OtherStocks *otherStocks = new BusinessLayer::OtherStocks();
-			if (!otherStocks->GetOtherStocksByID(dialogBL->GetOrmasDal(), otherStocksEdit->text().toInt(), errorMessage))
+			if (!otherStocks->GetOtherStocksByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocksEdit->text().toInt(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -335,10 +335,10 @@ void CreateConOthStListDlg::EditOtherStocksInList()
 						BusinessLayer::Status *status = new BusinessLayer::Status();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
-						if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage)
-							|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
+						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetMeasureID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), otherStocks->GetCurrencyID(), errorMessage)
+							|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Warning")),
 								QString(tr(errorMessage.c_str())),
@@ -460,15 +460,15 @@ void CreateConOthStListDlg::OpenOthStDlg()
 	dForm->setWindowModality(Qt::WindowModal);
 
 	BusinessLayer::WarehouseEmployeeRelation weRelation;
-	weRelation.GetWarehouseEmployeeByEmployeeID(dialogBL->GetOrmasDal(), employeeID, errorMessage);
+	weRelation.GetWarehouseEmployeeByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeID, errorMessage);
 	std::vector<int> othStIDList;
 	BusinessLayer::LowValueStock stock;
-	othStIDList = stock.GetAllOtherStocksIDByWarehouseID(dialogBL->GetOrmasDal(), weRelation.GetWarehouseID(), errorMessage);
+	othStIDList = stock.GetAllOtherStocksIDByWarehouseID(dialogBL->globalVar, dialogBL->GetOrmasDal(), weRelation.GetWarehouseID(), errorMessage);
 	std::string filterIN = "";
 	if (othStIDList.size() > 0)
 	{
 		std::vector<std::string> filterList;
-	//	filterIN = otherStocks->GenerateINFilter(dialogBL->GetOrmasDal(), othStIDList);
+	//	filterIN = otherStocks->GenerateINFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), othStIDList);
 		//filterList.push_back(otherStocksFilter);
 	//	filterList.push_back(filterIN);
 		//OtherStocksFilter = dialogBL->ConcatenateFilters(filterList);

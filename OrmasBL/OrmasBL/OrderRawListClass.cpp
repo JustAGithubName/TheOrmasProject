@@ -88,14 +88,14 @@ namespace BusinessLayer
 		currencyID = oCurrencyID;
 	}
 
-	bool OrderRawList::CreateOrderRawList(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+	bool OrderRawList::CreateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 		int sID, int cID, std::string& errorMessage)
 	{
-		int subAccID = GetSubaccountIDForEmployee(ormasDal, errorMessage);
+		int subAccID = GetSubaccountIDForEmployee(globalVar, ormasDal, errorMessage);
 		if (0 == subAccID)
 			return false;
 		Product product;
-		if (!product.GetProductByID(ormasDal, pID, errorMessage))
+		if (!product.GetProductByID(globalVar, ormasDal, pID, errorMessage))
 			return false;
 		if (product.GetPrice()*olCount > olSum || product.GetPrice()*olCount < olSum)
 		{
@@ -104,7 +104,7 @@ namespace BusinessLayer
 			if (newPrice != product.GetPrice())
 			{
 				product.SetPrice(newPrice);
-				if (!product.UpdateProduct(ormasDal,errorMessage))
+				if (!product.UpdateProduct(globalVar, ormasDal,errorMessage))
 					return false;
 				double correctionValue = 0;
 				correctionValue = round((newPrice*olCount - olSum) * 1000) / 1000;
@@ -118,12 +118,12 @@ namespace BusinessLayer
 					if (correctionValue > 0)
 					{
 						debAccID = subAccID;
-						credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+						credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 						entry.SetValue(correctionValue);
 					}
 					if (correctionValue < 0)
 					{
-						debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+						debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 						credAccID = subAccID;
 						entry.SetValue(correctionValue* (-1));
 					}
@@ -138,11 +138,11 @@ namespace BusinessLayer
 					entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
 					entry.SetDescription(entrytext);
 					EntryOperationRelation eoRelation;
-					if (entry.CreateEntry(ormasDal, errorMessage))
+					if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 					{
 						eoRelation.SetEntryID(entry.GetID());
 						eoRelation.SetOperationID(id);
-						if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+						if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
@@ -167,13 +167,13 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OrderRawList::CreateOrderRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OrderRawList::CreateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		int subAccID = GetSubaccountIDForEmployee(ormasDal, errorMessage);
+		int subAccID = GetSubaccountIDForEmployee(globalVar, ormasDal, errorMessage);
 		if (0 == subAccID)
 			return false;
 		Product product;
-		if (!product.GetProductByID(ormasDal, productID, errorMessage))
+		if (!product.GetProductByID(globalVar, ormasDal, productID, errorMessage))
 			return false;
 		if (product.GetPrice()*count > sum || product.GetPrice()*count < sum)
 		{
@@ -182,7 +182,7 @@ namespace BusinessLayer
 			if (newPrice != product.GetPrice())
 			{
 				product.SetPrice(newPrice);
-				if (!product.UpdateProduct(ormasDal, errorMessage))
+				if (!product.UpdateProduct(globalVar, ormasDal, errorMessage))
 					return false;
 				double correctionValue = 0;
 				correctionValue = round((newPrice*count - sum) * 1000) / 1000;
@@ -196,12 +196,12 @@ namespace BusinessLayer
 					if (correctionValue > 0)
 					{
 						debAccID = subAccID;
-						credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+						credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 						entry.SetValue(correctionValue);
 					}
 					if (correctionValue < 0)
 					{
-						debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+						debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 						credAccID = subAccID;
 						entry.SetValue(correctionValue* (-1));
 					}
@@ -216,11 +216,11 @@ namespace BusinessLayer
 					entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
 					entry.SetDescription(entrytext);
 					EntryOperationRelation eoRelation;
-					if (entry.CreateEntry(ormasDal, errorMessage))
+					if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 					{
 						eoRelation.SetEntryID(entry.GetID());
 						eoRelation.SetOperationID(id);
-						if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+						if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
@@ -239,7 +239,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OrderRawList::DeleteOrderRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OrderRawList::DeleteOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInOrderRawList(id, errorMessage))
 		{
@@ -248,7 +248,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OrderRawList::DeleteListByOrderRawID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool OrderRawList::DeleteListByOrderRawID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		orderRawID = oID;
 		if (ormasDal.DeleteListByOrderRawID(orderRawID, errorMessage))
@@ -259,7 +259,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool OrderRawList::UpdateOrderRawList(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+	bool OrderRawList::UpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		orderRawID = oID;
@@ -274,7 +274,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OrderRawList::UpdateOrderRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OrderRawList::UpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateOrderRawList(id, orderRawID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -292,7 +292,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool OrderRawList::GetOrderRawListByID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool OrderRawList::GetOrderRawListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		if (oID <= 0)
 			return false;
@@ -335,7 +335,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool OrderRawList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+	bool OrderRawList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 		int cID, std::string& errorMessage)
 	{
 		OrderRawList orderRawList;
@@ -358,7 +358,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool OrderRawList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OrderRawList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		OrderRawList orderRawList;
 		orderRawList.Clear();
@@ -386,15 +386,15 @@ namespace BusinessLayer
 		return myconv.to_bytes(str);
 	}
 
-	int OrderRawList::GetSubaccountIDForEmployee(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	int OrderRawList::GetSubaccountIDForEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
 		if (0 == employeeID)
 			return 0;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, employeeID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, employeeID, errorMessage))
 			return 0;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return 0;
 		return warehouse.GetSubaccountID();
 	}

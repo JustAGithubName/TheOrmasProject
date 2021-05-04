@@ -22,7 +22,7 @@ namespace BusinessLayer
 		ConsumeOtherStocksView(DataLayer::consumeOtherStocksViewCollection);
 		ConsumeOtherStocksView(){};
 		~ConsumeOtherStocksView(){};
-
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 		// OrderView class Accessors
 		std::string GetStatusCode();
 		std::string GetStatusName();
@@ -35,6 +35,18 @@ namespace BusinessLayer
 		std::string GetStockEmployeePhone();
 		std::string GetStockEmployeePosition();
 		std::string GetCurrencyName();
+
+		void SetStatusCode(std::string);
+		void SetStatusName(std::string);
+		void SetEmployeeName(std::string);
+		void SetEmployeeSurname(std::string);
+		void SetEmployeePhone(std::string);
+		void SetEmployeePosition(std::string);
+		void SetStockEmployeeName(std::string);
+		void SetStockEmployeeSurname(std::string);
+		void SetStockEmployeePhone(std::string);
+		void SetStockEmployeePosition(std::string);
+		void SetCurrencyName(std::string);
 
 	};
 }

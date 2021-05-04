@@ -97,10 +97,16 @@ void CloseOfMonthDlg::Calculate()
 {
 	std::string fromDate = fromDateEdit->text().toUtf8().constData();
 	std::string tillDate = tillDateEdit->text().toUtf8().constData();
-	dialogBL->StartTransaction(errorMessage);
+	dialogBL->StartIsolatedTransaction(errorMessage);
 	if (dialogBL->CloseOfMonth(fromDate, tillDate))
 	{
-		dialogBL->CommitTransaction(errorMessage);
+		if (!dialogBL->CommitTransaction(errorMessage))
+		{
+			dialogBL->CancelTransaction(errorMessage);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
 		QMessageBox::information(NULL, QString(tr("Info")),
 			QString(tr("Close of month is successfully ended!")),
 			QString(tr("Ok")));

@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = rCurrencyID;
 	}
 
-	bool ReturnList::CreateReturnList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rCount, double rSum,
+	bool ReturnList::CreateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rCount, double rSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReturnList::CreateReturnList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReturnList::CreateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateReturnList(id, returnID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReturnList::DeleteReturnList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReturnList::DeleteReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInReturnList(id, errorMessage))
 		{
@@ -113,7 +113,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReturnList::DeleteListByReturnID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage)
+	bool ReturnList::DeleteListByReturnID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage)
 	{
 		returnID = rID;
 		if (ormasDal.DeleteListByReturnID(id, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReturnList::UpdateReturnList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rCount, double rSum,
+	bool ReturnList::UpdateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rCount, double rSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		returnID = rID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReturnList::UpdateReturnList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReturnList::UpdateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateReturnList(id, returnID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ReturnList::GetReturnListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool ReturnList::GetReturnListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ReturnList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+	bool ReturnList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 		int cID, std::string& errorMessage)
 	{
 		ReturnList returnList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ReturnList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReturnList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ReturnList returnList;
 		returnList.Clear();

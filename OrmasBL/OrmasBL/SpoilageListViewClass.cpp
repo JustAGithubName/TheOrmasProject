@@ -50,4 +50,44 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+	void SpoilageListView::SetProductName(std::string cProductName)
+	{
+		productName = cProductName;
+	}
+	void SpoilageListView::SetPrice(double cPrice)
+	{
+		price = cPrice;
+	}
+	void  SpoilageListView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+	void SpoilageListView::SetVolume(double cVolume)
+	{
+		volume = cVolume;
+	}
+	void SpoilageListView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void SpoilageListView::SetSumCurrencyName(std::string cSumCurrencyName)
+	{
+		sumCurrencyName = cSumCurrencyName;
+	}
+	void SpoilageListView::SetMeasureName(std::string cMeasureName)
+	{
+		measureName = cMeasureName;
+	}
+
+	std::string SpoilageListView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != spoilageID || !productName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty()
+			|| 0 != count || 0 != sum || !sumCurrencyName.empty() || !statusName.empty() || 0 != productID || 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForSpoilageListView(id, spoilageID, productName, price, currencyName, volume, measureName, count, sum,
+				sumCurrencyName, statusName, productID, statusID, currencyID);
+		}
+		return "";
+	}
+
 }

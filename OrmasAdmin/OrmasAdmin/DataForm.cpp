@@ -5,6 +5,7 @@
 #include "AllDlgHeaders.h"
 
 
+
 DataForm::DataForm(BusinessLayer::OrmasBL *ormasBL, QWidget *parent) :QWidget(parent)
 {
 	setupUi(this);
@@ -28,9 +29,13 @@ DataForm::DataForm(BusinessLayer::OrmasBL *ormasBL, QWidget *parent) :QWidget(pa
 		connect(tableView, SIGNAL(cellClicked(int, int)), this, SLOT(OpenList(int, int)));
 	}
 	connect(filterBtn, &QPushButton::released, this, &DataForm::Filter);
+	connect(refreshBtn, &QPushButton::released, this, &DataForm::Refresh);
+	connect(searchBtn, &QPushButton::released, this, &DataForm::FilterSearchInBase);
 	connect(clearBtn, &QPushButton::released, this, &DataForm::ClearFilter);
-	HileSomeRow();
+	HideSomeRow();
 	this->setWindowIcon(QIcon("./images/ormas.png"));
+
+
 }
 
 // All Slots ----------------------------------------------------------------------------
@@ -45,9 +50,9 @@ void DataForm::Search(QString searchText)
 {
 	if (!searchText.isEmpty())
 	{
-		for (int i = 0; i <= tableView->model()->columnCount(); i++)
+		for (int i = 0; i < tableView->model()->columnCount(); i++)
 		{
-			for (int j = 0; j <= tableView->model()->rowCount(); j++)
+			for (int j = 0; j < tableView->model()->rowCount(); j++)
 			{
 				QModelIndex index = tableView->model()->index(j, i);
 				if (index.data().toString().compare(searchText, Qt::CaseInsensitive) == 0
@@ -63,7 +68,7 @@ void DataForm::Search(QString searchText)
 
 void DataForm::ClearFilter()
 {
-	for (int i = 0; i <= tableView->model()->rowCount(); i++)
+	for (int i = 0; i < tableView->model()->rowCount(); i++)
 	{
 		tableView->showRow(i);
 	}
@@ -76,7 +81,7 @@ void DataForm::Filter()
 	QString filterText = valueEdit->text();
 	if (!filterText.isEmpty())
 	{
-		for (int i = 0; i <= tableView->model()->rowCount(); i++)
+		for (int i = 0; i < tableView->model()->rowCount(); i++)
 		{
 			QModelIndex index = tableView->model()->index(i, columnCmb->currentData().toInt());
 			if (0 == typeCmb->currentData().toInt())
@@ -131,6 +136,4169 @@ void DataForm::Filter()
 	filterWidget->show();
 }
 
+void DataForm::FilterSearchInBase()
+{
+	QString filterText = valueSearchEdit->text();
+	std::string filter="";
+	if (!filterText.isEmpty())
+	{
+		if (objectName() == "accountForm")
+		{
+			BusinessLayer::Account account;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				account.SetID(filterText.toInt());
+				break;
+			case 1:
+				account.SetNumber(filterText.toStdString());
+				break;
+			case 2:
+				account.SetStartBalance(filterText.toDouble());
+				break;
+			case 3:
+				account.SetCurrentBalance(filterText.toDouble());
+				break;
+		
+			}
+			filter = account.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAccForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "acctbDocForm")
+		{
+			BusinessLayer::AccountableDocument acctbDoc;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				acctbDoc.SetID(filterText.toInt());
+				break;
+			case 1:
+				acctbDoc.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				acctbDoc.SetValue(filterText.toDouble());
+				break;
+			case 3:
+				acctbDoc.SetExpenseAssignment(filterText.toStdString());
+				break;
+			case 4:
+				acctbDoc.SetAccountableID(filterText.toInt());
+				break;
+			case 5:
+				acctbDoc.SetStatusID(filterText.toInt());
+				break;
+			}
+			filter = acctbDoc.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAccblDocForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "accountTypeForm")
+		{
+			BusinessLayer::AccountType accType;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				accType.SetID(filterText.toInt());
+				break;
+			case 1:
+				accType.SetName(filterText.toStdString());
+				break;
+			case 2:
+				accType.SetNumber(filterText.toInt());
+				break;
+			case 3:
+				accType.SetComment(filterText.toStdString());
+				break;
+			}
+			filter = accType.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAcsItemForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "accessItemForm")
+		{
+			BusinessLayer::AccessItem accessItem;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				accessItem.SetID(filterText.toInt());
+				break;
+			case 1:
+				accessItem.SetNameEng(filterText.toStdString());
+				break;
+			case 2:
+				accessItem.SetNameRu(filterText.toStdString());
+				break;
+			case 3:
+				accessItem.SetDivision(filterText.toStdString());
+				break;
+			}
+			filter = accessItem.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAcsItemForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "accessForm")
+		{
+			BusinessLayer::AccessView accessView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				accessView.SetID(filterText.toInt());
+				break;
+			case 1:
+				accessView.SetRoleName(filterText.toStdString());
+				break;
+			case 2:
+				accessView.SetAccessItemEng(filterText.toStdString());
+				break;
+			case 3:
+				accessView.SetAccessItemRu(filterText.toStdString());
+				break;
+			case 4:
+				accessView.SetDivision(filterText.toStdString());
+				break;
+			case 5:
+				accessView.SetRoleID(filterText.toInt());
+				break;
+			case 6:
+				accessView.SetAccessItemID(filterText.toInt());
+				break;
+			}
+			filter = accessView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAccessForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "accountableForm")
+		{
+			BusinessLayer::AccountableView accountbleView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				accountbleView.SetID(filterText.toInt());
+				break;
+			case 1:
+				accountbleView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				accountbleView.SetSurname(filterText.toStdString());
+				break;
+			case 3:
+				accountbleView.SetInformation(filterText.toStdString());
+				break;
+			case 4:
+				accountbleView.SetPhone(filterText.toStdString());
+				break;
+			case 5:
+				accountbleView.SetAddress(filterText.toStdString());
+				break;
+			case 6:
+				accountbleView.SetRoleName(filterText.toStdString());
+				break;
+			}
+			filter = accountbleView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAcctblForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "amGroupForm")
+		{
+			BusinessLayer::AmortizeGroup amGroup;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				amGroup.SetID(filterText.toInt());
+				break;
+			case 1:
+				amGroup.SetGroupNumber(filterText.toInt());
+				break;
+			case 2:
+				amGroup.SetFromMonth(filterText.toInt());
+				break;
+			case 3:
+				amGroup.SetToMonth(filterText.toInt());
+				break;
+			}
+			filter = amGroup.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAmGrForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "amTypeForm")
+		{
+			BusinessLayer::AmortizeType amType;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				amType.SetID(filterText.toInt());
+				break;
+			case 1:
+				amType.SetName(filterText.toStdString());
+				break;
+			case 2:
+				amType.SetCode(filterText.toStdString());
+				break;
+			}
+			filter = amType.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAmTypeForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "balanceForm")
+		{
+			BusinessLayer::BalanceView balanceView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				balanceView.SetID(filterText.toInt());
+				break;
+			case 1:
+				balanceView.SetUsername(filterText.toStdString());
+				break;
+			case 2:
+				balanceView.SetUserSurname(filterText.toStdString());
+				break;
+			case 3:
+				balanceView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 4:
+				balanceView.SetCurrentBalance(filterText.toDouble());
+				break;
+			case 5:
+				balanceView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 6:
+				balanceView.SetUserID(filterText.toInt());
+				break;
+			case 7:
+				balanceView.SetSubaccountID(filterText.toInt());
+				break;
+			}
+			filter = balanceView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInBlcForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "branchForm")
+		{
+			BusinessLayer::Branch branch;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				branch.SetID(filterText.toInt());
+				break;
+			case 1:
+				branch.SetName(filterText.toStdString());
+				break;
+			case 2:
+				branch.SetAddress(filterText.toStdString());
+				break;
+			case 3:
+				branch.SetPhone(filterText.toStdString());
+				break;
+			case 4:
+				branch.SetComment(filterText.toStdString());
+				break;
+			}
+			filter = branch.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInBrhForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "borrowerForm")
+		{
+			BusinessLayer::BorrowerView borrowerView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				borrowerView.SetID(filterText.toInt());
+				break;
+			case 1:
+				borrowerView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				borrowerView.SetSurname(filterText.toStdString());
+				break;
+			case 3:
+				borrowerView.SetComment(filterText.toStdString());
+				break;
+			case 4:
+				borrowerView.SetPhone(filterText.toStdString());
+				break;
+			case 5:
+				borrowerView.SetAddress(filterText.toStdString());
+				break;
+			case 6:
+				borrowerView.SetRoleName(filterText.toStdString());
+				break;
+			case 7:
+				borrowerView.SetPassword(filterText.toStdString());
+				break;
+			case 8:
+				borrowerView.SetEmail(filterText.toStdString());
+				break;
+			case 10:
+				borrowerView.SetRoleID(filterText.toInt());
+				break;
+			}
+
+			filter = borrowerView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInBrwForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "branchSubaccountForm")
+		{
+			BusinessLayer::BranchSubaccountRelationView brSAccView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				brSAccView.SetID(filterText.toInt());
+				break;
+			case 1:
+				brSAccView.SetBranchName(filterText.toStdString());
+				break;
+			case 2:
+				brSAccView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 3:
+				brSAccView.SetBranchID(filterText.toInt());
+				break;
+			case 4:
+				brSAccView.SetSubaccountID(filterText.toInt());
+				break;
+			}
+
+			filter = brSAccView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInBrSAccForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "cashboxEmployeeForm")
+		{
+			BusinessLayer::CashboxEmployeeRelationView cashERView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				cashERView.SetID(filterText.toInt());
+				break;
+			case 1:
+				cashERView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 2:
+				cashERView.SetCashboxAddress(filterText.toStdString());
+				break;
+			case 3:
+				cashERView.SetUsername(filterText.toStdString());
+				break;
+			case 4:
+				cashERView.SetUserSurname(filterText.toStdString());
+				break;
+			case 5:
+				cashERView.SetUserPhone(filterText.toStdString());
+				break;
+			case 6:
+				cashERView.SetRoleName(filterText.toStdString());
+				break;
+			case 7:
+				cashERView.SetCashboxID(filterText.toInt());
+				break;
+			case 8:
+				cashERView.SetEmployeeID(filterText.toInt());
+				break;
+			}
+
+			filter = cashERView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCASHERForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "cashboxForm")
+		{
+			BusinessLayer::CashboxView cashboxView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				cashboxView.SetID(filterText.toInt());
+				break;
+			case 1:
+				cashboxView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 2:
+				cashboxView.SetInformation(filterText.toStdString());
+				break;
+			case 3:
+				cashboxView.SetAddress(filterText.toStdString());
+				break;
+			case 4:
+				cashboxView.SetSubaccountID(filterText.toInt());
+				break;
+			}
+
+			filter = cashboxView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCbxForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "chartOffAccountForm")
+		{
+			BusinessLayer::ChartOfAccountsView caoView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				caoView.SetID(filterText.toInt());
+				break;
+			case 1:
+				caoView.SetNumber(filterText.toStdString());
+				break;
+			case 2:
+				caoView.SetName(filterText.toStdString());
+				break;
+			case 3:
+				caoView.SetAccountTypeName(filterText.toStdString());
+				break;
+			case 4:
+				caoView.SetAccountTypeID(filterText.toInt());
+				break;
+			}
+
+			filter = caoView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCOADForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "clientForm")
+		{
+			BusinessLayer::ClientView clientView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				clientView.SetID(filterText.toInt());
+				break;
+			case 1:
+				clientView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				clientView.SetSurname(filterText.toStdString());
+				break;
+			case 3:
+				clientView.SetPhone(filterText.toStdString());
+				break;
+			case 4:
+				clientView.SetCountryName(filterText.toStdString());
+				break;
+			case 5:
+				clientView.SetRegionName(filterText.toStdString());
+				break;
+			case 6:
+				clientView.SetCityName(filterText.toStdString());
+				break;
+			case 7:
+				clientView.SetAddress(filterText.toStdString());
+				break;
+			case 8:
+				clientView.SetFirm(filterText.toStdString());
+				break;
+			case 9:
+				clientView.SetFirmNumber(filterText.toStdString());
+				break;
+			case 10:
+				clientView.SetRoleName(filterText.toStdString());
+				break;
+			case 11:
+				clientView.SetPassword(filterText.toStdString());
+				break;
+			case 12:
+				clientView.SetEmail(filterText.toStdString());
+				break;
+			case 14:
+				clientView.SetRoleID(filterText.toInt());
+				break;
+			case 15:
+				clientView.SetLocationID(filterText.toInt());
+				break;
+			}
+			filter = clientView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCltForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "companyAccountForm")
+		{
+			BusinessLayer::CompanyAccountRelationView carView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				carView.SetID(filterText.toInt());
+				break;
+			case 1:
+				carView.SetCompanyName(filterText.toStdString());
+				break;
+			case 2:
+				carView.SetAccountNumber(filterText.toStdString());
+				break;
+			case 3:
+				carView.SetCompanyID(filterText.toInt());
+				break;
+			case 4:
+				carView.SetAccountID(filterText.toInt());
+				break;
+			}
+
+			filter = carView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCARForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "companyForm")
+		{
+			BusinessLayer::Company company;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				company.SetID(filterText.toInt());
+				break;
+			case 1:
+				company.SetName(filterText.toStdString());
+				break;
+			case 2:
+				company.SetAddress(filterText.toStdString());
+				break;
+			case 3:
+				company.SetPhone(filterText.toStdString());
+				break;
+			case 4:
+				company.SetComment(filterText.toStdString());
+				break;
+			}
+
+			filter = company.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCmpForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "companyEmployeeForm")
+		{
+			BusinessLayer::CompanyEmployeeRelationView cerEmpView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				cerEmpView.SetID(filterText.toInt());
+				break;
+			case 1:
+				cerEmpView.SetCompanyName(filterText.toStdString());
+				break;
+			case 2:
+				cerEmpView.SetBranchName(filterText.toStdString());
+				break;
+			case 3:
+				cerEmpView.SetUsername(filterText.toStdString());
+				break;
+			case 4:
+				cerEmpView.SetUserSurname(filterText.toStdString());
+				break;
+			case 5:
+				cerEmpView.SetUserPhone(filterText.toStdString());
+				break;
+			case 6:
+				cerEmpView.SetCompanyID(filterText.toInt());
+				break;
+			case 7:
+				cerEmpView.SetEmployeeID(filterText.toInt());
+				break;
+			case 8:
+				cerEmpView.SetBranchID(filterText.toInt());
+				break;
+			}
+
+			filter = cerEmpView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCERForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "consumeProductForm")
+		{
+			BusinessLayer::ConsumeProductView conPView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				conPView.SetID(filterText.toInt());
+				break;
+			case 1:
+				conPView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				conPView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				conPView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				conPView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				conPView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				conPView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				conPView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				conPView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 9:
+				conPView.SetStockEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				conPView.SetStockEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				conPView.SetStockEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				conPView.SetStockEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				conPView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				conPView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				conPView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				conPView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				conPView.SetStockEmployeeID(filterText.toInt());
+				break;
+			case 18:
+				conPView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				conPView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = conPView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInConPForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "consumeOthStForm")
+		{
+			BusinessLayer::ConsumeOtherStocksView conOthView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				conOthView.SetID(filterText.toInt());
+				break;
+			case 1:
+				conOthView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				conOthView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				conOthView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				conOthView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				conOthView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				conOthView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				conOthView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				conOthView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 9:
+				conOthView.SetStockEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				conOthView.SetStockEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				conOthView.SetStockEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				conOthView.SetStockEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				conOthView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				conOthView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				conOthView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				conOthView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				conOthView.SetStockEmployeeID(filterText.toInt());
+				break;
+			case 18:
+				conOthView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				conOthView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = conOthView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInConOthForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "consumeRawForm")
+		{
+			BusinessLayer::ConsumeRawView conRawView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				conRawView.SetID(filterText.toInt());
+				break;
+			case 1:
+				conRawView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				conRawView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				conRawView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				conRawView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				conRawView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				conRawView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				conRawView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				conRawView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 9:
+				conRawView.SetStockEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				conRawView.SetStockEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				conRawView.SetStockEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				conRawView.SetStockEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				conRawView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				conRawView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				conRawView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				conRawView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				conRawView.SetStockEmployeeID(filterText.toInt());
+				break;
+			case 18:
+				conRawView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				conRawView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = conRawView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInConRForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "currencyForm")
+		{
+			BusinessLayer::Currency currency;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				currency.SetID(filterText.toInt());
+				break;
+			case 1:
+				currency.SetCode(filterText.toInt());
+				break;
+			case 2:
+				currency.SetShortName(filterText.toStdString());
+				break;
+			case 3:
+				currency.SetName(filterText.toStdString());
+				break;
+			case 4:
+				currency.SetUnit(filterText.toInt());
+				break;
+			}
+
+			filter = currency.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCurForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "divisionForm")
+		{
+			BusinessLayer::Division div;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				div.SetID(filterText.toInt());
+				break;
+			case 1:
+				div.SetName(filterText.toStdString());
+				break;
+			case 2:
+				div.SetCode(filterText.toStdString());
+				break;
+			}
+
+			filter = div.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInDivForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "divisionAccForm")
+		{
+			BusinessLayer::DivisionAccountRelationView divAccView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				divAccView.SetID(filterText.toInt());
+				break;
+			case 1:
+				divAccView.SetDivisionName(filterText.toStdString());
+				break;
+			case 2:
+				divAccView.SetAccountNumber(filterText.toStdString());
+				break;
+			case 3:
+				divAccView.SetAccountName(filterText.toStdString());
+				break;
+			case 4:
+				divAccView.SetCode(filterText.toStdString());
+				break;
+			case 5:
+				divAccView.SetAccountID(filterText.toInt());
+				break;
+			}
+
+			filter = divAccView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInDivAccForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "employeeForm")
+		{
+			BusinessLayer::EmployeeView employeeView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				employeeView.SetID(filterText.toInt());
+				break;
+			case 1:
+				employeeView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				employeeView.SetSurname(filterText.toStdString());
+				break;
+			case 3:
+				employeeView.SetPositionName(filterText.toStdString());
+				break;
+			case 4:
+				employeeView.SetPhone(filterText.toStdString());
+				break;
+			case 5:
+				employeeView.SetAddress(filterText.toStdString());
+				break;
+			case 6:
+				employeeView.SetBirthDate(filterText.toStdString());
+				break;
+			case 7:
+				employeeView.SetRoleName(filterText.toStdString());
+				break;
+			case 8:
+				employeeView.SetHireDate(filterText.toStdString());
+				break;
+			case 9:
+				employeeView.SetPassword(filterText.toStdString());
+				break;
+			case 10:
+				employeeView.SetEmail(filterText.toStdString());
+				break;
+			case 12:
+				employeeView.SetRoleID(filterText.toInt());
+				break;
+			case 13:
+				employeeView.SetPositionID(filterText.toInt());
+				break;
+			case 14:
+				employeeView.SetDivisionEmployeeID(filterText.toInt());
+				break;
+			case 15:
+				employeeView.SetDivisionID(filterText.toInt());
+				break;
+			}
+
+			filter = employeeView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInEmpForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "employeeProductForm")
+		{
+			BusinessLayer::EmployeeProductRelationView employeeProdView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				employeeProdView.SetID(filterText.toInt());
+				break;
+			case 1:
+				employeeProdView.SetUsername(filterText.toStdString());
+				break;
+			case 2:
+				employeeProdView.SetUserSurname(filterText.toStdString());
+				break;
+			case 3:
+				employeeProdView.SetUserPhone(filterText.toStdString());
+				break;
+			case 4:
+				employeeProdView.SetProductName(filterText.toStdString());
+				break;
+			case 5:
+				employeeProdView.SetPrice(filterText.toDouble());
+				break;
+			case 6:
+				employeeProdView.SetEmployeeID(filterText.toInt());
+				break;
+			case 7:
+				employeeProdView.SetProductID(filterText.toInt());
+				break;
+			}
+
+			filter = employeeProdView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInEmpPrdForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "entryForm")
+		{
+			BusinessLayer::EntryView entryView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				entryView.SetID(filterText.toInt());
+				break;
+			case 1:
+				entryView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				entryView.SetDebitingAccountNumber(filterText.toStdString());
+				break;
+			case 3:
+				entryView.SetValue(filterText.toDouble());
+				break;
+			case 4:
+				entryView.SetCreditingAccountNumber(filterText.toStdString());
+				break;
+			case 5:
+				entryView.SetDebitingAccountID(filterText.toInt());
+				break;
+			case 6:
+				entryView.SetCreditingAccountID(filterText.toInt());
+				break;
+			case 7:
+				entryView.SetDescription(filterText.toStdString());
+				break;
+			}
+
+			filter = entryView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInEtrForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "entryRoutingForm")
+		{
+			BusinessLayer::EntryRouting entryRt;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				entryRt.SetID(filterText.toInt());
+				break;
+			case 1:
+				entryRt.SetOperation(filterText.toStdString());
+				break;
+			case 2:
+				entryRt.SetDebitAccountID(filterText.toInt());
+				break;
+			case 3:
+				entryRt.SetCreditAccountID(filterText.toInt());
+				break;
+			}
+
+			filter = entryRt.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInEtrRtForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "fixedAstForm")
+		{
+			BusinessLayer::FixedAssetsView fxView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				fxView.SetID(filterText.toInt());
+				break;
+			case 1:
+				fxView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				fxView.SetInventoryNumber(filterText.toStdString());
+				break;
+			case 3:
+				fxView.SetPrimaryCost(filterText.toDouble());
+				break;
+			case 4:
+				fxView.SetStopCost(filterText.toDouble());
+				break;
+			case 5:
+				fxView.SetPrimaryCostValue(filterText.toDouble());
+				break;
+			case 6:
+				fxView.SetAmortizeValue(filterText.toDouble());
+				break;
+			case 7:
+				fxView.SetDivisionName(filterText.toStdString());
+				break;
+			case 8:
+				fxView.SetStatusName(filterText.toStdString());
+				break;
+			case 9:
+				fxView.SetServiceLife(filterText.toInt());
+				break;
+			case 11:
+				fxView.SetBuyDate(filterText.toStdString());
+				break;
+			case 12:
+				fxView.SetStartOfOperationDate(filterText.toStdString());
+				break;
+			case 13:
+				fxView.SetEndOfOperationDate(filterText.toStdString());
+				break;
+			case 14:
+				fxView.SetSpecificationID(filterText.toInt());
+				break;
+			case 15:
+				fxView.SetStatusID(filterText.toInt());
+				break;
+			case 16:
+				fxView.SetFixedAssetsDetailsID(filterText.toInt());
+				break;
+			}
+			filter = fxView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInFxdAstForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "fixedAstOperForm")
+		{
+			BusinessLayer::FixedAssetsOperations fxOper;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				fxOper.SetID(filterText.toInt());
+				break;
+			case 1:
+				fxOper.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				fxOper.SetName(filterText.toStdString());
+				break;
+			case 3:
+				fxOper.SetValue(filterText.toDouble());
+				break;
+			case 4:
+				fxOper.SetIncrement(filterText.toInt());
+				break;
+			case 5:
+				fxOper.SetDecrement(filterText.toInt());
+				break;
+			case 6:
+				fxOper.SetFixedAssetsID(filterText.toInt());
+				break;
+			}
+			filter = fxOper.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInAstOperForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "inventoryForm")
+		{
+			BusinessLayer::InventoryView invView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				invView.SetID(filterText.toInt());
+				break;
+			case 1:
+				invView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				invView.SetCost(filterText.toDouble());
+				break;
+			case 3:
+				invView.SetInventoryNumber(filterText.toStdString());
+				break;
+			case 4:
+				invView.SetBarcodeNumber(filterText.toStdString());
+				break;
+			case 5:
+				invView.SetDivisionName(filterText.toStdString());
+				break;
+			case 6:
+				invView.SetStatusName(filterText.toStdString());
+				break;
+			case 7:
+				invView.SetLocation(filterText.toStdString());
+				break;
+			case 8:
+				invView.SetStartOfOperationDate(filterText.toStdString());
+				break;
+			case 9:
+				invView.SetEndOfOperationDate(filterText.toStdString());
+				break;
+			case 10:
+				invView.SetStatusID(filterText.toInt());
+				break;
+			case 11:
+				invView.SetDepartmentID(filterText.toInt());
+				break;
+			case 12:
+				invView.SetSubaccountID(filterText.toInt());
+				break;
+			}
+			filter = invView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInInveForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "inventorizationForm")
+		{
+			BusinessLayer::InventorizationView invView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				invView.SetID(filterText.toInt());
+				break;
+			case 1:
+				invView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				invView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				invView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				invView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				invView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				invView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				invView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				invView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 9:
+				invView.SetStockEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				invView.SetStockEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				invView.SetStockEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				invView.SetStockEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				invView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				invView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				invView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				invView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				invView.SetStockEmployeeID(filterText.toInt());
+				break;
+			case 18:
+				invView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				invView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = invView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInInvForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "groupForm")
+		{
+			BusinessLayer::Group group;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				group.SetID(filterText.toInt());
+				break;
+			case 1:
+				group.SetName(filterText.toStdString());
+				break;
+			case 2:
+				group.SetDefenition(filterText.toStdString());
+				break;
+			}
+			filter = group.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInGroupForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "jobpriceForm")
+		{
+			BusinessLayer::JobpriceView jobView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				jobView.SetID(filterText.toInt());
+				break;
+			case 1:
+				jobView.SetProductName(filterText.toStdString());
+				break;
+			case 2:
+				jobView.SetValue(filterText.toDouble());
+				break;
+			case 3:
+				jobView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 4:
+				jobView.SetVolume(filterText.toDouble());
+				break;
+			case 5:
+				jobView.SetMeasureName(filterText.toStdString());
+				break;
+			case 6:
+				jobView.SetPositionName(filterText.toStdString());
+				break;
+			case 7:
+				jobView.SetProductID(filterText.toInt());
+				break;
+			case 8:
+				jobView.SetCurrencyID(filterText.toInt());
+				break;
+			case 9:
+				jobView.SetMeasureID(filterText.toInt());
+				break;
+			case 10:
+				jobView.SetPositionID(filterText.toInt());
+				break;
+			}
+			filter = jobView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInJbpForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "jobsheetForm")
+		{
+			BusinessLayer::JobsheetView jobsheetView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				jobsheetView.SetID(filterText.toInt());
+				break;
+			case 1:
+				jobsheetView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				jobsheetView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 3:
+				jobsheetView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 4:
+				jobsheetView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 5:
+				jobsheetView.SetProductName(filterText.toStdString());
+				break;
+			case 6:
+				jobsheetView.SetCount(filterText.toDouble());
+				break;
+			case 7:
+				jobsheetView.SetProductID(filterText.toInt());
+				break;
+			case 8:
+				jobsheetView.SetMeasureName(filterText.toStdString());
+				break;
+			case 9:
+				jobsheetView.SetProductID(filterText.toInt());
+				break;
+			case 10:
+				jobsheetView.SetEmployeeID(filterText.toInt());
+				break;
+			}
+			filter = jobsheetView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInJbsForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "lowValueStockForm")
+		{
+
+			BusinessLayer::LowValueStockView lwstockView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				lwstockView.SetID(filterText.toInt());
+				break;
+			case 1:
+				lwstockView.SetOtherStocksName(filterText.toStdString());
+				break;
+			case 2:
+				lwstockView.SetPrice(filterText.toDouble());
+				break;
+			case 3:
+				lwstockView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 4:
+				lwstockView.SetVolume(filterText.toDouble());
+				break;
+			case 5:
+				lwstockView.SetMeasureName(filterText.toStdString());
+				break;
+			case 6:
+				lwstockView.SetCount(filterText.toDouble());
+				break;
+			case 7:
+				lwstockView.SetSum(filterText.toDouble());
+				break;
+			case 8:
+				lwstockView.SetSumCurrencyName(filterText.toStdString());
+				break;
+			case 9:
+				lwstockView.SetWarehouseName(filterText.toStdString());
+				break;
+			case 10:
+				lwstockView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 11:
+				lwstockView.SetStatusName(filterText.toStdString());
+				break;
+			case 12:
+				lwstockView.SetOtherStocksID(filterText.toInt());
+				break;
+			case 13:
+				lwstockView.SetStatusID(filterText.toInt());
+				break;
+			case 14:
+				lwstockView.SetCurrencyID(filterText.toInt());
+				break;
+			case 15:
+				lwstockView.SetWarehouseID(filterText.toInt());
+				break;
+			}
+			filter = lwstockView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInLowValStockForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "locationForm")
+		{
+			BusinessLayer::Location location;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				location.SetID(filterText.toInt());
+				break;
+			case 1:
+				location.SetCountryName(filterText.toStdString());
+				break;
+			case 2:
+				location.SetCountryCode(filterText.toStdString());
+				break;
+			case 3:
+				location.SetRegionName(filterText.toStdString());
+				break;
+			case 4:
+				location.SetCityName(filterText.toStdString());
+				break;
+			}
+			filter = location.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInLcnForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "measureForm")
+		{
+			BusinessLayer::Measure measuer;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				measuer.SetID(filterText.toInt());
+				break;
+			case 1:
+				measuer.SetName(filterText.toStdString());
+				break;
+			case 2:
+				measuer.SetShortName(filterText.toStdString());
+				break;
+			case 3:
+				measuer.SetUnit(filterText.toInt());
+				break;
+			}
+			filter = measuer.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInMsrForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "netCostForm")
+		{
+			BusinessLayer::NetCostView nckView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				nckView.SetID(filterText.toInt());
+				break;
+			case 1:
+				nckView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				nckView.SetProductName(filterText.toStdString());
+				break;
+			case 3:
+				nckView.SetVolume(filterText.toDouble());
+				break;
+			case 4:
+				nckView.SetMeasureName(filterText.toStdString());
+				break;
+			case 5:
+				nckView.SetValue(filterText.toDouble());
+				break;
+			case 6:
+				nckView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 7:
+				nckView.SetCurrencyID(filterText.toInt());
+				break;
+			case 8:
+				nckView.SetProductID(filterText.toInt());
+				break;
+			}
+			filter = nckView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInNetCForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "orderForm")
+		{
+			BusinessLayer::OrderView orderView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				orderView.SetID(filterText.toInt());
+				break;
+			case 1:
+				orderView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				orderView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				orderView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				orderView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				orderView.SetClientName(filterText.toStdString());
+				break;
+			case 6:
+				orderView.SetClientSurname(filterText.toStdString());
+				break;
+			case 7:
+				orderView.SetClientPhone(filterText.toStdString());
+				break;
+			case 8:
+				orderView.SetClientAddress(filterText.toStdString());
+				break;
+			case 9:
+				orderView.SetClientFirm(filterText.toStdString());
+				break;
+			case 10:
+				orderView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 11:
+				orderView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 12:
+				orderView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 13:
+				orderView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				orderView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				orderView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				orderView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				orderView.SetClientID(filterText.toInt());
+				break;
+			case 18:
+				orderView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				orderView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = orderView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInOrderForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "orderRawForm")
+		{
+			BusinessLayer::OrderRawView orderRawView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				orderRawView.SetID(filterText.toInt());
+				break;
+			case 1:
+				orderRawView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				orderRawView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				orderRawView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				orderRawView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				orderRawView.SetPurveyorName(filterText.toStdString());
+				break;
+			case 6:
+				orderRawView.SetPurveyorSurname(filterText.toStdString());
+				break;
+			case 7:
+				orderRawView.SetPurveyorPhone(filterText.toStdString());
+				break;
+			case 8:
+				orderRawView.SetPurveyorCompanyName(filterText.toStdString());
+				break;
+			case 9:
+				orderRawView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				orderRawView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				orderRawView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				orderRawView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				orderRawView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				orderRawView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				orderRawView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				orderRawView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				orderRawView.SetPurveyorID(filterText.toInt());
+				break;
+			case 18:
+				orderRawView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				orderRawView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = orderRawView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInOrdRForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "otherStocksForm")
+		{
+			BusinessLayer::OtherStocksView othStView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				othStView.SetID(filterText.toInt());
+				break;
+			case 1:
+				othStView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				othStView.SetPrice(filterText.toDouble());
+				break;
+			case 3:
+				othStView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 4:
+				othStView.SetVolume(filterText.toDouble());
+				break;
+			case 5:
+				othStView.SetMeasureName(filterText.toStdString());
+				break;
+			case 6:
+				othStView.SetCompanyName(filterText.toStdString());
+				break;
+			case 7:
+				othStView.SetCompanyID(filterText.toInt());
+				break;
+			case 8:
+				othStView.SetMeasureID(filterText.toInt());
+				break;
+			case 9:
+				othStView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = othStView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInOthStForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "percentRateForm")
+		{
+			BusinessLayer::PercentRate pRate;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				pRate.SetID(filterText.toInt());
+				break;
+			case 1:
+				pRate.SetValue(filterText.toDouble());
+				break;
+			case 2:
+				pRate.SetCondition(filterText.toStdString());
+				break;
+			case 3:
+				pRate.SetPositionID(filterText.toInt());
+				break;
+			}
+			filter = pRate.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPcrForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "paymentForm")
+		{
+			BusinessLayer::PaymentView paymentView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				paymentView.SetID(filterText.toInt());
+				break;
+			case 1:
+				paymentView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				paymentView.SetUsername(filterText.toStdString());
+				break;
+			case 3:
+				paymentView.SetUserSurname(filterText.toStdString());
+				break;
+			case 4:
+				paymentView.SetUserPhone(filterText.toStdString());
+				break;
+			case 5:
+				paymentView.SetValue(filterText.toDouble());
+				break;
+			case 6:
+				paymentView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 7:
+				paymentView.SetTarget(filterText.toStdString());
+				break;
+			case 8:
+				paymentView.SetAccountNumber(filterText.toStdString());
+				break;
+			case 9:
+				paymentView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 10:
+				paymentView.SetWho(filterText.toStdString());
+				break;
+			case 11:
+				paymentView.SetStatusName(filterText.toStdString());
+				break;
+			case 12:
+				paymentView.SetUserID(filterText.toInt());
+				break;
+			case 13:
+				paymentView.SetCurrencyID(filterText.toInt());
+				break;
+			case 14:
+				paymentView.SetStatusID(filterText.toInt());
+				break;
+			case 15:
+				paymentView.SetAccountID(filterText.toInt());
+				break;
+			case 16:
+				paymentView.SetSubaccountID(filterText.toInt());
+				break;
+			case 17:
+				paymentView.SetCashboxAccountID(filterText.toInt());
+				break;
+			}
+			filter = paymentView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPmtForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "positionForm")
+		{
+			BusinessLayer::Position posirion;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				posirion.SetID(filterText.toInt());
+				break;
+			case 1:
+				posirion.SetName(filterText.toStdString());
+				break;
+			}
+			filter = posirion.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPosForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "priceForm")
+		{
+			BusinessLayer::PriceView priceView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				priceView.SetID(filterText.toInt());
+				break;
+			case 1:
+				priceView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				priceView.SetProductName(filterText.toStdString());
+				break;
+			case 3:
+				priceView.SetVolume(filterText.toDouble());
+				break;
+			case 4:
+				priceView.SetMeasureName(filterText.toStdString());
+				break;
+			case 5:
+				priceView.SetValue(filterText.toDouble());
+				break;
+			case 6:
+				priceView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 7:
+				priceView.SetCurrencyID(filterText.toInt());
+				break;
+			case 8:
+				priceView.SetProductID(filterText.toInt());
+				break;
+			}
+			filter = priceView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPrcForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "productTypeForm")
+		{
+			BusinessLayer::ProductType prodType;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				prodType.SetID(filterText.toInt());
+				break;
+			case 1:
+				prodType.SetName(filterText.toStdString());
+				break;
+			case 2:
+				prodType.SetShortName(filterText.toStdString());
+				break;
+			case 3:
+				prodType.SetCode(filterText.toStdString());
+				break;
+			}
+			filter = prodType.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInProdTpForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "branchProductForm")
+		{
+			BusinessLayer::ProductBranchRelationView prodBranchView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				prodBranchView.SetID(filterText.toInt());
+				break;
+			case 1:
+				prodBranchView.SetBranchName(filterText.toStdString());
+				break;
+			case 2:
+				prodBranchView.SetBranchAddress(filterText.toStdString());
+				break;
+			case 3:
+				prodBranchView.SetProductName(filterText.toStdString());
+				break;
+			case 4:
+				prodBranchView.SetPrice(filterText.toDouble());
+				break;
+			case 5:
+				prodBranchView.SetProductID(filterText.toInt());
+				break;
+			case 6:
+				prodBranchView.SetBranchID(filterText.toInt());
+				break;
+			
+			}
+			filter = prodBranchView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPrdBrnForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "productForm")
+		{
+			BusinessLayer::ProductView productView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				productView.SetID(filterText.toInt());
+				break;
+			case 1:
+				productView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				productView.SetPrice(filterText.toDouble());
+				break;
+			case 3:
+				productView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 4:
+				productView.SetVolume(filterText.toDouble());
+				break;
+			case 5:
+				productView.SetMeasureName(filterText.toStdString());
+				break;
+			case 6:
+				productView.SetProductTypeName(filterText.toStdString());
+				break;
+			case 7:
+				productView.SetShelfLife(filterText.toInt());
+				break;
+			case 8:
+				productView.SetCompanyName(filterText.toStdString());
+				break;
+			case 9:
+				productView.SetCompanyID(filterText.toInt());
+				break;
+			case 10:
+				productView.SetMeasureID(filterText.toInt());
+				break;
+			case 11:
+				productView.SetProductTypeID(filterText.toInt());
+				break;
+			case 12:
+				productView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = productView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInProdForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "productionForm")
+		{
+			BusinessLayer::Production prod;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				prod.SetID(filterText.toInt());
+				break;
+			case 1:
+				prod.SetProductionDate(filterText.toStdString());
+				break;
+			case 2:
+				prod.SetExpiryDate(filterText.toStdString());
+				break;
+			case 3:
+				prod.SetSessionStart(filterText.toStdString());
+				break;
+			case 4:
+				prod.SetSessionEnd(filterText.toStdString());
+				break;
+			
+			}
+			filter = prod.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInProdnForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "productionCnsumeRawForm")
+		{
+			BusinessLayer::ProductionConsumeRawView pconRawView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				pconRawView.SetID(filterText.toInt());
+				break;
+			case 1:
+				pconRawView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				pconRawView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				pconRawView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				pconRawView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				pconRawView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				pconRawView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				pconRawView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				pconRawView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 9:
+				pconRawView.SetStockEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				pconRawView.SetStockEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				pconRawView.SetStockEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				pconRawView.SetStockEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				pconRawView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				pconRawView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				pconRawView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				pconRawView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				pconRawView.SetStockEmployeeID(filterText.toInt());
+				break;
+			case 18:
+				pconRawView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				pconRawView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = pconRawView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInProdConRForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "productionPlanForm")
+		{
+			BusinessLayer::ProductionPlanView pPlanView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				pPlanView.SetID(filterText.toInt());
+				break;
+			case 1:
+				pPlanView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				pPlanView.SetCount(filterText.toDouble());
+				break;
+			case 3:
+				pPlanView.SetSum(filterText.toDouble());
+				break;
+			case 4:
+				pPlanView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 5:
+				pPlanView.SetStatusName(filterText.toStdString());
+				break;
+			case 6:
+				pPlanView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 7:
+				pPlanView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 8:
+				pPlanView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 9:
+				pPlanView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 10:
+				pPlanView.SetEmployeeID(filterText.toInt());
+				break;
+			case 11:
+				pPlanView.SetStatusID(filterText.toInt());
+				break;
+			case 12:
+				pPlanView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = pPlanView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPPlanConRForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "payslipForm")
+		{
+			BusinessLayer::PayslipView payslipView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				payslipView.SetID(filterText.toInt());
+				break;
+			case 1:
+				payslipView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				payslipView.SetValue(filterText.toDouble());
+				break;
+			case 3:
+				payslipView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 4:
+				payslipView.SetSalaryID(filterText.toDouble());
+				break;
+			case 5:
+				payslipView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = payslipView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPspForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "purveyorForm")
+		{
+			BusinessLayer::PurveyorView purveyorView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				purveyorView.SetID(filterText.toInt());
+				break;
+			case 1:
+				purveyorView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				purveyorView.SetSurname(filterText.toStdString());
+				break;
+			case 3:
+				purveyorView.SetPhone(filterText.toStdString());
+				break;
+			case 4:
+				purveyorView.SetCountryName(filterText.toStdString());
+				break;
+			case 5:
+				purveyorView.SetRegionName(filterText.toStdString());
+				break;
+			case 6:
+				purveyorView.SetCityName(filterText.toStdString());
+				break;
+			case 7:
+				purveyorView.SetAddress(filterText.toStdString());
+				break;
+			case 8:
+				purveyorView.SetCompanyName(filterText.toStdString());
+				break;
+			case 9:
+				purveyorView.SetRoleName(filterText.toStdString());
+				break;
+			case 10:
+				purveyorView.SetPassword(filterText.toStdString());
+				break;
+			case 11:
+				purveyorView.SetEmail(filterText.toStdString());
+				break;
+			case 13:
+				purveyorView.SetRoleID(filterText.toInt());
+				break;
+			case 14:
+				purveyorView.SetLocationID(filterText.toInt());
+				break;
+			}
+
+			filter = purveyorView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPurForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "relationForm")
+		{
+			BusinessLayer::RelationView relationView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				relationView.SetID(filterText.toInt());
+				break;
+			case 1:
+				relationView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 2:
+				relationView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 3:
+				relationView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 4:
+				relationView.SetRelationName(filterText.toStdString());
+				break;
+			case 5:
+				relationView.SetUsername(filterText.toStdString());
+				break;
+			case 6:
+				relationView.SetUserSurname(filterText.toStdString());
+				break;
+			case 7:
+				relationView.SetUserPhone(filterText.toStdString());
+				break;
+			case 8:
+				relationView.SetUser1ID(filterText.toInt());
+				break;
+			case 9:
+				relationView.SetUser2ID(filterText.toInt());
+				break;
+			case 10:
+				relationView.SetRelationTypeID(filterText.toInt());
+				break;
+			}
+
+			filter = relationView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRelForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "relationTypeForm")
+		{
+			BusinessLayer::RelationType relationType;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				relationType.SetID(filterText.toInt());
+				break;
+			case 1:
+				relationType.SetName(filterText.toStdString());
+				break;
+			case 2:
+				relationType.SetComment(filterText.toStdString());
+				break;
+			}
+
+			filter = relationType.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRelTypeForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "roleForm")
+		{
+			BusinessLayer::Role role;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				role.SetID(filterText.toInt());
+				break;
+			case 1:
+				role.SetCode(filterText.toStdString());
+				break;
+			case 2:
+				role.SetName(filterText.toStdString());
+				break;
+			case 3:
+				role.SetComment(filterText.toStdString());
+				break;
+			}
+
+			filter = role.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRoleForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "receiptOthStForm")
+		{
+			BusinessLayer::ReceiptOtherStocksView othStView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				othStView.SetID(filterText.toInt());
+				break;
+			case 1:
+				othStView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				othStView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				othStView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				othStView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				othStView.SetPurveyorName(filterText.toStdString());
+				break;
+			case 6:
+				othStView.SetPurveyorSurname(filterText.toStdString());
+				break;
+			case 7:
+				othStView.SetPurveyorPhone(filterText.toStdString());
+				break;
+			case 8:
+				othStView.SetPurveyorCompanyName(filterText.toStdString());
+				break;
+			case 9:
+				othStView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				othStView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				othStView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				othStView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				othStView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				othStView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				othStView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				othStView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				othStView.SetPurveyorID(filterText.toInt());
+				break;
+			case 18:
+				othStView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				othStView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = othStView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRcpOthStForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "receiptProductForm")
+		{
+			BusinessLayer::ReceiptProductView rcpProdView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				rcpProdView.SetID(filterText.toInt());
+				break;
+			case 1:
+				rcpProdView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				rcpProdView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				rcpProdView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				rcpProdView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				rcpProdView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				rcpProdView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				rcpProdView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				rcpProdView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 9:
+				rcpProdView.SetStockEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				rcpProdView.SetStockEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				rcpProdView.SetStockEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				rcpProdView.SetStockEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				rcpProdView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				rcpProdView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				rcpProdView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				rcpProdView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				rcpProdView.SetStockEmployeeID(filterText.toInt());
+				break;
+			case 18:
+				rcpProdView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				rcpProdView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = rcpProdView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRcpPForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "stockTransferForm")
+		{
+			BusinessLayer::StockTransferView stockTrView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				stockTrView.SetID(filterText.toInt());
+				break;
+			case 1:
+				stockTrView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				stockTrView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				stockTrView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				stockTrView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				stockTrView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				stockTrView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				stockTrView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				stockTrView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 9:
+				stockTrView.SetStockEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				stockTrView.SetStockEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				stockTrView.SetStockEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				stockTrView.SetStockEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				stockTrView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				stockTrView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				stockTrView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				stockTrView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				stockTrView.SetStockEmployeeID(filterText.toInt());
+				break;
+			case 18:
+				stockTrView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				stockTrView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = stockTrView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInStockTrForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "refundForm")
+		{
+			BusinessLayer::RefundView refunView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				refunView.SetID(filterText.toInt());
+				break;
+			case 1:
+				refunView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				refunView.SetValue(filterText.toDouble());
+				break;
+			case 3:
+				refunView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 4:
+				refunView.SetUserID(filterText.toInt());
+				break;
+			case 5:
+				refunView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+
+			filter = refunView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRfdForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "returnForm")
+		{
+			BusinessLayer::ReturnView returnView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				returnView.SetID(filterText.toInt());
+				break;
+			case 1:
+				returnView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				returnView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				returnView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				returnView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				returnView.SetClientName(filterText.toStdString());
+				break;
+			case 6:
+				returnView.SetClientSurname(filterText.toStdString());
+				break;
+			case 7:
+				returnView.SetClientPhone(filterText.toStdString());
+				break;
+			case 8:
+				returnView.SetClientAddress(filterText.toStdString());
+				break;
+			case 9:
+				returnView.SetClientFirm(filterText.toStdString());
+				break;
+			case 10:
+				returnView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 11:
+				returnView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 12:
+				returnView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 13:
+				returnView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				returnView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				returnView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				returnView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				returnView.SetClientID(filterText.toInt());
+				break;
+			case 18:
+				returnView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				returnView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = returnView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRtrnForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "salaryForm")
+		{
+			BusinessLayer::SalaryView salaryView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				salaryView.SetID(filterText.toInt());
+				break;
+			case 1:
+				salaryView.SetEmployeeID(filterText.toInt());
+				break;
+			case 2:
+				salaryView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 3:
+				salaryView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 4:
+				salaryView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 5:
+				salaryView.SetDate(filterText.toStdString());
+				break;
+			case 6:
+				salaryView.SetValue(filterText.toDouble());
+				break;
+			case 7:
+				salaryView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 8:
+				salaryView.SetSalaryTypeName(filterText.toStdString());
+				break;
+			case 9:
+				salaryView.SetCurrencyID(filterText.toInt());
+				break;
+			case 10:
+				salaryView.SetSalaryTypeID(filterText.toInt());
+				break;
+			}
+			filter = salaryView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInSlrForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "salaryTypeForm")
+		{
+			BusinessLayer::SalaryType sType;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				sType.SetID(filterText.toInt());
+				break;
+			case 1:
+				sType.SetCode(filterText.toStdString());
+				break;
+			case 2:
+				sType.SetName(filterText.toStdString());
+				break;
+			}
+			filter = sType.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInSlrTypeForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "statusForm")
+		{
+			BusinessLayer::Status status;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				status.SetID(filterText.toInt());
+				break;
+			case 1:
+				status.SetCode(filterText.toStdString());
+				break;
+			case 2:
+				status.SetName(filterText.toStdString());
+				break;
+			case 3:
+				status.SetComment(filterText.toStdString());
+				break;
+			}
+			filter = status.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInStsForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "statusRuleForm")
+		{
+			BusinessLayer::StatusRuleView statusRuleView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				statusRuleView.SetID(filterText.toInt());
+				break;
+			case 1:
+				statusRuleView.SetOperation(filterText.toStdString());
+				break;
+			case 2:
+				statusRuleView.SetStatusName(filterText.toStdString());
+				break;
+			case 3:
+				statusRuleView.SetStatusID(filterText.toInt());
+				break;
+			}
+			filter = statusRuleView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInStsRuleForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "specificationForm")
+		{
+			BusinessLayer::SpecificationView specView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				specView.SetID(filterText.toInt());
+				break;
+			case 1:
+				specView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				specView.SetProductName(filterText.toStdString());
+				break;
+			case 3:
+				specView.SetSum(filterText.toDouble());
+				break;
+			case 4:
+				specView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 5:
+				specView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				specView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				specView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				specView.SetEmployeePositionName(filterText.toStdString());
+				break;
+			case 9:
+				specView.SetProductID(filterText.toInt());
+				break;
+			case 10:
+				specView.SetCurrencyID(filterText.toInt());
+				break;
+			case 11:
+				specView.SetEmployeeID(filterText.toInt());
+				break;
+			}
+			filter = specView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInSpecForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "spoilageForm")
+		{
+			
+			BusinessLayer::SpoilageView spoView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				spoView.SetID(filterText.toInt());
+				break;
+			case 1:
+				spoView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				spoView.SetCount(filterText.toDouble());
+				break;
+			case 3:
+				spoView.SetSum(filterText.toDouble());
+				break;
+			case 4:
+				spoView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 5:
+				spoView.SetStatusName(filterText.toStdString());
+				break;
+			case 6:
+				spoView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 7:
+				spoView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 8:
+				spoView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 9:
+				spoView.SetEmployeeID(filterText.toInt());
+				break;
+			case 10:
+				spoView.SetStatusID(filterText.toInt());
+				break;
+			case 11:
+				spoView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = spoView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInSplForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "subaccountForm")
+		{
+			BusinessLayer::SubaccountView subView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				subView.SetID(filterText.toInt());
+				break;
+			case 1:
+				subView.SetParentAccountID(filterText.toInt());
+				break;
+			case 2:
+				subView.SetParentAccountNumber(filterText.toStdString());
+				break;
+			case 3:
+				subView.SetNumber(filterText.toStdString());
+				break;
+			case 4:
+				subView.SetStartBalance(filterText.toDouble());
+				break;
+			case 5:
+				subView.SetCurrentBalance(filterText.toDouble());
+				break;
+			case 6:
+				subView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 7:
+				subView.SetStatusName(filterText.toStdString());
+				break;
+			case 8:
+				subView.SetCurrencyID(filterText.toInt());
+				break;
+			case 9:
+				subView.SetStatusID(filterText.toInt());
+				break;
+			case 10:
+				subView.SetOpenedDate(filterText.toStdString());
+				break;
+			case 11:
+				subView.SetClosedDate(filterText.toStdString());
+				break;
+			case 12:
+				subView.SetDetails(filterText.toStdString());
+				break;
+			}
+			filter = subView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRtrnForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "subaccountLimitForm")
+		{
+			BusinessLayer::SubaccountLimitView subLimitView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				subLimitView.SetID(filterText.toInt());
+				break;
+			case 1:
+				subLimitView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 2:
+				subLimitView.SetSubaccountID(filterText.toInt());
+				break;
+			case 3:
+				subLimitView.SetMinValue(filterText.toDouble());
+				break;
+			case 4:
+				subLimitView.SetMaxValue(filterText.toDouble());
+				break;
+			}
+			filter = subLimitView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInRtrnForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "stockForm")
+		{
+			
+			BusinessLayer::StockView stockView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				stockView.SetID(filterText.toInt());
+				break;
+			case 1:
+				stockView.SetProductName(filterText.toStdString());
+				break;
+			case 2:
+				stockView.SetPrice(filterText.toDouble());
+				break;
+			case 3:
+				stockView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 4:
+				stockView.SetVolume(filterText.toDouble());
+				break;
+			case 5:
+				stockView.SetMeasureName(filterText.toStdString());
+				break;
+			case 6:
+				stockView.SetCount(filterText.toDouble());
+				break;
+			case 7:
+				stockView.SetSum(filterText.toDouble());
+				break;
+			case 8:
+				stockView.SetSumCurrencyName(filterText.toStdString());
+				break;
+			case 9:
+				stockView.SetWarehouseName(filterText.toStdString());
+				break;
+			case 10:
+				stockView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 11:
+				stockView.SetStatusName(filterText.toStdString());
+				break;
+			case 12:
+				stockView.SetProductID(filterText.toInt());
+				break;
+			case 13:
+				stockView.SetStatusID(filterText.toInt());
+				break;
+			case 14:
+				stockView.SetCurrencyID(filterText.toInt());
+				break;
+			case 15:
+				stockView.SetWarehouseID(filterText.toInt());
+				break;
+			}
+			filter = stockView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if(SearchInRtrnForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "stockLimitForm")
+		{
+			BusinessLayer::StockLimitView stockLimitView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				stockLimitView.SetID(filterText.toInt());
+				break;
+			case 1:
+				stockLimitView.SetWarehouseName(filterText.toStdString());
+				break;
+			case 2:
+				stockLimitView.SetProductName(filterText.toStdString());
+				break;
+			case 3:
+				stockLimitView.SetMinValue(filterText.toDouble());
+				break;
+			case 4:
+				stockLimitView.SetMaxValue(filterText.toDouble());
+				break;
+			case 5:
+				stockLimitView.SetStockID(filterText.toInt());
+				break;
+			case 6:
+				stockLimitView.SetProductID(filterText.toInt());
+				break;
+			}
+			filter = stockLimitView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInStockLmForm(filter))
+				this->CloseDataForm();
+		}
+
+		if (objectName() == "timesheetForm")
+		{
+			BusinessLayer::TimesheetView timeVIew;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				timeVIew.SetID(filterText.toInt());
+				break;
+			case 1:
+				timeVIew.SetUsername(filterText.toStdString());
+				break;
+			case 2:
+				timeVIew.SetUserSurname(filterText.toStdString());
+				break;
+			case 3:
+				timeVIew.SetUserPhone(filterText.toStdString());
+				break;
+			case 4:
+				timeVIew.SetDate(filterText.toStdString());
+				break;
+			case 5:
+				timeVIew.SetWorkedTime(filterText.toInt());
+				break;
+			case 6:
+				timeVIew.SetSalaryID(filterText.toInt());
+				break;
+			}
+			filter = timeVIew.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInStockLmForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "transportForm")
+		{
+			BusinessLayer::TransportView transportView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				transportView.SetID(filterText.toInt());
+				break;
+			case 1:
+				transportView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				transportView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				transportView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				transportView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				transportView.SetUserName(filterText.toStdString());
+				break;
+			case 6:
+				transportView.SetUserSurname(filterText.toStdString());
+				break;
+			case 7:
+				transportView.SetUserPhone(filterText.toStdString());
+				break;
+			case 8:
+				transportView.SetUserPosition(filterText.toStdString());
+				break;
+			case 9:
+				transportView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				transportView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				transportView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				transportView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				transportView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				transportView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				transportView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				transportView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				transportView.SetUserID(filterText.toInt());
+				break;
+			case 18:
+				transportView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				transportView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = transportView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInTrsForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "userForm")
+		{
+			BusinessLayer::UserView userView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				userView.SetID(filterText.toInt());
+				break;
+			case 1:
+				userView.SetEmail(filterText.toStdString());
+				break;
+			case 2:
+				userView.SetName(filterText.toStdString());
+				break;
+			case 3:
+				userView.SetSurname(filterText.toStdString());
+				break;
+			case 4:
+				userView.SetPhone(filterText.toStdString());
+				break;
+			case 5:
+				userView.SetAddress(filterText.toStdString());
+				break;
+			case 6:
+				userView.SetRoleName(filterText.toStdString());
+				break;
+			case 7:
+				userView.SetPassword(filterText.toStdString());
+				break;
+			case 9:
+				userView.SetRoleID(filterText.toInt());
+				break;
+			}
+			filter = userView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInUserForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "userGroupForm")
+		{
+			BusinessLayer::UserGroupRelationView userGroupView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				userGroupView.SetID(filterText.toInt());
+				break;
+			case 1:
+				userGroupView.SetGroupName(filterText.toStdString());
+				break;
+			case 2:
+				userGroupView.SetUsername(filterText.toStdString());
+				break;
+			case 3:
+				userGroupView.SetUserSurname(filterText.toStdString());
+				break;
+			case 4:
+				userGroupView.SetRoleID(filterText.toInt());
+				break;
+			case 5:
+				userGroupView.SetGroupID(filterText.toInt());
+				break;
+			case 6:
+				userGroupView.SetUserID(filterText.toInt());
+				break;
+			case 7:
+				userGroupView.SetRoleID(filterText.toInt());
+				break;
+			}
+			filter = userGroupView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInUserGrForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "warehouseForm")
+		{
+			BusinessLayer::WarehouseView wareView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				wareView.SetID(filterText.toInt());
+				break;
+			case 1:
+				wareView.SetName(filterText.toStdString());
+				break;
+			case 2:
+				wareView.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 3:
+				wareView.SetWarehouseTypeName(filterText.toStdString());
+				break;
+			case 4:
+				wareView.SetAddress(filterText.toStdString());
+				break;
+			case 5:
+				wareView.SetPhone(filterText.toStdString());
+				break;
+			case 6:
+				wareView.SetWarehouseTypeID(filterText.toInt());
+				break;
+			case 7:
+				wareView.SetSubaccountID(filterText.toInt());
+				break;
+			}
+			filter = wareView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInWrhForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "warehouseTypeForm")
+		{
+			BusinessLayer::WarehouseType wType;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				wType.SetID(filterText.toInt());
+				break;
+			case 1:
+				wType.SetCode(filterText.toStdString());
+				break;
+			case 2:
+				wType.SetPurpose(filterText.toStdString());
+				break;
+			case 3:
+				wType.SetName(filterText.toStdString());
+				break;
+			}
+			filter = wType.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInWrhTpForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "warehouseEmployeeForm")
+		{
+			BusinessLayer::WarehouseEmployeeRelationView werType;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				werType.SetID(filterText.toInt());
+				break;
+			case 1:
+				werType.SetUsername(filterText.toStdString());
+				break;
+			case 2:
+				werType.SetUserSurname(filterText.toStdString());
+				break;
+			case 3:
+				werType.SetUserPhone(filterText.toStdString());
+				break;
+			case 4:
+				werType.SetRoleName(filterText.toStdString());
+				break;
+			case 5:
+				werType.SetWarehouseName(filterText.toStdString());
+				break;
+			case 6:
+				werType.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 7:
+				werType.SetWarehouseID(filterText.toInt());
+				break;
+			case 8:
+				werType.SetEmployeeID(filterText.toInt());
+				break;
+			}
+			filter = werType.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInWERForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "withdrawalForm")
+		{
+			BusinessLayer::WithdrawalView wdwType;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				wdwType.SetID(filterText.toInt());
+				break;
+			case 1:
+				wdwType.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				wdwType.SetValue(filterText.toDouble());
+				break;
+			case 3:
+				wdwType.SetCurrencyName(filterText.toStdString());
+				break;
+			case 4:
+				wdwType.SetUsername(filterText.toStdString());
+				break;
+			case 5:
+				wdwType.SetUserSurname(filterText.toStdString());
+				break;
+			case 6:
+				wdwType.SetUserPhone(filterText.toStdString());
+				break;
+			case 7:
+				wdwType.SetStatusName(filterText.toStdString());
+				break;
+			case 8:
+				wdwType.SetAccountNumber(filterText.toStdString());
+				break;
+			case 9:
+				wdwType.SetSubaccountNumber(filterText.toStdString());
+				break;
+			case 10:
+				wdwType.SetWho(filterText.toStdString());
+				break;
+			case 11:
+				wdwType.SetTarget(filterText.toStdString());
+				break;
+			case 12:
+				wdwType.SetUserID(filterText.toInt());
+				break;
+			case 13:
+				wdwType.SetCurrencyID(filterText.toInt());
+				break;
+			case 14:
+				wdwType.SetSubaccountID(filterText.toInt());
+				break;
+			case 15:
+				wdwType.SetStatusID(filterText.toInt());
+				break;
+			case 16:
+				wdwType.SetAccountID(filterText.toInt());
+				break;
+			case 17:
+				wdwType.SetCashboxAccountID(filterText.toInt());
+				break;
+			}
+			filter = wdwType.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInwWdwForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "writeOffForm")
+		{
+			BusinessLayer::WriteOffView wView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				wView.SetID(filterText.toInt());
+				break;
+			case 1:
+				wView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				wView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				wView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				wView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				wView.SetClientName(filterText.toStdString());
+				break;
+			case 6:
+				wView.SetClientSurname(filterText.toStdString());
+				break;
+			case 7:
+				wView.SetClientPhone(filterText.toStdString());
+				break;
+			case 8:
+				wView.SetClientAddress(filterText.toStdString());
+				break;
+			case 9:
+				wView.SetClientFirm(filterText.toStdString());
+				break;
+			case 10:
+				wView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 11:
+				wView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 12:
+				wView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 13:
+				wView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				wView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				wView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				wView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				wView.SetClientID(filterText.toInt());
+				break;
+			case 18:
+				wView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				wView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = wView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInWOffForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "writeOffRawForm")
+		{
+			BusinessLayer::WriteOffRawView wRawView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				wRawView.SetID(filterText.toInt());
+				break;
+			case 1:
+				wRawView.SetDate(filterText.toStdString());
+				break;
+			case 2:
+				wRawView.SetExecutionDate(filterText.toStdString());
+				break;
+			case 3:
+				wRawView.SetStatusCode(filterText.toStdString());
+				break;
+			case 4:
+				wRawView.SetStatusName(filterText.toStdString());
+				break;
+			case 5:
+				wRawView.SetEmployeeName(filterText.toStdString());
+				break;
+			case 6:
+				wRawView.SetEmployeeSurname(filterText.toStdString());
+				break;
+			case 7:
+				wRawView.SetEmployeePhone(filterText.toStdString());
+				break;
+			case 8:
+				wRawView.SetEmployeePosition(filterText.toStdString());
+				break;
+			case 9:
+				wRawView.SetStockEmployeeName(filterText.toStdString());
+				break;
+			case 10:
+				wRawView.SetStockEmployeeSurname(filterText.toStdString());
+				break;
+			case 11:
+				wRawView.SetStockEmployeePhone(filterText.toStdString());
+				break;
+			case 12:
+				wRawView.SetStockEmployeePosition(filterText.toStdString());
+				break;
+			case 13:
+				wRawView.SetCount(filterText.toDouble());
+				break;
+			case 14:
+				wRawView.SetSum(filterText.toDouble());
+				break;
+			case 15:
+				wRawView.SetCurrencyName(filterText.toStdString());
+				break;
+			case 16:
+				wRawView.SetEmployeeID(filterText.toInt());
+				break;
+			case 17:
+				wRawView.SetStockEmployeeID(filterText.toInt());
+				break;
+			case 18:
+				wRawView.SetStatusID(filterText.toInt());
+				break;
+			case 19:
+				wRawView.SetCurrencyID(filterText.toInt());
+				break;
+			}
+			filter = wRawView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInWOffRawForm(filter))
+				this->CloseDataForm();
+		}
+	}
+}
+
+void DataForm::Refresh()
+{
+	if (objectName() == "accountForm")
+	{
+		this->setObjectName("");
+		SearchInAccForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "acctbDocForm")
+	{
+		this->setObjectName("");
+		SearchInAccblDocForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "accountTypeForm")
+	{
+		this->setObjectName("");
+		SearchInAccTpForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "accessItemForm")
+	{
+		this->setObjectName("");
+		SearchInAcsItemForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "accessForm")
+	{
+		this->setObjectName("");
+		SearchInAccessForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "accountableForm")
+	{
+		this->setObjectName("");
+		SearchInAcctblForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "amGroupForm")
+	{
+		this->setObjectName("");
+		SearchInAmGrForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "amTypeForm")
+	{
+		this->setObjectName("");
+		SearchInAmTypeForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "balanceForm")
+	{
+		this->setObjectName("");
+		SearchInBlcForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "branchForm")
+	{
+		this->setObjectName("");
+		SearchInBrhForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "borrowerForm")
+	{
+		this->setObjectName("");
+		SearchInBrwForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "branchSubaccountForm")
+	{
+		this->setObjectName("");
+		SearchInBrSAccForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "cashboxEmployeeForm")
+	{
+		this->setObjectName("");
+		SearchInCASHERForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "cashboxForm")
+	{
+		this->setObjectName("");
+		SearchInCbxForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "chartOffAccountForm")
+	{
+		this->setObjectName("");
+		SearchInCOADForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "clientForm")
+	{
+		this->setObjectName("");
+		SearchInCltForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "companyAccountForm")
+	{
+		this->setObjectName("");
+		SearchInCARForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "companyForm")
+	{
+		this->setObjectName("");
+		SearchInCmpForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "companyEmployeeForm")
+	{
+		this->setObjectName("");
+		SearchInCERForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "consumeProductForm")
+	{
+		this->setObjectName("");
+		SearchInConPForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "consumeOthStForm")
+	{
+		this->setObjectName("");
+		SearchInConOthForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "consumeRawForm")
+	{
+		this->setObjectName("");
+		SearchInConRForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "currencyForm")
+	{
+		this->setObjectName("");
+		SearchInCurForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "divisionForm")
+	{
+		this->setObjectName("");
+		SearchInDivForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "divisionAccForm")
+	{
+		this->setObjectName("");
+		SearchInDivAccForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "employeeForm")
+	{
+		this->setObjectName("");
+		SearchInEmpForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "employeeProductForm")
+	{
+		this->setObjectName("");
+		SearchInEmpPrdForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "entryForm")
+	{
+		this->setObjectName("");
+		SearchInEtrForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "entryRoutingForm")
+	{
+		this->setObjectName("");
+		SearchInEtrRtForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "fixedAstForm")
+	{
+		this->setObjectName("");
+		SearchInFxdAstForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "fixedAstOperForm")
+	{
+		this->setObjectName("");
+		SearchInAstOperForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "inventoryForm")
+	{
+		this->setObjectName("");
+		SearchInInveForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "inventorizationForm")
+	{
+		this->setObjectName("");
+		SearchInInvForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "groupForm")
+	{
+		this->setObjectName("");
+		SearchInGroupForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "jobpriceForm")
+	{
+		this->setObjectName("");
+		SearchInJbpForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "jobsheetForm")
+	{
+		this->setObjectName("");
+		SearchInJbsForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "lowValueStockForm")
+	{
+		this->setObjectName("");
+		SearchInLowValStockForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "locationForm")
+	{
+		this->setObjectName("");
+		SearchInLcnForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "measureForm")
+	{
+		this->setObjectName("");
+		SearchInMsrForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "netCostForm")
+	{
+		this->setObjectName("");
+		SearchInNetCForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "orderForm")
+	{
+		this->setObjectName("");
+		SearchInOrderForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "orderRawForm")
+	{
+		this->setObjectName("");
+		SearchInOrdRForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "otherStocksForm")
+	{
+		this->setObjectName("");
+		SearchInOthStForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "percentRateForm")
+	{
+		this->setObjectName("");
+		SearchInPcrForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "paymentForm")
+	{
+		this->setObjectName("");
+		SearchInPmtForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "positionForm")
+	{
+		this->setObjectName("");
+		SearchInPosForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "priceForm")
+	{
+		this->setObjectName("");
+		SearchInPrcForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "productTypeForm")
+	{
+		this->setObjectName("");
+		SearchInProdTpForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "branchProductForm")
+	{
+		this->setObjectName("");
+		SearchInPrdBrnForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "productForm")
+	{
+		this->setObjectName("");
+		SearchInProdForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "productionForm")
+	{
+		this->setObjectName("");
+		SearchInProdnForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "productionCnsumeRawForm")
+	{
+		this->setObjectName("");
+		SearchInProdConRForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "productionPlanForm")
+	{
+		this->setObjectName("");
+		SearchInPPlanConRForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "payslipForm")
+	{
+		this->setObjectName("");
+		SearchInPspForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "purveyorForm")
+	{
+		this->setObjectName("");
+		SearchInPurForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "relationForm")
+	{
+		this->setObjectName("");
+		SearchInRelForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "relationTypeForm")
+	{
+		this->setObjectName("");
+		SearchInRelForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "roleForm")
+	{
+		this->setObjectName("");
+		SearchInRoleForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "receiptOthStForm")
+	{
+		this->setObjectName("");
+		SearchInRcpOthStForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "receiptProductForm")
+	{
+		this->setObjectName("");
+		SearchInRcpPForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "stockTransferForm")
+	{
+		this->setObjectName("");
+		SearchInStockTrForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "refundForm")
+	{
+		this->setObjectName("");
+		SearchInRfdForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "returnForm")
+	{
+		this->setObjectName("");
+		SearchInRtrnForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "salaryForm")
+	{
+		this->setObjectName("");
+		SearchInSlrForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "salaryTypeForm")
+	{
+		this->setObjectName("");
+		SearchInSlrTypeForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "statusForm")
+	{
+		this->setObjectName("");
+		SearchInStsForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "statusRuleForm")
+	{
+		this->setObjectName("");
+		SearchInStsRuleForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "specificationForm")
+	{
+		this->setObjectName("");
+		SearchInSpecForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "spoilageForm")
+	{
+		this->setObjectName("");
+		SearchInSplForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "subaccountForm")
+	{
+		this->setObjectName("");
+		SearchInSAccForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "subaccountLimitForm")
+	{
+		this->setObjectName("");
+		SearchInSAccLmForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "stockForm")
+	{
+		this->setObjectName("");
+		SearchInStockForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "stockLimitForm")
+	{
+		this->setObjectName("");
+		SearchInStockLmForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "timesheetForm")
+	{
+		this->setObjectName("");
+		SearchInTmsForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "transportForm")
+	{
+		this->setObjectName("");
+		SearchInTrsForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "userForm")
+	{
+		this->setObjectName("");
+		SearchInUserForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "userGroupForm")
+	{
+		this->setObjectName("");
+		SearchInUserGrForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "warehouseForm")
+	{
+		this->setObjectName("");
+		SearchInWrhForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "warehouseTypeForm")
+	{
+		this->setObjectName("");
+		SearchInWrhTpForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "warehouseEmployeeForm")
+	{
+		this->setObjectName("");
+		SearchInWERForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "withdrawalForm")
+	{
+		this->setObjectName("");
+		SearchInwWdwForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "withdrawalForm")
+	{
+		this->setObjectName("");
+		SearchInwWdwForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "writeOffForm")
+	{
+		this->setObjectName("");
+		SearchInWOffForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "SearchInWOffForm")
+	{
+		this->setObjectName("");
+		SearchInWOffRawForm("");
+		this->CloseDataForm();
+	}
+}
+
+void DataForm::SetDecoration()
+{
+	std::string errorMassage = "";
+	if (objectName() == "stockForm" || objectName() == "rawStockForm" || objectName() == "productionStockForm")
+	{
+		BusinessLayer::StockLimit stockLimit;
+		BusinessLayer::Stock stock;
+		QModelIndex indexID;
+		QModelIndex indexWhole;
+		for (int i = 0; i < tableView->model()->rowCount(); i++)
+		{
+			indexID = tableView->model()->index(i, 0);
+			stockLimit.Clear();
+			stock.Clear();
+			if (stockLimit.GetStockLimitByStockID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), indexID.data().toInt(), errorMassage))
+			{
+				if (stock.GetStockByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), indexID.data().toInt(), errorMassage))
+				{
+					for (int j = 0; j < tableView->model()->columnCount(); j++)
+					{
+						indexWhole = tableView->model()->index(i, j);
+						if (stock.GetCount() <= stockLimit.GetMinValue())
+						{
+							((QStandardItemModel *)tableView->model())->item(i, j)->setBackground(QColor(255, 153, 153));
+						}
+						if (stock.GetCount() >= stockLimit.GetMaxValue())
+						{
+							((QStandardItemModel *)tableView->model())->item(i, j)->setBackground(QColor(144, 199, 255));
+						}
+					}
+				}
+			}
+		}
+	}
+	else if (objectName() == "otherStockForm")
+	{
+
+	}
+	else if (objectName() == "subaccountForm")
+	{
+		BusinessLayer::SubaccountLimit sAccLimit;
+		BusinessLayer::Subaccount sAcc;
+		QModelIndex indexID;
+		QModelIndex indexWhole;
+		for (int i = 0; i < tableView->model()->rowCount(); i++)
+		{
+			indexID = tableView->model()->index(i, 0);
+			sAccLimit.Clear();
+			sAcc.Clear();
+			if (sAccLimit.GetSubaccountLimitBySubaccountID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), indexID.data().toInt(), errorMassage))
+			{
+				if (sAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), indexID.data().toInt(), errorMassage))
+				{
+					for (int j = 0; j < tableView->model()->columnCount(); j++)
+					{
+						indexWhole = tableView->model()->index(i, j);
+						if (sAcc.GetCurrentBalance() <= sAccLimit.GetMinValue())
+						{
+							((QStandardItemModel *)tableView->model())->item(i, j)->setBackground(QColor(255, 153, 153));
+						}
+						if (sAcc.GetCurrentBalance() >= sAccLimit.GetMaxValue())
+						{
+							((QStandardItemModel *)tableView->model())->item(i, j)->setBackground(QColor(144, 199, 255));
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 void DataForm::SetColumnFilter(QStringList header)
 {
 	for (int i = 0; i < header.size(); i++)
@@ -182,12 +4350,20 @@ void DataForm::EnableButtons()
 	deleteBtn->setDisabled(false);
 }
 
-void DataForm::HileSomeRow()
+void DataForm::HideAllButtons()
+{
+	editBtn->hide();
+	deleteBtn->hide();
+	viewBtn->hide();
+	createBtn->hide();
+}
+
+void DataForm::HideSomeRow()
 {
 	BusinessLayer::Access access;
 	if (objectName() == "userForm")
 	{
-		std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAllUsers");
+		std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAllUsers");
 		std::size_t pos = crud.find("CRUD");
 		if (pos == std::string::npos)
 		{
@@ -196,7 +4372,7 @@ void DataForm::HileSomeRow()
 	}
 	if (objectName() == "clientForm")
 	{
-		std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionClients");
+		std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionClients");
 		std::size_t pos = crud.find("CRUD");
 		if (pos == std::string::npos)
 		{
@@ -205,7 +4381,7 @@ void DataForm::HileSomeRow()
 	}
 	if (objectName() == "employeeForm" || objectName() == "stockEmployeeForm")
 	{
-		std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionEmployees");
+		std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionEmployees");
 		std::size_t pos = crud.find("CRUD");
 		if (pos == std::string::npos)
 		{
@@ -214,7 +4390,7 @@ void DataForm::HileSomeRow()
 	}
 	if (objectName() == "purveyorForm")
 	{
-		std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionPurveyors");
+		std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPurveyors");
 		std::size_t pos = crud.find("CRUD");
 		if (pos == std::string::npos)
 		{
@@ -223,7 +4399,7 @@ void DataForm::HileSomeRow()
 	}
 	if (objectName() == "borrowerForm")
 	{
-		std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionBorrowers");
+		std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionBorrowers");
 		std::size_t pos = crud.find("CRUD");
 		if (pos == std::string::npos)
 		{
@@ -1225,7 +5401,7 @@ void DataForm::OnRowsNumberChanged()
 				for (int i = 0; i < tableView->model()->rowCount(); i++)
 				{
 					product.Clear();
-					product.GetProductByID(dataFormBL->GetOrmasDal(), tableView->model()->data(tableView->model()->index(i, 5)).toInt(), errorMessage);
+					product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), tableView->model()->data(tableView->model()->index(i, 5)).toInt(), errorMessage);
 					count = count + tableView->model()->data(tableView->model()->index(i, 3)).toDouble();
 					sum = sum + (tableView->model()->data(tableView->model()->index(i, 3)).toDouble() * product.GetPrice());
 				}
@@ -1242,9 +5418,9 @@ void DataForm::OnRowsNumberChanged()
 				for (int i = 0; i < tableView->model()->rowCount(); i++)
 				{
 					product.Clear();
-					product.GetProductByID(dataFormBL->GetOrmasDal(), tableView->model()->data(tableView->model()->index(i, 11)).toInt(), errorMessage);
+					product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), tableView->model()->data(tableView->model()->index(i, 11)).toInt(), errorMessage);
 					nCost.Clear();
-					nCost.GetNetCostByProductID(dataFormBL->GetOrmasDal(), product.GetID(), errorMessage);
+					nCost.GetNetCostByProductID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetID(), errorMessage);
 					count = count + tableView->model()->data(tableView->model()->index(i, 7)).toDouble();
 					sum = sum + (tableView->model()->data(tableView->model()->index(i, 7)).toDouble() * nCost.GetValue());
 					priceSum = priceSum + (tableView->model()->data(tableView->model()->index(i, 7)).toDouble() * product.GetPrice());
@@ -1261,9 +5437,9 @@ void DataForm::OnRowsNumberChanged()
 				for (int i = 0; i < tableView->model()->rowCount(); i++)
 				{
 					product.Clear();
-					product.GetProductByID(dataFormBL->GetOrmasDal(), tableView->model()->data(tableView->model()->index(i, 11)).toInt(), errorMessage);
+					product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), tableView->model()->data(tableView->model()->index(i, 11)).toInt(), errorMessage);
 					nCost.Clear();
-					nCost.GetNetCostByProductID(dataFormBL->GetOrmasDal(), product.GetID(), errorMessage);
+					nCost.GetNetCostByProductID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetID(), errorMessage);
 					count = count + tableView->model()->data(tableView->model()->index(i, 7)).toDouble();
 					sum = sum + (tableView->model()->data(tableView->model()->index(i, 7)).toDouble() * nCost.GetValue());
 					priceSum = priceSum + (tableView->model()->data(tableView->model()->index(i, 7)).toDouble() * product.GetPrice());
@@ -1280,9 +5456,9 @@ void DataForm::OnRowsNumberChanged()
 				for (int i = 0; i < tableView->model()->rowCount(); i++)
 				{
 					product.Clear();
-					product.GetProductByID(dataFormBL->GetOrmasDal(), tableView->model()->data(tableView->model()->index(i, 11)).toInt(), errorMessage);
+					product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), tableView->model()->data(tableView->model()->index(i, 11)).toInt(), errorMessage);
 					nCost.Clear();
-					nCost.GetNetCostByProductID(dataFormBL->GetOrmasDal(), product.GetID(), errorMessage);
+					nCost.GetNetCostByProductID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetID(), errorMessage);
 					count = count + tableView->model()->data(tableView->model()->index(i, 7)).toDouble();
 					sum = sum + (tableView->model()->data(tableView->model()->index(i, 7)).toDouble() * nCost.GetValue());
 					priceSum = priceSum + (tableView->model()->data(tableView->model()->index(i, 7)).toDouble() * product.GetPrice());
@@ -1551,6 +5727,412 @@ void DataForm::DelAcctblDlg()
 			QString(tr("Ok")));
 	}
 }
+
+
+void DataForm::CrtAccblDocDlg()
+{
+	CreateAccblRepDlg *repDlg = new CreateAccblRepDlg(dataFormBL, false, this);
+	repDlg->setAttribute(Qt::WA_DeleteOnClose);
+	repDlg->setWindowTitle(tr("Create accountable document"));
+	QMdiSubWindow *repWindow = new QMdiSubWindow;
+	repWindow->setWidget(repDlg);
+	repWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(repWindow);
+	repDlg->show();
+}
+void DataForm::UdpAccblDocDlg()
+{
+	CreateAccblRepDlg *repDlg = new CreateAccblRepDlg(dataFormBL, true, this);
+	repDlg->setAttribute(Qt::WA_DeleteOnClose);
+	repDlg->setWindowTitle(tr("Update accountable document"));
+	QMdiSubWindow *repWindow = new QMdiSubWindow;
+	repWindow->setWidget(repDlg);
+	repWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(repWindow);
+	if (repDlg->FillDlgElements(tableView))
+	{
+		repDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelAccblDocDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::AccountableUnionDocument accountableUnionDoc;
+	BusinessLayer::AccountableDocument *accountableDoc = new BusinessLayer::AccountableDocument();
+	accountableDoc->SetID(id);
+	accountableUnionDoc.SetAccountableDocument(accountableDoc);
+	
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteAccountableUnionDocument(&accountableUnionDoc, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Accountable document with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
+void DataForm::ViewAccblDocDlg()
+{
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	
+	BusinessLayer::AccountableDocument aDoc;
+	BusinessLayer::AccountableTransaction aTransaction;
+	
+	std::vector<BusinessLayer::AccountableApprovement> approveVec;
+	std::vector<BusinessLayer::AccountableDocumentListRelation> docListVec;
+	std::vector<BusinessLayer::AccountableEntry> entryVec;
+	std::vector<BusinessLayer::AccountablePaymentRelation> paymentVec;
+	std::vector<BusinessLayer::AccountableWithdrawalRelation> withdrawalVec;
+	std::vector<BusinessLayer::ExpenseDocument> expenseVec;
+
+	BusinessLayer::AccountableApprovement aAapprove;
+	BusinessLayer::AccountableDocumentListRelation aDocList;
+	BusinessLayer::AccountableEntry aEntry;
+	BusinessLayer::AccountablePaymentRelation aPayment;
+	BusinessLayer::AccountableWithdrawalRelation aWithdrawal;
+	BusinessLayer::ExpenseDocument aExpense;
+
+
+	DocForm *docForm = new DocForm(dataFormBL, this);
+	docForm->setAttribute(Qt::WA_DeleteOnClose);
+	docForm->setWindowTitle(tr("Income chash order"));
+	QMdiSubWindow *printRepWindow = new QMdiSubWindow;
+	printRepWindow->setWidget(docForm);
+	printRepWindow->setAttribute(Qt::WA_DeleteOnClose);
+	printRepWindow->resize(docForm->size().width() + 18, docForm->size().height() + 30);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(printRepWindow);
+
+	QFile file;
+	file.setFileName(":/docs/accountable.html");
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		QMessageBox::information(NULL, QString(tr("Info")),
+			QString(tr("Cannot find report tamplate!")),
+			QString(tr("Ok")));
+		return;
+	}
+	QString reportText = file.readAll();
+
+	BusinessLayer::CompanyEmployeeRelation ceRel;
+	BusinessLayer::Company company;
+	BusinessLayer::Status status;
+	int companyID = 0;
+	
+
+	if (aDoc.GetAccountableDocumentByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
+	{
+		reportText.replace(QString("DocumentNumberPh"), QString(QString::number(aDoc.GetID())), Qt::CaseInsensitive);
+		reportText.replace(QString("DocumentDatePh"), QString(aDoc.GetDate().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("AppointmentPh"), QString(aDoc.GetExpenseAssignment().c_str()), Qt::CaseInsensitive);
+		
+		companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), aDoc.GetAccountableID(), errorMessage);
+		if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr("Connot show information for this row!")),
+				QString(tr("Ok")));
+			return;
+		}
+		reportText.replace(QString("ComNamePh"), company.GetName().c_str(), Qt::CaseInsensitive);
+
+		if (!status.GetStatusByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), aDoc.GetStatusID(), errorMessage))
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr("Connot show information for this row!")),
+				QString(tr("Ok")));
+			return;
+		}
+		reportText.replace(QString("UserIDPh"), QString::number(aDoc.GetAccountableID()), Qt::CaseInsensitive);
+		reportText.replace(QString("StatusPh"), status.GetName().c_str(), Qt::CaseInsensitive);
+
+		if (!aTransaction.GetAccountableTransactionByAccountableDocumentID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), aDoc.GetID(), errorMessage))
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr("Connot find transaction for this document!")),
+				QString(tr("Ok")));
+			return;
+		}
+		double prevRet = 0;
+		double revOver = 0;
+
+		reportText.replace(QString("TotalSumPh"), QString::number(aTransaction.GetTotalValue(),'f',3), Qt::CaseInsensitive);
+		reportText.replace(QString("SpentSumPh"), QString::number(aTransaction.GetSpentValue(),'f',3), Qt::CaseInsensitive);
+		reportText.replace(QString("RepSumPh"), QString::number(aTransaction.GetResidualValue(),'f',3), Qt::CaseInsensitive);
+		reportText.replace(QString("OverSumPh"), QString::number(aTransaction.GetDifferenceValue(),'f',3), Qt::CaseInsensitive);
+		
+
+		std::vector<int> approvementIDVector;
+		approvementIDVector = aAapprove.GetAllApprovementByAccountableDocumentID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), aDoc.GetID(), errorMessage);
+		if (approvementIDVector.size() > 0)
+		{
+			BusinessLayer::AccountableApprovement approvement;
+			BusinessLayer::User user;
+			for each (auto approveID in approvementIDVector)
+			{
+				approvement.Clear();
+				if (approvement.GetAccountableApprovementByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), approveID, errorMessage))
+				{
+					approveVec.push_back(approvement);
+					if (approvement.GetDirectorID() > 0)
+					{
+						user.Clear();
+						if (user.GetUserByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), approvement.GetDirectorID(), errorMessage))
+						{
+							reportText.replace(QString("DirectorPh"), QString(user.GetSurname().c_str() + QString(" ") + user.GetSurname().c_str()), Qt::CaseInsensitive);
+						}
+					}
+					if (approvement.GetAccountantID() > 0)
+					{
+						user.Clear();
+						if (user.GetUserByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), approvement.GetAccountantID(), errorMessage))
+						{
+							reportText.replace(QString("AccounantNamePh"), QString(user.GetSurname().c_str() + QString(" ") + user.GetSurname().c_str()), Qt::CaseInsensitive);
+						}
+					}
+					reportText.replace(QString("ApproveDatePh"), QString(approvement.GetApproveDate().c_str()), Qt::CaseInsensitive);
+				}
+			}
+		}
+
+		BusinessLayer::Accountable accountable;
+		if (accountable.GetAccountableByUserID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), aDoc.GetAccountableID(), errorMessage))
+		{
+			
+			BusinessLayer::User user;
+			BusinessLayer::CompanyEmployeeRelation comEmp;
+			BusinessLayer::Branch branch;
+			BusinessLayer::Position position;
+			BusinessLayer::Role role;
+			BusinessLayer::Employee employee;
+			BusinessLayer::Company company;
+			user.Clear();
+			if (user.GetUserByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), accountable.GetEmployeeID(), errorMessage))
+			{
+
+				reportText.replace(QString("AccountableDataPh"), QString(user.GetSurname().c_str() + QString(" ") + user.GetSurname().c_str()), Qt::CaseInsensitive);
+				int branchid = 0;
+				int companyID = 0;
+				branchid = comEmp.GetBranchByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), accountable.GetEmployeeID(), errorMessage);
+				companyID = comEmp.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), accountable.GetEmployeeID(), errorMessage);
+				if (companyID > 0)
+				{
+					if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage))
+					{
+						QMessageBox::information(NULL, QString(tr("Warning")),
+							QString(tr("Connot find company for this employee!")),
+							QString(tr("Ok")));
+						return;
+					}
+				}
+				comEmp.Clear();
+				if (branchid > 0)
+				{
+					if (branch.GetBranchByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), branchid, errorMessage))
+					{
+						reportText.replace(QString("DivisionPh"), QString(branch.GetName().c_str()), Qt::CaseInsensitive);
+					}
+					if (employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), user.GetID(), errorMessage))
+					{
+						if (position.GetPositionByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), employee.GetPositionID(), errorMessage))
+						{
+							reportText.replace(QString("PositionPh"), QString(position.GetName().c_str()), Qt::CaseInsensitive);
+						}
+					}
+				}
+			}
+		}
+
+		std::vector<int> docListIDVector;
+		double totalExpenseSum = 0;
+		QString tableBody;
+		QString currencyShortName;;
+		docListIDVector = aDocList.GetAllListByAccountableDocumentID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), aDoc.GetID(), errorMessage);
+		if (docListIDVector.size() > 0)
+		{
+			BusinessLayer::AccountableDocumentListRelation docList;
+			BusinessLayer::ExpenseDocument eDocument;
+			BusinessLayer::Measure measure;
+			BusinessLayer::Currency currency;
+			for each (auto listID in docListIDVector)
+			{
+				docList.Clear();
+				eDocument.Clear();
+				if (docList.GetDocumentListByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), listID, errorMessage))
+				{
+					docListVec.push_back(docList);
+					if (eDocument.GetExpenseDocumentByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), docList.GetExpenseDocumentID(), errorMessage))
+					{
+						measure.Clear();
+						currency.Clear();
+						if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), eDocument.GetMeasureID(), errorMessage))
+							continue;
+						if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), eDocument.GetCurrencyID(), errorMessage))
+							continue;
+						tableBody += "<tr>";
+						tableBody += "<td>" + QString::number(eDocument.GetID()) + "</td>";
+						tableBody += "<td>" + QString(eDocument.GetExpenseName().c_str()) + "</td>";
+						tableBody += "<td>" + QString::number(eDocument.GetCount()) + "</td>";
+						tableBody += "<td>" + QString(measure.GetShortName().c_str()) + "</td>";
+						tableBody += "<td>" + QString::number(eDocument.GetSum()) + "</td>";
+						tableBody += "<td>" + QString(currency.GetShortName().c_str()) + "</td>";
+						tableBody += "</tr>";
+						totalExpenseSum += eDocument.GetSum();
+						currencyShortName = currency.GetShortName().c_str();
+					}
+				}
+			}
+			reportText.replace(QString("TableBodyPh"), QString(tableBody), Qt::CaseInsensitive);
+			reportText.replace(QString("SpentSumPh"), QString::number(totalExpenseSum,'f',3), Qt::CaseInsensitive);
+			reportText.replace(QString("CurrencyPh"), QString(currencyShortName), Qt::CaseInsensitive);
+		}
+
+	
+
+		std::vector<int> entryIDVector;
+		double totalEntrySum = 0;
+		QString eTableBody;
+		entryIDVector = aEntry.GetAllEntryByAccountableDocumentID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), aDoc.GetID(), errorMessage);
+		if (entryIDVector.size() > 0)
+		{
+			BusinessLayer::AccountableEntry  enEntry;
+			BusinessLayer::Account  debAcc;
+			BusinessLayer::Account  credAcc;
+			for each (auto entryID in entryIDVector)
+			{
+				enEntry.Clear();
+				if (enEntry.GetAccountableEntryByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), entryID, errorMessage))
+				{
+					debAcc.Clear();
+					credAcc.Clear();
+					if (!debAcc.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), enEntry.GetDebitAccountID(), errorMessage))
+						continue;
+					if (!credAcc.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), enEntry.GetCreditAccountID(), errorMessage))
+						continue;
+					eTableBody += "<tr style = 'width:100%; border: 0px solid black; text-align: center; '>";
+					eTableBody += "<td style = 'width:30% ; border: 1px solid black; text-align: center; '>" + QString(debAcc.GetNumber().c_str()) + "</td>";
+					eTableBody += "<td style = 'width:20% ; border: 1px solid black; text-align: center; '>" + QString::number(enEntry.GetValue()) + "</td>";
+					eTableBody += "<td style = 'width:30% ; border: 1px solid black; text-align: center; '>" + QString(credAcc.GetNumber().c_str()) + "</td>";
+					eTableBody += "<td style = 'width:20% ; border: 1px solid black; text-align: center; '>" + QString::number(enEntry.GetValue()) + "</td>";
+					eTableBody += "<tr>";
+					totalEntrySum += enEntry.GetValue();
+				}
+			}
+			reportText.replace(QString("EntriesPh"), QString(eTableBody), Qt::CaseInsensitive);
+			reportText.replace(QString("TotalEntryPh"), QString::number(totalEntrySum, 'f', 3), Qt::CaseInsensitive);
+			reportText.replace(QString("CurrencyPh"), QString(currencyShortName), Qt::CaseInsensitive);
+		}
+
+		double paySum = 0;
+		std::vector<int> paymentIDVector;
+		QString pTableBody;
+		paymentIDVector = aPayment.GetAllPaymentByAccountableDocumentID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), aDoc.GetID(), errorMessage);
+		if (paymentIDVector.size() > 0)
+		{
+			BusinessLayer::AccountablePaymentRelation ePayment;
+			BusinessLayer::Payment payment;
+			QTextCodec::setCodecForLocale(QTextCodec::codecForName("Windows-1251"));
+			for each (auto paymentID in paymentIDVector)
+			{
+				ePayment.Clear();
+				payment.Clear();
+				if (ePayment.GetAccountablePaymentByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), paymentID, errorMessage))
+				{
+					if (payment.GetPaymentByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), ePayment.GetPaymentID(), errorMessage))
+					{
+						pTableBody += "<tr style = 'width:100% ; border: 0px solid black; text - align: center; '>";
+						pTableBody += "<td style = 'width:45% ; border: 1px solid black; text - align: center; '>" + QString::fromLocal8Bit("Возврат подотчетной суммы <b>ПКО №") + QString::number(payment.GetID()) + "</b></td>";
+
+						pTableBody += "<td style = 'width:45% ; border: 1px solid black; text - align: center; <b>'>" + QString::number(payment.GetValue()) + "</b></td>";
+
+						pTableBody += "</tr>";
+						paySum += payment.GetValue();
+					}
+				}
+			}
+			reportText.replace(QString("WithdrawalPh"), QString(pTableBody), Qt::CaseInsensitive);
+		}
+
+		double withSum = 0;
+		std::vector<int> withdrawalIDVector;
+		QString wTableBody;
+		withdrawalIDVector = aWithdrawal.GetAllWithdrawalByAccountableDocumentID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage);
+		if (withdrawalIDVector.size() > 0)
+		{
+			BusinessLayer::AccountableWithdrawalRelation eWithdrawal;
+			BusinessLayer::Withdrawal withdrawal;
+			QTextCodec::setCodecForLocale(QTextCodec::codecForName("Windows-1251"));
+			for each (auto withdrawalID in withdrawalIDVector)
+			{
+				eWithdrawal.Clear();
+				withdrawal.Clear();
+				if (eWithdrawal.GetAccountableWithdrawalByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawalID, errorMessage))
+				{
+					if (withdrawal.GetWithdrawalByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), eWithdrawal.GetWithdrawalID(), errorMessage))
+					{
+						wTableBody += "<tr style = 'width:100% ; border: 0px solid black; text - align: center; '>";
+						wTableBody += "<td style = 'width:45% ; border: 1px solid black; text - align: center; '>" + QString::fromLocal8Bit("Получен аванс <b>РКО №") + QString::number(withdrawal.GetID()) + "</b></td>";
+
+						wTableBody += "<td style = 'width:45% ; border: 1px solid black; text - align: center; <b>'>" + QString::number(withdrawal.GetValue()) + "</b></td>";
+
+						wTableBody += "</tr>";
+						withSum += withdrawal.GetValue();
+					}
+				}
+			}
+			reportText.replace(QString("PaymentPh"), QString(wTableBody), Qt::CaseInsensitive);
+		}
+
+		if (aTransaction.GetTotalValue() - withSum + paySum >= 0)
+		{
+			reportText.replace(QString("PrevRemPh"), QString::number(aTransaction.GetTotalValue() - withSum + paySum, 'f', 3), Qt::CaseInsensitive);
+			reportText.replace(QString("PrevOverPh"), QString::number(0), Qt::CaseInsensitive);
+		}
+		else
+		{
+			reportText.replace(QString("PrevRemPh"), QString::number(0), Qt::CaseInsensitive);
+			reportText.replace(QString("PrevOverPh"), QString::number(aTransaction.GetTotalValue() - withSum + paySum, 'f', 3), Qt::CaseInsensitive);
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot find document!")),
+			QString(tr("Ok")));
+		return;
+	}
+
+	docForm->webEngineView->setHtml(reportText);
+	docForm->SetContent(reportText);
+	docForm->webEngineView->show();
+	docForm->show();
+}
+
 
 void DataForm::CrtAccTpDlg()
 {
@@ -2000,6 +6582,70 @@ void DataForm::DelBrhDlg()
 	}
 }
 
+void DataForm::CrtBrSAccDlg()
+{
+	CreateBrSAccDlg *branchSAccDlg = new CreateBrSAccDlg(dataFormBL, false, this);
+	branchSAccDlg->setAttribute(Qt::WA_DeleteOnClose);
+	branchSAccDlg->setWindowTitle(tr("Create branch subaccount"));
+	QMdiSubWindow *branchSAccWindow = new QMdiSubWindow;
+	branchSAccWindow->setWidget(branchSAccDlg);
+	branchSAccWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(branchSAccWindow);
+	branchSAccDlg->show();
+}
+void DataForm::UdpBrSAccDlg()
+{
+	CreateBrSAccDlg *branchSAccDlg = new CreateBrSAccDlg(dataFormBL, true, this);
+	branchSAccDlg->setAttribute(Qt::WA_DeleteOnClose);
+	branchSAccDlg->setWindowTitle(tr("Update branch subaccount"));
+	QMdiSubWindow *branchSAccWindow = new QMdiSubWindow;
+	branchSAccWindow->setWidget(branchSAccDlg);
+	branchSAccWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(branchSAccWindow);
+	if (branchSAccDlg->FillDlgElements(tableView))
+	{
+		branchSAccDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelBrSAccDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::BranchSubaccountRelation branchSub;
+	branchSub.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteBranchSubaccount(&branchSub, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Branch subaccount with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
 void DataForm::CrtBrwDlg()
 {
 	CreateBrwDlg *borroweDlg = new CreateBrwDlg(dataFormBL, false, this);
@@ -2171,7 +6817,7 @@ void DataForm::DelCASHERDlg()
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::CashboxEmployeeRelation cashRel;
 
-	if (0 != id && cashRel.GetCashboxEmployeeByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (0 != id && cashRel.GetCashboxEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		if (dataFormBL->DeleteCashboxEmployeeRelation(&cashRel, errorMessage))
 		{
@@ -2364,7 +7010,7 @@ void DataForm::DelCERDlg()
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	
-	if (0 != id && ceRel.GetCompanyEmployeeByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (0 != id && ceRel.GetCompanyEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		if (dataFormBL->DeleteCompanyEmployeeRelation(&ceRel, errorMessage))
 		{
@@ -2428,7 +7074,7 @@ void DataForm::DelCARDlg()
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::CompanyAccountRelation caRel;
 
-	if (0 != id && caRel.GetCompanyAccountByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (0 != id && caRel.GetCompanyAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		if (dataFormBL->DeleteCompanyAccountRelation(&caRel, errorMessage))
 		{
@@ -2586,7 +7232,7 @@ void DataForm::ViewConPDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::ConsumeProduct consumeProdcut;
-	if (!consumeProdcut.GetConsumeProductByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!consumeProdcut.GetConsumeProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -2599,22 +7245,22 @@ void DataForm::ViewConPDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), consumeProdcut.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeProdcut.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), consumeProdcut.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeProdcut.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!stockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), consumeProdcut.GetStockEmployeeID(), errorMessage))
+	if (!stockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeProdcut.GetStockEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -2672,28 +7318,28 @@ void DataForm::ViewConPDlg()
 		measure.Clear();
 		currency.Clear();
 		netCost.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!netCost.GetNetCostByProductID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!netCost.GetNetCostByProductID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -2862,7 +7508,7 @@ void DataForm::ViewConOthStDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::ConsumeOtherStocks consumeOtherStocks;
-	if (!consumeOtherStocks.GetConsumeOtherStocksByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!consumeOtherStocks.GetConsumeOtherStocksByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -2875,22 +7521,22 @@ void DataForm::ViewConOthStDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), consumeOtherStocks.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeOtherStocks.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), consumeOtherStocks.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeOtherStocks.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!stockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), consumeOtherStocks.GetStockEmployeeID(), errorMessage))
+	if (!stockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeOtherStocks.GetStockEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -2945,21 +7591,21 @@ void DataForm::ViewConOthStDlg()
 		otherStocks.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!otherStocks.GetOtherStocksByID(dataFormBL->GetOrmasDal(), item.GetOtherStocksID(), errorMessage))
+		if (!otherStocks.GetOtherStocksByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetOtherStocksID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Other stocks is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), otherStocks.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), otherStocks.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), otherStocks.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), otherStocks.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -3127,7 +7773,7 @@ void DataForm::ViewConRDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::ConsumeRaw consumeRaw;
-	if (!consumeRaw.GetConsumeRawByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!consumeRaw.GetConsumeRawByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -3140,22 +7786,22 @@ void DataForm::ViewConRDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), consumeRaw.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeRaw.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), consumeRaw.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeRaw.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!stockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), consumeRaw.GetStockEmployeeID(), errorMessage))
+	if (!stockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), consumeRaw.GetStockEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -3210,21 +7856,21 @@ void DataForm::ViewConRDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -3618,7 +8264,7 @@ void DataForm::DelEmpPrdDlg()
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::EmployeeProductRelation epRel;
 
-	if (0 != id && epRel.GetEmployeeProductByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (0 != id && epRel.GetEmployeeProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		if (dataFormBL->DeleteEmployeeProductRelation(&epRel, errorMessage))
 		{
@@ -3835,6 +8481,183 @@ void DataForm::DelFxdAstDlg()
 	}
 }
 
+void DataForm::ViewFxdAstDlg()
+{
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::FixedAssets fixAst;
+	if (!fixAst.GetFixedAssetsByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot show information for this row!")),
+			QString(tr("Ok")));
+		return;
+	}
+	BusinessLayer::FixedAssetsDetails faDetails;
+	BusinessLayer::FixedAssetsSpecification faSpec;
+	BusinessLayer::FixedAssetsOperations faOper;
+	std::vector<BusinessLayer::FixedAssetsOperations> faOperVec;
+	BusinessLayer::Subaccount primeSub;
+	BusinessLayer::Subaccount amSub;
+	BusinessLayer::Division division;
+	BusinessLayer::AmortizeGroup amGroup;
+	BusinessLayer::Account account;
+	
+	BusinessLayer::Company company;
+	BusinessLayer::CompanyEmployeeRelation ceRel;
+	int companyID = 0;
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), dataFormBL->loggedUser->GetID(), errorMessage);
+	company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage);
+
+	DocForm *docForm = new DocForm(dataFormBL, this);
+	docForm->setAttribute(Qt::WA_DeleteOnClose);
+	docForm->setWindowTitle(tr("Print report"));
+	QMdiSubWindow *printRepWindow = new QMdiSubWindow;
+	printRepWindow->setWidget(docForm);
+	printRepWindow->setAttribute(Qt::WA_DeleteOnClose);
+	printRepWindow->resize(docForm->size().width() + 18, docForm->size().height() + 30);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(printRepWindow);
+
+	QFile file;
+	file.setFileName(":/docs/fixed_asset.html");
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		QMessageBox::information(NULL, QString(tr("Info")),
+			QString(tr("Cannot find report tamplate!")),
+			QString(tr("Ok")));
+		return;
+	}
+	QString reportText = file.readAll();
+	
+	if (!faDetails.GetFixedAssetsDetailsByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), fixAst.GetFixedAssetsDetailsID(), errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot show information for this row!")),
+			QString(tr("Ok")));
+		return;
+	}
+
+	if (!faSpec.GetFixedAssetsSpecificationByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), fixAst.GetSpecificationID(), errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot show information for this row!")),
+			QString(tr("Ok")));
+		return;
+	}
+
+	if (!primeSub.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), faDetails.GetPrimaryCostAccountID(), errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot show information for this row!")),
+			QString(tr("Ok")));
+		return;
+	}
+
+	if (!amSub.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), faDetails.GetAmortizeAccountID(), errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot show information for this row!")),
+			QString(tr("Ok")));
+		return;
+	}
+
+	if (!division.GetDivisionByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), faDetails.GetDepartmentID(), errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot show information for this row!")),
+			QString(tr("Ok")));
+		return;
+	}
+
+	if (!amGroup.GetAmortizeGroupByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), faDetails.GetAmortizeGroupID(), errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot show information for this row!")),
+			QString(tr("Ok")));
+		return;
+	}
+	
+	if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), primeSub.GetParentAccountID(), errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot show information for this row!")),
+			QString(tr("Ok")));
+		return;
+	}
+
+	faOper.SetFixedAssetsID(fixAst.GetID());
+	std::string filter = faOper.GenerateFilter(dataFormBL->GetOrmasDal());
+	faOperVec = dataFormBL->GetAllDataForClass<BusinessLayer::FixedAssetsOperations>(errorMessage, filter);
+	
+
+	//generating report
+	if (!fixAst.IsEmpty())
+	{
+		reportText.replace(QString("DocumentNumberPh"), QString(QString::number(fixAst.GetID())), Qt::CaseInsensitive);
+		if(!company.IsEmpty())
+			reportText.replace(QString("ComNamePh"), QString(company.GetName().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("DivisionNamePh"), QString(division.GetName().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("DocumentDatePh"), QString(fixAst.GetBuyDate().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("FixedAssetNamePh"), QString(faSpec.GetName().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("GroupPh"), QString(QString::number(amGroup.GetGroupNumber())), Qt::CaseInsensitive);
+		reportText.replace(QString("PassportPh"), QString(faSpec.GetDocument().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("FactoryPh"), QString(faSpec.GetFactoryNumber().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("InventoryPh"), QString(fixAst.GetInventoryNumber().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("DateOfInPh"), QString(fixAst.GetStartOfOperationDate().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("DateOfOutPh"), QString(fixAst.GetEndOfOperationDate().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("AccountPh"), QString(account.GetNumber().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("LocationPh"), QString(faDetails.GetFixedAssetsLocation().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("DeveloperPh"), QString(faSpec.GetDeveloper().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("OutPh"), QString(fixAst.GetBuyDate().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("ReconsPh"), QString("-"), Qt::CaseInsensitive);
+		reportText.replace(QString("ReconsPh"), QString("-"), Qt::CaseInsensitive);
+		reportText.replace(QString("NamePh"), QString("-"), Qt::CaseInsensitive);
+		reportText.replace(QString("NumberPh"), QString("-"), Qt::CaseInsensitive);
+		reportText.replace(QString("DatePh"), QString(fixAst.GetStartOfOperationDate().c_str()), Qt::CaseInsensitive);
+		reportText.replace(QString("InUsePh"), QString::number(std::round((-1)*amSub.GetCurrentBalance() / (primeSub.GetCurrentBalance()*faDetails.GetAmortizeValue() / 12 / 100))), Qt::CaseInsensitive);
+		reportText.replace(QString("AmorSumPh"), QString::number((-1)*amSub.GetCurrentBalance(), 'f', 3), Qt::CaseInsensitive);
+		reportText.replace(QString("LastPh"), QString::number(primeSub.GetCurrentBalance() + amSub.GetCurrentBalance(), 'f', 3), Qt::CaseInsensitive);
+		reportText.replace(QString("PricePh"), QString::number(primeSub.GetCurrentBalance(), 'f', 3), Qt::CaseInsensitive);
+		reportText.replace(QString("UsePh"), QString::number(100 / faDetails.GetAmortizeValue() * 12, 'f', 3), Qt::CaseInsensitive);
+		QString table1="";
+		if (faOperVec.size() > 0)
+		{
+			
+			for each (auto oper in faOperVec)
+			{
+				table1 += "<tr width = '100%'>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>< / td>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>2< / td>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>3< / td>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>1< / td>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>2< / td>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>3< / td>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>1< / td>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>2< / td>";
+				table1 += "<td style = 'height:20px; border: 1px solid black; text - align: center; font - size:12px; '>3< / td>";
+				table1 += "</tr>";
+			}
+		}
+
+		reportText.replace(QString("Table1Ph"), table1, Qt::CaseInsensitive);
+		reportText.replace(QString("Table2Ph"), "", Qt::CaseInsensitive);
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Connot find document!")),
+			QString(tr("Ok")));
+		return;
+	}
+
+	docForm->webEngineView->setHtml(reportText);
+	docForm->SetContent(reportText);
+	docForm->webEngineView->show();
+	docForm->show();
+}
+
+
+
 void DataForm::CrtFxdAstOperDlg()
 {
 	CreateFxdAstOperDlg *fxdAstOperDlg = new CreateFxdAstOperDlg(dataFormBL, false, this);
@@ -4042,7 +8865,7 @@ void DataForm::ViewInvDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Inventorization inventorization;
-	if (!inventorization.GetInventorizationByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!inventorization.GetInventorizationByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -4055,22 +8878,22 @@ void DataForm::ViewInvDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), inventorization.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), inventorization.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), inventorization.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), inventorization.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!stockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), inventorization.GetStockEmployeeID(), errorMessage))
+	if (!stockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), inventorization.GetStockEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -4125,21 +8948,21 @@ void DataForm::ViewInvDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -4234,6 +9057,72 @@ void DataForm::DelInvListDlg()
 			QString(tr("Ok")));
 	}
 }
+
+void DataForm::CrtGroupDlg()
+{
+	CreateGrpDlg *groupDlg = new CreateGrpDlg(dataFormBL, false, this);
+	groupDlg->setAttribute(Qt::WA_DeleteOnClose);
+	groupDlg->setWindowTitle(tr("Create group"));
+	QMdiSubWindow *groupWindow = new QMdiSubWindow;
+	groupWindow->setWidget(groupDlg);
+	groupWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(groupWindow);
+	groupDlg->show();
+}
+void DataForm::UdpGroupDlg()
+{
+	CreateGrpDlg *groupDlg = new CreateGrpDlg(dataFormBL, true, this);
+	groupDlg->setAttribute(Qt::WA_DeleteOnClose);
+	groupDlg->setWindowTitle(tr("Update group"));
+	QMdiSubWindow *groupWindow = new QMdiSubWindow;
+	groupWindow->setWidget(groupDlg);
+	groupWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(groupWindow);
+	if (groupDlg->FillDlgElements(tableView))
+	{
+		groupDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelGroupDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::Group group;
+	group.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteGroup(&group, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Group with this id does not exist!")),
+			QString(tr("Ok")));
+
+	}
+}
+
 
 void DataForm::CrtJbpDlg()
 {
@@ -4695,7 +9584,7 @@ void DataForm::ViewOrdDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Order order;
-	if (!order.GetOrderByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!order.GetOrderByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -4708,22 +9597,22 @@ void DataForm::ViewOrdDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), order.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), order.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!client.GetClientByID(dataFormBL->GetOrmasDal(), order.GetClientID(), errorMessage))
+	if (!client.GetClientByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), order.GetClientID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), order.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), order.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -4779,21 +9668,21 @@ void DataForm::ViewOrdDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -4961,7 +9850,7 @@ void DataForm::ViewOrdRDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::OrderRaw orderRaw;
-	if (!orderRaw.GetOrderRawByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!orderRaw.GetOrderRawByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -4974,22 +9863,22 @@ void DataForm::ViewOrdRDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), orderRaw.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), orderRaw.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!purveyor.GetPurveyorByID(dataFormBL->GetOrmasDal(), orderRaw.GetPurveyorID(), errorMessage))
+	if (!purveyor.GetPurveyorByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), orderRaw.GetPurveyorID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), orderRaw.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), orderRaw.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -5044,21 +9933,21 @@ void DataForm::ViewOrdRDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -5483,7 +10372,7 @@ void DataForm::ViewPmtDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Payment payment;
-	if (!payment.GetPaymentByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!payment.GetPaymentByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -5498,16 +10387,16 @@ void DataForm::ViewPmtDlg()
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	BusinessLayer::CashboxTransaction cTransaction;
 
-	if (cTransaction.GetCashboxTransactionByPaymentID(dataFormBL->GetOrmasDal(), payment.GetID(), errorMessage))
+	if (cTransaction.GetCashboxTransactionByPaymentID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetID(), errorMessage))
 	{
-		if (!accountant.GetEmployeeByID(dataFormBL->GetOrmasDal(), cTransaction.GetAccountantID(), errorMessage))
+		if (!accountant.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), cTransaction.GetAccountantID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CHIEF ACCOUNTANT' employee!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!cashier.GetEmployeeByID(dataFormBL->GetOrmasDal(), cTransaction.GetCashierID(), errorMessage))
+		if (!cashier.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), cTransaction.GetCashierID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CASHIER' employee!")),
@@ -5518,7 +10407,7 @@ void DataForm::ViewPmtDlg()
 	else
 	{
 
-		if (0 == role.GetRoleIDByName(dataFormBL->GetOrmasDal(), "CHIEF ACCOUNTANT", errorMessage))
+		if (0 == role.GetRoleIDByName(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), "CHIEF ACCOUNTANT", errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CHIEF ACCOUNTANT' role!")),
@@ -5543,7 +10432,7 @@ void DataForm::ViewPmtDlg()
 		}
 
 		role.Clear();
-		if (0 == role.GetRoleIDByName(dataFormBL->GetOrmasDal(), "CASHIER", errorMessage))
+		if (0 == role.GetRoleIDByName(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), "CASHIER", errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CASHIER' role!")),
@@ -5568,8 +10457,8 @@ void DataForm::ViewPmtDlg()
 		}
 	}
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), accountant.GetID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), accountant.GetID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -5598,7 +10487,7 @@ void DataForm::ViewPmtDlg()
 	QString reportText = file.readAll();
 
 	BusinessLayer::Account acc;
-	if (!acc.GetAccountByNumber(dataFormBL->GetOrmasDal(), "10110", errorMessage))
+	if (!acc.GetAccountByNumber(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), "10110", errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Info")),
 			QString(tr("Can't find account!")),
@@ -5621,7 +10510,7 @@ void DataForm::ViewPmtDlg()
 			for each (auto item in balanceVector)
 			{
 				subAcc.Clear();
-				if (subAcc.GetSubaccountByID(dataFormBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
+				if (subAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
 				{
 					if (subAcc.GetParentAccountID() == payment.GetAccountID())
 					{
@@ -5641,7 +10530,7 @@ void DataForm::ViewPmtDlg()
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), payment.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Can't find currency for this payment!")),
@@ -5649,7 +10538,7 @@ void DataForm::ViewPmtDlg()
 			return;
 		}
 		subAcc.Clear();
-		if (!subAcc.GetSubaccountByID(dataFormBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
+		if (!subAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Can't find subaccount for this user!")),
@@ -5660,7 +10549,7 @@ void DataForm::ViewPmtDlg()
 	else if (payment.GetAccountID()>0)
 	{
 		account.Clear();
-		if (!account.GetAccountByID(dataFormBL->GetOrmasDal(), payment.GetAccountID(), errorMessage))
+		if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetAccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr(errorMessage.c_str())),
@@ -5671,14 +10560,14 @@ void DataForm::ViewPmtDlg()
 	else
 	{
 		subAcc.Clear();
-		if (!subAcc.GetSubaccountByID(dataFormBL->GetOrmasDal(), payment.GetSubaccountID(), errorMessage))
+		if (!subAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetSubaccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr(errorMessage.c_str())),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!account.GetAccountByID(dataFormBL->GetOrmasDal(), subAcc.GetParentAccountID(), errorMessage))
+		if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), subAcc.GetParentAccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr(errorMessage.c_str())),
@@ -5947,7 +10836,7 @@ void DataForm::DelPrdBrnDlg()
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::ProductBranchRelation pbRel;
 
-	if (0 != id && pbRel.GetProductBranchByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (0 != id && pbRel.GetProductBranchByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		if (dataFormBL->DeleteProductBranchRelation(&pbRel, errorMessage))
 		{
@@ -6105,7 +10994,7 @@ void DataForm::ViewProdnDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Production production;
-	if (!production.GetProductionByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!production.GetProductionByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -6160,28 +11049,28 @@ void DataForm::ViewProdnDlg()
 		measure.Clear();
 		currency.Clear();
 		netCost.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!netCost.GetNetCostByProductID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!netCost.GetNetCostByProductID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -6350,7 +11239,7 @@ void DataForm::ViewProdConRDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::ProductionConsumeRaw pConsumeRaw;
-	if (!pConsumeRaw.GetProductionConsumeRawByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!pConsumeRaw.GetProductionConsumeRawByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -6363,22 +11252,22 @@ void DataForm::ViewProdConRDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), pConsumeRaw.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), pConsumeRaw.GetStockEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	/*if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), pConsumeRaw.GetEmployeeID(), errorMessage))
+	/*if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), pConsumeRaw.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}*/
-	if (!stockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), pConsumeRaw.GetStockEmployeeID(), errorMessage))
+	if (!stockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), pConsumeRaw.GetStockEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -6433,21 +11322,21 @@ void DataForm::ViewProdConRDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -7008,7 +11897,7 @@ void DataForm::ViewRcpOthStDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::ReceiptOtherStocks receiptOtherStocks;
-	if (!receiptOtherStocks.GetReceiptOtherStocksByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!receiptOtherStocks.GetReceiptOtherStocksByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -7021,22 +11910,22 @@ void DataForm::ViewRcpOthStDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), receiptOtherStocks.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), receiptOtherStocks.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), receiptOtherStocks.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), receiptOtherStocks.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!stockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), receiptOtherStocks.GetPurveyorID(), errorMessage))
+	if (!stockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), receiptOtherStocks.GetPurveyorID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -7094,21 +11983,21 @@ void DataForm::ViewRcpOthStDlg()
 		measure.Clear();
 		currency.Clear();
 		netCost.Clear();
-		if (!otherStocks.GetOtherStocksByID(dataFormBL->GetOrmasDal(), item.GetOtherStocksID(), errorMessage))
+		if (!otherStocks.GetOtherStocksByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetOtherStocksID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), otherStocks.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), otherStocks.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), otherStocks.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), otherStocks.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -7278,7 +12167,7 @@ void DataForm::ViewRcpPDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::ReceiptProduct receiptProdcut;
-	if (!receiptProdcut.GetReceiptProductByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!receiptProdcut.GetReceiptProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -7291,22 +12180,22 @@ void DataForm::ViewRcpPDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), receiptProdcut.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), receiptProdcut.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), receiptProdcut.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), receiptProdcut.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!stockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), receiptProdcut.GetStockEmployeeID(), errorMessage))
+	if (!stockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), receiptProdcut.GetStockEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -7364,28 +12253,28 @@ void DataForm::ViewRcpPDlg()
 		measure.Clear();
 		currency.Clear();
 		netCost.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!netCost.GetNetCostByProductID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!netCost.GetNetCostByProductID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -7554,7 +12443,7 @@ void DataForm::ViewStockTrDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::StockTransfer stockTransfer;
-	if (!stockTransfer.GetStockTransferByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!stockTransfer.GetStockTransferByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -7567,22 +12456,22 @@ void DataForm::ViewStockTrDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), stockTransfer.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), stockTransfer.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!fromStockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), stockTransfer.GetEmployeeID(), errorMessage))
+	if (!fromStockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), stockTransfer.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!toStockEmployee.GetEmployeeByID(dataFormBL->GetOrmasDal(), stockTransfer.GetStockEmployeeID(), errorMessage))
+	if (!toStockEmployee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), stockTransfer.GetStockEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -7638,21 +12527,21 @@ void DataForm::ViewStockTrDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -7950,7 +12839,7 @@ void DataForm::ViewRtrnDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Return ret;
-	if (!ret.GetReturnByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!ret.GetReturnByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -7963,22 +12852,22 @@ void DataForm::ViewRtrnDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), ret.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), ret.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!client.GetClientByID(dataFormBL->GetOrmasDal(), ret.GetClientID(), errorMessage))
+	if (!client.GetClientByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), ret.GetClientID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), ret.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), ret.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -8033,21 +12922,21 @@ void DataForm::ViewRtrnDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -8472,7 +13361,7 @@ void DataForm::ViewSpecDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Specification spec;
-	if (!spec.GetSpecificationByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!spec.GetSpecificationByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -8484,15 +13373,15 @@ void DataForm::ViewSpecDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), spec.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), spec.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), spec.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), spec.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -8545,21 +13434,21 @@ void DataForm::ViewSpecDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -8726,7 +13615,7 @@ void DataForm::ViewSplDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Spoilage spoilage;
-	if (!spoilage.GetSpoilageByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!spoilage.GetSpoilageByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -8738,15 +13627,15 @@ void DataForm::ViewSplDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), spoilage.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), spoilage.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), spoilage.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), spoilage.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -8801,28 +13690,28 @@ void DataForm::ViewSplDlg()
 		measure.Clear();
 		currency.Clear();
 		netCost.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!netCost.GetNetCostByProductID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!netCost.GetNetCostByProductID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -8982,6 +13871,70 @@ void DataForm::DelStockDlg()
 	}
 }
 
+void DataForm::CrtStockLmDlg()
+{
+	CreateStockLimitDlg *stockLmDlg = new CreateStockLimitDlg(dataFormBL, false, this);
+	stockLmDlg->setAttribute(Qt::WA_DeleteOnClose);
+	stockLmDlg->setWindowTitle(tr("Create stock"));
+	QMdiSubWindow *stockLmWindow = new QMdiSubWindow;
+	stockLmWindow->setWidget(stockLmDlg);
+	stockLmWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(stockLmWindow);
+	stockLmDlg->show();
+}
+void DataForm::UdpStockLmDlg()
+{
+	CreateStockLimitDlg *stockLmDlg = new CreateStockLimitDlg(dataFormBL, true, this);
+	stockLmDlg->setAttribute(Qt::WA_DeleteOnClose);
+	stockLmDlg->setWindowTitle(tr("Update stock"));
+	QMdiSubWindow *stockLmWindow = new QMdiSubWindow;
+	stockLmWindow->setWidget(stockLmDlg);
+	stockLmWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(stockLmWindow);
+	if (stockLmDlg->FillDlgElements(tableView))
+	{
+		stockLmDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelStockLmDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::StockLimit stockLimit;
+	stockLimit.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteStockLimit(&stockLimit, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Stock limit with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
 void DataForm::CrtSAccDlg()
 {
 	CreateSAccDlg *sAccountDlg = new CreateSAccDlg(dataFormBL, false, this);
@@ -9042,6 +13995,70 @@ void DataForm::DelSAccDlg()
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Subaccount with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
+void DataForm::CrtSAccLmDlg()
+{
+	CreateSAccLmDlg *sAccLmDlg = new CreateSAccLmDlg(dataFormBL, false, this);
+	sAccLmDlg->setAttribute(Qt::WA_DeleteOnClose);
+	sAccLmDlg->setWindowTitle(tr("Create subaccount limit"));
+	QMdiSubWindow *sAccLmWindow = new QMdiSubWindow;
+	sAccLmWindow->setWidget(sAccLmDlg);
+	sAccLmWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(sAccLmWindow);
+	sAccLmDlg->show();
+}
+void DataForm::UdpSAccLmDlg()
+{
+	CreateSAccLmDlg *sAccLmDlg = new CreateSAccLmDlg(dataFormBL, true, this);
+	sAccLmDlg->setAttribute(Qt::WA_DeleteOnClose);
+	sAccLmDlg->setWindowTitle(tr("Update subaccount limit"));
+	QMdiSubWindow *sAccLmWindow = new QMdiSubWindow;
+	sAccLmWindow->setWidget(sAccLmDlg);
+	sAccLmWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(sAccLmWindow);
+	if (sAccLmDlg->FillDlgElements(tableView))
+	{
+		sAccLmDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelSAccLmDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::SubaccountLimit subaccountLimit;
+	subaccountLimit.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteSubaccountLimit(&subaccountLimit, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Subaccount limit with this id does not exist!")),
 			QString(tr("Ok")));
 	}
 }
@@ -9182,7 +14199,7 @@ void DataForm::ViewTrsDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Transport transport;
-	if (!transport.GetTransportByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!transport.GetTransportByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -9194,15 +14211,15 @@ void DataForm::ViewTrsDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), transport.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), transport.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), transport.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), transport.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -9256,21 +14273,21 @@ void DataForm::ViewTrsDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -9412,6 +14429,70 @@ void DataForm::DelUserDlg()
 	if (0 != id)
 	{
 		if (dataFormBL->DeleteUser(&user, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("User with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
+void DataForm::CrtUserGrDlg()
+{
+	CreateUserGrDlg *userGrDlg = new CreateUserGrDlg(dataFormBL, false, this);
+	userGrDlg->setAttribute(Qt::WA_DeleteOnClose);
+	userGrDlg->setWindowTitle(tr("Create user group"));
+	QMdiSubWindow *userGrWindow = new QMdiSubWindow;
+	userGrWindow->setWidget(userGrDlg);
+	userGrWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(userGrWindow);
+	userGrDlg->show();
+}
+void DataForm::UdpUserGrDlg()
+{
+	CreateUserGrDlg *userGrDlg = new CreateUserGrDlg(dataFormBL, true, this);
+	userGrDlg->setAttribute(Qt::WA_DeleteOnClose);
+	userGrDlg->setWindowTitle(tr("Update user"));
+	QMdiSubWindow *userGrWindow = new QMdiSubWindow;
+	userGrWindow->setWidget(userGrDlg);
+	userGrWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(userGrWindow);
+	if (userGrDlg->FillDlgElements(tableView))
+	{
+		userGrDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelUserGrDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::UserGroupRelation userGr;
+	userGr.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteUserGroupRelation(&userGr, errorMessage))
 		{
 			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
 			ChangeBtnState();
@@ -9668,7 +14749,7 @@ void DataForm::DelWERDlg()
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::WarehouseEmployeeRelation wareRel;
 
-	if (0 != id && wareRel.GetWarehouseEmployeeByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (0 != id && wareRel.GetWarehouseEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		if (dataFormBL->DeleteWarehouseEmployeeRelation(&wareRel, errorMessage))
 		{
@@ -9695,7 +14776,7 @@ void DataForm::ViewWdwDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::Withdrawal withdrawal;
-	if (!withdrawal.GetWithdrawalByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!withdrawal.GetWithdrawalByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -9711,23 +14792,23 @@ void DataForm::ViewWdwDlg()
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	BusinessLayer::CashboxTransaction cTransaction;
 
-	if (cTransaction.GetCashboxTransactionByWithdrawalID(dataFormBL->GetOrmasDal(), withdrawal.GetID(), errorMessage))
+	if (cTransaction.GetCashboxTransactionByWithdrawalID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetID(), errorMessage))
 	{
-		if (!accountant.GetEmployeeByID(dataFormBL->GetOrmasDal(), cTransaction.GetAccountantID(), errorMessage))
+		if (!accountant.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), cTransaction.GetAccountantID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CHIEF ACCOUNTANT' employee!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!cashier.GetEmployeeByID(dataFormBL->GetOrmasDal(), cTransaction.GetCashierID(), errorMessage))
+		if (!cashier.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), cTransaction.GetCashierID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CASHIER' employee!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!owner.GetEmployeeByID(dataFormBL->GetOrmasDal(), cTransaction.GetOwnerID(), errorMessage))
+		if (!owner.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), cTransaction.GetOwnerID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'OWNER' employee!")),
@@ -9738,7 +14819,7 @@ void DataForm::ViewWdwDlg()
 	else
 	{
 
-		if (0 == role.GetRoleIDByName(dataFormBL->GetOrmasDal(), "CHIEF ACCOUNTANT", errorMessage))
+		if (0 == role.GetRoleIDByName(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), "CHIEF ACCOUNTANT", errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CHIEF ACCOUNTANT' role!")),
@@ -9763,7 +14844,7 @@ void DataForm::ViewWdwDlg()
 		}
 
 		role.Clear();
-		if (0 == role.GetRoleIDByName(dataFormBL->GetOrmasDal(), "CASHIER", errorMessage))
+		if (0 == role.GetRoleIDByName(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), "CASHIER", errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'CASHIER' role!")),
@@ -9788,7 +14869,7 @@ void DataForm::ViewWdwDlg()
 		}
 
 		role.Clear();
-		if (0 == role.GetRoleIDByName(dataFormBL->GetOrmasDal(), "DIRECTOR", errorMessage))
+		if (0 == role.GetRoleIDByName(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), "DIRECTOR", errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr("Connot find 'OWNER' role!")),
@@ -9813,8 +14894,8 @@ void DataForm::ViewWdwDlg()
 		}
 	}
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), accountant.GetID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), accountant.GetID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -9843,7 +14924,7 @@ void DataForm::ViewWdwDlg()
 	QString reportText = file.readAll();
 
 	BusinessLayer::Account acc;
-	if (!acc.GetAccountByNumber(dataFormBL->GetOrmasDal(), "10110", errorMessage))
+	if (!acc.GetAccountByNumber(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), "10110", errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Info")),
 			QString(tr("Can't find account!")),
@@ -9865,7 +14946,7 @@ void DataForm::ViewWdwDlg()
 			for each (auto item in balanceVector)
 			{
 				subAcc.Clear();
-				if (subAcc.GetSubaccountByID(dataFormBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
+				if (subAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetSubaccountID(), errorMessage))
 				{
 					if (subAcc.GetParentAccountID() == withdrawal.GetAccountID())
 					{
@@ -9885,7 +14966,7 @@ void DataForm::ViewWdwDlg()
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), withdrawal.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Can't find currency for this withdrawal!")),
@@ -9893,7 +14974,7 @@ void DataForm::ViewWdwDlg()
 			return;
 		}
 		subAcc.Clear();
-		if (!subAcc.GetSubaccountByID(dataFormBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
+		if (!subAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), balance.GetSubaccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Can't find subaccount for this user!")),
@@ -9904,7 +14985,7 @@ void DataForm::ViewWdwDlg()
 	else if (withdrawal.GetAccountID()>0)
 	{
 		account.Clear();
-		if (!account.GetAccountByID(dataFormBL->GetOrmasDal(), withdrawal.GetAccountID(), errorMessage))
+		if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetAccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr(errorMessage.c_str())),
@@ -9915,14 +14996,14 @@ void DataForm::ViewWdwDlg()
 	else
 	{
 		subAcc.Clear();
-		if (!subAcc.GetSubaccountByID(dataFormBL->GetOrmasDal(), withdrawal.GetSubaccountID(), errorMessage))
+		if (!subAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetSubaccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr(errorMessage.c_str())),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!account.GetAccountByID(dataFormBL->GetOrmasDal(), subAcc.GetParentAccountID(), errorMessage))
+		if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), subAcc.GetParentAccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr(errorMessage.c_str())),
@@ -10032,7 +15113,7 @@ void DataForm::ViewWOffDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::WriteOff wOff;
-	if (!wOff.GetWriteOffByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!wOff.GetWriteOffByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -10044,15 +15125,15 @@ void DataForm::ViewWOffDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), wOff.GetEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), wOff.GetEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), wOff.GetEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), wOff.GetEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -10106,21 +15187,21 @@ void DataForm::ViewWOffDlg()
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -10290,7 +15371,7 @@ void DataForm::ViewWOffRDlg()
 	std::string errorMessage = "";
 	int id = GetIDFromTable(tableView, errorMessage);
 	BusinessLayer::WriteOffRaw wOffRaw;
-	if (!wOffRaw.GetWriteOffRawByID(dataFormBL->GetOrmasDal(), id, errorMessage))
+	if (!wOffRaw.GetWriteOffRawByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), id, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -10302,15 +15383,15 @@ void DataForm::ViewWOffRDlg()
 	BusinessLayer::Company company;
 	BusinessLayer::CompanyEmployeeRelation ceRel;
 	int companyID = 0;
-	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->GetOrmasDal(), wOffRaw.GetStockEmployeeID(), errorMessage);
-	if (!company.GetCompanyByID(dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
+	companyID = ceRel.GetCompanyByEmployeeID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), wOffRaw.GetStockEmployeeID(), errorMessage);
+	if (!company.GetCompanyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), companyID, errorMessage) || 0 == companyID)
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
 			QString(tr("Ok")));
 		return;
 	}
-	if (!employee.GetEmployeeByID(dataFormBL->GetOrmasDal(), wOffRaw.GetStockEmployeeID(), errorMessage))
+	if (!employee.GetEmployeeByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), wOffRaw.GetStockEmployeeID(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Connot show information for this row!")),
@@ -10365,21 +15446,21 @@ void DataForm::ViewWOffRDlg()
 		measure.Clear();
 		currency.Clear();
 		netCost.Clear();
-		if (!product.GetProductByID(dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
+		if (!product.GetProductByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Product is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!measure.GetMeasureByID(dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (!measure.GetMeasureByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Measure is wrong!")),
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -10503,6 +15584,15 @@ QStringList DataForm::GetTableHeader<BusinessLayer::AccountableView>()
 }
 
 template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::AccountableDocument>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Document date") << QObject::tr("Value") << QObject::tr("Expense assignment")
+		<< QObject::tr("Accountable ID") << QObject::tr("Status ID");
+	return header;
+}
+
+template<>
 QStringList DataForm::GetTableHeader<BusinessLayer::AccessView>()
 {
 	QStringList header;
@@ -10549,6 +15639,15 @@ QStringList DataForm::GetTableHeader<BusinessLayer::Branch>()
 	QStringList header;
 	header << QObject::tr("ID") << QObject::tr("Branch name") << QObject::tr("Branch address") << QObject::tr("Branch phone")
 		<< QObject::tr("Commnet");
+	return header;
+}
+
+template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::BranchSubaccountRelationView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Branch name") << QObject::tr("Subaccount number") << QObject::tr("Branch ID")
+		<< QObject::tr("Subaccount ID");
 	return header;
 }
 
@@ -10622,8 +15721,8 @@ template<>
 QStringList DataForm::GetTableHeader<BusinessLayer::CompanyEmployeeRelationView>()
 {
 	QStringList header;
-	header << QObject::tr("ID") << QObject::tr("Company name") << QObject::tr("Employee name") << QObject::tr("Employee surname") 
-		<< QObject::tr("Employee Phone") << QObject::tr("Company ID") << QObject::tr("Account ID");
+	header << QObject::tr("ID") << QObject::tr("Company name") << QObject::tr("Branch name") << QObject::tr("Employee name") << QObject::tr("Employee surname")
+		<< QObject::tr("Employee Phone") << QObject::tr("Company ID") << QObject::tr("Employee ID") << QObject::tr("Branch ID");
 	return header;
 }
 
@@ -10780,6 +15879,15 @@ QStringList DataForm::GetTableHeader<BusinessLayer::FixedAssetsView>()
 }
 
 template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::FixedAssetsSpecification>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Name") << QObject::tr("Factory number") << QObject::tr("Document")
+		<< QObject::tr("Object characters") << QObject::tr("Condition") << QObject::tr("Developer") << QObject::tr("Construction date");
+	return header;
+}
+
+template<>
 QStringList DataForm::GetTableHeader<BusinessLayer::FixedAssetsOperations>()
 {
 	QStringList header;
@@ -10824,6 +15932,14 @@ QStringList DataForm::GetTableHeader<BusinessLayer::InventorizationListView>()
 }
 
 template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::Group>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Group name") << QObject::tr("Definition");
+	return header;
+}
+
+template<>
 QStringList DataForm::GetTableHeader<BusinessLayer::JobpriceView>()
 {
 	QStringList header;
@@ -10840,7 +15956,7 @@ QStringList DataForm::GetTableHeader<BusinessLayer::JobsheetView>()
 	QStringList header;
 	header << QObject::tr("ID") << QObject::tr("Date") << QObject::tr("User name")
 		<< QObject::tr("User surname") << QObject::tr("User phone") << QObject::tr("Product name") << QObject::tr("Count")
-		<< QObject::tr("Measure name") << QObject::tr("Product ID") << QObject::tr("Measure ID");
+		<< QObject::tr("Measure name") << QObject::tr("Product ID") << QObject::tr("Employee ID");
 	return header;
 }
 
@@ -10915,7 +16031,7 @@ QStringList DataForm::GetTableHeader<BusinessLayer::OrderRawView>()
 		<< QObject::tr("Status name") << QObject::tr("Purveyor name") << QObject::tr("Purveyor surname") << QObject::tr("Purveyor phone")
 		<< QObject::tr("Purveyor company name") << QObject::tr("Employee name") << QObject::tr("Employee surname") << QObject::tr("Employee phone")
 		<< QObject::tr("Employee position") << QObject::tr("Product count") << QObject::tr("Sum") << QObject::tr("Currency name")
-		<< QObject::tr("Employee ID") << QObject::tr("Client ID") << QObject::tr("Status ID") << QObject::tr("Currency ID")
+		<< QObject::tr("Employee ID") << QObject::tr("Purveyor ID") << QObject::tr("Status ID") << QObject::tr("Currency ID")
 		<< QObject::tr("Product list");
 	return header;
 }
@@ -10954,6 +16070,14 @@ QStringList DataForm::GetTableHeader<BusinessLayer::OtherStocksView>()
 	header << QObject::tr("ID") << QObject::tr("Name") << QObject::tr("Price") << QObject::tr("Currency name") << QObject::tr("Volume")
 		<< QObject::tr("Measure name") << QObject::tr("Company name")
 		<< QObject::tr("Company ID") << QObject::tr("Measure ID") << QObject::tr("Currency ID");
+	return header;
+}
+
+template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::OtherStocksType>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Name") << QObject::tr("Short name") << QObject::tr("Code");
 	return header;
 }
 
@@ -11319,6 +16443,15 @@ QStringList DataForm::GetTableHeader<BusinessLayer::StockView>()
 }
 
 template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::StockLimitView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Warehouse name") << QObject::tr("Product name")
+		<< QObject::tr("Minimum value") << QObject::tr("Maximum value") << QObject::tr("Stock ID") << QObject::tr("Product ID");
+	return header;
+}
+
+template<>
 QStringList DataForm::GetTableHeader<BusinessLayer::SubaccountView>()
 {
 	QStringList header;
@@ -11326,6 +16459,15 @@ QStringList DataForm::GetTableHeader<BusinessLayer::SubaccountView>()
 		<< QObject::tr("Start balance") << QObject::tr("Current balance")
 		<< QObject::tr("Currency name") << QObject::tr("Status name") << QObject::tr("Currency ID") << QObject::tr("Status ID")
 		<< QObject::tr("Opened date") << QObject::tr("Closed date") << QObject::tr("Details");
+	return header;
+}
+
+template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::SubaccountLimitView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Subaccount number") << QObject::tr("Subaccount ID") << QObject::tr("Minimum value")
+		<< QObject::tr("Maximum value");
 	return header;
 }
 
@@ -11369,6 +16511,25 @@ QStringList DataForm::GetTableHeader<BusinessLayer::UserView>()
 	QStringList header;
 	header << QObject::tr("ID") << QObject::tr("Email") << QObject::tr("Name") << QObject::tr("Surname") << QObject::tr("Phone") 
 		<< QObject::tr("Address") << QObject::tr("Role name") << QObject::tr("Password") << QObject::tr("Avtivated") << QObject::tr("Role ID");
+	return header;
+}
+
+template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::UserExtendedView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Name") << QObject::tr("Surname") << QObject::tr("Phone") << QObject::tr("Address") << QObject::tr("Company name")
+		<< QObject::tr("Branch name") << QObject::tr("Role name") << QObject::tr("Subaccount number") << QObject::tr("Role ID") << QObject::tr("Subaccount ID") 
+		<< QObject::tr("Account ID") << QObject::tr("Company ID") << QObject::tr("Branch ID");
+	return header;
+}
+
+template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::UserGroupRelationView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Group name") << QObject::tr("User surname") << QObject::tr("User name")
+		<< QObject::tr("Role ID") << QObject::tr("Group ID") << QObject::tr("User ID");
 	return header;
 }
 
@@ -11487,6 +16648,19 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::AccountableView>
 	return items;
 }
 
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::AccountableDocument>(BusinessLayer::AccountableDocument& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetDate().c_str())
+		<< new QStandardItem(QString::number(data.GetValue(), 'f', 3))
+		<< new QStandardItem(data.GetExpenseAssignment().c_str())
+		<< new QStandardItem(QString::number(data.GetAccountableID()))
+		<< new QStandardItem(QString::number(data.GetStatusID()));
+	return items;
+}
+
 
 template<>
 QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::AccountType>(BusinessLayer::AccountType& data)
@@ -11562,6 +16736,18 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::Branch>(Business
 		<< new QStandardItem(data.GetAddress().c_str())
 		<< new QStandardItem(data.GetPhone().c_str())
 		<< new QStandardItem(data.GetComment().c_str());
+	return items;
+}
+
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::BranchSubaccountRelationView>(BusinessLayer::BranchSubaccountRelationView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetBranchName().c_str())
+		<< new QStandardItem(data.GetSubaccountNumber().c_str())
+		<< new QStandardItem(QString::number(data.GetBranchID()))
+		<< new QStandardItem(QString::number(data.GetSubaccountID()));
 	return items;
 }
 
@@ -11674,11 +16860,13 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::CompanyEmployeeR
 	QList<QStandardItem*> items;
 	items << new QStandardItem(QString::number(data.GetID()))
 		<< new QStandardItem(data.GetCompanyName().c_str())
+		<< new QStandardItem(data.GetBranchName().c_str())
 		<< new QStandardItem(data.GetUsername().c_str())
 		<< new QStandardItem(data.GetUserSurname().c_str())
 		<< new QStandardItem(data.GetUserPhone().c_str())
 		<< new QStandardItem(QString::number(data.GetCompanyID()))
-		<< new QStandardItem(QString::number(data.GetEmployeeID()));
+		<< new QStandardItem(QString::number(data.GetEmployeeID()))
+		<< new QStandardItem(QString::number(data.GetBranchID()));
 	return items;
 }
 
@@ -11958,6 +17146,22 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::FixedAssetsView>
 }
 
 template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::FixedAssetsSpecification>(BusinessLayer::FixedAssetsSpecification& data)
+{
+	QList<QStandardItem*> items;
+	QIcon icon;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetName().c_str())
+		<< new QStandardItem(data.GetFactoryNumber().c_str())
+		<< new QStandardItem(data.GetDocument().c_str())
+		<< new QStandardItem(data.GetObjectCharacters().c_str())
+		<< new QStandardItem(data.GetCondition().c_str())
+		<< new QStandardItem(data.GetDeveloper().c_str())
+		<< new QStandardItem(data.GetDateOfConstruction().c_str());
+	return items;
+}
+
+template<>
 QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::FixedAssetsOperations>(BusinessLayer::FixedAssetsOperations& data)
 {
 	QList<QStandardItem*> items;
@@ -12042,6 +17246,17 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::InventorizationL
 		<< new QStandardItem(QString::number(data.GetCurrencyID()));
 	return items;
 }
+
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::Group>(BusinessLayer::Group& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetName().c_str())
+		<< new QStandardItem(data.GetDefenition().c_str());
+	return items;
+}
+
 
 template<>
 QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::JobpriceView>(BusinessLayer::JobpriceView& data)
@@ -12256,19 +17471,13 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::OtherStocksView>
 }
 
 template<>
-QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::OtherStocksView>(BusinessLayer::OtherStocksView& data)
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::OtherStocksType>(BusinessLayer::OtherStocksType& data)
 {
 	QList<QStandardItem*> items;
 	items << new QStandardItem(QString::number(data.GetID()))
 		<< new QStandardItem(data.GetName().c_str())
-		<< new QStandardItem(QString(QString::number(data.GetPrice())))
-		<< new QStandardItem(data.GetCurrencyName().c_str())
-		<< new QStandardItem(QString(QString::number(data.GetVolume())))
-		<< new QStandardItem(data.GetMeasureName().c_str())
-		<< new QStandardItem(data.GetCompanyName().c_str())
-		<< new QStandardItem(QString::number(data.GetCompanyID()))
-		<< new QStandardItem(QString::number(data.GetMeasureID()))
-		<< new QStandardItem(QString::number(data.GetCurrencyID()));
+		<< new QStandardItem(data.GetShortName().c_str())
+		<< new QStandardItem(data.GetCode().c_str());
 	return items;
 }
 
@@ -12946,6 +18155,20 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::StockView>(Busin
 }
 
 template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::StockLimitView>(BusinessLayer::StockLimitView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetWarehouseName().c_str())
+		<< new QStandardItem(data.GetProductName().c_str())
+		<< new QStandardItem(QString::number(data.GetMinValue()))
+		<< new QStandardItem(QString::number(data.GetMaxValue()))
+		<< new QStandardItem(QString::number(data.GetStockID()))
+		<< new QStandardItem(QString::number(data.GetProductID()));
+	return items;
+}
+
+template<>
 QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::SubaccountView>(BusinessLayer::SubaccountView& data)
 {
 	QList<QStandardItem*> items;
@@ -12962,6 +18185,18 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::SubaccountView>(
 		<< new QStandardItem(data.GetOpenedDate().c_str())
 		<< new QStandardItem(data.GetClosedDate().c_str())
 		<< new QStandardItem(data.GetDetails().c_str());
+	return items;
+}
+
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::SubaccountLimitView>(BusinessLayer::SubaccountLimitView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetSubaccountNumber().c_str())
+		<< new QStandardItem(QString::number(data.GetSubaccountID()))
+		<< new QStandardItem(QString::number(data.GetMinValue(), 'f', 3))
+		<< new QStandardItem(QString::number(data.GetMaxValue(), 'f', 3));
 	return items;
 }
 
@@ -13040,6 +18275,32 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::UserView>(Busine
 		<< new QStandardItem(data.GetPhone().c_str()) << new QStandardItem(data.GetAddress().c_str())
 		<< new QStandardItem(data.GetRoleName().c_str()) << new QStandardItem(data.GetPassword().c_str())
 		<< new QStandardItem(data.GetActivated()? "true":"false") << new QStandardItem(QString::number(data.GetRoleID()));
+	return items;
+}
+
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::UserExtendedView>(BusinessLayer::UserExtendedView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID())) 
+		<< new QStandardItem(data.GetName().c_str()) << new QStandardItem(data.GetSurname().c_str())
+		<< new QStandardItem(data.GetPhone().c_str()) << new QStandardItem(data.GetAddress().c_str()) << new QStandardItem(data.GetCompanyName().c_str())
+		<< new QStandardItem(data.GetBranchName().c_str()) << new QStandardItem(data.GetRoleName().c_str()) << new QStandardItem(data.GetSubaccountNumber().c_str())
+		<< new QStandardItem(QString::number(data.GetRoleID())) << new QStandardItem(QString::number(data.GetSubaccountID())) 
+		<< new QStandardItem(QString::number(data.GetAccountID())) << new QStandardItem(QString::number(data.GetCompanyID()))
+		<< new QStandardItem(QString::number(data.GetBranchID()));
+	return items;
+}
+
+
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::UserGroupRelationView>(BusinessLayer::UserGroupRelationView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID())) << new QStandardItem(data.GetGroupName().c_str())
+		<< new QStandardItem(data.GetUserSurname().c_str()) << new QStandardItem(data.GetUsername().c_str())
+		<< new QStandardItem(QString::number(data.GetRoleID())) << new QStandardItem(QString::number(data.GetGroupID()))
+		<< new QStandardItem(QString::number(data.GetUserID()));
 	return items;
 }
 
@@ -13215,7 +18476,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Account>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAccounts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAccounts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13293,13 +18554,18 @@ void DataForm::QtConnect<BusinessLayer::Account>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateDivAccDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateAccblEntry")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblEtrDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::AccountableView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAccountables");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAccountables");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13341,13 +18607,58 @@ void DataForm::QtConnect<BusinessLayer::AccountableView>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateFxdAstDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateAccountableRep")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblRepDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+}
+
+
+template<>
+void DataForm::QtConnect<BusinessLayer::AccountableDocument>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAccountableReport");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtAccblDocDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpAccblDocDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelAccblDocDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+
+	
+	connect(viewBtn, &QPushButton::released, this, &DataForm::ViewAccblDocDlg);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::AccountType>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAccountType");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAccountType");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13389,7 +18700,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::AccessView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAccess");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAccess");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13427,7 +18738,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::AccessItem>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAccessItems");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAccessItems");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13470,7 +18781,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::AmortizeGroup>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAmortizeGroup");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAmortizeGroup");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13508,7 +18819,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::AmortizeType>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAmortizeType");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAmortizeType");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13546,7 +18857,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::BalanceView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionBalances");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionBalances");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13583,7 +18894,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Branch>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionBranch");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionBranch");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13622,10 +18933,48 @@ void DataForm::QtConnect<BusinessLayer::Branch>()
 }
 
 template<>
+void DataForm::QtConnect<BusinessLayer::BranchSubaccountRelationView>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionBranchSubaccounts");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtBrSAccDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpBrSAccDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelBrSAccDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+	
+}
+
+template<>
 void DataForm::QtConnect<BusinessLayer::BorrowerView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionBorrowers");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionBorrowers");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13662,7 +19011,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::CashboxView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionCashbox");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionCashbox");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13699,7 +19048,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::CashboxEmployeeRelationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionCashboxEmployee");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionCashboxEmployee");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13736,7 +19085,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ChartOfAccountsView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionChartOfAccounts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionChartOfAccounts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13788,7 +19137,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ClientView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionClients");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionClients");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13845,7 +19194,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Company>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionCompany");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionCompany");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13881,13 +19230,18 @@ void DataForm::QtConnect<BusinessLayer::Company>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateProdDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateAccountableRep")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblRepDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::CompanyEmployeeRelationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionCompanyEmployees");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionCompanyEmployees");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13924,7 +19278,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::CompanyAccountRelationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionCompanyAccounts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionCompanyAccounts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -13961,7 +19315,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ConsumeProductView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionConsumptionProducts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionConsumptionProducts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14003,7 +19357,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ConsumeProductListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionConsumptionProductsList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionConsumptionProductsList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14047,7 +19401,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ConsumeRawView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionConsumptionRaws");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionConsumptionRaws");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14089,7 +19443,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ConsumeRawListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionConsumptionRawsList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionConsumptionRawsList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14133,7 +19487,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ConsumeOtherStocksView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionConsumeOthSt");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionConsumeOthSt");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14175,7 +19529,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ConsumeOtherStocksListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionConsumeOthStList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionConsumeOthStList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14220,7 +19574,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Currency>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionCurrency");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionCurrency");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14257,7 +19611,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Division>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionDivision");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionDivision");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14294,7 +19648,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::DivisionAccountRelationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionDivisionAssounts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionDivisionAssounts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14332,7 +19686,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::EmployeeView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionEmployees");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionEmployees");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14493,13 +19847,28 @@ void DataForm::QtConnect<BusinessLayer::EmployeeView>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateConOthStDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateAccountableRep")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblRepDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "GenerateDailySalesReport")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((GenerateDailySalesRep*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "GenerateAgentReport")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((GenerateAgentRep*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::EmployeeProductRelationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionEmployeeProducts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionEmployeeProducts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14536,7 +19905,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::EntryView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionEntry");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionEntry");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14574,7 +19943,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::EntryRouting>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionEntryRouting");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionEntryRouting");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14611,7 +19980,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::FixedAssetsView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionFixedAssets");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionFixedAssets");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14639,7 +20008,7 @@ void DataForm::QtConnect<BusinessLayer::FixedAssetsView>()
 	{
 		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
 	}
-	connect(viewBtn, &QPushButton::released, this, &DataForm::ViewInvDlg);
+	connect(viewBtn, &QPushButton::released, this, &DataForm::ViewFxdAstDlg);
 	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
 	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
 	if (parentDialog != nullptr && parentDialog->objectName() == "CreateFxdAstOper")
@@ -14650,10 +20019,55 @@ void DataForm::QtConnect<BusinessLayer::FixedAssetsView>()
 }
 
 template<>
+void DataForm::QtConnect<BusinessLayer::FixedAssetsSpecification>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionFixedAssetsSpec");
+	std::size_t pos = crud.find("C");
+	createBtn->setHidden(true);
+	editBtn->setHidden(true);
+	deleteBtn->setHidden(true);
+	/*if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtFxdAstDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpFxdAstDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelFxdAstDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	connect(viewBtn, &QPushButton::released, this, &DataForm::ViewInvDlg);*/
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateFxdAst")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateFxdAstDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+}
+
+template<>
 void DataForm::QtConnect<BusinessLayer::FixedAssetsOperations>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionFixedAstOper");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionFixedAstOper");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14690,7 +20104,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::InventoryView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionInventory");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionInventory");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14727,7 +20141,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::InventorizationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionInventorization");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionInventorization");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14769,7 +20183,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::InventorizationListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionInventorizationList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionInventorizationList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14810,10 +20224,51 @@ void DataForm::QtConnect<BusinessLayer::InventorizationListView>()
 }
 
 template<>
+void DataForm::QtConnect<BusinessLayer::Group>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionGroup");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtGroupDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpGroupDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelGroupDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateUserGroup")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateUserGrDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+}
+
+template<>
 void DataForm::QtConnect<BusinessLayer::JobpriceView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionJobprice");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionJobprice");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14850,7 +20305,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::JobsheetView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionJobsheet");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionJobsheet");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14887,7 +20342,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Location>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionLocation");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionLocation");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14934,7 +20389,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::LowValueStockView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionLowValueStock");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionLowValueStock");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -14971,7 +20426,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Measure>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionMeasure");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionMeasure");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15008,7 +20463,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::NetCostView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionNetCost");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionNetCost");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15046,7 +20501,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::OrderView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionOrders");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionOrders");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15088,7 +20543,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::OrderListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionOrderList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionOrderList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15133,7 +20588,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::OrderRawView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionOrderRaws");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionOrderRaws");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15175,7 +20630,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::OrderRawListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionOrderRawsList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionOrderRawsList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15219,7 +20674,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::OtherStocksView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionOtherStocks");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionOtherStocks");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15268,10 +20723,47 @@ void DataForm::QtConnect<BusinessLayer::OtherStocksView>()
 }
 
 template<>
+void DataForm::QtConnect<BusinessLayer::OtherStocksType>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionOtherStocksType");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtOthStTypeDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpOthStTypeDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelOthStTypeDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+}
+
+template<>
 void DataForm::QtConnect<BusinessLayer::PercentRate>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionPercentRate");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPercentRate");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15308,7 +20800,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Photo>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionPhoto");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPhoto");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15345,7 +20837,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::PaymentView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionPayments");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPayments");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15376,13 +20868,18 @@ void DataForm::QtConnect<BusinessLayer::PaymentView>()
 	connect(viewBtn, &QPushButton::released, this, &DataForm::ViewPmtDlg);
 	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
 	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateAccountableRep")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblRepDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::Position>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionPosition");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPosition");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15444,7 +20941,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::PriceView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionPrices");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPrices");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15481,7 +20978,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ProductType>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionProductType");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionProductType");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15523,7 +21020,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ProductView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionProducts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionProducts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15695,7 +21192,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ProductBranchRelationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionBranchProducts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionBranchProducts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15732,7 +21229,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Production>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionProduction");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionProduction");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15774,7 +21271,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ProductionListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionProductionList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionProductionList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15818,7 +21315,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ProductionConsumeRawView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionProductionConsumeRaws");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionProductionConsumeRaws");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15860,7 +21357,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ProductionConsumeRawListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionProductionConsumeRawsLis");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionProductionConsumeRawsLis");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15904,7 +21401,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ProductionPlanView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionProductionPlan");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionProductionPlan");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15946,7 +21443,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ProductionPlanListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionProductionPlanList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionProductionPlanList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -15990,7 +21487,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::PayslipView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionPayslip");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPayslip");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16027,7 +21524,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::PurveyorView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionPurveyors");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPurveyors");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16084,7 +21581,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::RelationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionRelation");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionRelation");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16121,7 +21618,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::RelationType>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionRelationType");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionRelationType");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16162,7 +21659,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ReceiptProductView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionReceiptProducts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionReceiptProducts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16204,7 +21701,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ReceiptOtherStocksView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionReceiptOtherStocks");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionReceiptOtherStocks");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16246,7 +21743,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ReceiptOtherStocksListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionReceiptOtherStocksList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionReceiptOtherStocksList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16290,7 +21787,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ReceiptProductListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionReceiptProductsList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionReceiptProductsList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16334,7 +21831,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::StockTransferView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionStockTransfers");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionStockTransfers");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16376,7 +21873,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::StockTransferListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionStockTransfersList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionStockTransfersList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16420,7 +21917,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::RefundView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionRefund");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionRefund");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16457,7 +21954,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Role>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionRoles");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionRoles");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16514,7 +22011,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ReturnView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionReturns");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionReturns");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16556,7 +22053,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::ReturnListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionReturnList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionReturnList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16600,7 +22097,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::SalaryView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionSalary");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionSalary");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16647,7 +22144,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::SalaryType>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionSalaryType");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionSalaryType");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16689,7 +22186,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::Status>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionStatus");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionStatus");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16925,13 +22422,18 @@ void DataForm::QtConnect<BusinessLayer::Status>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateRcpOthStDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateAccountableRep")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblRepDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::StatusRuleView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionStatusRule");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionStatusRule");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -16968,7 +22470,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::SpecificationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionSpecifications");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionSpecifications");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17010,7 +22512,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::SpecificationListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionSpecificationList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionSpecificationList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17054,7 +22556,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::SpoilageView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionSpoilage");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionSpoilage");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17096,7 +22598,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::SpoilageListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionSpoilageList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionSpoilageList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17140,7 +22642,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::StockView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionStock");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionStock");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17171,13 +22673,55 @@ void DataForm::QtConnect<BusinessLayer::StockView>()
 	viewBtn->setVisible(false);
 	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
 	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateStockLimit")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateStockLimitDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+}
+
+template<>
+void DataForm::QtConnect<BusinessLayer::StockLimitView>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionStockLimit");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtStockLmDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpStockLmDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelStockLmDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::SubaccountView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionSubaccounts");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionSubaccounts");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17233,13 +22777,66 @@ void DataForm::QtConnect<BusinessLayer::SubaccountView>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((GenerateAccCardRep*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateSubaccountLimit")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateSAccLmDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateAccblEntry")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblEtrDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateBranchSubaccount")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateBrSAccDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
+
+template<>
+void DataForm::QtConnect<BusinessLayer::SubaccountLimitView>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionSubaccountsLimit");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtSAccLmDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpSAccLmDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelSAccLmDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+}
+
 
 template<>
 void DataForm::QtConnect<BusinessLayer::TimesheetView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionTimesheet");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionTimesheet");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17276,7 +22873,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::TransportView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionTransports");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionTransports");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17318,7 +22915,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::TransportListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionTransportsList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionTransportsList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17362,7 +22959,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::UserView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionAllUsers");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionAllUsers");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17428,13 +23025,86 @@ void DataForm::QtConnect<BusinessLayer::UserView>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateWdwDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateUserGroup")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateUserGrDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+}
+
+template<>
+void DataForm::QtConnect<BusinessLayer::UserExtendedView>()
+{
+	createBtn->setVisible(false);
+	editBtn->setVisible(false);
+	deleteBtn->setVisible(false);
+	viewBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	//connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreatePayment")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreatePmtDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateWithdrawal")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateWdwDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateSalary")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateSlrDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateRelation")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateRelDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+}
+
+template<>
+void DataForm::QtConnect<BusinessLayer::UserGroupRelationView>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionUserGroup");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtUserGrDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpUserGrDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelUserGrDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::WarehouseView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionWarehouse");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionWarehouse");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17471,7 +23141,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::WarehouseType>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionWarehouseType");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionWarehouseType");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17508,7 +23178,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::WarehouseEmployeeRelationView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionWarehouseEmployee");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionWarehouseEmployee");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17545,7 +23215,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::WithdrawalView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionWithdrawal");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionWithdrawal");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17576,13 +23246,18 @@ void DataForm::QtConnect<BusinessLayer::WithdrawalView>()
 	connect(viewBtn, &QPushButton::released, this, &DataForm::ViewWdwDlg);
 	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
 	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateAccountableRep")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblRepDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
 void DataForm::QtConnect<BusinessLayer::WriteOffView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionWriteOffs");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionWriteOffs");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17624,7 +23299,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::WriteOffListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionWriteOffList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionWriteOffList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17668,7 +23343,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::WriteOffRawView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionWriteOffRaws");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionWriteOffRaws");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17710,7 +23385,7 @@ template<>
 void DataForm::QtConnect<BusinessLayer::WriteOffRawListView>()
 {
 	BusinessLayer::Access access;
-	std::string crud = access.GetCRUDAccess(&dataFormBL->GetOrmasDal(), loggedUser, "actionWriteOffRawsList");
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionWriteOffRawsList");
 	std::size_t pos = crud.find("C");
 	if (pos != std::string::npos)
 	{
@@ -17751,6 +23426,4402 @@ void DataForm::QtConnect<BusinessLayer::WriteOffRawListView>()
 }
 
 
+// Form show 
+bool DataForm::SearchInAccForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("accountForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Accounts"));
+		dForm->FillTable<BusinessLayer::Account>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("accountForm");
+			dForm->QtConnect<BusinessLayer::Account>();
+			QMdiSubWindow *accountWindow = new QMdiSubWindow;
+			accountWindow->setWidget(dForm);
+			accountWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(accountWindow);
+			accountWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All accounts are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All accounts are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInAccblDocForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("acctbDocForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Accountable documents"));
+		dForm->FillTable<BusinessLayer::AccountableDocument>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("accblDocForm");
+			dForm->QtConnect<BusinessLayer::AccountableDocument>();
+			QMdiSubWindow *accblDocWindow = new QMdiSubWindow;
+			accblDocWindow->setWidget(dForm);
+			accblDocWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(accblDocWindow);
+			accblDocWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All documents are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All documents are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+
+bool DataForm::SearchInAccTpForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("accountTypeForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Account type"));
+		dForm->FillTable<BusinessLayer::AccountType>(currentParent->errorMessage);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("accountTypeForm");
+			dForm->QtConnect<BusinessLayer::AccountType>();
+			QMdiSubWindow *accountTypeWindow = new QMdiSubWindow;
+			accountTypeWindow->setWidget(dForm);
+			accountTypeWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(accountTypeWindow);
+			accountTypeWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All account type are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All account type are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInAcsItemForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("accessItemForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Access items"));
+		dForm->FillTable<BusinessLayer::AccessItem>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::AccessItem>();
+			dForm->setObjectName("accessItemForm");
+			QMdiSubWindow *accessItemWindow = new QMdiSubWindow;
+			accessItemWindow->setWidget(dForm);
+			accessItemWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(accessItemWindow);
+			accessItemWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All access items are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All access items are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInAccessForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("accessForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Accesses"));
+		dForm->FillTable<BusinessLayer::AccessView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::AccessView>();
+			dForm->setObjectName("accessForm");
+			QMdiSubWindow *accessWindow = new QMdiSubWindow;
+			accessWindow->setWidget(dForm);
+			accessWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(accessWindow);
+			accessWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All accesses are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All accesses are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInAcctblForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("accountableForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Accountables"));
+		dForm->FillTable<BusinessLayer::AccountableView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::AccountableView>();
+			dForm->setObjectName("accountableForm");
+			QMdiSubWindow *accountableWindow = new QMdiSubWindow;
+			accountableWindow->setWidget(dForm);
+			accountableWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(accountableWindow);
+			accountableWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->HideSomeRow();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All accountables are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All accountables are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInAmGrForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("amGroupForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Amortize group"));
+		dForm->FillTable<BusinessLayer::AmortizeGroup>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("amGroupForm");
+			dForm->QtConnect<BusinessLayer::AmortizeGroup>();
+			QMdiSubWindow *amGrWindow = new QMdiSubWindow;
+			amGrWindow->setWidget(dForm);
+			amGrWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(amGrWindow);
+			amGrWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Amortize group are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Amortize group are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInAmTypeForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("amTypeForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Amortize type"));
+		dForm->FillTable<BusinessLayer::AmortizeType>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("amTypeForm");
+			dForm->QtConnect<BusinessLayer::AmortizeType>();
+			QMdiSubWindow *amTypeWindow = new QMdiSubWindow;
+			amTypeWindow->setWidget(dForm);
+			amTypeWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(amTypeWindow);
+			amTypeWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Amortize type are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Amortize type are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInBlcForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("balanceForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Balances"));
+		dForm->FillTable<BusinessLayer::BalanceView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("balanceForm");
+			dForm->QtConnect<BusinessLayer::BalanceView>();
+			QMdiSubWindow *balanceWindow = new QMdiSubWindow;
+			balanceWindow->setWidget(dForm);
+			balanceWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(balanceWindow);
+			balanceWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All balances are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All balances are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInBrhForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("branchForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Branches"));
+		dForm->FillTable<BusinessLayer::Branch>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("branchForm");
+			dForm->QtConnect<BusinessLayer::Branch>();
+			QMdiSubWindow *branchWindow = new QMdiSubWindow;
+			branchWindow->setWidget(dForm);
+			branchWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(branchWindow);
+			branchWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All branches are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All branches are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInBrwForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("borrowerForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Borrowers"));
+		dForm->FillTable<BusinessLayer::BorrowerView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::BorrowerView>();
+			dForm->setObjectName("borrowerForm");
+			QMdiSubWindow *borrowerWindow = new QMdiSubWindow;
+			borrowerWindow->setWidget(dForm);
+			borrowerWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(borrowerWindow);
+			borrowerWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->HideSomeRow();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All borrowers are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All borrowers are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+
+bool DataForm::SearchInBrSAccForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("branchSubaccountForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Branch subaccount"));
+		dForm->FillTable<BusinessLayer::BranchSubaccountRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("branchSubaccountForm");
+			dForm->QtConnect<BusinessLayer::BranchSubaccountRelationView>();
+			QMdiSubWindow *branchSAccWindow = new QMdiSubWindow;
+			branchSAccWindow->setWidget(dForm);
+			branchSAccWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(branchSAccWindow);
+			branchSAccWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All branch subaccount relation are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All branch subaccount relation are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInCASHERForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("cashboxEmployeeForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Cashbox-employee relation"));
+		dForm->FillTable<BusinessLayer::CashboxEmployeeRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::CashboxEmployeeRelationView>();
+			dForm->setObjectName("cashboxEmployeeForm");
+			QMdiSubWindow *cashEmpWindow = new QMdiSubWindow;
+			cashEmpWindow->setWidget(dForm);
+			cashEmpWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(cashEmpWindow);
+			cashEmpWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All cashbox-employee relations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All cashbox-employee relations are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+bool DataForm::SearchInCbxForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("cashboxForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Cashbox"));
+		dForm->FillTable<BusinessLayer::CashboxView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("cashboxForm");
+			dForm->QtConnect<BusinessLayer::CashboxView>();
+			QMdiSubWindow *caWindow = new QMdiSubWindow;
+			caWindow->setWidget(dForm);
+			caWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(caWindow);
+			caWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Cashbox are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Cashbox are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInCOADForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("chartOffAccountForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Chart of account"));
+		dForm->FillTable<BusinessLayer::ChartOfAccountsView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("chartOffAccountForm");
+			dForm->QtConnect<BusinessLayer::ChartOfAccountsView>();
+			QMdiSubWindow *chartOfAccountWindow = new QMdiSubWindow;
+			chartOfAccountWindow->setWidget(dForm);
+			chartOfAccountWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(chartOfAccountWindow);
+			chartOfAccountWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Chart of accounts are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Chart of accounts are showns");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInCltForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("clientForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Clients"));
+		dForm->FillTable<BusinessLayer::ClientView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::ClientView>();
+			dForm->setObjectName("clientForm");
+			QMdiSubWindow *clientWindow = new QMdiSubWindow;
+			clientWindow->setWidget(dForm);
+			clientWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(clientWindow);
+			clientWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All clients are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All clients are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInCARForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("companyAccountForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Company account relation"));
+		dForm->FillTable<BusinessLayer::CompanyAccountRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("companyAccountForm");
+			dForm->QtConnect<BusinessLayer::CompanyAccountRelationView>();
+			QMdiSubWindow *companyAccountWindow = new QMdiSubWindow;
+			companyAccountWindow->setWidget(dForm);
+			companyAccountWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(companyAccountWindow);
+			companyAccountWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Company-account relations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Company-account relations are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInCmpForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("companyForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Companies"));
+		dForm->FillTable<BusinessLayer::Company>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("companyForm");
+			dForm->QtConnect<BusinessLayer::Company>();
+			QMdiSubWindow *companyWindow = new QMdiSubWindow;
+			companyWindow->setWidget(dForm);
+			companyWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(companyWindow);
+			companyWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All companies are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All companies are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInCERForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("companyEmployeeForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Company-employee relation"));
+		dForm->FillTable<BusinessLayer::CompanyEmployeeRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::CompanyEmployeeRelationView>();
+			dForm->setObjectName("companyEmployeeForm");
+			QMdiSubWindow *comEmpWindow = new QMdiSubWindow;
+			comEmpWindow->setWidget(dForm);
+			comEmpWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(comEmpWindow);
+			comEmpWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All company-employee relations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All company-employee relations are shown");
+		currentParent->statusBar()->showMessage(message);
+
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInConPForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("consumeProductForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Consume product"));
+		dForm->FillTable<BusinessLayer::ConsumeProductView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("consumeProductForm");
+			dForm->QtConnect<BusinessLayer::ConsumeProductView>();
+			QMdiSubWindow *consumeProductWindow = new QMdiSubWindow;
+			consumeProductWindow->setWidget(dForm);
+			consumeProductWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(consumeProductWindow);
+			consumeProductWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All products are shown in consume");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All products are shown in consume");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInConOthForm(std::string searchFilter)
+{
+
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("consumeOthStForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Consume other stocks"));
+		dForm->FillTable<BusinessLayer::ConsumeOtherStocksView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("consumeOthStForm");
+			dForm->QtConnect<BusinessLayer::ConsumeOtherStocksView>();
+			QMdiSubWindow *consumeOthStWindow = new QMdiSubWindow;
+			consumeOthStWindow->setWidget(dForm);
+			consumeOthStWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(consumeOthStWindow);
+			consumeOthStWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All other stocks are shown in consume");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All other stocks are shown in consume");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInConRForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("consumeRawForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Consume raw"));
+		dForm->FillTable<BusinessLayer::ConsumeRawView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("consumeRawForm");
+			dForm->QtConnect<BusinessLayer::ConsumeRawView>();
+			QMdiSubWindow *consumeRawWindow = new QMdiSubWindow;
+			consumeRawWindow->setWidget(dForm);
+			consumeRawWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(consumeRawWindow);
+			consumeRawWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All raws are shown in consume");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All raws are shown in consume");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInCurForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("currencyForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Currencies"));
+		dForm->FillTable<BusinessLayer::Currency>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("currencyForm");
+			dForm->QtConnect<BusinessLayer::Currency>();
+			QMdiSubWindow *currencyWindow = new QMdiSubWindow;
+			currencyWindow->setWidget(dForm);
+			currencyWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(currencyWindow);
+			currencyWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All currencies are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All currencies are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInDivForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("divisionForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Divisions"));
+		dForm->FillTable<BusinessLayer::Division>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("divisionForm");
+			dForm->QtConnect<BusinessLayer::Division>();
+			QMdiSubWindow *divisionWindow = new QMdiSubWindow;
+			divisionWindow->setWidget(dForm);
+			divisionWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(divisionWindow);
+			divisionWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All divisions are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All divisions are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+
+}
+
+bool DataForm::SearchInDivAccForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("divisionAccForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Division account"));
+		dForm->FillTable<BusinessLayer::DivisionAccountRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("divisionAccountForm");
+			dForm->QtConnect<BusinessLayer::DivisionAccountRelationView>();
+			QMdiSubWindow *divisionAccWindow = new QMdiSubWindow;
+			divisionAccWindow->setWidget(dForm);
+			divisionAccWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(divisionAccWindow);
+			divisionAccWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All division account are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All division account are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInEmpForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("employeeForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Employees"));
+		dForm->FillTable<BusinessLayer::EmployeeView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::EmployeeView>();
+			dForm->setObjectName("employeeForm");
+			QMdiSubWindow *employeeWindow = new QMdiSubWindow;
+			employeeWindow->setWidget(dForm);
+			employeeWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(employeeWindow);
+			employeeWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->HideSomeRow();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All employees are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All employees are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInEmpPrdForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("employeeProductForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Employee-product relation"));
+		dForm->FillTable<BusinessLayer::EmployeeProductRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::EmployeeProductRelationView>();
+			dForm->setObjectName("employeeProductForm");
+			QMdiSubWindow *empPrdWindow = new QMdiSubWindow;
+			empPrdWindow->setWidget(dForm);
+			empPrdWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(empPrdWindow);
+			empPrdWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All employee-product relations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All employee-product relations are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInEtrForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("entryForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Entries"));
+		dForm->FillTable<BusinessLayer::EntryView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("entryForm");
+			dForm->QtConnect<BusinessLayer::EntryView>();
+			QMdiSubWindow *entryWindow = new QMdiSubWindow;
+			entryWindow->setWidget(dForm);
+			entryWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(entryWindow);
+			entryWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All entries are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All entries are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInEtrRtForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("entryRoutingForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Entry routing"));
+		dForm->FillTable<BusinessLayer::EntryRouting>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("entryRoutingForm");
+			dForm->QtConnect<BusinessLayer::EntryRouting>();
+			QMdiSubWindow *entryRoutingWindow = new QMdiSubWindow;
+			entryRoutingWindow->setWidget(dForm);
+			entryRoutingWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(entryRoutingWindow);
+			entryRoutingWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Entry routing are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Entry routing are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInFxdAstForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("fixedAstForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Fixed assets"));
+		dForm->FillTable<BusinessLayer::FixedAssetsView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("fixedAstForm");
+			dForm->QtConnect<BusinessLayer::FixedAssetsView>();
+			QMdiSubWindow *faWindow = new QMdiSubWindow;
+			faWindow->setWidget(dForm);
+			faWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(faWindow);
+			faWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Fixed assets are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Fixed assets are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInAstOperForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("fixedAstOperForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Fixed assets operation"));
+		dForm->FillTable<BusinessLayer::FixedAssetsOperations>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("fixedAstOperForm");
+			dForm->QtConnect<BusinessLayer::FixedAssetsOperations>();
+			QMdiSubWindow *faoWindow = new QMdiSubWindow;
+			faoWindow->setWidget(dForm);
+			faoWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(faoWindow);
+			faoWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Fixed assets operation are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Fixed assets operation are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInInveForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("inventoryForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Fixed assets operation"));
+		dForm->FillTable<BusinessLayer::InventoryView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("inventoryForm");
+			dForm->QtConnect<BusinessLayer::InventoryView>();
+			QMdiSubWindow *inveWindow = new QMdiSubWindow;
+			inveWindow->setWidget(dForm);
+			inveWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(inveWindow);
+			inveWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Inventory are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Inventory are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInInvForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("inventorizationForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Inventorization"));
+		dForm->FillTable<BusinessLayer::InventorizationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("inventorizationForm");
+			dForm->QtConnect<BusinessLayer::InventorizationView>();
+			QMdiSubWindow *inventorizationWindow = new QMdiSubWindow;
+			inventorizationWindow->setWidget(dForm);
+			inventorizationWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(inventorizationWindow);
+			inventorizationWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All inventorizations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All inventorizations are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+
+	return true;
+}
+
+bool DataForm::SearchInGroupForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("groupForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Groups"));
+		dForm->FillTable<BusinessLayer::Group>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::Group>();
+			dForm->setObjectName("groupForm");
+			QMdiSubWindow *groupWindow = new QMdiSubWindow;
+			groupWindow->setWidget(dForm);
+			groupWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(groupWindow);
+			groupWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->HideSomeRow();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All groups are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All groups are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInJbpForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("jobpriceForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Jobprice"));
+		dForm->FillTable<BusinessLayer::JobpriceView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::JobpriceView>();
+			dForm->setObjectName("jobpriceForm");
+			QMdiSubWindow *jobpriceWindow = new QMdiSubWindow;
+			jobpriceWindow->setWidget(dForm);
+			jobpriceWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(jobpriceWindow);
+			jobpriceWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All jobprices are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+
+		QString message = tr("All jobprices are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+
+bool DataForm::SearchInJbsForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("jobsheetForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Jobsheet"));
+		dForm->FillTable<BusinessLayer::JobsheetView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::JobsheetView>();
+			dForm->setObjectName("jobsheetForm");
+			QMdiSubWindow *jobsheetWindow = new QMdiSubWindow;
+			jobsheetWindow->setWidget(dForm);
+			jobsheetWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(jobsheetWindow);
+			jobsheetWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All jobsheets are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All jobsheets are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInLowValStockForm(std::string searchFilter)
+{
+
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	BusinessLayer::WarehouseEmployeeRelation reRel;
+	BusinessLayer::Warehouse warehouse;
+	BusinessLayer::WarehouseType wType;
+	if (!reRel.GetWarehouseEmployeeByEmployeeID(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), loggedUser->GetID(), currentParent->errorMessage))
+	{
+		QString message = tr("Access denied!");
+		currentParent->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Access denied!")),
+			QString(tr("Ok")));
+		return false;
+	}
+	if (!warehouse.GetWarehouseByID(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), reRel.GetWarehouseID(), currentParent->errorMessage))
+	{
+		QString message = tr("Access denied!");
+		currentParent->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Access denied!")),
+			QString(tr("Ok")));
+		return false;
+	}
+	if (!wType.GetWarehouseTypeByCode(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), "LOW VALUE", currentParent->errorMessage))
+	{
+		QString message = tr("Access denied!");
+		currentParent->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Access denied!")),
+			QString(tr("Ok")));
+		return false;
+	}
+	if (wType.GetID() != warehouse.GetWarehouseTypeID())
+	{
+		QString message = tr("Access denied!");
+		currentParent->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Access denied!")),
+			QString(tr("Ok")));
+		return false;
+	}
+	BusinessLayer::LowValueStock lowValStock;
+	lowValStock.SetWarehouseID(reRel.GetWarehouseID());
+	std::string filter = lowValStock.GenerateFilter(currentParent->oBL->GetOrmasDal());
+	std::vector<std::string> filterList;
+	filterList.push_back(searchFilter);
+	filterList.push_back(filter);
+	filter = currentParent->oBL->ConcatenateFilters(filterList);
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("lowValueStockForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Low valuw stock"));
+		dForm->FillTable<BusinessLayer::LowValueStockView>(currentParent->errorMessage, filter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::LowValueStockView>();
+			dForm->setObjectName("lowValueStockForm");
+			QMdiSubWindow *lvStockWindow = new QMdiSubWindow;
+			lvStockWindow->setWidget(dForm);
+			lvStockWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(lvStockWindow);
+			lvStockWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All other stocsk are shown in low value stock");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All other stocsk are shown in low value stock");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInLcnForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("locationForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Locations"));
+		dForm->FillTable<BusinessLayer::Location>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("locationForm");
+			dForm->QtConnect<BusinessLayer::Location>();
+			QMdiSubWindow *locationWindow = new QMdiSubWindow;
+			locationWindow->setWidget(dForm);
+			locationWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(locationWindow);
+			locationWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All locations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All locations are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInMsrForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("measureForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Measures"));
+		dForm->FillTable<BusinessLayer::Measure>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("measureForm");
+			dForm->QtConnect<BusinessLayer::Measure>();
+			QMdiSubWindow *measureWindow = new QMdiSubWindow;
+			measureWindow->setWidget(dForm);
+			measureWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(measureWindow);
+			measureWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All measures are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All measures are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInNetCForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("netCostForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Net cost"));
+		dForm->FillTable<BusinessLayer::NetCostView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("netCostForm");
+			dForm->QtConnect<BusinessLayer::NetCostView>();
+			QMdiSubWindow *netCostWindow = new QMdiSubWindow;
+			netCostWindow->setWidget(dForm);
+			netCostWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(netCostWindow);
+			netCostWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All net cost are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All net cost are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInOrderForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("orderForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Orders"));
+		dForm->FillTable<BusinessLayer::OrderView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::OrderView>();
+			dForm->setObjectName("orderForm");
+			QMdiSubWindow *orderWindow = new QMdiSubWindow;
+			orderWindow->setWidget(dForm);
+			orderWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(orderWindow);
+			orderWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All orders are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All orders are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInOrdRForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("orderRawForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Order raw"));
+		dForm->FillTable<BusinessLayer::OrderRawView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("orderRawForm");
+			dForm->QtConnect<BusinessLayer::OrderRawView>();
+			QMdiSubWindow *orderRawWindow = new QMdiSubWindow;
+			orderRawWindow->setWidget(dForm);
+			orderRawWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(orderRawWindow);
+			orderRawWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All raws are shown in orders");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All raws are shown in orders");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInOthStForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("otherStocksForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Other stocks"));
+		dForm->FillTable<BusinessLayer::OtherStocksView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::OtherStocksView>();
+			dForm->setObjectName("otherStocksForm");
+			QMdiSubWindow *otherStocksWindow = new QMdiSubWindow;
+			otherStocksWindow->setWidget(dForm);
+			otherStocksWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(otherStocksWindow);
+			otherStocksWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All other stocks are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All other stocks are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInPcrForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("percentRateForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Percent rate"));
+		dForm->FillTable<BusinessLayer::PercentRate>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::PercentRate>();
+			dForm->setObjectName("percentRateForm");
+			QMdiSubWindow *percentRateWindow = new QMdiSubWindow;
+			percentRateWindow->setWidget(dForm);
+			percentRateWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(percentRateWindow);
+			percentRateWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All percent rates are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All percent rates are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInPmtForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("paymentForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Payments"));
+		std::string filter = "";
+		BusinessLayer::Cashbox cashbox;
+		BusinessLayer::CashboxEmployeeRelation ceRelation;
+		if (ceRelation.GetCashboxEmployeeByEmployeeID(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), currentParent->oBL->loggedUser->GetID(), currentParent->errorMessage))
+		{
+			if (cashbox.GetCashboxByID(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), ceRelation.GetCashboxID(), currentParent->errorMessage))
+			{
+				BusinessLayer::Payment payment;
+				payment.SetCashboxAccountID(cashbox.GetSubaccountID());
+				filter = payment.GenerateFilter(currentParent->oBL->GetOrmasDal());
+			}
+		}
+		std::vector<std::string> filterList;
+		filterList.push_back(searchFilter);
+		filterList.push_back(filter);
+		filter = currentParent->oBL->ConcatenateFilters(filterList);
+		dForm->FillTable<BusinessLayer::PaymentView>(currentParent->errorMessage, filter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("paymentForm");
+			dForm->QtConnect<BusinessLayer::PaymentView>();
+			QMdiSubWindow *paymentWindow = new QMdiSubWindow;
+			paymentWindow->setWidget(dForm);
+			paymentWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(paymentWindow);
+			paymentWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All payments are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All payments are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInPosForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("positionForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Position"));
+		dForm->FillTable<BusinessLayer::Position>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::Position>();
+			dForm->setObjectName("positionForm");
+			QMdiSubWindow *positionWindow = new QMdiSubWindow;
+			positionWindow->setWidget(dForm);
+			positionWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(positionWindow);
+			positionWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All position are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All position are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInPrcForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("priceForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Price"));
+		dForm->FillTable<BusinessLayer::PriceView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("priceForm");
+			dForm->QtConnect<BusinessLayer::PriceView>();
+			QMdiSubWindow *priceWindow = new QMdiSubWindow;
+			priceWindow->setWidget(dForm);
+			priceWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(priceWindow);
+			priceWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All prices are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All prices are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+
+bool DataForm::SearchInProdTpForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("productTypeForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Product types"));
+		dForm->FillTable<BusinessLayer::ProductType>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::ProductType>();
+			dForm->setObjectName("productTypeForm");
+			QMdiSubWindow *prodTypeWindow = new QMdiSubWindow;
+			prodTypeWindow->setWidget(dForm);
+			prodTypeWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(prodTypeWindow);
+			prodTypeWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All product types are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All product types are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInPrdBrnForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("branchProductForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Branch-product relation"));
+		dForm->FillTable<BusinessLayer::ProductBranchRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::ProductBranchRelationView>();
+			dForm->setObjectName("branchProductForm");
+			QMdiSubWindow *brnPrdWindow = new QMdiSubWindow;
+			brnPrdWindow->setWidget(dForm);
+			brnPrdWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(brnPrdWindow);
+			brnPrdWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All branch-product relations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All branch-product relations are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInProdForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("productForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Products"));
+		dForm->FillTable<BusinessLayer::ProductView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::ProductView>();
+			dForm->setObjectName("productForm");
+			QMdiSubWindow *productWindow = new QMdiSubWindow;
+			productWindow->setWidget(dForm);
+			productWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(productWindow);
+			productWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All products are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All products are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInProdnForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("productionForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Production"));
+		dForm->FillTable<BusinessLayer::Production>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::Production>();
+			dForm->setObjectName("productionForm");
+			QMdiSubWindow *productionWindow = new QMdiSubWindow;
+			productionWindow->setWidget(dForm);
+			productionWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(productionWindow);
+			productionWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All production are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All production are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+
+	return true;
+}
+
+bool DataForm::SearchInProdConRForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("productionCnsumeRawForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Production consume raw"));
+		dForm->FillTable<BusinessLayer::ProductionConsumeRawView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("productionCnsumeRawForm");
+			dForm->QtConnect<BusinessLayer::ProductionConsumeRawView>();
+			QMdiSubWindow *pConsumeRawWindow = new QMdiSubWindow;
+			pConsumeRawWindow->setWidget(dForm);
+			pConsumeRawWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(pConsumeRawWindow);
+			pConsumeRawWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All raws are shown in consume");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All raws are shown in consume");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+
+bool DataForm::SearchInPPlanConRForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("productionPlanForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Production plan"));
+		dForm->FillTable<BusinessLayer::ProductionPlanView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::ProductionPlanView>();
+			dForm->setObjectName("productionPlanForm");
+			QMdiSubWindow *productionPlanWindow = new QMdiSubWindow;
+			productionPlanWindow->setWidget(dForm);
+			productionPlanWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(productionPlanWindow);
+			productionPlanWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All production plans are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All production plan are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInPurForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("purveyorForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Purveyors"));
+		dForm->FillTable<BusinessLayer::PurveyorView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::PurveyorView>();
+			dForm->setObjectName("purveyorForm");
+			QMdiSubWindow *purveyorWindow = new QMdiSubWindow;
+			purveyorWindow->setWidget(dForm);
+			purveyorWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(purveyorWindow);
+			purveyorWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->HideSomeRow();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All purveyors are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All purveyors are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+
+bool DataForm::SearchInPspForm(std::string searchFilter)
+{
+
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("payslipForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Payslips"));
+		dForm->FillTable<BusinessLayer::PayslipView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("payslipForm");
+			dForm->QtConnect<BusinessLayer::PayslipView>();
+			QMdiSubWindow *payslipWindow = new QMdiSubWindow;
+			payslipWindow->setWidget(dForm);
+			payslipWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(payslipWindow);
+			payslipWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All payslips are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All withdrawals are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInRelForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("relationForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Relations"));
+		dForm->FillTable<BusinessLayer::RelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("relationForm");
+			dForm->QtConnect<BusinessLayer::RelationView>();
+			QMdiSubWindow *relationWindow = new QMdiSubWindow;
+			relationWindow->setWidget(dForm);
+			relationWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(relationWindow);
+			relationWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All relations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All relations are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInRelTypeForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("relationTypeForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Relation types"));
+		dForm->FillTable<BusinessLayer::RelationType>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("relationTypeForm");
+			dForm->QtConnect<BusinessLayer::RelationType>();
+			QMdiSubWindow *relationtypeWindow = new QMdiSubWindow;
+			relationtypeWindow->setWidget(dForm);
+			relationtypeWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(relationtypeWindow);
+			relationtypeWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All relation types are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All relation types are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInRoleForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("roleForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Roles"));
+		dForm->FillTable<BusinessLayer::Role>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("roleForm");
+			dForm->QtConnect<BusinessLayer::Role>();
+			QMdiSubWindow *roleWindow = new QMdiSubWindow;
+			roleWindow->setWidget(dForm);
+			roleWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(roleWindow);
+			roleWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All roles are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All roles are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInRcpOthStForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("receiptOthStForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Receipt other stocks"));
+		dForm->FillTable<BusinessLayer::ReceiptOtherStocksView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("receiptOthStForm");
+			dForm->QtConnect<BusinessLayer::ReceiptOtherStocksView>();
+			QMdiSubWindow *rosWindow = new QMdiSubWindow;
+			rosWindow->setWidget(dForm);
+			rosWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(rosWindow);
+			rosWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All other stocks are shown in receipts");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All other stocks are shown in receipts");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInRcpPForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("receiptProductForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Receipt product"));
+		dForm->FillTable<BusinessLayer::ReceiptProductView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("receiptProductForm");
+			dForm->QtConnect<BusinessLayer::ReceiptProductView>();
+			QMdiSubWindow *receiptProductWindow = new QMdiSubWindow;
+			receiptProductWindow->setWidget(dForm);
+			receiptProductWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(receiptProductWindow);
+			receiptProductWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All products are shown in receipt");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All products are shown in receipt");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInStockLmForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("stockLimitForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Stock limit"));
+		dForm->FillTable<BusinessLayer::StockLimitView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("stockLimitForm");
+			dForm->QtConnect<BusinessLayer::StockLimitView>();
+			QMdiSubWindow *stockLmWindow = new QMdiSubWindow;
+			stockLmWindow->setWidget(dForm);
+			stockLmWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(stockLmWindow);
+			stockLmWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All ilimits are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All ilimits are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInStockTrForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("stockTransferForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Receipt raw"));
+		dForm->FillTable<BusinessLayer::StockTransferView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("StockTransferForm");
+			dForm->QtConnect<BusinessLayer::StockTransferView>();
+			QMdiSubWindow *StockTransferWindow = new QMdiSubWindow;
+			StockTransferWindow->setWidget(dForm);
+			StockTransferWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(StockTransferWindow);
+			StockTransferWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All raws are shown in receipt");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All raws are shown in receipt");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInRfdForm(std::string searchFilter)
+{
+
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("refundForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Refunds"));
+		dForm->FillTable<BusinessLayer::RefundView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("refundForm");
+			dForm->QtConnect<BusinessLayer::RefundView>();
+			QMdiSubWindow *refundWindow = new QMdiSubWindow;
+			refundWindow->setWidget(dForm);
+			refundWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(refundWindow);
+			refundWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All refunds are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All payments are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInRtrnForm(std::string searchFilter)
+{
+
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("returnForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Returns"));
+		dForm->FillTable<BusinessLayer::ReturnView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::ReturnView>();
+			dForm->setObjectName("returnForm");
+			QMdiSubWindow *returnWindow = new QMdiSubWindow;
+			returnWindow->setWidget(dForm);
+			returnWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(returnWindow);
+			returnWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All returns are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All returns are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInSlrForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("salaryForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Salary"));
+		dForm->FillTable<BusinessLayer::SalaryView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("salaryForm");
+			dForm->QtConnect<BusinessLayer::SalaryView>();
+			QMdiSubWindow *salaryWindow = new QMdiSubWindow;
+			salaryWindow->setWidget(dForm);
+			salaryWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(salaryWindow);
+			salaryWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All salary are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All salary are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInSlrTypeForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("salaryTypeForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Salary types"));
+		dForm->FillTable<BusinessLayer::SalaryType>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("salaryTypeForm");
+			dForm->QtConnect<BusinessLayer::SalaryType>();
+			QMdiSubWindow *salaryTypeWindow = new QMdiSubWindow;
+			salaryTypeWindow->setWidget(dForm);
+			salaryTypeWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(salaryTypeWindow);
+			salaryTypeWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All salary types are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All salary types are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInStsForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("statusForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Statuses"));
+		dForm->FillTable<BusinessLayer::Status>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("statusForm");
+			dForm->QtConnect<BusinessLayer::Status>();
+			QMdiSubWindow *statusWindow = new QMdiSubWindow;
+			statusWindow->setWidget(dForm);
+			statusWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(statusWindow);
+			statusWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All statuses are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All statuses are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInStsRuleForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("statusRuleForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Status rule"));
+		dForm->FillTable<BusinessLayer::StatusRuleView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("statusRuleForm");
+			dForm->QtConnect<BusinessLayer::StatusRuleView>();
+			QMdiSubWindow *statusRuleWindow = new QMdiSubWindow;
+			statusRuleWindow->setWidget(dForm);
+			statusRuleWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(statusRuleWindow);
+			statusRuleWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All status rules are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All status rules are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+
+	return true;
+}
+
+bool DataForm::SearchInSpecForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("specificationForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Specifications"));
+		dForm->FillTable<BusinessLayer::SpecificationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::SpecificationView>();
+			dForm->setObjectName("specificationForm");
+			QMdiSubWindow *specWindow = new QMdiSubWindow;
+			specWindow->setWidget(dForm);
+			specWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(specWindow);
+			specWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All specifications are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All specifications are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInSplForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("spoilageForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Spoilage"));
+		dForm->FillTable<BusinessLayer::SpoilageView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::SpoilageView>();
+			dForm->setObjectName("spoilageForm");
+			QMdiSubWindow *spoilageWindow = new QMdiSubWindow;
+			spoilageWindow->setWidget(dForm);
+			spoilageWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(spoilageWindow);
+			spoilageWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All spoilage are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All spoilage are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+
+bool DataForm::SearchInSAccForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	std::map<std::string, int> rolesMap = BusinessLayer::Role::GetRolesAsMap(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), currentParent->errorMessage);
+	if (0 == rolesMap.size())
+		return false;
+
+	std::string filter = "";
+
+	if (currentParent->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
+		currentParent->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
+	{
+		filter = "";
+	}
+	else
+	{
+		BusinessLayer::Subaccount subaccount;
+		BusinessLayer::BranchSubaccountRelation bsRel;
+		BusinessLayer::CompanyEmployeeRelation ceRel;
+		int branchID = ceRel.GetBranchByEmployeeID(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), currentParent->GetLoggedUser()->GetID(), currentParent->errorMessage);
+		if (0 < branchID)
+		{
+			std::vector<int> subaccountIDVec = bsRel.GetSubaccountIDsbyBranchID(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), branchID, currentParent->errorMessage);
+			if (subaccountIDVec.size() > 0)
+			{
+				filter = subaccount.GenerateINFilter(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), subaccountIDVec);
+			}
+		}
+	}
+	std::vector<std::string> filterList;
+	filterList.push_back(filter);
+	filterList.push_back(searchFilter);
+	filter = currentParent->oBL->ConcatenateFilters(filterList);
+	currentParent->errorMessage.clear();
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("subaccountForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Subaccounts"));
+		dForm->FillTable<BusinessLayer::SubaccountView>(currentParent->errorMessage, filter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("subaccountForm");
+			dForm->QtConnect<BusinessLayer::SubaccountView>();
+			QMdiSubWindow *subaccountWindow = new QMdiSubWindow;
+			subaccountWindow->setWidget(dForm);
+			subaccountWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(subaccountWindow);
+			subaccountWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->SetDecoration();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All subaccounts are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All subaccounts are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInSAccLmForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("subaccountLimitForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Subaccount limit"));
+		dForm->FillTable<BusinessLayer::SubaccountLimitView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("subaccountLimitForm");
+			dForm->QtConnect<BusinessLayer::SubaccountLimitView>();
+			QMdiSubWindow *subaccountLmWindow = new QMdiSubWindow;
+			subaccountLmWindow->setWidget(dForm);
+			subaccountLmWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(subaccountLmWindow);
+			subaccountLmWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All subaccount limits are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All subaccount limits are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInStockForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("stockForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Stock"));
+		dForm->FillTable<BusinessLayer::StockView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("stockForm");
+			dForm->QtConnect<BusinessLayer::StockView>();
+			QMdiSubWindow *stockWindow = new QMdiSubWindow;
+			stockWindow->setWidget(dForm);
+			stockWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(stockWindow);
+			stockWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->SetDecoration();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All products are shown in the stock");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All products are shown in the stock");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInTmsForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("timesheetForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Timesheet"));
+		dForm->FillTable<BusinessLayer::TimesheetView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::TimesheetView>();
+			dForm->setObjectName("timesheetForm");
+			QMdiSubWindow *timesheetWindow = new QMdiSubWindow;
+			timesheetWindow->setWidget(dForm);
+			timesheetWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(timesheetWindow);
+			timesheetWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All timesheets are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All timesheets are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInTrsForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("transportForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Transports"));
+		dForm->FillTable<BusinessLayer::TransportView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("transportForm");
+			dForm->QtConnect<BusinessLayer::TransportView>();
+			QMdiSubWindow *transportWindow = new QMdiSubWindow;
+			transportWindow->setWidget(dForm);
+			transportWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(transportWindow);
+			transportWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All transports are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			return false;
+			currentParent->errorMessage = "";
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All transports are shown");
+		currentParent->statusBar()->showMessage(message);
+
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInUserForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("userForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Users"));
+		dForm->FillTable<BusinessLayer::UserView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::UserView>();
+			dForm->setObjectName("userForm");
+			QMdiSubWindow *userWindow = new QMdiSubWindow;
+			userWindow->setWidget(dForm);
+			userWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(userWindow);
+			userWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->HideSomeRow();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All users are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All users are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInUserGrForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("userGroupForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("User group"));
+		dForm->FillTable<BusinessLayer::UserGroupRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::UserGroupRelationView>();
+			dForm->setObjectName("userGroupForm");
+			QMdiSubWindow *userGrWindow = new QMdiSubWindow;
+			userGrWindow->setWidget(dForm);
+			userGrWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(userGrWindow);
+			userGrWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->HideSomeRow();
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All user groups are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All user grous are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInWrhForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("warehouseForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Warehouse"));
+		dForm->FillTable<BusinessLayer::WarehouseView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("warehouseForm");
+			dForm->QtConnect<BusinessLayer::WarehouseView>();
+			QMdiSubWindow *wareWindow = new QMdiSubWindow;
+			wareWindow->setWidget(dForm);
+			wareWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(wareWindow);
+			wareWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("Warehouse are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("Warehouse are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInWrhTpForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("warehouseTypeForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Warehouse type"));
+		dForm->FillTable<BusinessLayer::WarehouseType>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("warehouseTypeForm");
+			dForm->QtConnect<BusinessLayer::WarehouseType>();
+			QMdiSubWindow *wTypeWindow = new QMdiSubWindow;
+			wTypeWindow->setWidget(dForm);
+			wTypeWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(wTypeWindow);
+			wTypeWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All warehouse types are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			QMessageBox msgBox;
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All warehouse types are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInWERForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("warehouseEmployeeForm"));
+	if (checkedWidget == nullptr)
+	{
+		currentParent->errorMessage = "";
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Warehouse-employee relation"));
+		dForm->FillTable<BusinessLayer::WarehouseEmployeeRelationView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::WarehouseEmployeeRelationView>();
+			dForm->setObjectName("warehouseEmployeeForm");
+			QMdiSubWindow *werEmpWindow = new QMdiSubWindow;
+			werEmpWindow->setWidget(dForm);
+			werEmpWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(werEmpWindow);
+			werEmpWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All warehouse-employee relations are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All warehouse-employee relations are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInwWdwForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("withdrawalForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Withdrawals"));
+		std::string filter = "";
+		BusinessLayer::Cashbox cashbox;
+		BusinessLayer::CashboxEmployeeRelation ceRelation;
+		if (ceRelation.GetCashboxEmployeeByEmployeeID(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), currentParent->oBL->loggedUser->GetID(), currentParent->errorMessage))
+		{
+			if (cashbox.GetCashboxByID(currentParent->oBL->globalVar, currentParent->oBL->GetOrmasDal(), ceRelation.GetCashboxID(), currentParent->errorMessage))
+			{
+				BusinessLayer::Withdrawal withdrawal;
+				withdrawal.SetCashboxAccountID(cashbox.GetSubaccountID());
+				filter = withdrawal.GenerateFilter(currentParent->oBL->GetOrmasDal());
+			}
+		}
+		std::vector<std::string> filterList;
+		filterList.push_back(filter);
+		filterList.push_back(searchFilter);
+		filter = currentParent->oBL->ConcatenateFilters(filterList);
+		dForm->FillTable<BusinessLayer::WithdrawalView>(currentParent->errorMessage, filter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("withdrawalForm");
+			dForm->QtConnect<BusinessLayer::WithdrawalView>();
+			QMdiSubWindow *withdrawalWindow = new QMdiSubWindow;
+			withdrawalWindow->setWidget(dForm);
+			withdrawalWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(withdrawalWindow);
+			withdrawalWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All withdrawal are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All withdrawals are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+
+bool DataForm::SearchInWOffForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("writeOffForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Write-off"));
+		dForm->FillTable<BusinessLayer::WriteOffView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->QtConnect<BusinessLayer::WriteOffView>();
+			dForm->setObjectName("writeOffForm");
+			QMdiSubWindow *writeOfftWindow = new QMdiSubWindow;
+			writeOfftWindow->setWidget(dForm);
+			writeOfftWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(writeOfftWindow);
+			writeOfftWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All write-off are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All write-off are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
+bool DataForm::SearchInWOffRawForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("writeOffRawForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Write-off raw"));
+		dForm->FillTable<BusinessLayer::WriteOffRawView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->setObjectName("writeOffRawForm");
+			dForm->QtConnect<BusinessLayer::WriteOffRawView>();
+			QMdiSubWindow *writeOffRawWindow = new QMdiSubWindow;
+			writeOffRawWindow->setWidget(dForm);
+			writeOffRawWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(writeOffRawWindow);
+			writeOffRawWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All raw are shown in write-off");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All raw are shown in write-off");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
 
 void DataForm::keyPressEvent(QKeyEvent *event) {
 	if (QApplication::keyboardModifiers() & Qt::ControlModifier) 

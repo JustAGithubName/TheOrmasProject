@@ -22,7 +22,7 @@ namespace BusinessLayer
 		ProductionList(DataLayer::productionListCollection);
 		ProductionList(){};
 		~ProductionList(){};
-		std::map<int, double> GetProductCount(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		std::map<int, double> GetProductCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 
 		//ProductionList class Accessors
 		int GetID();
@@ -43,25 +43,25 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateProductionList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateProductionList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteProductionList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByProductionID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool CreateProductionList(DataLayer::OrmasDal& ormasDal, int prID, int pID, double plCount, double plSum,
+		bool CreateProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByProductionID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool CreateProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prID, int pID, double plCount, double plSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateProductionList(DataLayer::OrmasDal& ormasDal, int prID, int pID, double plCount, double plSum,
+		bool UpdateProductionList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prID, int pID, double plCount, double plSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		std::string GenerateFilterForEnum(DataLayer::OrmasDal& ormasDal, std::vector<int> vecProdnID);
-		bool GetProductionListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateFilterForEnum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> vecProdnID);
+		bool GetProductionListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int prID, int pID, double plCount, double plSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prID, int pID, double plCount, double plSum,
 			 int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		
 	};
 }

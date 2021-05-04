@@ -41,24 +41,24 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateWriteOffList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateWriteOffList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteWriteOffList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByWriteOffID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage);
-		bool CreateWriteOffList(DataLayer::OrmasDal& ormasDal, int wID, int pID, double wlCount, double wlSum,
+		bool CreateWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByWriteOffID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
+		bool CreateWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int pID, double wlCount, double wlSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateWriteOffList(DataLayer::OrmasDal& ormasDal, int wID, int pID, double wlCount, double wlSum,
+		bool UpdateWriteOffList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int pID, double wlCount, double wlSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetWriteOffListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetWriteOffListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int wID, int pID, double wlCount, double wlSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, int pID, double wlCount, double wlSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

@@ -13,10 +13,14 @@ namespace BusinessLayer
 		SpecificationListView(DataLayer::specificationListViewCollection);
 		SpecificationListView(){};
 		~SpecificationListView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		//SpecificationListView class Accessors
 		std::string GetProductName();
 		std::string GetMeasureName();
+
+		void SetProductName(std::string);
+		void SetMeasureName(std::string);
 	};
 }
 #endif //SpecificationLISTVIEWCLASS_

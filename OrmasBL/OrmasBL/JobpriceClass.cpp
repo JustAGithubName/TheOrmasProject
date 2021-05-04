@@ -91,10 +91,10 @@ namespace BusinessLayer{
 		positionID = posID;
 	}
 
-	bool Jobprice::CreateJobprice(DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
+	bool Jobprice::CreateJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
 		int posID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pID, jValue, cID, jVolume, mID, posID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pID, jValue, cID, jVolume, mID, posID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		productID = pID;
@@ -113,9 +113,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Jobprice::CreateJobprice(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Jobprice::CreateJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateJobprice(id, productID, value, currencyID, volume, measureID, positionID, errorMessage))
@@ -128,7 +128,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Jobprice::DeleteJobprice(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Jobprice::DeleteJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteJobprice(id, errorMessage))
 		{
@@ -142,7 +142,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Jobprice::UpdateJobprice(DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
+	bool Jobprice::UpdateJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
 		int posID, std::string& errorMessage)
 	{
 		productID = pID;
@@ -161,7 +161,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Jobprice::UpdateJobprice(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Jobprice::UpdateJobprice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.UpdateJobprice(id, productID, value, currencyID, volume, measureID, positionID, errorMessage))
 		{
@@ -183,7 +183,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Jobprice::GetJobpriceByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool Jobprice::GetJobpriceByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -226,7 +226,7 @@ namespace BusinessLayer{
 		positionID = 0;
 	}
 
-	bool Jobprice::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
+	bool Jobprice::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double jValue, int cID, double jVolume, int mID,
 		int posID, std::string& errorMessage)
 	{
 		Jobprice jobprice;
@@ -250,7 +250,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Jobprice::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Jobprice::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Jobprice jobprice;
 		jobprice.Clear();

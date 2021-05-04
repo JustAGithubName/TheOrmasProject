@@ -35,4 +35,35 @@ namespace BusinessLayer{
 	{
 		return userPhone;
 	}
+
+	void CompanyEmployeeRelationView::SetCompanyName(std::string cCompanyName)
+	{
+		companyName = cCompanyName;
+	}
+	void CompanyEmployeeRelationView::SetBranchName(std::string cBranchName)
+	{
+		branchName = cBranchName;
+	}
+	void CompanyEmployeeRelationView::SetUsername(std::string cUserName)
+	{
+		userName = cUserName;
+	}
+	void CompanyEmployeeRelationView::SetUserSurname(std::string cUserSurname)
+	{
+		userSurname = cUserSurname;
+	}
+	void CompanyEmployeeRelationView::SetUserPhone(std::string cUserPhone)
+	{
+		userPhone = cUserPhone;
+	}
+
+	std::string CompanyEmployeeRelationView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !companyName.empty() || !branchName.empty() || !userName.empty() || !userSurname.empty() || !userPhone.empty()
+			|| 0 != companyID || 0 != employeeID || 0 != branchID)
+		{
+			return ormasDal.GetFilterForCompanyEmployeeView(id, companyName, branchName, userName, userSurname, userPhone, companyID, employeeID, branchID);
+		}
+		return "";
+	}
 }

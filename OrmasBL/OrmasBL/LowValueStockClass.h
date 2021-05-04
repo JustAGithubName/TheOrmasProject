@@ -42,41 +42,44 @@ namespace BusinessLayer
 		void SetWarehouseID(int);
 
 		//Create, delete, update methods
-		bool CreateLowValueStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateLowValueStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteLowValueStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateLowValueStock(DataLayer::OrmasDal& ormasDal, int osID, double sCount, double sSum,
+		bool CreateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, double sCount, double sSum,
 			int sID, int cID, int wID, std::string& errorMessage);
-		bool UpdateLowValueStock(DataLayer::OrmasDal& ormasDal, int osID, double sCount, double sSum,
+		bool UpdateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, double sCount, double sSum,
+			int sID, int cID, int wID, std::string& errorMessage);
+
+		bool CreateLowValueStockChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int losID, int osID, double sCount, double sSum,
 			int sID, int cID, int wID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetLowValueStockByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool GetLowValueStockByOtherStocksID(DataLayer::OrmasDal& ormasDal, int osID, std::string& errorMessage);
-		bool GetLowValueStockByOtherStocksAndWarehouseID(DataLayer::OrmasDal& ormasDal, int osID, int wID, std::string& errorMessage);
-		std::vector<int> GetAllOtherStocksIDByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetLowValueStockByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool GetLowValueStockByOtherStocksID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, std::string& errorMessage);
+		bool GetLowValueStockByOtherStocksAndWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int osID, int wID, std::string& errorMessage);
+		std::vector<int> GetAllOtherStocksIDByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 
-		bool ChangingByConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, int cpID, int lowValueStockEmpID, std::string& errorMessage);
-		bool ChangingByConsumeOtherStocksReverse(DataLayer::OrmasDal& ormasDal, int cpID, int lowValueStockEmpID, std::string& errorMessage);
-		bool ChangingByConsumeOtherStocks(DataLayer::OrmasDal& ormasDal, int cpID, int lowValueStockEmpID, std::map<int, double> pOtherStockCountMap, double pSum, std::string& errorMessage);
-		bool ChangingByReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, int orID, int empID, std::string& errorMessage);
-		bool ChangingByReceiptOtherStocksReverse(DataLayer::OrmasDal& ormasDal, int orID, int empID, std::string& errorMessage);
-		bool ChangingByReceiptOtherStocks(DataLayer::OrmasDal& ormasDal, int orID, int empID, std::map<int, double> pOtherStockCountMap, double pSum, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
-		bool CreateCorrectongEntry(DataLayer::OrmasDal& ormasDal, int id, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
-		bool CreateCorrectongEntry(DataLayer::OrmasDal& ormasDal, int id, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
-		bool RecalculateLowValueStock(DataLayer::OrmasDal& ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage);
+		bool ChangingByConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int lowValueStockEmpID, std::string& errorMessage);
+		bool ChangingByConsumeOtherStocksReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int lowValueStockEmpID, std::string& errorMessage);
+		bool ChangingByConsumeOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int lowValueStockEmpID, std::map<int, double> pOtherStockCountMap, double pSum, std::string& errorMessage);
+		bool ChangingByReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage);
+		bool ChangingByReceiptOtherStocksReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage);
+		bool ChangingByReceiptOtherStocks(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::map<int, double> pOtherStockCountMap, double pSum, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
+		bool CreateCorrectongEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int id, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
+		bool CreateCorrectongEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int id, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
+		bool RecalculateLowValueStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 
-		bool GetSubIDAndWerhIDFromConOthSt(DataLayer::OrmasDal& ormasDal, int lowValueStockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage);
-		bool GetSubIDAndWerhIDFromRcpOthSt(DataLayer::OrmasDal& ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage);
+		bool GetSubIDAndWerhIDFromConOthSt(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int lowValueStockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage);
+		bool GetSubIDAndWerhIDFromRcpOthSt(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage);
 	};
 }
 #endif

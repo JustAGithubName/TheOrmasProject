@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = rCurrencyID;
 	}
 
-	bool ReceiptProductList::CreateReceiptProductList(DataLayer::OrmasDal& ormasDal, int rpID, int pID, double rplCount, double rplSum,
+	bool ReceiptProductList::CreateReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int pID, double rplCount, double rplSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReceiptProductList::CreateReceiptProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReceiptProductList::CreateReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateReceiptProductList(id, receiptProductID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReceiptProductList::DeleteReceiptProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReceiptProductList::DeleteReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInReceiptProductList(id, errorMessage))
 		{
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReceiptProductList::DeleteListByReceiptProductID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool ReceiptProductList::DeleteListByReceiptProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		receiptProductID = oID;
 		if (ormasDal.DeleteListByReceiptProductID(receiptProductID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ReceiptProductList::UpdateReceiptProductList(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+	bool ReceiptProductList::UpdateReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		receiptProductID = rID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ReceiptProductList::UpdateReceiptProductList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReceiptProductList::UpdateReceiptProductList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateReceiptProductList(id, receiptProductID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ReceiptProductList::GetReceiptProductListByID(DataLayer::OrmasDal& ormasDal, int rID, std::string& errorMessage)
+	bool ReceiptProductList::GetReceiptProductListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage)
 	{
 		if (rID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ReceiptProductList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int rID, int pID, double rlCount, double rlSum,
+	bool ReceiptProductList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int pID, double rlCount, double rlSum,
 		int cID, std::string& errorMessage)
 	{
 		ReceiptProductList receiptProductList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ReceiptProductList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ReceiptProductList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ReceiptProductList receiptProductList;
 		receiptProductList.Clear();

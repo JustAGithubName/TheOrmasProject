@@ -14,12 +14,18 @@ namespace BusinessLayer{
 		ClientView(DataLayer::clientsViewCollection);
 		ClientView(){};
 		~ClientView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// ClientView class Accessors
 		std::string GetCountryName();
 		std::string GetRegionName();
 		std::string GetCityName();
 		std::string GetRoleName();
+
+		void SetCountryName(std::string);
+		void SetRegionName(std::string);
+		void SetCityName(std::string);
+		void SetRoleName(std::string);
 	};
 }
 

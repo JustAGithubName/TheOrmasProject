@@ -33,22 +33,22 @@ namespace BusinessLayer{
 		
 
 		// Create, delete and update Cashbox
-		bool CreateCashbox(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateCashbox(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteCashbox(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateCashbox(DataLayer::OrmasDal &ormasDal, int subaccID, std::string cInfo, std::string cAddress, std::string& errorMessage);
-		bool UpdateCashbox(DataLayer::OrmasDal &ormasDal, int subaccID, std::string cInfo, std::string cAddress, std::string& errorMessage);
+		bool CreateCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccID, std::string cInfo, std::string cAddress, std::string& errorMessage);
+		bool UpdateCashbox(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccID, std::string cInfo, std::string cAddress, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetCashboxByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		int GetCashboxID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetCashboxByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		int GetCashboxID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int subaccID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //CashboxCLASS_H

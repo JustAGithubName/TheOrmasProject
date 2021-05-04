@@ -124,8 +124,8 @@ void ClcWagesDlg::Calculate()
 			BusinessLayer::Salary salary;
 			std::string salaryFilter;
 			std::vector<BusinessLayer::SalaryView> salaryVector;
-			std::map<std::string, int> salaryTypeMap = BusinessLayer::SalaryType::GetSalaryTypesAsMap(dialogBL->GetOrmasDal(), errorMessage);
-			std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+			std::map<std::string, int> salaryTypeMap = BusinessLayer::SalaryType::GetSalaryTypesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
+			std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 			BusinessLayer::Payslip payslip;
 			BusinessLayer::Order order;
 			std::string orderFilter;
@@ -160,14 +160,14 @@ void ClcWagesDlg::Calculate()
 											payslip.SetSalaryID(salaryItem.GetID());
 											payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 											payslip.SetValue(salaryItem.GetValue());
-											payslip.CreatePayslip(dialogBL->GetOrmasDal(), errorMessage);
+											payslip.CreatePayslip(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 										}
 										if (salaryItem.GetSalaryTypeID() == salaryTypeMap.find("PERCENT")->second)
 										{
 											order.Clear();
 											order.SetEmployeeID(salary.GetEmployeeID());
 											order.SetStatusID(statusMap.find("EXECUTED")->second);
-											orderFilter = order.GenerateFilter(dialogBL->GetOrmasDal(), startDateEdit->text().toUtf8().constData(),
+											orderFilter = order.GenerateFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), startDateEdit->text().toUtf8().constData(),
 												endDateEdit->text().toUtf8().constData());
 											orderVector.clear();
 											orderVector = dialogBL->GetAllDataForClass<BusinessLayer::OrderView>(errorMessage, orderFilter);
@@ -186,7 +186,7 @@ void ClcWagesDlg::Calculate()
 												payslip.SetSalaryID(salaryItem.GetID());
 												payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 												payslip.SetValue(sum);
-												payslip.CreatePayslip(dialogBL->GetOrmasDal(), errorMessage);
+												payslip.CreatePayslip(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 											}
 										}
 									}
@@ -212,7 +212,7 @@ void ClcWagesDlg::Calculate()
 		if (0 != employeeEdit->text().toInt())
 		{
 			BusinessLayer::Employee employee;
-			employee.GetEmployeeByID(dialogBL->GetOrmasDal(), employeeEdit->text().toInt(), errorMessage);
+			employee.GetEmployeeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeEdit->text().toInt(), errorMessage);
 			if (!employee.IsEmpty())
 			{
 				errorMessage = "";
@@ -232,8 +232,8 @@ void ClcWagesDlg::Calculate()
 					}
 					if (1 <= salaryVector.size())
 					{
-						std::map<std::string, int> salaryTypeMap = BusinessLayer::SalaryType::GetSalaryTypesAsMap(dialogBL->GetOrmasDal(), errorMessage);
-						std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->GetOrmasDal(), errorMessage);
+						std::map<std::string, int> salaryTypeMap = BusinessLayer::SalaryType::GetSalaryTypesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
+						std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 						if (salaryTypeMap.size() > 0 && statusMap.size() > 0)
 						{
 							for each (auto salaryItem in salaryVector)
@@ -247,14 +247,14 @@ void ClcWagesDlg::Calculate()
 										payslip.SetSalaryID(salaryItem.GetID());
 										payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 										payslip.SetValue(salaryItem.GetValue());
-										payslip.CreatePayslip(dialogBL->GetOrmasDal(), errorMessage);
+										payslip.CreatePayslip(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 									}
 									if (salaryItem.GetSalaryTypeID() == salaryTypeMap.find("PERCENT")->second)
 									{
 										BusinessLayer::Order order;
 										order.SetEmployeeID(salary.GetEmployeeID());
 										order.SetStatusID(statusMap.find("EXECUTED")->second);
-										std::string filter = order.GenerateFilter(dialogBL->GetOrmasDal(), startDateEdit->text().toUtf8().constData(),
+										std::string filter = order.GenerateFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), startDateEdit->text().toUtf8().constData(),
 											endDateEdit->text().toUtf8().constData());
 										std::vector<BusinessLayer::OrderView> orderVector = dialogBL->GetAllDataForClass<BusinessLayer::OrderView>(errorMessage, filter);
 										sum = 0;
@@ -272,7 +272,7 @@ void ClcWagesDlg::Calculate()
 											payslip.SetSalaryID(salaryItem.GetID());
 											payslip.SetCurrencyID(salaryItem.GetCurrencyID());
 											payslip.SetValue(sum);
-											payslip.CreatePayslip(dialogBL->GetOrmasDal(), errorMessage);
+											payslip.CreatePayslip(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 										}
 									}
 								}
@@ -338,7 +338,7 @@ void ClcWagesDlg::OpenEmpDlg()
 		dForm->topLevelWidget();
 		dForm->activateWindow();
 		QApplication::setActiveWindow(dForm);
-		dForm->HileSomeRow();
+		dForm->HideSomeRow();
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);

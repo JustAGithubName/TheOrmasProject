@@ -46,5 +46,42 @@ namespace BusinessLayer
 	{
 		return amortizeAccValue;
 	}
+
+	void FixedAssetsDetailsView::SetGroupNumber(int fGroupNumber)
+	{
+		groupNumber = fGroupNumber;
+	}
+	void FixedAssetsDetailsView::SetAmortizeTypeName(std::string fAmortizeTypeName)
+	{
+		amortizeTypeName = fAmortizeTypeName;
+	}
+	void FixedAssetsDetailsView::SetAmortizeTypeCode(std::string fAmortizeTypeCode)
+	{
+		amortizeTypeCode = fAmortizeTypeCode;
+	}
+	void FixedAssetsDetailsView::SetDivisionName(std::string aDivisionName)
+	{
+		divisionName = aDivisionName;
+	}
+	void FixedAssetsDetailsView::SetPrimaryAccValue(double fPrimaryAccValue)
+	{
+		primaryAccValue = fPrimaryAccValue;
+	}
+	void FixedAssetsDetailsView::SetAmortizeAccValue(double fAmortizeAccValue)
+	{
+		amortizeAccValue = fAmortizeAccValue;
+	}
+
+	std::string FixedAssetsDetailsView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != groupNumber || !amortizeTypeName.empty() || !amortizeTypeCode.empty() || 0 != amortizeValue || !divisionName.empty() 
+			|| 0 != primaryAccValue || 0 != amortizeAccValue || !barcodeNumber.empty() || !fixedAssetsLocation.empty() 
+			 || 0 != primaryCostAccountID || 0 != amortizeAccountID || 0 != amortizeGroupID || 0 != amortizeTypeID  || 0 != departmentID)
+		{
+			return ormasDal.GetFilterForFixedAssDetailView(id, groupNumber, amortizeTypeName, amortizeTypeCode, amortizeValue, divisionName, primaryAccValue, 
+				amortizeAccValue, barcodeNumber, fixedAssetsLocation, primaryCostAccountID, amortizeAccountID, amortizeGroupID, amortizeTypeID, departmentID);
+		}
+		return "";
+	}
 }
 

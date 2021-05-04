@@ -11,9 +11,11 @@ namespace BusinessLayer{
 		CashboxView(DataLayer::cashboxViewCollection);
 		CashboxView(){};
 		~CashboxView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// Cashbox View class Accessors
 		std::string GetSubaccountNumber();
+		void SetSubaccountNumber(std::string);
 	};
 }
 

@@ -43,6 +43,7 @@
 #include "ProductionConsumeRawListViewClass.h"
 #include "ProductionListClass.h"
 #include "ProductionListViewClass.h"
+#include "StockChangeLogClass.h"
 #include <codecvt>
 
 namespace BusinessLayer
@@ -123,7 +124,7 @@ namespace BusinessLayer
 		warehouseID = sWarehouseID;
 	}
 
-	bool Stock::CreateStock(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+	bool Stock::CreateStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 		int sID, int cID, int wID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -135,20 +136,22 @@ namespace BusinessLayer
 		warehouseID = wID;
 		if (0 != id && ormasDal.CreateStock(id, productID, count, sum, statusID, currencyID, warehouseID, errorMessage))
 		{
-			return true;
+			if (CreateStockChangeLog(globalVar, ormasDal, id, productID, count, sum, statusID, currencyID, warehouseID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool Stock::CreateStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Stock::CreateStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateStock(id, productID, count, sum, statusID, currencyID, warehouseID, errorMessage))
 		{
-			return true;
+			if (CreateStockChangeLog(globalVar, ormasDal, id, productID, count, sum, statusID, currencyID, warehouseID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool Stock::DeleteStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Stock::DeleteStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteStock(id, errorMessage))
 		{
@@ -158,7 +161,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Stock::UpdateStock(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+	bool Stock::UpdateStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 		int sID, int cID, int wID, std::string& errorMessage)
 	{
 		productID = pID;
@@ -175,11 +178,12 @@ namespace BusinessLayer
 		}
 		if (0 != id && ormasDal.UpdateStock(id, productID, count, sum, statusID, currencyID, warehouseID, errorMessage))
 		{
-			return true;
+			if (CreateStockChangeLog(globalVar, ormasDal, id, productID, count, sum, statusID, currencyID, warehouseID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool Stock::UpdateStock(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Stock::UpdateStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (count < 0 || sum < 0)
 		{
@@ -189,7 +193,8 @@ namespace BusinessLayer
 		}
 		if (0 != id && ormasDal.UpdateStock(id, productID, count, sum, statusID, currencyID, warehouseID, errorMessage))
 		{
-			return true;
+			if (CreateStockChangeLog(globalVar, ormasDal, id, productID, count, sum, statusID, currencyID, warehouseID, errorMessage))
+				return true;
 		}
 		return false;
 	}
@@ -203,7 +208,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Stock::GetStockByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool Stock::GetStockByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -228,7 +233,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Stock::GetStockByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool Stock::GetStockByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -253,7 +258,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Stock::GetStockByProductAndWarehouseID(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool Stock::GetStockByProductAndWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -281,7 +286,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	std::vector<int> Stock::GetAllProductIDByWarehouseID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage)
+	std::vector<int> Stock::GetAllProductIDByWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
 	{
 		std::vector<int> prodIDList;
 		if (wID <= 0)
@@ -321,7 +326,7 @@ namespace BusinessLayer
 		warehouseID = 0;
 	}
 
-	bool Stock::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool Stock::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		Stock stock;
 		stock.Clear();
@@ -340,7 +345,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Stock::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Stock stock;
 		stock.Clear();
@@ -359,8 +364,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByConsumeProduct(DataLayer::OrmasDal& ormasDal, int cpID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByConsumeProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int stockEmpID, std::string& errorMessage)
 	{
+		ConsumeProduct consumeProduct;
 		ConsumeProductList cPList;
 		std::vector<ConsumeProductListView> cPListVec;
 		double totalSum = 0.0;
@@ -388,25 +394,28 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConProd(ormasDal, stockEmpID , warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConProd(globalVar, ormasDal, stockEmpID , warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
 			NetCost nCost;
+			ConsumeProductList cpOldList;
 			double oldCount = 0;
 			double oldSum = 0;
+			double docNewSum = 0;
 			//ormasDal.StartTransaction(errorMessage);
 			for each (auto item in cPListVec)
 			{
+				
 				//clear section
 				stock.Clear();
 				product.Clear();
 				nCost.Clear();
-				
+				cpOldList.Clear();
 				//check stock for existens of product
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -417,7 +426,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the stock!";
 							errorMessage += " Product name:";
@@ -435,9 +444,9 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
@@ -450,7 +459,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - (item.GetCount()*nCost.GetValue()));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -462,6 +471,25 @@ namespace BusinessLayer
 						totalNewCount += stock.GetCount();
 					}
 				}
+				if (item.GetSum() != item.GetCount()*nCost.GetValue())
+				{
+					if (!cpOldList.GetConsumeProductListByID(globalVar, ormasDal, item.GetID(), errorMessage))
+						return false;
+					cpOldList.SetSum(item.GetCount()*nCost.GetValue());
+					if (!cpOldList.UpdateConsumeProductList(globalVar, ormasDal, errorMessage))
+						return false;
+					docNewSum += item.GetCount()*nCost.GetValue();
+				}
+				else
+				{
+					docNewSum += item.GetSum();
+				}
+			}
+			if (consumeProduct.GetConsumeProductByID(globalVar, ormasDal, cpID, errorMessage))
+			{
+				consumeProduct.SetSum(std::round(docNewSum * 1000) / 1000);
+				if (!consumeProduct.SimpleUpdateConsumeProduct(globalVar, ormasDal, errorMessage))
+					return false;
 			}
 		}
 		else
@@ -477,7 +505,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10742", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -485,7 +513,7 @@ namespace BusinessLayer
 			return false;
 		}
 		
-		if (!this->CreateEntry(ormasDal, cpID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, cpID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -493,8 +521,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByConsumeProductReverse(DataLayer::OrmasDal& ormasDal, int cpID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByConsumeProductReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int stockEmpID, std::string& errorMessage)
 	{
+		
 		ConsumeProductList cPList;
 		std::vector<ConsumeProductListView> cPListVec;
 		double totalSum = 0.0;
@@ -524,7 +553,7 @@ namespace BusinessLayer
 
 		if (cPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConProd(ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConProd(globalVar, ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -539,18 +568,18 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -559,7 +588,7 @@ namespace BusinessLayer
 					stock.SetSum((item.GetCount()*nCost.GetValue()));
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -572,15 +601,15 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + (item.GetCount()*nCost.GetValue()));
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -609,14 +638,14 @@ namespace BusinessLayer
 
 		CompanyAccountRelation caRel;
 		int debAccID = subAccID;
-		int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10742", errorMessage);
+		int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, cpID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, cpID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -625,8 +654,9 @@ namespace BusinessLayer
 	}
 
 
-	bool Stock::ChangingByConsumeProduct(DataLayer::OrmasDal& ormasDal, int cpID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByConsumeProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		ConsumeProduct consumeProduct;
 		ConsumeProductList cPList;
 		std::vector<ConsumeProductListView> cPListVec;
 		double totalSum = 0.0;
@@ -654,22 +684,27 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConProd(ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConProd(globalVar, ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
 			NetCost nCost;
+			ConsumeProductList cpOldList;
 			double oldCount = 0;
 			double oldSum = 0;
+			double docNewSum = 0;
 			//ormasDal.StartTransaction(errorMessage);
 			for each (auto item in cPListVec)
 			{
+
+				//clear section
 				stock.Clear();
 				product.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				cpOldList.Clear();
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -680,7 +715,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the stock!";
 							errorMessage += " Product name:";
@@ -698,9 +733,9 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -713,7 +748,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - ((item.GetCount()*nCost.GetValue()) - (pProdCountMap.find(product.GetID())->second * nCost.GetValue())));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -725,6 +760,25 @@ namespace BusinessLayer
 						totalNewCount += stock.GetCount();
 					}
 				}
+				if (item.GetSum() != item.GetCount()*nCost.GetValue())
+				{
+					if (!cpOldList.GetConsumeProductListByID(globalVar, ormasDal, item.GetID(), errorMessage))
+						return false;
+					cpOldList.SetSum(item.GetCount()*nCost.GetValue());
+					if (!cpOldList.UpdateConsumeProductList(globalVar, ormasDal, errorMessage))
+						return false;
+					docNewSum += item.GetCount()*nCost.GetValue();
+				}
+				else
+				{
+					docNewSum += item.GetSum();
+				}
+			}
+			if (consumeProduct.GetConsumeProductByID(globalVar, ormasDal, cpID, errorMessage))
+			{
+				consumeProduct.SetSum(std::round(docNewSum * 1000) / 1000);
+				if (!consumeProduct.SimpleUpdateConsumeProduct(globalVar, ormasDal, errorMessage))
+					return false;
 			}
 		}
 		else
@@ -740,7 +794,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10742", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -748,7 +802,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, cpID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, cpID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -757,8 +811,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByConsumeRaw(DataLayer::OrmasDal& ormasDal, int crID, int empID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int empID, int stockEmpID, std::string& errorMessage)
 	{
+		
 		ConsumeRawList cRList;
 		std::vector<ConsumeRawListView> cRListVec;
 		double totalSum = 0.0;
@@ -791,7 +846,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConRaw(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConRaw(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -803,9 +858,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -816,7 +871,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -832,7 +887,7 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + item.GetSum();
@@ -870,7 +925,7 @@ namespace BusinessLayer
 							}
 						}
 
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -880,7 +935,7 @@ namespace BusinessLayer
 						if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
 						{
 							stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
-							if (!stock.UpdateStock(ormasDal, errorMessage))
+							if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 							{
 								//ormasDal.CancelTransaction(errorMessage);
 								return false;
@@ -912,17 +967,17 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, crID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, crID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		if (0 != correctingConRawTotalSum)
 		{
-			acc55020ID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+			acc55020ID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 			if (correctingConRawTotalSum > 0)
 			{
-				if (!this->CreateEntry(ormasDal, id, acc55020ID, correctingConRawTotalSum, credAccID, errorMessage))
+				if (!this->CreateEntry(globalVar, ormasDal, id, acc55020ID, correctingConRawTotalSum, credAccID, errorMessage))
 				{
 					//ormasDal.CancelTransaction(errorMessage);
 					return false;
@@ -930,14 +985,14 @@ namespace BusinessLayer
 			}
 			else if (correctingConRawTotalSum < 0)
 			{
-				if (!this->CreateEntry(ormasDal, id, credAccID, correctingConRawTotalSum*(-1), acc55020ID, errorMessage))
+				if (!this->CreateEntry(globalVar, ormasDal, id, credAccID, correctingConRawTotalSum*(-1), acc55020ID, errorMessage))
 				{
 					//ormasDal.CancelTransaction(errorMessage);
 					return false;
 				}
 			}
 		}
-		if (!ChangingByConsumeRawAtSecondStock(ormasDal, crID, debWerID, errorMessage))
+		if (!ChangingByConsumeRawAtSecondStock(globalVar, ormasDal, crID, debWerID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -945,8 +1000,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByConsumeRawReverse(DataLayer::OrmasDal& ormasDal, int crID, int empID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByConsumeRawReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int empID, int stockEmpID, std::string& errorMessage)
 	{
+		
 		ConsumeRawList cRList;
 		std::vector<ConsumeRawListView> cRListVec;
 		double totalSum = 0.0;
@@ -979,7 +1035,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConRaw(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConRaw(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -992,20 +1048,20 @@ namespace BusinessLayer
 				stock.Clear();
 				product.Clear();
 				status.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot order this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum += item.GetSum(); 
@@ -1016,7 +1072,7 @@ namespace BusinessLayer
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
 					stock.SetWarehouseID(warehouseID);
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1029,14 +1085,14 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum += item.GetSum();
 					correctingSum += std::round((product.GetPrice() * item.GetCount()) * 1000) / 1000;
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + (std::round((product.GetPrice() * item.GetCount()) * 1000) / 1000));
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1046,7 +1102,7 @@ namespace BusinessLayer
 					if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
 					{
 						stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -1077,7 +1133,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, crID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, crID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -1085,10 +1141,10 @@ namespace BusinessLayer
 		correctingConRawSum = totalSum - correctingSum;
 		if (0 != correctingConRawSum)
 		{
-			acc55020ID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+			acc55020ID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 			if (correctingConRawSum > 0)
 			{
-				if (!this->CreateEntry(ormasDal, id, acc55020ID, correctingConRawSum, credAccID, errorMessage))
+				if (!this->CreateEntry(globalVar, ormasDal, id, acc55020ID, correctingConRawSum, credAccID, errorMessage))
 				{
 					//ormasDal.CancelTransaction(errorMessage);
 					return false;
@@ -1096,14 +1152,14 @@ namespace BusinessLayer
 			}
 			else if (correctingConRawSum < 0)
 			{
-				if (!this->CreateEntry(ormasDal, id, credAccID, correctingConRawSum*(-1), acc55020ID, errorMessage))
+				if (!this->CreateEntry(globalVar, ormasDal, id, credAccID, correctingConRawSum*(-1), acc55020ID, errorMessage))
 				{
 					//ormasDal.CancelTransaction(errorMessage);
 					return false;
 				}
 			}
 		}
-		if (!ChangingByConsumeRawAtSecondStockReverse(ormasDal, crID, debWerID, errorMessage))
+		if (!ChangingByConsumeRawAtSecondStockReverse(globalVar, ormasDal, crID, debWerID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -1112,8 +1168,9 @@ namespace BusinessLayer
 	}
 
 
-	bool Stock::ChangingByConsumeRaw(DataLayer::OrmasDal& ormasDal, int crID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		ConsumeRawList cRList;
 		std::vector<ConsumeRawListView> cRListVec;
 		double totalSum = 0.0;
@@ -1145,7 +1202,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromConRaw(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromConRaw(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -1156,9 +1213,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -1169,7 +1226,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -1185,7 +1242,7 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + item.GetSum();
@@ -1211,7 +1268,7 @@ namespace BusinessLayer
 							}
 							
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
@@ -1220,7 +1277,7 @@ namespace BusinessLayer
 						if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
 						{
 							stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
-							if (!stock.UpdateStock(ormasDal, errorMessage))
+							if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 							{
 								//ormasDal.CancelTransaction(errorMessage);
 								return false;
@@ -1252,17 +1309,17 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, crID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, crID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		if (0 != correctingConRawSum)
 		{
-			acc55020ID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+			acc55020ID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 			if (correctingConRawSum > 0)
 			{
-				if (!this->CreateEntry(ormasDal, id, acc55020ID, correctingConRawSum, credAccID, errorMessage))
+				if (!this->CreateEntry(globalVar, ormasDal, id, acc55020ID, correctingConRawSum, credAccID, errorMessage))
 				{
 					//ormasDal.CancelTransaction(errorMessage);
 					return false;
@@ -1270,14 +1327,14 @@ namespace BusinessLayer
 			}
 			else if (correctingConRawSum < 0)
 			{
-				if (!this->CreateEntry(ormasDal, id, credAccID, correctingConRawSum*(-1), acc55020ID, errorMessage))
+				if (!this->CreateEntry(globalVar, ormasDal, id, credAccID, correctingConRawSum*(-1), acc55020ID, errorMessage))
 				{
 					//ormasDal.CancelTransaction(errorMessage);
 					return false;
 				}
 			}
 		}
-		if (!ChangingByConsumeRawAtSecondStock(ormasDal, crID, debWerID, pProdCountMap, pSum, errorMessage))
+		if (!ChangingByConsumeRawAtSecondStock(globalVar, ormasDal, crID, debWerID, pProdCountMap, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -1285,8 +1342,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByConsumeRawAtSecondStock(DataLayer::OrmasDal& ormasDal, int rrID, int debWerID, std::string& errorMessage)
+	bool Stock::ChangingByConsumeRawAtSecondStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int debWerID, std::string& errorMessage)
 	{
+		
 		ConsumeRawList cRList;
 		std::vector<ConsumeRawListView> rRListVec;
 		double totalSum = 0.0;
@@ -1323,20 +1381,20 @@ namespace BusinessLayer
 				pStock.Clear();
 				product.Clear();
 				status.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID, errorMessage))
 				{
 					oldCount = pStock.GetCount();
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot consume this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
@@ -1345,7 +1403,7 @@ namespace BusinessLayer
 					pStock.SetSum(item.GetSum());
 					pStock.SetCurrencyID(item.GetCurrencyID());
 					pStock.SetStatusID(status.GetID());
-					if (!pStock.CreateStock(ormasDal, errorMessage))
+					if (!pStock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1358,13 +1416,13 @@ namespace BusinessLayer
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					pStock.SetCount(pStock.GetCount() + item.GetCount());
 					pStock.SetSum(pStock.GetSum() + item.GetSum());
-					if (!pStock.UpdateStock(ormasDal, errorMessage))
+					if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1390,8 +1448,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByConsumeRawAtSecondStockReverse(DataLayer::OrmasDal& ormasDal, int rrID, int debWerID, std::string& errorMessage)
+	bool Stock::ChangingByConsumeRawAtSecondStockReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int debWerID, std::string& errorMessage)
 	{
+		
 		ConsumeRawList cRList;
 		std::vector<ConsumeRawListView> rRListVec;
 		double totalSum = 0.0;
@@ -1427,9 +1486,9 @@ namespace BusinessLayer
 			{
 				pStock.Clear();
 				product.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -1440,7 +1499,7 @@ namespace BusinessLayer
 				{
 					if (pStock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -1456,7 +1515,7 @@ namespace BusinessLayer
 						oldSum = pStock.GetSum();
 						totalOldCount += pStock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + item.GetSum();
@@ -1469,7 +1528,7 @@ namespace BusinessLayer
 						{
 							pStock.SetSum((pStock.GetSum() - item.GetSum()));
 						}
-						if (!pStock.UpdateStock(ormasDal, errorMessage))
+						if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -1496,8 +1555,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByConsumeRawAtSecondStock(DataLayer::OrmasDal& ormasDal, int rrID, int debWerID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByConsumeRawAtSecondStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int debWerID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		ConsumeRawList cRList;
 		std::vector<ConsumeRawListView> rRListVec;
 		double totalSum = 0.0;
@@ -1534,20 +1594,20 @@ namespace BusinessLayer
 				pStock.Clear();
 				product.Clear();
 				status.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID,errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID,errorMessage))
 				{
 					oldCount = pStock.GetCount();
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
@@ -1556,7 +1616,7 @@ namespace BusinessLayer
 					pStock.SetSum(item.GetSum());
 					pStock.SetCurrencyID(item.GetCurrencyID());
 					pStock.SetStatusID(status.GetID());
-					if (!pStock.CreateStock(ormasDal, errorMessage))
+					if (!pStock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1569,13 +1629,13 @@ namespace BusinessLayer
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					pStock.SetCount(pStock.GetCount() + (item.GetCount() - pProdCountMap.find(product.GetID())->second));
 					pStock.SetSum(pStock.GetSum() + (item.GetSum() - (pProdCountMap.find(product.GetID())->second * product.GetPrice())));
-					if (!pStock.UpdateStock(ormasDal, errorMessage))
+					if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1601,8 +1661,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByOrderRaw(DataLayer::OrmasDal& ormasDal, int orID, int empID, std::string& errorMessage)
+	bool Stock::ChangingByOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage)
 	{
+		
 		OrderRaw oRaw;
 		OrderRawList oRList;
 		std::vector<OrderRawListView> oRListVec;
@@ -1631,7 +1692,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (oRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromOrderRaw(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromOrderRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -1644,20 +1705,20 @@ namespace BusinessLayer
 				stock.Clear();
 				product.Clear();
 				status.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot order this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + (item.GetSum());
@@ -1667,7 +1728,7 @@ namespace BusinessLayer
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
 					stock.SetWarehouseID(warehouseID);
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1680,13 +1741,13 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + (item.GetCount()*product.GetPrice()));
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1696,7 +1757,7 @@ namespace BusinessLayer
 					if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
 					{
 						stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -1718,10 +1779,10 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!oRaw.GetOrderRawByID(ormasDal, orID, errorMessage))
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, orID, errorMessage))
 			return false;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, oRaw.GetPurveyorID(), errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, oRaw.GetPurveyorID(), errorMessage))
 			return false;
 		CompanyAccountRelation caRel;
 		int debAccID = subAccID;
@@ -1732,7 +1793,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, orID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, orID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -1740,8 +1801,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByOrderRawReverse(DataLayer::OrmasDal& ormasDal, int orID, int empID, std::string& errorMessage)
+	bool Stock::ChangingByOrderRawReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage)
 	{
+		
 		OrderRaw oRaw;
 		OrderRawList oRList;
 		std::vector<OrderRawListView> oRListVec;
@@ -1771,7 +1833,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (oRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromOrderRaw(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromOrderRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -1783,9 +1845,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -1796,7 +1858,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -1812,7 +1874,7 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + item.GetSum();
@@ -1826,7 +1888,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum((stock.GetSum() - std::round(item.GetCount()* product.GetPrice() * 1000) / 1000));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -1836,7 +1898,7 @@ namespace BusinessLayer
 						if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
 						{
 							stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
-							if (!stock.UpdateStock(ormasDal, errorMessage))
+							if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 							{
 								//ormasDal.CancelTransaction(errorMessage);
 								return false;
@@ -1859,22 +1921,22 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!oRaw.GetOrderRawByID(ormasDal, orID, errorMessage))
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, orID, errorMessage))
 			return false;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, oRaw.GetPurveyorID(), errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, oRaw.GetPurveyorID(), errorMessage))
 			return false;
 		CompanyAccountRelation caRel;
 		int debAccID = subAccID;
 		int credAccID = balance.GetSubaccountID();
-		int acc55020ID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+		int acc55020ID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, orID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, orID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -1883,7 +1945,7 @@ namespace BusinessLayer
 		double checkSum = totalSum - newSum;
 		if (checkSum > 0)
 		{
-			if (!this->CreateEntry(ormasDal, orID, acc55020ID, checkSum, debAccID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, orID, acc55020ID, checkSum, debAccID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -1891,7 +1953,7 @@ namespace BusinessLayer
 		}
 		else if (checkSum < 0)
 		{
-			if (!this->CreateEntry(ormasDal, orID, debAccID, checkSum *(-1), acc55020ID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, orID, debAccID, checkSum *(-1), acc55020ID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -1902,8 +1964,9 @@ namespace BusinessLayer
 
 	
 
-	bool Stock::ChangingByOrderRaw(DataLayer::OrmasDal& ormasDal, int orID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		OrderRaw oRaw;
 		OrderRawList oRList;
 		std::vector<OrderRawListView> oRListVec;
@@ -1932,7 +1995,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (oRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromOrderRaw(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromOrderRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -1944,20 +2007,20 @@ namespace BusinessLayer
 				stock.Clear();
 				product.Clear();
 				status.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot order this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
@@ -1967,7 +2030,7 @@ namespace BusinessLayer
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
 					stock.SetWarehouseID(warehouseID);
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						return false;
 					}
@@ -1979,13 +2042,13 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					stock.SetCount(stock.GetCount() + (item.GetCount() - pProdCountMap.find(product.GetID())->second));
 					stock.SetSum(stock.GetSum() + (item.GetSum() - (pProdCountMap.find(product.GetID())->second * product.GetPrice())));
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -1995,7 +2058,7 @@ namespace BusinessLayer
 					if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
 					{
 						stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -2017,10 +2080,10 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!oRaw.GetOrderRawByID(ormasDal, orID, errorMessage))
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, orID, errorMessage))
 			return false;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, oRaw.GetPurveyorID(), errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, oRaw.GetPurveyorID(), errorMessage))
 			return false;
 		CompanyAccountRelation caRel;
 		int debAccID = subAccID;
@@ -2031,7 +2094,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, orID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, orID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -2039,8 +2102,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReceiptProduct(DataLayer::OrmasDal& ormasDal, int rpID, int empID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByReceiptProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int empID, int stockEmpID, std::string& errorMessage)
 	{
+		
 		ReceiptProductList rPList;
 		std::vector<ReceiptProductListView> rPListVec;
 		double totalSum = 0.0;
@@ -2070,7 +2134,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpProd(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpProd(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -2084,22 +2148,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -2108,7 +2172,7 @@ namespace BusinessLayer
 					stock.SetSum((item.GetCount()*nCost.GetValue()));
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
-					if (!stock.CreateStock(ormasDal,errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal,errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -2121,15 +2185,15 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum +item.GetCount()*nCost.GetValue() ;
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + (item.GetCount()*nCost.GetValue()));
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -2156,19 +2220,19 @@ namespace BusinessLayer
 		}
 		CompanyAccountRelation caRel;
 		int debAccID = debSaccID;
-		int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rpID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rpID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!ChangingByReceiptProductAtSecondStock(ormasDal, rpID, credWerID, errorMessage))
+		if (!ChangingByReceiptProductAtSecondStock(globalVar, ormasDal, rpID, credWerID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -2176,8 +2240,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReceiptProductReverse(DataLayer::OrmasDal& ormasDal, int rpID, int empID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByReceiptProductReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int empID, int stockEmpID, std::string& errorMessage)
 	{
+		
 		ReceiptProductList rPList;
 		std::vector<ReceiptProductListView> rPListVec;
 		double totalSum = 0.0;
@@ -2207,7 +2272,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpProd(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpProd(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -2223,9 +2288,9 @@ namespace BusinessLayer
 				nCost.Clear();
 
 				//check stock for existens of product
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -2236,7 +2301,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the stock!";
 							errorMessage += " Product name:";
@@ -2254,9 +2319,9 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
@@ -2269,7 +2334,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - (item.GetCount()*nCost.GetValue()));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -2297,19 +2362,19 @@ namespace BusinessLayer
 		}
 		CompanyAccountRelation caRel;
 		int debAccID = debSaccID;
-		int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rpID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rpID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!ChangingByReceiptProductAtSecondStockReverse(ormasDal, rpID, credWerID, errorMessage))
+		if (!ChangingByReceiptProductAtSecondStockReverse(globalVar, ormasDal, rpID, credWerID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -2317,8 +2382,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReceiptProduct(DataLayer::OrmasDal& ormasDal, int rpID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByReceiptProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		ReceiptProductList rPList;
 		std::vector<ReceiptProductListView> rPListVec;
 		double totalSum = 0.0;
@@ -2348,7 +2414,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpProd(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpProd(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -2363,22 +2429,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -2387,7 +2453,7 @@ namespace BusinessLayer
 					stock.SetSum(item.GetCount()*nCost.GetValue());
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -2400,15 +2466,15 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue() ;
 					stock.SetCount(stock.GetCount() + (item.GetCount() - pProdCountMap.find(product.GetID())->second));
 					stock.SetSum(stock.GetSum() + ((item.GetCount()*nCost.GetValue()) - (pProdCountMap.find(product.GetID())->second * nCost.GetValue())));
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -2435,19 +2501,19 @@ namespace BusinessLayer
 		}
 		CompanyAccountRelation caRel;
 		int debAccID = debSaccID;
-		int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rpID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rpID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!ChangingByReceiptProductAtSecondStock(ormasDal, rpID, credWerID, pProdCountMap, pSum, errorMessage))
+		if (!ChangingByReceiptProductAtSecondStock(globalVar, ormasDal, rpID, credWerID, pProdCountMap, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -2455,8 +2521,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReceiptProductAtSecondStock(DataLayer::OrmasDal& ormasDal, int rpID, int credWerID, std::string& errorMessage)
+	bool Stock::ChangingByReceiptProductAtSecondStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int credWerID, std::string& errorMessage)
 	{
+		
 		ReceiptProductListView rPList;
 		std::vector<ReceiptProductListView> cPListVec;
 		double totalSum = 0.0;
@@ -2493,9 +2560,9 @@ namespace BusinessLayer
 				pStock.Clear();
 				product.Clear();
 				nCost.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -2506,7 +2573,7 @@ namespace BusinessLayer
 				{
 					if (pStock.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the production stock!";
 							errorMessage += " Product name:";
@@ -2524,9 +2591,9 @@ namespace BusinessLayer
 						oldSum = pStock.GetSum();
 						totalOldCount += pStock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -2540,7 +2607,7 @@ namespace BusinessLayer
 							pStock.SetSum(pStock.GetSum() - (item.GetCount()*nCost.GetValue()));
 						}
 
-						if (!pStock.UpdateStock(ormasDal, errorMessage))
+						if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -2570,8 +2637,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReceiptProductAtSecondStockReverse(DataLayer::OrmasDal& ormasDal, int rpID, int credWerID, std::string& errorMessage)
+	bool Stock::ChangingByReceiptProductAtSecondStockReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int credWerID, std::string& errorMessage)
 	{
+		
 		ReceiptProductListView rPList;
 		std::vector<ReceiptProductListView> cPListVec;
 		double totalSum = 0.0;
@@ -2610,22 +2678,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
 					oldCount = pStock.GetCount();
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -2634,7 +2702,7 @@ namespace BusinessLayer
 					pStock.SetSum((item.GetCount()*nCost.GetValue()));
 					pStock.SetCurrencyID(item.GetCurrencyID());
 					pStock.SetStatusID(status.GetID());
-					if (!pStock.CreateStock(ormasDal, errorMessage))
+					if (!pStock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -2647,15 +2715,15 @@ namespace BusinessLayer
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
 					pStock.SetCount(pStock.GetCount() + item.GetCount());
 					pStock.SetSum(pStock.GetSum() + (item.GetCount()*nCost.GetValue()));
-					if (!pStock.UpdateStock(ormasDal, errorMessage))
+					if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -2684,8 +2752,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReceiptProductAtSecondStock(DataLayer::OrmasDal& ormasDal, int rpID, int credWerID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByReceiptProductAtSecondStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int credWerID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		ReceiptProductListView rPList;
 		std::vector<ReceiptProductListView> cPListVec;
 		double totalSum = 0.0;
@@ -2722,9 +2791,9 @@ namespace BusinessLayer
 				pStock.Clear();
 				product.Clear();
 				nCost.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -2735,7 +2804,7 @@ namespace BusinessLayer
 				{
 					if (pStock.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the stock!";
 							errorMessage += " Product name:";
@@ -2753,9 +2822,9 @@ namespace BusinessLayer
 						oldSum = pStock.GetSum();
 						totalOldCount += pStock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -2769,7 +2838,7 @@ namespace BusinessLayer
 							pStock.SetSum(pStock.GetSum() - ((item.GetCount()*nCost.GetValue()) - (pProdCountMap.find(product.GetID())->second * nCost.GetValue())));
 						}
 
-						if (!pStock.UpdateStock(ormasDal, errorMessage))
+						if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -2799,8 +2868,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByStockTransfer(DataLayer::OrmasDal& ormasDal, int rrID, int empID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByStockTransfer(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, int stockEmpID, std::string& errorMessage)
 	{
+		StockTransfer stockTransfer;
 		StockTransferList rRList;
 		std::vector<StockTransferListView> rRListVec;
 		double totalSum = 0.0;
@@ -2830,22 +2900,25 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpRaw(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpRaw(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
+			StockTransferList stockTransferNew;
 			Stock stock;
 			Product product;
 			NetCost nCost;
 			double oldCount = 0;
 			double oldSum = 0;
+			double docNewSum = 0;
 			//ormasDal.StartTransaction(errorMessage);
 			for each (auto item in rRListVec)
 			{
 				stock.Clear();
 				product.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				stockTransferNew.Clear();
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -2856,9 +2929,9 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -2874,12 +2947,12 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
-						totalSum = totalSum + item.GetSum();
+						totalSum = totalSum + round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
 						stock.SetCount(stock.GetCount() - item.GetCount());
 						if (0 == stock.GetCount())
 						{
@@ -2889,7 +2962,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum((stock.GetSum() - item.GetCount()*nCost.GetValue()));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -2901,6 +2974,25 @@ namespace BusinessLayer
 						totalNewCount += stock.GetCount();
 					}
 				}
+				if (item.GetSum() != item.GetCount()*nCost.GetValue())
+				{
+					if (!stockTransferNew.GetStockTransferListByID(globalVar, ormasDal, item.GetID(), errorMessage))
+						return false;
+					stockTransferNew.SetSum(item.GetCount()*nCost.GetValue());
+					if (!stockTransferNew.UpdateStockTransferList(globalVar, ormasDal, errorMessage))
+						return false;
+					docNewSum += item.GetCount()*nCost.GetValue();
+				}
+				else
+				{
+					docNewSum += item.GetSum();
+				}
+			}
+			if (stockTransfer.GetStockTransferByID(globalVar, ormasDal, rrID, errorMessage))
+			{
+				stockTransfer.SetSum(std::round(docNewSum * 1000) / 1000);
+				if (!stockTransfer.SimpleUpdateStockTransfer(globalVar, ormasDal, errorMessage))
+					return false;
 			}
 		}
 		else
@@ -2923,12 +3015,12 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!this->CreateEntry(ormasDal, rrID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rrID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!ChangingByStockTransferAtSecondStock(ormasDal, rrID, debWerID, errorMessage))
+		if (!ChangingByStockTransferAtSecondStock(globalVar, ormasDal, rrID, debWerID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -2936,8 +3028,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByStockTransferReverse(DataLayer::OrmasDal& ormasDal, int rrID, int empID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByStockTransferReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, int stockEmpID, std::string& errorMessage)
 	{
+		
 		StockTransferList rRList;
 		std::vector<StockTransferListView> rRListVec;
 		double totalSum = 0.0;
@@ -2967,7 +3060,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpRaw(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpRaw(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -2982,22 +3075,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -3006,7 +3099,7 @@ namespace BusinessLayer
 					stock.SetSum((item.GetCount()*nCost.GetValue()));
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3019,15 +3112,15 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + (item.GetCount()*nCost.GetValue()));
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3060,12 +3153,12 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!this->CreateEntry(ormasDal, rrID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rrID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!ChangingByStockTransferAtSecondStockReverse(ormasDal, rrID, debWerID, errorMessage))
+		if (!ChangingByStockTransferAtSecondStockReverse(globalVar, ormasDal, rrID, debWerID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -3073,8 +3166,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByStockTransfer(DataLayer::OrmasDal& ormasDal, int rrID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByStockTransfer(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		StockTransfer stockTransfer;
 		StockTransferList rRList;
 		std::vector<StockTransferListView> rRListVec;
 		double totalSum = 0.0;
@@ -3104,23 +3198,25 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (rRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromRcpRaw(ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromRcpRaw(globalVar, ormasDal, empID, stockEmpID, debWerID, credWerID, debSaccID, credSaccID, errorMessage))
 				return false;
+			StockTransferList stockTransferNew;
 			Stock stock;
 			Product product;
-			Status status;
 			NetCost nCost;
 			double oldCount = 0;
 			double oldSum = 0;
+			double docNewSum = 0;
 			//ormasDal.StartTransaction(errorMessage);
 			for each (auto item in rRListVec)
 			{
 				stock.Clear();
 				product.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), credWerID, errorMessage))
+				stockTransferNew.Clear();
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), credWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -3132,7 +3228,7 @@ namespace BusinessLayer
 					if (stock.GetCount() < item.GetCount())
 					{
 
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -3148,12 +3244,12 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
-						totalSum = totalSum + item.GetSum();
+						totalSum = totalSum + round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
 						stock.SetCount(stock.GetCount() - (item.GetCount() - pProdCountMap.find(product.GetID())->second));
 						if (0 == stock.GetCount())
 						{
@@ -3163,7 +3259,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - (item.GetCount()*nCost.GetValue() - (pProdCountMap.find(product.GetID())->second * nCost.GetValue())));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
@@ -3174,6 +3270,25 @@ namespace BusinessLayer
 						totalNewCount += stock.GetCount();
 					}
 				}
+				if (item.GetSum() != item.GetCount()*nCost.GetValue())
+				{
+					if (!stockTransferNew.GetStockTransferListByID(globalVar, ormasDal, item.GetID(), errorMessage))
+						return false;
+					stockTransferNew.SetSum(item.GetCount()*nCost.GetValue());
+					if (!stockTransferNew.UpdateStockTransferList(globalVar, ormasDal, errorMessage))
+						return false;
+					docNewSum += item.GetCount()*nCost.GetValue();
+				}
+				else
+				{
+					docNewSum += item.GetSum();
+				}
+			}
+			if (stockTransfer.GetStockTransferByID(globalVar, ormasDal, rrID, errorMessage))
+			{
+				stockTransfer.SetSum(std::round(docNewSum * 1000) / 1000);
+				if (!stockTransfer.SimpleUpdateStockTransfer(globalVar, ormasDal, errorMessage))
+					return false;
 			}
 		}
 		else
@@ -3197,12 +3312,12 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rrID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rrID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
-		if (!ChangingByStockTransferAtSecondStock(ormasDal, rrID, debWerID, pProdCountMap, pSum, errorMessage))
+		if (!ChangingByStockTransferAtSecondStock(globalVar, ormasDal, rrID, debWerID, pProdCountMap, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -3210,8 +3325,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByStockTransferAtSecondStock(DataLayer::OrmasDal& ormasDal, int rrID, int debWerID, std::string& errorMessage)
+	bool Stock::ChangingByStockTransferAtSecondStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int debWerID, std::string& errorMessage)
 	{
+		
 		StockTransferList cRList;
 		std::vector<StockTransferListView> rRListVec;
 		double totalSum = 0.0;
@@ -3250,22 +3366,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID, errorMessage))
 				{
 					oldCount = pStock.GetCount();
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
@@ -3274,7 +3390,7 @@ namespace BusinessLayer
 					pStock.SetSum(item.GetSum());
 					pStock.SetCurrencyID(item.GetCurrencyID());
 					pStock.SetStatusID(status.GetID());
-					if (!pStock.CreateStock(ormasDal, errorMessage))
+					if (!pStock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3287,15 +3403,15 @@ namespace BusinessLayer
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					pStock.SetCount(pStock.GetCount() + item.GetCount());
 					pStock.SetSum(pStock.GetSum() + item.GetCount()*nCost.GetValue());
-					if (!pStock.UpdateStock(ormasDal, errorMessage))
+					if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3323,8 +3439,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByStockTransferAtSecondStockReverse(DataLayer::OrmasDal& ormasDal, int rrID, int debWerID, std::string& errorMessage)
+	bool Stock::ChangingByStockTransferAtSecondStockReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int debWerID, std::string& errorMessage)
 	{
+		
 		StockTransferList cRList;
 		std::vector<StockTransferListView> rRListVec;
 		double totalSum = 0.0;
@@ -3365,9 +3482,9 @@ namespace BusinessLayer
 				nCost.Clear();
 
 				//check stock for existens of product
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -3378,7 +3495,7 @@ namespace BusinessLayer
 				{
 					if (pStock.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the stock!";
 							errorMessage += " Product name:";
@@ -3396,9 +3513,9 @@ namespace BusinessLayer
 						oldSum = pStock.GetSum();
 						totalOldCount += pStock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum = totalSum + round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
@@ -3411,7 +3528,7 @@ namespace BusinessLayer
 						{
 							pStock.SetSum(pStock.GetSum() - (item.GetCount()*nCost.GetValue()));
 						}
-						if (!pStock.UpdateStock(ormasDal, errorMessage))
+						if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -3440,8 +3557,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByStockTransferAtSecondStock(DataLayer::OrmasDal& ormasDal, int rrID, int debWerID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByStockTransferAtSecondStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int debWerID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		StockTransferList cRList;
 		std::vector<StockTransferListView> rRListVec;
 		double totalSum = 0.0;
@@ -3480,22 +3598,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), debWerID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), debWerID, errorMessage))
 				{
 					oldCount = pStock.GetCount();
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
@@ -3504,7 +3622,7 @@ namespace BusinessLayer
 					pStock.SetSum(item.GetSum());
 					pStock.SetCurrencyID(item.GetCurrencyID());
 					pStock.SetStatusID(status.GetID());
-					if (!pStock.CreateStock(ormasDal, errorMessage))
+					if (!pStock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3517,15 +3635,15 @@ namespace BusinessLayer
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					pStock.SetCount(pStock.GetCount() + (item.GetCount() - pProdCountMap.find(product.GetID())->second));
 					pStock.SetSum(pStock.GetSum() + (item.GetCount()*nCost.GetValue() - (pProdCountMap.find(product.GetID())->second * nCost.GetValue())));
-					if (!pStock.UpdateStock(ormasDal, errorMessage))
+					if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3553,8 +3671,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReturnProduct(DataLayer::OrmasDal& ormasDal, int rpID, int cID, int wareID, std::string& errorMessage)
+	bool Stock::ChangingByReturnProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int cID, int wareID, std::string& errorMessage)
 	{
+		
 		ReturnList rList;
 		std::vector<ReturnListView> rListVec;
 		double totalSum = 0.0;
@@ -3594,22 +3713,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), wareID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), wareID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot return this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum += (item.GetSum() - item.GetCount()*nCost.GetValue());
@@ -3619,7 +3738,7 @@ namespace BusinessLayer
 					stock.SetSum(item.GetCount()*nCost.GetValue());
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3632,16 +3751,16 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum += (item.GetSum() - item.GetCount()*nCost.GetValue());
 					netSum += item.GetCount()*nCost.GetValue();
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + item.GetCount()*nCost.GetValue());
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3668,34 +3787,34 @@ namespace BusinessLayer
 		}
 		CompanyAccountRelation caRel;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, cID, errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, cID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		Warehouse warehouse;
-		if (!warehouse.GetWarehouseByID(ormasDal, wareID, errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, wareID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		int debAccID10740 = warehouse.GetSubaccountID();
 		int credAccID = balance.GetSubaccountID();
-		int debAccID44090 = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "44090", errorMessage);
+		int debAccID44090 = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44090", errorMessage);
 		if (0 == debAccID10740 || 0 == credAccID || 0 == debAccID44090)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rpID, debAccID10740, netSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rpID, debAccID10740, netSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		if (totalSum > 0)
 		{
-			if (!this->CreateEntry(ormasDal, rpID, debAccID44090, totalSum, credAccID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, rpID, debAccID44090, totalSum, credAccID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -3703,7 +3822,7 @@ namespace BusinessLayer
 		}
 		if (totalSum < 0)
 		{
-			if (!this->CreateEntry(ormasDal, rpID, credAccID, totalSum*(-1), debAccID44090, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, rpID, credAccID, totalSum*(-1), debAccID44090, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -3712,8 +3831,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReturnProductReverse(DataLayer::OrmasDal& ormasDal, int rpID, int cID, int wareID, std::string& errorMessage)
+	bool Stock::ChangingByReturnProductReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int cID, int wareID, std::string& errorMessage)
 	{
+		
 		ReturnList rList;
 		std::vector<ReturnListView> rListVec;
 		double totalSum = 0.0;
@@ -3754,9 +3874,9 @@ namespace BusinessLayer
 				status.Clear();
 				nCost.Clear();
 				//check stock for existens of product
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), wareID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), wareID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -3767,7 +3887,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						{
 							errorMessage = "ERROR! There is not enough product in the stock!";
 							errorMessage += " Product name:";
@@ -3785,9 +3905,9 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
-						if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+						if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						netSum += round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
@@ -3801,7 +3921,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - round(item.GetCount()*nCost.GetValue()*nCost.GetValue() * 1000) / 1000);
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -3829,34 +3949,34 @@ namespace BusinessLayer
 		}
 		CompanyAccountRelation caRel;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, cID, errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, cID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		Warehouse warehouse;
-		if (!warehouse.GetWarehouseByID(ormasDal, wareID, errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, wareID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		int debAccID10740 = warehouse.GetSubaccountID();
 		int credAccID = balance.GetSubaccountID();
-		int debAccID44090 = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "44090", errorMessage);
+		int debAccID44090 = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44090", errorMessage);
 		if (0 == debAccID10740 || 0 == credAccID || 0 == debAccID44090)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rpID, credAccID, netSum, debAccID10740, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rpID, credAccID, netSum, debAccID10740, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		if (totalSum - netSum > 0)
 		{
-			if (!this->CreateEntry(ormasDal, rpID, credAccID, totalSum - netSum, debAccID44090, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, rpID, credAccID, totalSum - netSum, debAccID44090, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -3864,7 +3984,7 @@ namespace BusinessLayer
 		}
 		if (totalSum - netSum < 0)
 		{
-			if (!this->CreateEntry(ormasDal, rpID, debAccID44090, (totalSum - netSum)*(-1), credAccID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, rpID, debAccID44090, (totalSum - netSum)*(-1), credAccID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -3873,8 +3993,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByReturnProduct(DataLayer::OrmasDal& ormasDal, int rpID, int cID, int wareID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByReturnProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int cID, int wareID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		ReturnList rList;
 		std::vector<ReturnListView> rListVec;
 		double totalSum = 0.0;
@@ -3914,22 +4035,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), wareID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), wareID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum += (item.GetSum() - item.GetCount()*nCost.GetValue());
@@ -3939,7 +4060,7 @@ namespace BusinessLayer
 					stock.SetSum(item.GetCount()*nCost.GetValue());
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3952,16 +4073,16 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, item.GetProductID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum += (item.GetSum() - item.GetCount()*nCost.GetValue());
 					netSum += item.GetCount()*nCost.GetValue();
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + item.GetCount()*nCost.GetValue());
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -3988,34 +4109,34 @@ namespace BusinessLayer
 		}
 		CompanyAccountRelation caRel;
 		Balance balance;
-		if (!balance.GetBalanceByUserID(ormasDal, cID, errorMessage))
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, cID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		Warehouse warehouse;
-		if (!warehouse.GetWarehouseByID(ormasDal, wareID, errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, wareID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		int debAccID10740 = warehouse.GetSubaccountID();
 		int credAccID = balance.GetSubaccountID();
-		int debAccID44090 = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "44090", errorMessage);
+		int debAccID44090 = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44090", errorMessage);
 		if (0 == debAccID10740 || 0 == credAccID || 0 == debAccID44090)
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, rpID, debAccID10740, netSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, rpID, debAccID10740, netSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		if (totalSum > 0)
 		{
-			if (!this->CreateEntry(ormasDal, rpID, debAccID44090, totalSum, credAccID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, rpID, debAccID44090, totalSum, credAccID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -4023,7 +4144,7 @@ namespace BusinessLayer
 		}
 		if (totalSum < 0)
 		{
-			if (!this->CreateEntry(ormasDal, rpID, credAccID, totalSum*(-1), debAccID44090, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, rpID, credAccID, totalSum*(-1), debAccID44090, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -4032,8 +4153,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByWriteOff(DataLayer::OrmasDal& ormasDal, int wpID, int empID, std::string& errorMessage)
+	bool Stock::ChangingByWriteOff(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wpID, int empID, std::string& errorMessage)
 	{
+		
 		WriteOffList cPList;
 		std::vector<WriteOffListView> cPListVec;
 		double totalSum = 0.0;
@@ -4061,7 +4183,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromWOffProd(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromWOffProd(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -4072,9 +4194,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -4085,7 +4207,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -4101,7 +4223,7 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum= totalSum+ item.GetSum();
@@ -4114,7 +4236,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - item.GetSum());
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -4141,7 +4263,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "44090", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44090", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -4149,7 +4271,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, wpID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, wpID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -4157,8 +4279,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByWriteOffReverse(DataLayer::OrmasDal& ormasDal, int wpID, int empID, std::string& errorMessage)
+	bool Stock::ChangingByWriteOffReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wpID, int empID, std::string& errorMessage)
 	{
+		
 		WriteOffList cPList;
 		std::vector<WriteOffListView> cPListVec;
 		double totalSum = 0.0;
@@ -4186,7 +4309,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromWOffProd(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromWOffProd(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -4199,20 +4322,20 @@ namespace BusinessLayer
 				stock.Clear();
 				product.Clear();
 				status.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot receipt this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
@@ -4221,7 +4344,7 @@ namespace BusinessLayer
 					stock.SetSum(item.GetSum());
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -4234,13 +4357,13 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + item.GetSum());
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -4266,7 +4389,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "44090", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44090", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -4274,7 +4397,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, wpID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, wpID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -4282,8 +4405,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByWriteOff(DataLayer::OrmasDal& ormasDal, int wpID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByWriteOff(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wpID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		WriteOffList cPList;
 		std::vector<WriteOffListView> cPListVec;
 		double totalSum = 0.0;
@@ -4311,7 +4435,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cPListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromWOffProd(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromWOffProd(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -4322,9 +4446,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName(); 
@@ -4335,7 +4459,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -4351,7 +4475,7 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum= totalSum+ item.GetSum();
@@ -4364,7 +4488,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - (item.GetSum() - (pProdCountMap.find(product.GetID())->second * product.GetPrice())));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -4391,7 +4515,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "44090", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "44090", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -4399,7 +4523,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, wpID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, wpID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -4407,8 +4531,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByWriteOffRaw(DataLayer::OrmasDal& ormasDal, int wrID, int empID, std::string& errorMessage)
+	bool Stock::ChangingByWriteOffRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wrID, int empID, std::string& errorMessage)
 	{
+		
 		WriteOffRawList wRList;
 		std::vector<WriteOffRawListView> wRListVec;
 		double totalSum = 0.0;
@@ -4436,7 +4561,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (wRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromWOffRaw(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromWOffRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -4447,9 +4572,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -4460,7 +4585,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -4476,7 +4601,7 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum= totalSum+ item.GetSum();
@@ -4489,7 +4614,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - item.GetSum());
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -4516,7 +4641,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -4524,7 +4649,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, wrID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, wrID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -4532,8 +4657,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByWriteOffRawReverse(DataLayer::OrmasDal& ormasDal, int wrID, int empID, std::string& errorMessage)
+	bool Stock::ChangingByWriteOffRawReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wrID, int empID, std::string& errorMessage)
 	{
+		
 		WriteOffRawList wRList;
 		std::vector<WriteOffRawListView> wRListVec;
 		double totalSum = 0.0;
@@ -4562,7 +4688,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (wRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromWOffRaw(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromWOffRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -4575,20 +4701,20 @@ namespace BusinessLayer
 				stock.Clear();
 				product.Clear();
 				status.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot order this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + std::round((product.GetPrice() * item.GetCount()) * 1000) / 1000;
@@ -4599,7 +4725,7 @@ namespace BusinessLayer
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
 					stock.SetWarehouseID(warehouseID);
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -4612,14 +4738,14 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + std::round((product.GetPrice() * item.GetCount()) * 1000) / 1000;
 					newSum = newSum + (item.GetSum());
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + (std::round((product.GetPrice() * item.GetCount()) * 1000) / 1000));
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -4645,8 +4771,8 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
-		int acc55020ID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+		int acc55020ID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -4654,7 +4780,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, wrID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, wrID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -4662,7 +4788,7 @@ namespace BusinessLayer
 		double checkSum = totalSum - newSum;
 		if (checkSum > 0)
 		{
-			if (!this->CreateEntry(ormasDal, wrID, acc55020ID, checkSum, credAccID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, wrID, acc55020ID, checkSum, credAccID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -4670,7 +4796,7 @@ namespace BusinessLayer
 		}
 		else if (checkSum < 0)
 		{
-			if (!this->CreateEntry(ormasDal, wrID, credAccID, checkSum *(-1), acc55020ID, errorMessage))
+			if (!this->CreateEntry(globalVar, ormasDal, wrID, credAccID, checkSum *(-1), acc55020ID, errorMessage))
 			{
 				//ormasDal.CancelTransaction(errorMessage);
 				return false;
@@ -4679,8 +4805,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByWriteOffRaw(DataLayer::OrmasDal& ormasDal, int wrID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByWriteOffRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wrID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		WriteOffRawList wRList;
 		std::vector<WriteOffRawListView> wRListVec;
 		double totalSum = 0.0;
@@ -4708,7 +4835,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (wRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromWOffRaw(ormasDal, empID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromWOffRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -4719,9 +4846,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -4732,7 +4859,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -4748,7 +4875,7 @@ namespace BusinessLayer
 						oldSum = stock.GetSum();
 						totalOldCount += stock.GetCount();
 						totalChangingCount += item.GetCount();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						companyID = product.GetCompanyID();
 						totalSum= totalSum+ item.GetSum();
@@ -4761,7 +4888,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - (item.GetSum() - (pProdCountMap.find(product.GetID())->second * product.GetPrice())));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -4788,7 +4915,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -4796,7 +4923,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, wrID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, wrID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -4804,11 +4931,12 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByProdConsumeRaw(DataLayer::OrmasDal& ormasDal, int pcrID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByProdConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pcrID, int stockEmpID, std::string& errorMessage)
 	{
+		
 		ProductionConsumeRawList cRList;
 		ProductionConsumeRaw cRaw;
-		if (!cRaw.GetProductionConsumeRawByID(ormasDal, pcrID, errorMessage))
+		if (!cRaw.GetProductionConsumeRawByID(globalVar, ormasDal, pcrID, errorMessage))
 			return false;
 		std::vector<ProductionConsumeRawListView> cRListVec;
 		double totalSum = 0.0;
@@ -4839,7 +4967,7 @@ namespace BusinessLayer
 		double totalChangingSum = 0;
 		if (cRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromProdnConRaw(ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromProdnConRaw(globalVar, ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -4850,9 +4978,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -4863,7 +4991,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -4877,13 +5005,13 @@ namespace BusinessLayer
 					{
 						oldCount = stock.GetCount();
 						oldSum = stock.GetSum();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						if (item.GetCount()*(stock.GetSum() / stock.GetCount()) != item.GetSum())
 						{
 							item.SetSum(item.GetCount()*(stock.GetSum() / stock.GetCount()));
 							item.stockEmployeeID = cRaw.GetStockEmployeeID();
-							if (!item.UpdateProductionConsumeRawList(ormasDal, errorMessage))
+							if (!item.UpdateProductionConsumeRawList(globalVar, ormasDal, errorMessage))
 								return false;
 						}
 						totalOldCount += stock.GetCount();
@@ -4901,7 +5029,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum((stock.GetSum() - item.GetSum()));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							//ormasDal.CancelTransaction(errorMessage);
 							return false;
@@ -4932,19 +5060,19 @@ namespace BusinessLayer
 			return false;
 		}
 		ProductionConsumeRaw cpRaw;
-		if (!cpRaw.GetProductionConsumeRawByID(ormasDal, pcrID, errorMessage))
+		if (!cpRaw.GetProductionConsumeRawByID(globalVar, ormasDal, pcrID, errorMessage))
 		{
 			errorMessage = "Document is wrong! Sum and count does not the same in list and document.";
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		cpRaw.SetSum(totalSum);
-		if (!cpRaw.SimpleUpdateProductionConsumeRaw(ormasDal, errorMessage))
+		if (!cpRaw.SimpleUpdateProductionConsumeRaw(globalVar, ormasDal, errorMessage))
 		{
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -4952,7 +5080,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, pcrID, debAccID, totalSum, credAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, pcrID, debAccID, totalSum, credAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -4960,8 +5088,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByProdConsumeRawReverse(DataLayer::OrmasDal& ormasDal, int pcrID, int stockEmpID, std::string& errorMessage)
+	bool Stock::ChangingByProdConsumeRawReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pcrID, int stockEmpID, std::string& errorMessage)
 	{
+		
 		ProductionConsumeRawList cRList;
 		std::vector<ProductionConsumeRawListView> cRListVec;
 		double totalSum = 0.0;
@@ -4989,7 +5118,7 @@ namespace BusinessLayer
 		double totalChangingCount = 0;
 		if (cRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromProdnConRaw(ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromProdnConRaw(globalVar, ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -5002,20 +5131,20 @@ namespace BusinessLayer
 				stock.Clear();
 				product.Clear();
 				status.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
 					oldCount = stock.GetCount();
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Cannot order this product, status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + (item.GetSum());
@@ -5025,7 +5154,7 @@ namespace BusinessLayer
 					stock.SetCurrencyID(item.GetCurrencyID());
 					stock.SetStatusID(status.GetID());
 					stock.SetWarehouseID(warehouseID);
-					if (!stock.CreateStock(ormasDal, errorMessage))
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -5038,13 +5167,13 @@ namespace BusinessLayer
 					oldSum = stock.GetSum();
 					totalOldCount += stock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetSum();
 					stock.SetCount(stock.GetCount() + item.GetCount());
 					stock.SetSum(stock.GetSum() + item.GetSum());
-					if (!stock.UpdateStock(ormasDal, errorMessage))
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -5073,7 +5202,7 @@ namespace BusinessLayer
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -5081,7 +5210,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, pcrID, credAccID, totalSum, debAccID, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, pcrID, credAccID, totalSum, debAccID, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -5089,11 +5218,12 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByProdConsumeRaw(DataLayer::OrmasDal& ormasDal, int pcrID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	bool Stock::ChangingByProdConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pcrID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
 	{
+		
 		ProductionConsumeRawList cRList;
 		ProductionConsumeRaw cRaw;
-		if (!cRaw.GetProductionConsumeRawByID(ormasDal, pcrID, errorMessage))
+		if (!cRaw.GetProductionConsumeRawByID(globalVar, ormasDal, pcrID, errorMessage))
 			return false;
 		std::vector<ProductionConsumeRawListView> cRListVec;
 		double totalSum = 0.0;
@@ -5124,7 +5254,7 @@ namespace BusinessLayer
 		double totalChangingSum = 0;
 		if (cRListVec.size() > 0)
 		{
-			if (!GetSubIDAndWerhIDFromProdnConRaw(ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
+			if (!GetSubIDAndWerhIDFromProdnConRaw(globalVar, ormasDal, stockEmpID, warehouseID, subAccID, errorMessage))
 				return false;
 			Stock stock;
 			Product product;
@@ -5135,9 +5265,9 @@ namespace BusinessLayer
 			{
 				stock.Clear();
 				product.Clear();
-				if (!stock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
 				{
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
 					errorMessage = "ERROR! This product is out of stock:";
 					errorMessage += product.GetName();
@@ -5148,7 +5278,7 @@ namespace BusinessLayer
 				{
 					if (stock.GetCount() < item.GetCount())
 					{
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						errorMessage = "ERROR! There is not enough product in the stock!";
 						errorMessage += " Product name:";
@@ -5162,13 +5292,13 @@ namespace BusinessLayer
 					{
 						oldCount = stock.GetCount();
 						oldSum = stock.GetSum();
-						if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 							return false;
 						if (item.GetCount()*(stock.GetSum() / stock.GetCount()) != item.GetSum())
 						{
 							item.SetSum(item.GetCount()*(stock.GetSum() / stock.GetCount()));
 							item.stockEmployeeID = cRaw.GetStockEmployeeID();
-							if (!item.UpdateProductionConsumeRawList(ormasDal, errorMessage))
+							if (!item.UpdateProductionConsumeRawList(globalVar, ormasDal, errorMessage))
 								return false;
 						}
 						totalOldCount += stock.GetCount();
@@ -5186,7 +5316,7 @@ namespace BusinessLayer
 						{
 							stock.SetSum(stock.GetSum() - (item.GetSum() - (pProdCountMap.find(product.GetID())->second * product.GetPrice())));
 						}
-						if (!stock.UpdateStock(ormasDal, errorMessage))
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
 							return false;
 						}
@@ -5216,19 +5346,19 @@ namespace BusinessLayer
 			return false;
 		}
 		ProductionConsumeRaw cpRaw;
-		if (!cpRaw.GetProductionConsumeRawByID(ormasDal, pcrID, errorMessage))
+		if (!cpRaw.GetProductionConsumeRawByID(globalVar, ormasDal, pcrID, errorMessage))
 		{
 			errorMessage = "Document is wrong! Sum and count does not the same in list and document.";
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
 		cpRaw.SetSum(totalSum);
-		if (!cpRaw.SimpleUpdateProductionConsumeRaw(ormasDal, errorMessage))
+		if (!cpRaw.SimpleUpdateProductionConsumeRaw(globalVar, ormasDal, errorMessage))
 		{
 			return false;
 		}
 		CompanyAccountRelation caRel;
-		int debAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		int credAccID = subAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
@@ -5236,7 +5366,7 @@ namespace BusinessLayer
 			return false;
 		}
 
-		if (!this->CreateEntry(ormasDal, pcrID, debAccID, totalSum, credAccID, pSum, errorMessage))
+		if (!this->CreateEntry(globalVar, ormasDal, pcrID, debAccID, totalSum, credAccID, pSum, errorMessage))
 		{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
@@ -5244,8 +5374,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByProduction(DataLayer::OrmasDal& ormasDal, int pID, int warID, std::string& errorMessage)
+	bool Stock::ChangingByProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int warID, std::string& errorMessage)
 	{
+		
 		ProductionList rPList;
 		std::vector<ProductionListView> pListVec;
 		double totalSum = 0.0;
@@ -5284,22 +5415,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warID, errorMessage))
 				{
 					oldCount = pStock.GetCount();
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + round(item.GetCount()*nCost.GetValue() * 1000) / 1000;
@@ -5308,7 +5439,7 @@ namespace BusinessLayer
 					pStock.SetSum(round((item.GetCount()*nCost.GetValue()) * 1000) / 1000);
 					pStock.SetCurrencyID(item.GetCurrencyID());
 					pStock.SetStatusID(status.GetID());
-					if (!pStock.CreateStock(ormasDal, errorMessage))
+					if (!pStock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -5321,15 +5452,15 @@ namespace BusinessLayer
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
 					pStock.SetCount(pStock.GetCount() + item.GetCount());
 					pStock.SetSum(pStock.GetSum() + (item.GetCount()*nCost.GetValue()));
-					if (!pStock.UpdateStock(ormasDal, errorMessage))
+					if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -5357,8 +5488,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::ChangingByProduction(DataLayer::OrmasDal& ormasDal, int pID, int warID, std::map<int, double> pProdCountMap, std::string& errorMessage)
+	bool Stock::ChangingByProduction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int warID, std::map<int, double> pProdCountMap, std::string& errorMessage)
 	{
+		
 		ProductionList rPList;
 		std::vector<ProductionListView> pListVec;
 		double totalSum = 0.0;
@@ -5397,22 +5529,22 @@ namespace BusinessLayer
 				product.Clear();
 				status.Clear();
 				nCost.Clear();
-				if (!pStock.GetStockByProductAndWarehouseID(ormasDal, item.GetProductID(), warID, errorMessage))
+				if (!pStock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warID, errorMessage))
 				{
 					oldCount = pStock.GetCount();
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
 					errorMessage.clear();
-					if (!status.GetStatusByName(ormasDal, "IN STOCK", errorMessage))
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
 					{
 						errorMessage = "ERROR! Status is not valied!";
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
 					}
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
@@ -5421,7 +5553,7 @@ namespace BusinessLayer
 					pStock.SetSum((item.GetCount()*nCost.GetValue()));
 					pStock.SetCurrencyID(item.GetCurrencyID());
 					pStock.SetStatusID(status.GetID());
-					if (!pStock.CreateStock(ormasDal, errorMessage))
+					if (!pStock.CreateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -5434,15 +5566,15 @@ namespace BusinessLayer
 					oldSum = pStock.GetSum();
 					totalOldCount += pStock.GetCount();
 					totalChangingCount += item.GetCount();
-					if (!product.GetProductByID(ormasDal, item.GetProductID(), errorMessage))
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
 						return false;
-					if (!nCost.GetNetCostByProductID(ormasDal, product.GetID(), errorMessage))
+					if (!nCost.GetNetCostByProductID(globalVar, ormasDal, product.GetID(), errorMessage))
 						return false;
 					companyID = product.GetCompanyID();
 					totalSum = totalSum + item.GetCount()*nCost.GetValue();
 					pStock.SetCount(pStock.GetCount() + (item.GetCount() - pProdCountMap.find(product.GetID())->second));
 					pStock.SetSum(pStock.GetSum() + ((item.GetCount()*nCost.GetValue()) - (pProdCountMap.find(product.GetID())->second * nCost.GetValue())));
-					if (!pStock.UpdateStock(ormasDal, errorMessage))
+					if (!pStock.UpdateStock(globalVar, ormasDal, errorMessage))
 					{
 						//ormasDal.CancelTransaction(errorMessage);
 						return false;
@@ -5470,8 +5602,9 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::RecalculateStock(DataLayer::OrmasDal& ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage)
+	bool Stock::RecalculateStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double oldPrice, double newPrice, std::string& errorMessage)
 	{
+		
 		Stock checkStock;
 		Stock stock;
 		std::vector<DataLayer::stockViewCollection> stockVector;
@@ -5483,7 +5616,7 @@ namespace BusinessLayer
 		checkStock.Clear();
 		int companyID = 0;
 		double difference = 0;
-		if (!wType.GetWarehouseTypeByCode(ormasDal, "RAW", errorMessage))
+		if (!wType.GetWarehouseTypeByCode(globalVar, ormasDal, "RAW", errorMessage))
 		{
 			return false;
 		}
@@ -5502,17 +5635,17 @@ namespace BusinessLayer
 				warehouse.Clear();
 				product.Clear();
 				pType.Clear();
-				if (!stock.GetStockByID(ormasDal, std::get<0>(stockObject), errorMessage))
+				if (!stock.GetStockByID(globalVar, ormasDal, std::get<0>(stockObject), errorMessage))
 					return false;
 				if (stock.GetCount() > 0)
 				{
-					if (!warehouse.GetWarehouseByID(ormasDal, stock.GetWarehouseID(), errorMessage))
+					if (!warehouse.GetWarehouseByID(globalVar, ormasDal, stock.GetWarehouseID(), errorMessage))
 						return false;
 					if (warehouse.GetWarehouseTypeID() == wType.GetID())
 					{
-						if (!product.GetProductByID(ormasDal, pID, errorMessage))
+						if (!product.GetProductByID(globalVar, ormasDal, pID, errorMessage))
 							return false;
-						if (!pType.GetProductTypeByCode(ormasDal, "PRODUCT", errorMessage))
+						if (!pType.GetProductTypeByCode(globalVar, ormasDal, "PRODUCT", errorMessage))
 							return false;
 						if (product.GetProductTypeID() == pType.GetID())
 							continue;
@@ -5520,19 +5653,19 @@ namespace BusinessLayer
 						companyID = product.GetCompanyID();
 						difference = std::round((stock.GetCount()*newPrice - stock.GetCount()*oldPrice) * 1000) / 1000;
 						stock.SetSum(stock.GetSum() + difference);
-						stock.UpdateStock(ormasDal, errorMessage);
+						stock.UpdateStock(globalVar, ormasDal, errorMessage);
 
 
 						if (difference > 0 && difference != 0)
 						{
 							CompanyAccountRelation caRel;
 							int debAccID = warehouse.GetSubaccountID();
-							int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+							int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 							if (0 == debAccID || 0 == credAccID)
 							{
 								return false;
 							}
-							if (!this->CreateEntry(ormasDal, product.GetID(), debAccID, difference, credAccID, errorMessage))
+							if (!this->CreateEntry(globalVar, ormasDal, product.GetID(), debAccID, difference, credAccID, errorMessage))
 							{
 								return false;
 							}
@@ -5541,12 +5674,12 @@ namespace BusinessLayer
 						{
 							CompanyAccountRelation caRel;
 							int debAccID = warehouse.GetSubaccountID();
-							int credAccID = caRel.GetAccountIDByCompanyID(ormasDal, companyID, "55020", errorMessage);
+							int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
 							if (0 == debAccID || 0 == credAccID)
 							{
 								return false;
 							}
-							if (!this->CreateEntry(ormasDal, product.GetID(), credAccID, difference * (-1), debAccID, errorMessage))
+							if (!this->CreateEntry(globalVar, ormasDal, product.GetID(), credAccID, difference * (-1), debAccID, errorMessage))
 							{
 								return false;
 							}
@@ -5558,7 +5691,7 @@ namespace BusinessLayer
 		return true;		
 	}
 	
-	bool Stock::CreateEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
+	bool Stock::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -5570,11 +5703,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Складская операция. ID операции = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -5585,7 +5718,7 @@ namespace BusinessLayer
 		}
 		return true;
 	}
-	bool Stock::CreateEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
+	bool Stock::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -5597,11 +5730,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Складская операция. ID операции = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -5618,11 +5751,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Складская операция. ID операции = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -5634,7 +5767,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Stock::CreateCorrectongEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
+	bool Stock::CreateCorrectongEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -5646,11 +5779,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Коррекция счета 10740 готовая продукция, после переоценки себестоимости продукта, ID продукта = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -5662,7 +5795,7 @@ namespace BusinessLayer
 		return true;
 	}
 	
-	bool Stock::CreateCorrectongEntry(DataLayer::OrmasDal& ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
+	bool Stock::CreateCorrectongEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int operationID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -5674,11 +5807,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Коррекция счета 10740 готовая продукция, после переоценки себестоимости продукта, ID продукта = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -5695,11 +5828,11 @@ namespace BusinessLayer
 		entryText += wstring_to_utf8(L"Коррекция счета 10740 готовая продукция, после переоценки себестоимости продукта, ID продукта = ");
 		entryText += std::to_string(operationID);
 		entry.SetDescription(entryText);
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(operationID);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -5717,145 +5850,164 @@ namespace BusinessLayer
 		return myconv.to_bytes(str);
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromConProd(DataLayer::OrmasDal& ormasDal, int stockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromConProd(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int stockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, stockEmpID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, stockEmpID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		warehouseID = warehouse.GetID();
 		subAccID = warehouse.GetSubaccountID();
 		return true;
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromConRaw(DataLayer::OrmasDal& ormasDal, int empID, int stockEmpID,  int& debWerID, int& credWerID, int& debSaccID, int& credSaccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromConRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int stockEmpID,  int& debWerID, int& credWerID, int& debSaccID, int& credSaccID, std::string& errorMessage)
 	{
 		
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, empID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, empID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		debSaccID = warehouse.GetSubaccountID();
 		debWerID = warehouse.GetID();
 		weRel.Clear();
 		warehouse.Clear();
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, stockEmpID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, stockEmpID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		credSaccID = warehouse.GetSubaccountID();
 		credWerID = warehouse.GetID();
 		return true;
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromOrderRaw(DataLayer::OrmasDal& ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, empID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, empID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		warehouseID = warehouse.GetID();
 		subAccID = warehouse.GetSubaccountID();
 		return true;
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromRcpRaw(DataLayer::OrmasDal& ormasDal, int empID, int stockEmpID, int& debWerID, int& credWerID, int& debSaccID, int& credSaccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromRcpRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int stockEmpID, int& debWerID, int& credWerID, int& debSaccID, int& credSaccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, empID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, empID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		credSaccID = warehouse.GetSubaccountID();
 		credWerID = warehouse.GetID();
 		weRel.Clear();
 		warehouse.Clear();
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, stockEmpID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, stockEmpID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		debSaccID = warehouse.GetSubaccountID();
 		debWerID = warehouse.GetID();
 		return true;
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromRcpProd(DataLayer::OrmasDal& ormasDal, int empID, int stockEmpID, int& debWerID, int& credWerID, int& debSaccID, int& credSaccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromRcpProd(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int stockEmpID, int& debWerID, int& credWerID, int& debSaccID, int& credSaccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, empID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, empID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		credSaccID = warehouse.GetSubaccountID();
 		credWerID = warehouse.GetID();
 		weRel.Clear();
 		warehouse.Clear();
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, stockEmpID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, stockEmpID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		debSaccID = warehouse.GetSubaccountID();
 		debWerID = warehouse.GetID();
 		return true;
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromRtrnProd(DataLayer::OrmasDal& ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromRtrnProd(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, empID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, empID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		subAccID = warehouse.GetSubaccountID();
 		warehouseID = warehouse.GetID();
 		return true;
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromWOffProd(DataLayer::OrmasDal& ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromWOffProd(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, empID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, empID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		subAccID = warehouse.GetSubaccountID();
 		warehouseID = warehouse.GetID();
 		return true;
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromProdnConRaw(DataLayer::OrmasDal& ormasDal, int stockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromProdnConRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int stockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, stockEmpID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, stockEmpID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		subAccID = warehouse.GetSubaccountID();
 		warehouseID = warehouse.GetID();
 		return true;
 	}
 
-	bool Stock::GetSubIDAndWerhIDFromWOffRaw(DataLayer::OrmasDal& ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
+	bool Stock::GetSubIDAndWerhIDFromWOffRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage)
 	{
 		WarehouseEmployeeRelation weRel;
 		Warehouse warehouse;
-		if (!weRel.GetWarehouseEmployeeByEmployeeID(ormasDal, empID, errorMessage))
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, empID, errorMessage))
 			return false;
-		if (!warehouse.GetWarehouseByID(ormasDal, weRel.GetWarehouseID(), errorMessage))
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
 			return false;
 		subAccID = warehouse.GetSubaccountID();
 		warehouseID = warehouse.GetID();
 		return true;
+	}
+
+	bool Stock::CreateStockChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int stockID, int pID, double sCount, double sSum,
+		int sID, int cID, int wID, std::string& errorMessage)
+	{
+		StockChangeLog scLog;
+		scLog.SetStockID(stockID);
+		scLog.SetProductID(pID);
+		scLog.SetCount(sCount);
+		scLog.SetSum(sSum);
+		scLog.SetStatusID(sID);
+		scLog.SetCurrencyID(cID);
+		scLog.SetWarehouseID(wID);
+		scLog.SetLogDate(ormasDal.GetSystemDateTime());
+		scLog.SetUserID(globalVar->userID);
+		scLog.SetOperationID(globalVar->currentOperationID);
+		if (scLog.CreateStockChangeLog(globalVar, ormasDal, errorMessage))
+			return true;
+		return false;
 	}
 }

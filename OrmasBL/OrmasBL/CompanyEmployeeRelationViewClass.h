@@ -15,13 +15,19 @@ namespace BusinessLayer{
 		CompanyEmployeeRelationView(DataLayer::companyEmployeeViewCollection);
 		CompanyEmployeeRelationView(){};
 		~CompanyEmployeeRelationView(){};
-
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 		// CompanyEmployeeRelationView class CompanyEmployeeRelationors
 		std::string GetCompanyName();
 		std::string GetBranchName();
 		std::string GetUsername();
 		std::string GetUserSurname();
 		std::string GetUserPhone();
+
+		void SetCompanyName(std::string);
+		void SetBranchName(std::string);
+		void SetUsername(std::string);
+		void SetUserSurname(std::string);
+		void SetUserPhone(std::string);
 	};
 }
 #endif //COMPANYEMPLOYEERELATIONVIEWCLASS_H

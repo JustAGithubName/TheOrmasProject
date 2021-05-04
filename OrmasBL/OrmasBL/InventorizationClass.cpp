@@ -104,12 +104,12 @@ namespace BusinessLayer
 		currencyID = iCurrencyID;
 	}
 
-	bool Inventorization::CreateInventorization(DataLayer::OrmasDal& ormasDal, int uID, std::string iDate, std::string iExecDate, 
+	bool Inventorization::CreateInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string iDate, std::string iExecDate, 
 		int seID, double iCount, double iSum, int sID, int cID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uID, iDate, seID ,iCount, iSum, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, iDate, seID ,iCount, iSum, cID, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		employeeID = uID;
@@ -131,11 +131,11 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Inventorization::CreateInventorization(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Inventorization::CreateInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (0 != id && ormasDal.CreateInventorization(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
@@ -148,7 +148,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Inventorization::DeleteInventorization(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Inventorization::DeleteInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -175,10 +175,10 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Inventorization::UpdateInventorization(DataLayer::OrmasDal& ormasDal, int uID, std::string iDate, std::string iExecnDate,
+	bool Inventorization::UpdateInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string iDate, std::string iExecnDate,
 		int eID, double iCount, double iSum, int sID, int cID, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		employeeID = uID;
@@ -199,9 +199,9 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Inventorization::UpdateInventorization(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Inventorization::UpdateInventorization(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (0 != id && ormasDal.UpdateInventorization(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
@@ -224,7 +224,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Inventorization::GetInventorizationByID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage)
+	bool Inventorization::GetInventorizationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage)
 	{
 		if (iID <= 0)
 			return false;
@@ -272,7 +272,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool Inventorization::IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, std::string iDate, int seID, double iCount, double iSum,
+	bool Inventorization::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string iDate, int seID, double iCount, double iSum,
 		int cID, std::string& errorMessage)
 	{
 		Inventorization inventorization;
@@ -296,7 +296,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Inventorization::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Inventorization::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Inventorization inventorization;
 		inventorization.Clear();

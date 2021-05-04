@@ -32,22 +32,22 @@ namespace BusinessLayer
 		void SetAccountTypeID(int);
 
 		//Create, delete and update methods 
-		bool CreateChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage);
-		bool UpdateChartOfAccounts(DataLayer::OrmasDal& ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage);
+		bool CreateChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage);
+		bool UpdateChartOfAccounts(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetChartOfAccountsByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		bool GetChartOfAccountsByNumber(DataLayer::OrmasDal& ormasDal, std::string cNumber, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetChartOfAccountsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		bool GetChartOfAccountsByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cNumber, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cNumber, std::string cName, int cAccountTypeID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //ChartOfAccountsCLASS_H

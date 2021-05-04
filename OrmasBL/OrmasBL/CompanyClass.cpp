@@ -72,10 +72,10 @@ namespace BusinessLayer{
 		comment = cComment;
 	}
 
-	bool Company::CreateCompany(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cAddress, std::string cPhone,
+	bool Company::CreateCompany(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone,
 		std::string cComment, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, cName, cAddress, cPhone, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, cName, cAddress, cPhone, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(cName, cAddress, cPhone);
@@ -93,9 +93,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Company::CreateCompany(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Company::CreateCompany(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateCompany(id, name, address, phone, comment, errorMessage))
@@ -108,7 +108,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Company::DeleteCompany(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Company::DeleteCompany(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteCompany(id, errorMessage))
 		{
@@ -122,7 +122,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Company::UpdateCompany(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cAddress, std::string cPhone
+	bool Company::UpdateCompany(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone
 		, std::string cComment, std::string& errorMessage)
 	{
 		TrimStrings(cName, cAddress, cPhone);
@@ -140,7 +140,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Company::UpdateCompany(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Company::UpdateCompany(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateCompany(id, name, address, phone, comment, errorMessage))
 		{
@@ -162,7 +162,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Company::GetCompanyByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool Company::GetCompanyByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -185,7 +185,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	int Company::GetCompanyID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	int Company::GetCompanyID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::string filter = this->GenerateFilter(ormasDal);
 		std::vector<DataLayer::companiesCollection> companyVector = ormasDal.GetCompanies(errorMessage, filter);
@@ -226,7 +226,7 @@ namespace BusinessLayer{
 			boost::trim(cPhone);
 	}
 
-	bool Company::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cAddress, std::string cPhone, std::string& errorMessage)
+	bool Company::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, std::string& errorMessage)
 	{
 		Company company;
 		company.Clear();
@@ -246,7 +246,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Company::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Company::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Company company;
 		company.Clear();

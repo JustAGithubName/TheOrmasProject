@@ -57,9 +57,9 @@ namespace BusinessLayer{
 		isContract = dIsContract;
 	}
 
-	bool DivisionEmployeeRelation::CreateDivisionEmployeeRelation(DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, bool dIsContract, std::string& errorMessage)
+	bool DivisionEmployeeRelation::CreateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, bool dIsContract, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, dDivisionID, dEmployeeID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, dDivisionID, dEmployeeID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		divisionID = dDivisionID;
@@ -75,9 +75,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool DivisionEmployeeRelation::CreateDivisionEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool DivisionEmployeeRelation::CreateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateDivisionEmployee(id, divisionID, employeeID, isContract, errorMessage))
@@ -90,7 +90,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool DivisionEmployeeRelation::DeleteDivisionEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool DivisionEmployeeRelation::DeleteDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteDivisionEmployee(divisionID, employeeID, errorMessage))
 		{
@@ -104,7 +104,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool DivisionEmployeeRelation::UpdateDivisionEmployeeRelation(DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, bool dIsContract, std::string& errorMessage)
+	bool DivisionEmployeeRelation::UpdateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, bool dIsContract, std::string& errorMessage)
 	{
 		divisionID = dDivisionID;
 		employeeID = dEmployeeID;
@@ -119,7 +119,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool DivisionEmployeeRelation::UpdateDivisionEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool DivisionEmployeeRelation::UpdateDivisionEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateDivisionEmployee(id, divisionID, employeeID, isContract, errorMessage))
 		{
@@ -141,7 +141,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool DivisionEmployeeRelation::GetDivisionEmployeeRelationByID(DataLayer::OrmasDal& ormasDal, int dID, std::string& errorMessage)
+	bool DivisionEmployeeRelation::GetDivisionEmployeeRelationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dID, std::string& errorMessage)
 	{
 		if (dID <= 0)
 			return false;
@@ -163,7 +163,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool DivisionEmployeeRelation::GetDivisionEmployeeRelationByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	bool DivisionEmployeeRelation::GetDivisionEmployeeRelationByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		if (eID <= 0)
 			return false;
@@ -201,7 +201,7 @@ namespace BusinessLayer{
 		isContract = false;
 	}
 
-	bool DivisionEmployeeRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int dDivisionID, int dEmployeeID, std::string& errorMessage)
+	bool DivisionEmployeeRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dEmployeeID, std::string& errorMessage)
 	{
 		DivisionEmployeeRelation divisionEmployeeRelation;
 		divisionEmployeeRelation.Clear();
@@ -220,7 +220,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool DivisionEmployeeRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool DivisionEmployeeRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		DivisionEmployeeRelation divisionEmployeeRelation;
 		divisionEmployeeRelation.Clear();

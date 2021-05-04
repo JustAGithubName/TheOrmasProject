@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = pCurrencyID;
 	}
 
-	bool OrderList::CreateOrderList(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+	bool OrderList::CreateOrderList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OrderList::CreateOrderList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OrderList::CreateOrderList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateOrderList(id, orderID,productID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OrderList::DeleteOrderList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OrderList::DeleteOrderList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInOrderList(id, errorMessage))
 		{
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OrderList::DeleteListByOrderID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool OrderList::DeleteListByOrderID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		orderID = oID;
 		if (ormasDal.DeleteListByOrderID(orderID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool OrderList::UpdateOrderList(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+	bool OrderList::UpdateOrderList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		orderID = oID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool OrderList::UpdateOrderList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OrderList::UpdateOrderList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateOrderList(id, orderID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool OrderList::GetOrderListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool OrderList::GetOrderListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool OrderList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+	bool OrderList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 		int cID, std::string& errorMessage)
 	{
 		OrderList orderList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool OrderList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool OrderList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		OrderList orderList;
 		orderList.Clear();

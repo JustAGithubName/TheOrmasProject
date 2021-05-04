@@ -58,10 +58,10 @@ namespace BusinessLayer{
 		code = boost::to_upper_copy(dCode);
 	}
 
-	bool DivisionAccountRelation::CreateDivisionAccountRelation(DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID, 
+	bool DivisionAccountRelation::CreateDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID, 
 		std::string dCode, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, dDivisionID, dCode, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, dDivisionID, dCode, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		divisionID = dDivisionID;
@@ -78,9 +78,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool DivisionAccountRelation::CreateDivisionAccountRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool DivisionAccountRelation::CreateDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateDivisionAccount(id, divisionID, accountID, code, errorMessage))
@@ -93,7 +93,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool DivisionAccountRelation::DeleteDivisionAccountRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool DivisionAccountRelation::DeleteDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteDivisionAccount(id, errorMessage))
 		{
@@ -107,7 +107,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool DivisionAccountRelation::UpdateDivisionAccountRelation(DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID,
+	bool DivisionAccountRelation::UpdateDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, int dAccountID,
 		std::string dCode, std::string& errorMessage)
 	{
 		TrimStrings(dCode);
@@ -124,7 +124,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool DivisionAccountRelation::UpdateDivisionAccountRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool DivisionAccountRelation::UpdateDivisionAccountRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateDivisionAccount(id, divisionID, accountID, code, errorMessage))
 		{
@@ -146,7 +146,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool DivisionAccountRelation::GetDivisionAccountRelationByID(DataLayer::OrmasDal& ormasDal, int dID, std::string& errorMessage)
+	bool DivisionAccountRelation::GetDivisionAccountRelationByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dID, std::string& errorMessage)
 	{
 		if (dID <= 0)
 			return false;
@@ -168,7 +168,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool DivisionAccountRelation::GetDARelationByDivisionIDAndCode(DataLayer::OrmasDal& ormasDal, int dID, std::string daCode, std::string& errorMessage)
+	bool DivisionAccountRelation::GetDARelationByDivisionIDAndCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dID, std::string daCode, std::string& errorMessage)
 	{
 		if (dID <= 0 || daCode.empty())
 			return false;
@@ -212,7 +212,7 @@ namespace BusinessLayer{
 			boost::trim(dCode);
 	}
 
-	bool DivisionAccountRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int dDivisionID, std::string cCode, std::string& errorMessage)
+	bool DivisionAccountRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dDivisionID, std::string cCode, std::string& errorMessage)
 	{
 		DivisionAccountRelation divisionAccountRelation;
 		divisionAccountRelation.Clear();
@@ -231,7 +231,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool DivisionAccountRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool DivisionAccountRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		DivisionAccountRelation divisionAccountRelation;
 		divisionAccountRelation.Clear();

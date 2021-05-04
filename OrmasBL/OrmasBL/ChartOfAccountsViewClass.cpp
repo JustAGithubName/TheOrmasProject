@@ -15,4 +15,18 @@ namespace BusinessLayer{
 	{
 		return accountTypeName;
 	}
+
+	void ChartOfAccountsView::SetAccountTypeName(std::string cAccountTypeName)
+	{
+		accountTypeName = cAccountTypeName;
+	}
+
+	std::string ChartOfAccountsView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !name.empty() || !number.empty() || !accountTypeName.empty() || 0 != accountTypeID)
+		{
+			return ormasDal.GetFilterForChartOfAccountsView(id, number, name, accountTypeName, accountTypeID);
+		}
+		return "";
+	}
 }

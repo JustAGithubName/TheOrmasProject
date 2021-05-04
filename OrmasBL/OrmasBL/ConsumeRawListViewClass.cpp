@@ -50,4 +50,43 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+	void ConsumeRawListView::SetProductName(std::string cProductName)
+	{
+		productName = cProductName;
+	}
+	void ConsumeRawListView::SetPrice(double cPrice)
+	{
+		price = cPrice;
+	}
+	void  ConsumeRawListView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+	void ConsumeRawListView::SetVolume(double cVolume)
+	{
+		volume = cVolume;
+	}
+	void ConsumeRawListView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void ConsumeRawListView::SetSumCurrencyName(std::string cSumCurrencyName)
+	{
+		sumCurrencyName = cSumCurrencyName;
+	}
+	void ConsumeRawListView::SetMeasureName(std::string cMeasureName)
+	{
+		measureName = cMeasureName;
+	}
+
+	std::string ConsumeRawListView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != consumeRawID || !productName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty()
+			|| 0 != count || 0 != sum || !sumCurrencyName.empty() || !statusName.empty() || 0 != productID || 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForConRawListView(id, consumeRawID, productName, price, currencyName, volume, measureName, count, sum,
+				sumCurrencyName, statusName, productID, statusID, currencyID);
+		}
+		return "";
+	}
 }

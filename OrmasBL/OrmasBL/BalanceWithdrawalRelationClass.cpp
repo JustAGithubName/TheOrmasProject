@@ -44,9 +44,9 @@ namespace BusinessLayer{
 		withdrawalID = wID;
 	}
 
-	bool BalanceWithdrawalRelation::CreateBalanceWithdrawalRelation(DataLayer::OrmasDal &ormasDal, int bID, int wID, std::string& errorMessage)
+	bool BalanceWithdrawalRelation::CreateBalanceWithdrawalRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int wID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, bID, wID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, bID, wID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		balanceID = bID;
@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool BalanceWithdrawalRelation::CreateBalanceWithdrawalRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool BalanceWithdrawalRelation::CreateBalanceWithdrawalRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateBalanceWithdrawal(id, balanceID, withdrawalID, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool BalanceWithdrawalRelation::DeleteBalanceWithdrawalRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool BalanceWithdrawalRelation::DeleteBalanceWithdrawalRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteBalanceWithdrawal(balanceID, withdrawalID, errorMessage))
 		{
@@ -102,8 +102,11 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::vector<int> BalanceWithdrawalRelation::GetAllWithdrawalByBalanceID(DataLayer::OrmasDal& ormasDal, int bID, std::string& errorMessage)
+	std::vector<int> BalanceWithdrawalRelation::GetAllWithdrawalByBalanceID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
+		std::vector<int> refundIDVector;
+		if (bID <= 0)
+			return refundIDVector;
 		std::vector<int> withdrawalIDVector;
 		BalanceWithdrawalRelation bpRelation;
 		bpRelation.SetBalanceID(bID);
@@ -120,9 +123,13 @@ namespace BusinessLayer{
 		return withdrawalIDVector;
 	}
 
-	std::vector<int> BalanceWithdrawalRelation::GetAllBalanceByWithdrawalID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage)
+	std::vector<int> BalanceWithdrawalRelation::GetAllBalanceByWithdrawalID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
 	{
+
 		std::vector<int> balanceIDVector;
+		if (wID <= 0)
+			return balanceIDVector;
+	
 		BalanceWithdrawalRelation bpRelation;
 		bpRelation.SetBalanceID(0);
 		bpRelation.SetWithdrawalID(wID);
@@ -154,7 +161,7 @@ namespace BusinessLayer{
 	}
 
 
-	bool BalanceWithdrawalRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int bID, int pID, std::string& errorMessage)
+	bool BalanceWithdrawalRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, int pID, std::string& errorMessage)
 	{
 		BalanceWithdrawalRelation bpRelation;
 		bpRelation.Clear();
@@ -173,7 +180,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool BalanceWithdrawalRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool BalanceWithdrawalRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		BalanceWithdrawalRelation bpRelation;
 		bpRelation.Clear();

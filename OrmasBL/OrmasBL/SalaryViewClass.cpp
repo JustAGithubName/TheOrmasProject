@@ -38,4 +38,36 @@ namespace BusinessLayer{
 	{
 		return salaryTypeName;
 	}
+
+	void SalaryView::SetEmployeeName(std::string sEmployeeName)
+	{
+		employeeName = sEmployeeName;
+	}
+	void SalaryView::SetEmployeeSurname(std::string sEmployeeSurname)
+	{
+		employeeSurname = sEmployeeSurname;
+	}
+	void SalaryView::SetEmployeePhone(std::string sEmployeePhone)
+	{
+		employeePhone = sEmployeePhone;
+	}
+	void SalaryView::SetCurrencyName(std::string sCurrencyName)
+	{
+		currencyName = sCurrencyName;
+	}
+	void SalaryView::SetSalaryTypeName(std::string sSalaryTypeName)
+	{
+		sSalaryTypeName = sSalaryTypeName;
+	}
+
+	std::string SalaryView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !employeeName.empty() || !employeeSurname.empty() || !employeePhone.empty() || !currencyName.empty() || !salaryTypeName.empty()
+			|| 0 != employeeID || 0 != value || 0 != currencyID || 0 != salaryTypeID || !date.empty())
+		{
+			return ormasDal.GetFilterForSalariesView(id, employeeID, employeeName, employeeSurname, employeePhone, date, value, currencyName, salaryTypeName
+				, currencyID, salaryTypeID);
+		}
+		return "";
+	}
 }

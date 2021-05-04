@@ -32,21 +32,21 @@ namespace BusinessLayer{
 
 
 		//Create, delete, update methods
-		bool CreateShareholder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateShareholder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteShareholder(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateShareholder(DataLayer::OrmasDal& ormasDal, int uID, double sCountOfStock, std::string aInformation, std::string& errorMessage);
-		bool UpdateShareholder(DataLayer::OrmasDal& ormasDal, int uID, double sCountOfStock, std::string aInformation, std::string& errorMessage);
+		bool CreateShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, double sCountOfStock, std::string aInformation, std::string& errorMessage);
+		bool UpdateShareholder(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, double sCountOfStock, std::string aInformation, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetShareholderByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetShareholderByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 

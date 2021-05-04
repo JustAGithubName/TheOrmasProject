@@ -49,31 +49,31 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateTransport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateTransport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteTransport(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateTransport(DataLayer::OrmasDal& ormasDal, int uID, std::string tDate, std::string tExecDate, int eID,
+		bool CreateTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string tDate, std::string tExecDate, int eID,
 			double tCount, double tSum, int sID, int cID, std::string& errorMessage);
-		bool UpdateTransport(DataLayer::OrmasDal& ormasDal, int uID, std::string tDate, std::string tExecDate, int eID, 
+		bool UpdateTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string tDate, std::string tExecDate, int eID, 
 			double tCount, double tSum, int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetTransportByID(DataLayer::OrmasDal& ormasDal, int tID, std::string& errorMessage);
-		bool GetTransportByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetTransportByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage);
+		bool GetTransportByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		bool ChangingByConsumeProduct(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		bool ChangingByConsumeProductReverse(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		bool ChangingByConsumeProduct(DataLayer::OrmasDal& ormasDal, int oID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
-		bool ChangingByReceiptProduct(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
-		bool ChangingByReceiptProductReverse(DataLayer::OrmasDal& ormasDal, int cpID, std::string& errorMessage);
-		bool ChangingByReceiptProduct(DataLayer::OrmasDal& ormasDal, int cpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		bool ChangingByConsumeProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		bool ChangingByConsumeProductReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		bool ChangingByConsumeProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		bool ChangingByReceiptProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
+		bool ChangingByReceiptProductReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
+		bool ChangingByReceiptProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int oID, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
-		bool CreateEntry(DataLayer::OrmasDal& ormasDal, int oID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int debAccID, double currentSum, int credAccID, std::string& errorMessage);
+		bool CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};
 }

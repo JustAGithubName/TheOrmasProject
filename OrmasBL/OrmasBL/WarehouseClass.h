@@ -38,23 +38,25 @@ namespace BusinessLayer{
 		void SetSubaccountID(int);
 
 		// Create, delete and update Warehouse
-		bool CreateWarehouse(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateWarehouse(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteWarehouse(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateWarehouse(DataLayer::OrmasDal &ormasDal, std::string wName, std::string wAddress, std::string wPhone, 
+		bool CreateWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wName, std::string wAddress, std::string wPhone, 
 				int wTypeID, int subaccID, std::string& errorMessage);
-		bool UpdateWarehouse(DataLayer::OrmasDal &ormasDal, std::string wName, std::string wAddress, std::string wPhone,
+		bool UpdateWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wName, std::string wAddress, std::string wPhone,
 			    int wTypeID, int subaccID, std::string& errorMessage);
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetWarehouseByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		int GetWarehouseID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		virtual std::string GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> wIDList);
+		bool GetWarehouseByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		int GetWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		std::vector<int>  GetAllWarehouseIDByTypeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int subaccID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //WarehouseCLASS_H

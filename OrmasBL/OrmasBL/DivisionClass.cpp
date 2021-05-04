@@ -48,9 +48,9 @@ namespace BusinessLayer{
 		code = boost::to_upper_copy(dCode);
 	}
 
-	bool Division::CreateDivision(DataLayer::OrmasDal& ormasDal, std::string dName, std::string dCode, std::string& errorMessage)
+	bool Division::CreateDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string dName, std::string dCode, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, dName, dCode, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, dName, dCode, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(dName, dCode);
@@ -66,9 +66,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Division::CreateDivision(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Division::CreateDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateDivision(id, name, code, errorMessage))
@@ -81,7 +81,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Division::DeleteDivision(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Division::DeleteDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteDivision(id, errorMessage))
 		{
@@ -95,7 +95,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Division::UpdateDivision(DataLayer::OrmasDal& ormasDal, std::string dName, std::string dCode, std::string& errorMessage)
+	bool Division::UpdateDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string dName, std::string dCode, std::string& errorMessage)
 	{
 		TrimStrings(dName, dCode);
 		name = dName;
@@ -110,7 +110,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Division::UpdateDivision(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Division::UpdateDivision(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateDivision(id, name, code, errorMessage))
 		{
@@ -132,7 +132,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Division::GetDivisionByID(DataLayer::OrmasDal& ormasDal, int dID, std::string& errorMessage)
+	bool Division::GetDivisionByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dID, std::string& errorMessage)
 	{
 		if (dID <= 0)
 			return false;
@@ -175,7 +175,7 @@ namespace BusinessLayer{
 			boost::trim(dCode);
 	}
 
-	bool Division::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cName, std::string cCode, std::string& errorMessage)
+	bool Division::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cCode, std::string& errorMessage)
 	{
 		Division division;
 		division.Clear();
@@ -194,7 +194,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Division::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Division::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Division division;
 		division.Clear();

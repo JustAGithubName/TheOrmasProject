@@ -70,7 +70,7 @@ void CreateWrhTypeDlg::CreateWarehouseType()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetWarehouseTypeParams(codeEdit->text(), purposeEdit->text() ,nameEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateWarehouseType(warehouseType, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -87,7 +87,13 @@ void CreateWrhTypeDlg::CreateWarehouseType()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -116,7 +122,7 @@ void CreateWrhTypeDlg::EditWarehouseType()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetWarehouseTypeParams(codeEdit->text(), purposeEdit->text(), nameEdit->text(), warehouseType->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateWarehouseType(warehouseType, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -130,7 +136,13 @@ void CreateWrhTypeDlg::EditWarehouseType()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

@@ -1,0 +1,4 @@
+pg_restore --clean --host postgres64.1gb.ru --port 5432 --username "xgb_farhunda" --dbname "xgb_farhunda" --no-owner --role "xgb_farhunda" farhundaDB7.backup
+
+C:\Program Files\PostgreSQL\9.5\bin>psql -U postgres -d FanhundaDB -f "C:\Users
+\Muhamedov\Downloads\dump.sql" -v ON_ERROR_STOP=1

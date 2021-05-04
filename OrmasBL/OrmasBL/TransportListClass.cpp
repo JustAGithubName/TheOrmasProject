@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "TransportListClass.h"
+#include "TransportChangeLogClass.h"
 #include "EntryClass.h"
 #include <codecvt>
 
@@ -80,7 +81,7 @@ namespace BusinessLayer
 		currencyID = tCurrencyID;
 	}
 
-	bool TransportList::CreateTransportList(DataLayer::OrmasDal& ormasDal, int tID, int pID, double tlCount, double tlSum,
+	bool TransportList::CreateTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double tlCount, double tlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -92,20 +93,22 @@ namespace BusinessLayer
 		currencyID = cID;
 		if (0 != id && ormasDal.CreateTransportList(id, transportID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
-			return true;
+			if (CreateTransportChangeLog(globalVar, ormasDal, transportID, productID, count, sum, statusID, currencyID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool TransportList::CreateTransportList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool TransportList::CreateTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateTransportList(id, transportID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
-			return true;
+			if (CreateTransportChangeLog(globalVar, ormasDal, transportID, productID, count, sum, statusID, currencyID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool TransportList::DeleteTransportList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool TransportList::DeleteTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInTransportList(id, errorMessage))
 		{
@@ -114,7 +117,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool TransportList::DeleteListByTransportID(DataLayer::OrmasDal& ormasDal, int tID, std::string& errorMessage)
+	bool TransportList::DeleteListByTransportID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage)
 	{
 		transportID = tID;
 		if (ormasDal.DeleteListByTransportID(transportID, errorMessage))
@@ -125,7 +128,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool TransportList::UpdateTransportList(DataLayer::OrmasDal& ormasDal, int tID, int pID, double tlCount, double tlSum,
+	bool TransportList::UpdateTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double tlCount, double tlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -137,15 +140,17 @@ namespace BusinessLayer
 		currencyID = cID;
 		if (0 != id && ormasDal.UpdateTransportList(id, transportID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
-			return true;
+			if (CreateTransportChangeLog(globalVar, ormasDal, transportID, productID, count, sum, statusID, currencyID, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool TransportList::UpdateTransportList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool TransportList::UpdateTransportList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateTransportList(id, transportID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
-			return true;
+			if (CreateTransportChangeLog(globalVar, ormasDal, transportID, productID, count, sum, statusID, currencyID, errorMessage))
+				return true;
 		}
 		return false;
 	}
@@ -159,7 +164,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool TransportList::GetTransportListByID(DataLayer::OrmasDal& ormasDal, int tID, std::string& errorMessage)
+	bool TransportList::GetTransportListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage)
 	{
 		if (tID <= 0)
 			return false;
@@ -184,7 +189,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool TransportList::GetTransportListByTransportAndProductID(DataLayer::OrmasDal& ormasDal, int tID, int pID, std::string& errorMessage)
+	bool TransportList::GetTransportListByTransportAndProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, std::string& errorMessage)
 	{
 		if (tID <= 0)
 			return false;
@@ -230,7 +235,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool TransportList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int tID, int pID, double tlCount, double tlSum,
+	bool TransportList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double tlCount, double tlSum,
 		int cID, std::string& errorMessage)
 	{
 		TransportList transportList;
@@ -253,7 +258,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool TransportList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool TransportList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		TransportList transportList;
 		transportList.Clear();
@@ -281,7 +286,7 @@ namespace BusinessLayer
 		return myconv.to_bytes(str);
 	}
 
-	bool TransportList::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
+	bool TransportList::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string& errorMessage)
 	{
 		Entry entry;
 		entry.SetDate(ormasDal.GetSystemDateTime());
@@ -289,13 +294,13 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Коррекция себестоимости товара в транспорте"));
-		if (!entry.CreateEntry(ormasDal, errorMessage))
+		if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			return false;
 		}
 		return true;
 	}
-	bool TransportList::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
+	bool TransportList::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string& errorMessage)
 	{
 		Entry entry;
 		entry.SetDate(ormasDal.GetSystemDateTime());
@@ -303,7 +308,7 @@ namespace BusinessLayer
 		entry.SetValue(previousSum);
 		entry.SetCreditingAccountID(debAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена коррекция себестоимости товара в транспорте"));
-		if (!entry.CreateEntry(ormasDal, errorMessage, true))
+		if (!entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			return false;
 		}
@@ -312,10 +317,28 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Коррекция себестоимости товара в транспорте"));
-		if (!entry.CreateEntry(ormasDal, errorMessage))
+		if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			return false;
 		}
 		return true;
+	}
+
+	bool TransportList::CreateTransportChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double tlCount, double tlSum,
+		int sID, int cID, std::string& errorMessage)
+	{
+		TransportChangeLog scLog;
+		scLog.SetTransportID(tID);
+		scLog.SetProductID(pID);
+		scLog.SetCount(tlCount);
+		scLog.SetSum(tlSum);
+		scLog.SetStatusID(sID);
+		scLog.SetCurrencyID(cID);
+		scLog.SetLogDate(ormasDal.GetSystemDateTime());
+		scLog.SetUserID(globalVar->userID);
+		scLog.SetOperationID(globalVar->currentOperationID);
+		if (scLog.CreateTransportChangeLog(globalVar, ormasDal, errorMessage))
+			return true;
+		return false;
 	}
 }

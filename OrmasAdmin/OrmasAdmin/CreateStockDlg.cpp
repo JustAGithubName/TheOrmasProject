@@ -65,12 +65,12 @@ void CreateStockDlg::SetID(int ID, QString childName)
 			{
 				productEdit->setText(QString::number(ID));
 				BusinessLayer::Product product;
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					prodNamePh->setText(product.GetName().c_str());
 					volumePh->setText(QString::number(product.GetVolume()));
 					BusinessLayer::Measure measure;
-					if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
@@ -80,7 +80,7 @@ void CreateStockDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -109,18 +109,18 @@ void CreateStockDlg::FillEditElements(int sProductID, double sCount, double sSum
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(sCurrencyID)));
 	warehouseCmb->setCurrentIndex(warehouseCmb->findData(QVariant(sWarehouseID)));
 	BusinessLayer::Product product;
-	if (product.GetProductByID(dialogBL->GetOrmasDal(), sProductID, errorMessage))
+	if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), sProductID, errorMessage))
 	{
 		prodNamePh->setText(product.GetName().c_str());
 		volumePh->setText(QString::number(product.GetVolume()));
 		BusinessLayer::Measure measure;
-		if (measure.GetMeasureByID(dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
+		if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
 	}
 	BusinessLayer::Status status;
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), sStatusID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), sStatusID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -176,7 +176,7 @@ void CreateStockDlg::AddProduct()
 		BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 		BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
 
-		if (!product->GetProductByID(dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
+		if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Warning")),
 				QString(tr(errorMessage.c_str())),
@@ -189,9 +189,9 @@ void CreateStockDlg::AddProduct()
 		}
 		else
 		{
-			if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-				|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
-				|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
+			if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
+				|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
+				|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -208,9 +208,9 @@ void CreateStockDlg::AddProduct()
 		BusinessLayer::Warehouse warehouse;
 		if (warehouseCmb->currentData().toInt() != 0)
 		{
-			if (warehouse.GetWarehouseByID(dialogBL->GetOrmasDal(), warehouseCmb->currentData().toInt(), errorMessage))
+			if (warehouse.GetWarehouseByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouseCmb->currentData().toInt(), errorMessage))
 			{
-				if (!subacc.GetSubaccountByID(dialogBL->GetOrmasDal(), warehouse.GetSubaccountID(), errorMessage))
+				if (!subacc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouse.GetSubaccountID(), errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Warning")),
 						QString(tr(errorMessage.c_str())),
@@ -237,7 +237,7 @@ void CreateStockDlg::AddProduct()
 		SetStockParams(productEdit->text().toInt(),
 			countEdit->text().toDouble(), (countEdit->text().toDouble() * product->GetPrice()),
 			statusVector.at(0).GetID(), product->GetCurrencyID(), warehouseCmb->currentData().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateStock(stock, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -268,7 +268,13 @@ void CreateStockDlg::AddProduct()
 			delete measure;
 			delete product;
 			delete currency;
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -299,7 +305,7 @@ void CreateStockDlg::EditProduct()
 			|| statusEdit->text().toInt() != stock->GetStatusID() || currencyCmb->currentData().toInt() != stock->GetCurrencyID())
 		{
 			BusinessLayer::Product *product = new BusinessLayer::Product();
-			if (!product->GetProductByID(dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
+			if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -316,7 +322,7 @@ void CreateStockDlg::EditProduct()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetStockParams(productEdit->text().toInt(), countEdit->text().toDouble(), sumEdit->text().toDouble(), statusEdit->text().toInt(),
 				stock->GetCurrencyID(), warehouseCmb->currentData().toInt(), stock->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateStock(stock, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -327,10 +333,10 @@ void CreateStockDlg::EditProduct()
 						BusinessLayer::Status *status = new BusinessLayer::Status();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 						BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
-						if (!measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
-							|| !sumCurrency->GetCurrencyByID(dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
-							|| !status->GetStatusByID(dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
+						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
+							|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
+							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Warning")),
 								QString(tr(errorMessage.c_str())),
@@ -347,9 +353,9 @@ void CreateStockDlg::EditProduct()
 						BusinessLayer::Warehouse warehouse;
 						if (warehouseCmb->currentData().toInt() != 0)
 						{
-							if (warehouse.GetWarehouseByID(dialogBL->GetOrmasDal(), warehouseCmb->currentData().toInt(), errorMessage))
+							if (warehouse.GetWarehouseByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouseCmb->currentData().toInt(), errorMessage))
 							{
-								if (!subacc.GetSubaccountByID(dialogBL->GetOrmasDal(), warehouse.GetSubaccountID(), errorMessage))
+								if (!subacc.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouse.GetSubaccountID(), errorMessage))
 								{
 									QMessageBox::information(NULL, QString(tr("Warning")),
 										QString(tr(errorMessage.c_str())),
@@ -396,7 +402,13 @@ void CreateStockDlg::EditProduct()
 						delete measure;
 						delete status;
 						delete currency;
-						dialogBL->CommitTransaction(errorMessage);
+						if (!dialogBL->CommitTransaction(errorMessage))
+						{
+							dialogBL->CancelTransaction(errorMessage);
+							QMessageBox::information(NULL, QString(tr("Warning")),
+								QString(tr(errorMessage.c_str())),
+								QString(tr("Ok")));
+						}
 					}
 				}
 				
@@ -446,7 +458,7 @@ void CreateStockDlg::OpenStsDlg()
 	{
 		dForm->parentDialog = this;
 		dForm->setObjectName("statusForm");
-		dForm->QtConnect<BusinessLayer::Measure>();
+		dForm->QtConnect<BusinessLayer::Status>();
 		QMdiSubWindow *statusWindow = new QMdiSubWindow;
 		statusWindow->setWidget(dForm);
 		statusWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -458,7 +470,7 @@ void CreateStockDlg::OpenStsDlg()
 		dForm->show();
 		dForm->raise();
 		dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
-		QString message = tr("All measures are shown");
+		QString message = tr("All stocks are shown");
 		mainForm->statusBar()->showMessage(message);
 	}
 	else

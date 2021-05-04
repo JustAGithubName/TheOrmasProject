@@ -52,4 +52,45 @@ namespace BusinessLayer{
 	{
 		return subaccountNumber;
 	}
+
+	void PaymentView::SetUsername(std::string oUserName)
+	{
+		userName = oUserName;
+	}
+	void PaymentView::SetUserSurname(std::string oUserSurname)
+	{
+		userSurname = oUserSurname;
+	}
+	void PaymentView::SetUserPhone(std::string oUserPhone)
+	{
+		userPhone = oUserPhone;
+	}
+	void PaymentView::SetCurrencyName(std::string oCurrencyName)
+	{
+		currencyName = oCurrencyName;
+	}
+	void PaymentView::SetAccountNumber(std::string oAccountNumber)
+	{
+		accountNumber = oAccountNumber;
+	}
+	void PaymentView::SetStatusName(std::string oStatusName)
+	{
+		statusName = oStatusName;
+	}
+	void PaymentView::SetSubaccountNumber(std::string oSubaccountNumber)
+	{
+		subaccountNumber = oSubaccountNumber;
+	}
+
+	std::string PaymentView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || date.empty() || userName.empty() || userSurname.empty() || userPhone.empty() || 0 != value || currencyName.empty() || target.empty() 
+			|| accountNumber.empty() || subaccountNumber.empty() || !who.empty() || !statusName.empty() || 0 != userID || 0 != currencyID || 0 != statusID
+			|| 0 != accountID || 0 != subaccountID || 0 != cashboxAccountID)
+		{
+			return ormasDal.GetFilterForPaymentView(id, date, userName, userSurname, userPhone, value, currencyName, target, accountNumber, subaccountNumber
+				, who, statusName, userID, currencyID, statusID, accountID, subaccountID, cashboxAccountID);
+		}
+		return "";
+	}
 }

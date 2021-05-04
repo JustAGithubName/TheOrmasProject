@@ -23,6 +23,7 @@ namespace BusinessLayer
 		FixedAssetsUnion(DataLayer::fixedAssetsUnionCollection);
 		FixedAssetsUnion(){};
 		~FixedAssetsUnion(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
 
 		bool isNewFixedAssets = false;
 		double amortizeValue = 0;
@@ -44,19 +45,19 @@ namespace BusinessLayer
 		void SetPostingFixedAssets(PostingFixedAssets*);
 
 		//Create, delete, update methods
-		bool CreateFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, FixedAssets* fAssets, FixedAssetsDetails* faDetails, FixedAssetsSpecification* faSpecification, PostingFixedAssets* pfAssets, std::string& errorMessage);
-		bool UpdateFixedAssetsUnion(DataLayer::OrmasDal& ormasDal, FixedAssets* fAssets, FixedAssetsDetails* faDetails, FixedAssetsSpecification* faSpecification, PostingFixedAssets* pfAssets, std::string& errorMessage);
+		bool CreateFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, FixedAssets* fAssets, FixedAssetsDetails* faDetails, FixedAssetsSpecification* faSpecification, PostingFixedAssets* pfAssets, std::string& errorMessage);
+		bool UpdateFixedAssetsUnion(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, FixedAssets* fAssets, FixedAssetsDetails* faDetails, FixedAssetsSpecification* faSpecification, PostingFixedAssets* pfAssets, std::string& errorMessage);
 
 		//Generate filter string for class
 		bool IsEmpty();
 		void Clear();
-		std::string GenerateInventoryNumber(DataLayer::OrmasDal& ormasDal, int divID);
+		std::string GenerateInventoryNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int divID);
 	private:
-		std::string GenerateInvRawNumber(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		int GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int fxID, std::string& errorMessage);
+		std::string GenerateInvRawNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		int GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fxID, std::string& errorMessage);
 		int previousStatusID = 0;
 	};
 }

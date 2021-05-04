@@ -159,7 +159,7 @@ GenerateProfRep::~GenerateProfRep()
 void GenerateProfRep::Generate()
 {
 	BusinessLayer::Status status;
-	if (!status.GetStatusByName(dialogBL->GetOrmasDal(), "EXECUTED", errorMessage))
+	if (!status.GetStatusByName(dialogBL->globalVar, dialogBL->GetOrmasDal(), "EXECUTED", errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Info")),
 			QString(tr("Please contact with administrator, you have same troubles with statuses!")),
@@ -168,7 +168,7 @@ void GenerateProfRep::Generate()
 	}
 	BusinessLayer::Order order;
 	order.SetStatusID(status.GetID());
-	std::string filter = order.GenerateFilterForPeriod(dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
+	std::string filter = order.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
 	std::vector<BusinessLayer::OrderView> vecOrder = dialogBL->GetAllDataForClass<BusinessLayer::OrderView>(errorMessage, filter);
 	if (vecOrder.size() == 0)
 	{
@@ -252,8 +252,8 @@ void GenerateProfRep::Generate()
 			{
 				product.Clear();
 				nCost.Clear();
-				if (product.GetProductByID(dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage) &&
-					nCost.GetNetCostByProductID(dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage) &&
+					nCost.GetNetCostByProductID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage))
 				{
 					sum += productSum.find(mapCountItem.first)->second;
 					netSum += nCost.GetValue()*mapCountItem.second;

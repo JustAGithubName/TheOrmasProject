@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		name = cName;
 	}
 
-	bool WarehouseType::CreateWarehouseType(DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string wtPurpose, std::string wtName, std::string& errorMessage)
+	bool WarehouseType::CreateWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string wtPurpose, std::string wtName, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, wtName, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, wtName, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(wtName, wtCode, wtPurpose);
@@ -81,9 +81,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool WarehouseType::CreateWarehouseType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WarehouseType::CreateWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateWarehouseType(id, code, purpose, name, errorMessage))
@@ -96,7 +96,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool WarehouseType::DeleteWarehouseType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WarehouseType::DeleteWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteWarehouseType(id, errorMessage))
 		{
@@ -110,7 +110,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool WarehouseType::UpdateWarehouseType(DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string wtPurpose, std::string wtName, std::string& errorMessage)
+	bool WarehouseType::UpdateWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string wtPurpose, std::string wtName, std::string& errorMessage)
 	{
 		TrimStrings(wtName, wtCode, wtPurpose);
 		code = wtCode;
@@ -126,7 +126,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool WarehouseType::UpdateWarehouseType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WarehouseType::UpdateWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateWarehouseType(id, code, purpose, name, errorMessage))
 		{
@@ -148,7 +148,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool WarehouseType::GetWarehouseTypeByID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage)
+	bool WarehouseType::GetWarehouseTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
 	{
 		if (wID <= 0)
 			return false;
@@ -170,7 +170,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool WarehouseType::GetWarehouseTypeByCode(DataLayer::OrmasDal& ormasDal, std::string wtCode, std::string& errorMessage)
+	bool WarehouseType::GetWarehouseTypeByCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string& errorMessage)
 	{
 		if (wtCode.empty())
 			return false;
@@ -192,7 +192,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	int WarehouseType::GetWarehouseTypeID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	int WarehouseType::GetWarehouseTypeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::string filter = this->GenerateFilter(ormasDal);
 		std::vector<DataLayer::warehouseTypeCollection> warehouseTypeVector = ormasDal.GetWarehouseType(errorMessage, filter);
@@ -232,7 +232,7 @@ namespace BusinessLayer{
 			boost::trim(cPhone);
 	}
 
-	bool WarehouseType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string wName, std::string& errorMessage)
+	bool WarehouseType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wName, std::string& errorMessage)
 	{
 		WarehouseType warehouseType;
 		warehouseType.Clear();
@@ -250,7 +250,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool WarehouseType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool WarehouseType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		WarehouseType warehouseType;
 		warehouseType.Clear();
@@ -268,7 +268,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	std::map<std::string, int> WarehouseType::GetWarehouseTypesAsMap(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	std::map<std::string, int> WarehouseType::GetWarehouseTypesAsMap(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::map<std::string, int> warehouseTypeMap;
 		std::vector<DataLayer::warehouseTypeCollection> warehouseTypeVector = ormasDal.GetWarehouseType(errorMessage);

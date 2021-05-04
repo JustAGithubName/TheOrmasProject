@@ -13,11 +13,16 @@ namespace BusinessLayer{
 		DivisionAccountRelationView(DataLayer::divisionAccountViewCollection);
 		DivisionAccountRelationView(){};
 		~DivisionAccountRelationView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// Chart Of Accounts View class Accessors
 		std::string GetDivisionName();
 		std::string GetAccountNumber();
 		std::string GetAccountName();
+
+		void SetDivisionName(std::string);
+		void SetAccountNumber(std::string);
+		void SetAccountName(std::string);
 	};
 }
 

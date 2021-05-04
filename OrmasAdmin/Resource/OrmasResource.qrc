@@ -15,11 +15,21 @@
 	<file>docs/production.html</file>
 	<file>docs/return.html</file>
 	<file>docs/sales.html</file>
+	<file>docs/daily_sales.html</file>
 	<file>docs/specification.html</file>
 	<file>docs/spec_consume_report.html</file>
 	<file>docs/spoilage.html</file>
 	<file>docs/transport.html</file>
 	<file>docs/write_off.html</file>
 	<file>docs/warehouse_turnover.html</file>
+	<file>docs/accountable.html</file>
+	<file>docs/turnover.html</file>
+	<file>docs/account_turnover.html</file>
+	<file>docs/parent_account_turnover.html</file>
+	<file>docs/subaccount_turnover.html</file>
+	<file>docs/common_report.html</file>
+	<file>docs/fixed_asset.html</file>
+	<file>docs/fixed_assets_turnover.html</file>
+  <file>docs/product_stock.html</file>
 </qresource>
 </RCC>

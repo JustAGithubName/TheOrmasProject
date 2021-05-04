@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SpecificationListClass.h"
+#include "SpecificationChangeLogClass.h"
 
 namespace BusinessLayer
 {
@@ -48,7 +49,7 @@ namespace BusinessLayer
 		count = pCount;
 	}
 
-	bool SpecificationList::CreateSpecificationList(DataLayer::OrmasDal& ormasDal, int sID, int pID, double slCount, std::string& errorMessage)
+	bool SpecificationList::CreateSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		specificationID = sID;
@@ -56,20 +57,22 @@ namespace BusinessLayer
 		count = slCount;
 		if (0 != id && ormasDal.CreateSpecificationList(id, specificationID, productID, count, errorMessage))
 		{
-			return true;
+			if (CreateSpecificationChangeLog(globalVar, ormasDal, specificationID, productID, count, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool SpecificationList::CreateSpecificationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SpecificationList::CreateSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateSpecificationList(id, specificationID, productID, count, errorMessage))
 		{
-			return true;
+			if (CreateSpecificationChangeLog(globalVar, ormasDal, specificationID, productID, count, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool SpecificationList::DeleteSpecificationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SpecificationList::DeleteSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInSpecificationList(id, errorMessage))
 		{
@@ -78,7 +81,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool SpecificationList::DeleteListBySpecificationID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool SpecificationList::DeleteListBySpecificationID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		specificationID = sID;
 		if (ormasDal.DeleteListBySpecificationID(specificationID, errorMessage))
@@ -89,22 +92,24 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool SpecificationList::UpdateSpecificationList(DataLayer::OrmasDal& ormasDal, int sID, int pID, double slCount, std::string& errorMessage)
+	bool SpecificationList::UpdateSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, std::string& errorMessage)
 	{
 		specificationID = sID;
 		productID = pID;
 		count = slCount;
 		if (0 != id && ormasDal.UpdateSpecificationList(id, specificationID, productID, count, errorMessage))
 		{
-			return true;
+			if (CreateSpecificationChangeLog(globalVar, ormasDal, specificationID, productID, count, errorMessage))
+				return true;
 		}
 		return false;
 	}
-	bool SpecificationList::UpdateSpecificationList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SpecificationList::UpdateSpecificationList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateSpecificationList(id, specificationID, productID, count, errorMessage))
 		{
-			return true;
+			if (CreateSpecificationChangeLog(globalVar, ormasDal, specificationID, productID, count, errorMessage))
+				return true;
 		}
 		return false;
 	}
@@ -118,7 +123,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool SpecificationList::GetSpecificationListByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool SpecificationList::GetSpecificationListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -155,7 +160,7 @@ namespace BusinessLayer
 		count = 0;
 	}
 
-	bool SpecificationList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int sID, int pID, double slCount, std::string& errorMessage)
+	bool SpecificationList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, std::string& errorMessage)
 	{
 		SpecificationList specificationList;
 		specificationList.Clear();
@@ -175,7 +180,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool SpecificationList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool SpecificationList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		SpecificationList specificationList;
 		specificationList.Clear();
@@ -193,5 +198,18 @@ namespace BusinessLayer
 		}
 		errorMessage = "Specification list with this parameters are already exist! Please avoid the duplication!";
 		return true;
+	}
+
+	bool SpecificationList::CreateSpecificationChangeLog(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int pID, double slCount, std::string& errorMessage)
+	{
+		SpecificationChangeLog scLog;
+		scLog.SetSpecificationID(sID);
+		scLog.SetProductID(pID);
+		scLog.SetCount(slCount);
+		scLog.SetLogDate(ormasDal.GetSystemDateTime());
+		scLog.SetUserID(globalVar->userID);
+		if (scLog.CreateSpecificationChangeLog(globalVar, ormasDal, errorMessage))
+			return true;
+		return false;
 	}
 }

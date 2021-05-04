@@ -14,12 +14,18 @@ namespace BusinessLayer{
 		NetCostView(DataLayer::netCostViewCollection);
 		NetCostView(){};
 		~NetCostView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// NetCostView class Accessors
 		std::string GetProductName();
 		double GetVolume();
 		std::string GetMeasureName();
 		std::string GetCurrencyName();
+
+		void SetProductName(std::string);
+		void SetVolume(double);
+		void SetMeasureName(std::string);
+		void SetCurrencyName(std::string);
 
 	};
 }

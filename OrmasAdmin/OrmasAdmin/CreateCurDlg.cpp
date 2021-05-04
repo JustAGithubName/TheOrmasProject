@@ -92,7 +92,7 @@ void CreateCurDlg::CreateCurrency()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetCurrencyParams(codeEdit->text().toInt(), shortNameEdit->text(), nameEdit->text(), unitEdit->text().toInt(),
 			mainTradeCmbBox->currentText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateCurrency(currency,errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -107,7 +107,13 @@ void CreateCurDlg::CreateCurrency()
 					itemModel->appendRow(companyItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 			
 		}
@@ -141,7 +147,7 @@ void CreateCurDlg::EditCurrency()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetCurrencyParams(codeEdit->text().toInt(), shortNameEdit->text(), nameEdit->text(), unitEdit->text().toInt(),
 				mainTradeCmbBox->currentText(), currency->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateCurrency(currency,errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -156,7 +162,13 @@ void CreateCurDlg::EditCurrency()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

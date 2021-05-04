@@ -41,26 +41,26 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateOrderRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateOrderRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteOrderRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteListByOrderRawID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
-		bool CreateOrderRawList(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+		bool CreateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteListByOrderRawID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
+		bool CreateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 			int sID, int cID, std::string& errorMessage);
-		bool UpdateOrderRawList(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+		bool UpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetOrderRawListByID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetOrderRawListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int oID, int pID, double olCount, double olSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
-		int GetSubaccountIDForEmployee(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		int GetSubaccountIDForEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

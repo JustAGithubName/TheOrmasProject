@@ -42,23 +42,23 @@ namespace BusinessLayer
 		void SetCurrencyID(int);
 
 		//Create, delete, update methods
-		bool CreateProductionPlan(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateProductionPlan(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteProductionPlan(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateProductionPlan(DataLayer::OrmasDal& ormasDal, std::string oDate, int eID, double oCount,
+		bool CreateProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, int eID, double oCount,
 			double oSum, int sID, int cID, std::string& errorMessage);
-		bool UpdateProductionPlan(DataLayer::OrmasDal& ormasDal, std::string oDate, int eID, double oCount,
+		bool UpdateProductionPlan(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, int eID, double oCount,
 			double oSum, int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetProductionPlanByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetProductionPlanByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string oDate, double oCount, double oSum,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, double oCount, double oSum,
 			int cID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //PRODUCTIONPLANCLASS_H

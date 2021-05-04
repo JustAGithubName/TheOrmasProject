@@ -45,26 +45,26 @@ namespace BusinessLayer
 		void SetHistoryDate(std::string);
 
 		//Create, delete, update methods
-		bool CreateStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateStockHistory(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+		bool CreateStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 			int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage);
-		bool UpdateStockHistory(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+		bool UpdateStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 			int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetStockHistoryByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage);
-		bool GetStockHistoryByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool GetStockHistoryByProductAndWarehouseID(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetStockHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage);
+		bool GetStockHistoryByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool GetStockHistoryByProductAndWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 
 		
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

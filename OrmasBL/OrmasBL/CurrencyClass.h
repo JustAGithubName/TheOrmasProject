@@ -37,24 +37,24 @@ namespace BusinessLayer
 		void SetMainTrade(bool);
 		
 		// Create, delete and update company
-		bool CreateCurrency(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateCurrency(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteCurrency(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateCurrency(DataLayer::OrmasDal& ormasDal, int cCode, std::string cShortName, std::string cName, int cUnit,
+		bool CreateCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cCode, std::string cShortName, std::string cName, int cUnit,
 			bool cMainTrade, std::string& errorMessage);
-		bool UpdateCurrency(DataLayer::OrmasDal& ormasDal, int cCode, std::string cShortName, std::string cName, int cUnit,
+		bool UpdateCurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cCode, std::string cShortName, std::string cName, int cUnit,
 			bool cMainTrade, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetCurrencyByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
+		bool GetCurrencyByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		int GetMainTradeCurrencyID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		int GetMainTradeCurrencyID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	private:
 		void TrimStrings(std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cShortName, std::string cName, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cShortName, std::string cName, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //CURRENCYCLASS_H

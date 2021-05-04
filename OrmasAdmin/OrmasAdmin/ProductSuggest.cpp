@@ -155,7 +155,7 @@ void PSuggestCompletion::autoSuggest()
 	}
 
 	BusinessLayer::Product product;
-	std::string productNameFilter = product.GenerateLikeFilter(dataFormParent->dataFormBL->GetOrmasDal(), editor->text().toStdString());
+	std::string productNameFilter = product.GenerateLikeFilter(dataFormParent->dataFormBL->globalVar, dataFormParent->dataFormBL->GetOrmasDal(), editor->text().toStdString());
 	std::vector<std::string> filterList;
 	product.SetProductTypeID(pTypeVector.at(0).GetID());
 	std::string productFilter = product.GenerateFilter(dataFormParent->dataFormBL->GetOrmasDal());

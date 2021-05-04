@@ -44,7 +44,7 @@ namespace BusinessLayer{
 		comment = rtComment;
 	}
 	
-	bool RelationType::CreateRelationType(DataLayer::OrmasDal &ormasDal, std::string rtName, std::string rtComment, std::string& errorMessage)
+	bool RelationType::CreateRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rtName, std::string rtComment, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		TrimStrings(rtName);
@@ -60,7 +60,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool RelationType::CreateRelationType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool RelationType::CreateRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateRelationType(id, name, comment, errorMessage))
@@ -73,7 +73,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool RelationType::DeleteRelationType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool RelationType::DeleteRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteRelationType(id, errorMessage))
 		{
@@ -87,7 +87,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool RelationType::UpdateRelationType(DataLayer::OrmasDal &ormasDal, std::string rtName, std::string rtComment, std::string& errorMessage)
+	bool RelationType::UpdateRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string rtName, std::string rtComment, std::string& errorMessage)
 	{
 		TrimStrings(rtName);
 		name = rtName;
@@ -102,7 +102,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool RelationType::UpdateRelationType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool RelationType::UpdateRelationType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateRelationType(id, name, comment, errorMessage))
 		{
@@ -124,7 +124,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool RelationType::GetRelationTypeByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool RelationType::GetRelationTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;

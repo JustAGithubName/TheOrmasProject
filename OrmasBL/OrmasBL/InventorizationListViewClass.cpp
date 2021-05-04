@@ -50,4 +50,43 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+	void InventorizationListView::SetProductName(std::string cProductName)
+	{
+		productName = cProductName;
+	}
+	void InventorizationListView::SetPrice(double cPrice)
+	{
+		price = cPrice;
+	}
+	void  InventorizationListView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+	void InventorizationListView::SetVolume(double cVolume)
+	{
+		volume = cVolume;
+	}
+	void InventorizationListView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void InventorizationListView::SetSumCurrencyName(std::string cSumCurrencyName)
+	{
+		sumCurrencyName = cSumCurrencyName;
+	}
+	void InventorizationListView::SetMeasureName(std::string cMeasureName)
+	{
+		measureName = cMeasureName;
+	}
+
+	std::string InventorizationListView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != inventorizationID || !productName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty()
+			|| 0 != count || 0 != sum || !sumCurrencyName.empty() || !statusName.empty() || 0 != productID || 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForInvListView(id, inventorizationID, productName, price, currencyName, volume, measureName, count, sum,
+				sumCurrencyName, statusName, productID, statusID, currencyID);
+		}
+		return "";
+	}
 }

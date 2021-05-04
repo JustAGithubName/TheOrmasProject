@@ -32,22 +32,22 @@ namespace BusinessLayer{
 		void SetToMonth(int);
 
 		// Create, delete and update AmortizeGroup
-		bool CreateAmortizeGroup(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateAmortizeGroup(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteAmortizeGroup(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateAmortizeGroup(DataLayer::OrmasDal &ormasDal, int gNumber, int fMonth, int tMonth, std::string& errorMessage);
-		bool UpdateAmortizeGroup(DataLayer::OrmasDal &ormasDal, int gNumber, int fMonth, int tMonth, std::string& errorMessage);
+		bool CreateAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int gNumber, int fMonth, int tMonth, std::string& errorMessage);
+		bool UpdateAmortizeGroup(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int gNumber, int fMonth, int tMonth, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetAmortizeGroupByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage);
-		bool GetAmortizeGroupByNumber(DataLayer::OrmasDal& ormasDal, int gNumber, std::string& errorMessage);
+		bool GetAmortizeGroupByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage);
+		bool GetAmortizeGroupByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int gNumber, std::string& errorMessage);
 		bool IsEmpty();
 
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int aNumber, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aNumber, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //AmortizeGroupCLASS_H

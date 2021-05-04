@@ -84,10 +84,10 @@ namespace BusinessLayer
 		fixedAssetsID = faID;
 	}
 
-	bool FixedAssetsOperations::CreateFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string oDate, std::string oName,
+	bool FixedAssetsOperations::CreateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName,
 		double oValue, bool oIncrement, bool oDecrement, int faID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, oDate, oName, oValue, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, oDate, oName, oValue, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		date = oDate;
@@ -97,6 +97,7 @@ namespace BusinessLayer
 		decrement = oDecrement;
 		fixedAssetsID = faID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateFixedAssetsOperations(id, date, name, value, increment,
 			decrement, fixedAssetsID, errorMessage))
 		{
@@ -110,12 +111,13 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool FixedAssetsOperations::CreateFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsOperations::CreateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateFixedAssetsOperations(id, date, name, value, increment,
 			decrement, fixedAssetsID, errorMessage))
 		{
@@ -128,7 +130,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool FixedAssetsOperations::DeleteFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsOperations::DeleteFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -142,7 +144,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool FixedAssetsOperations::UpdateFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string oDate, std::string oName,
+	bool FixedAssetsOperations::UpdateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName,
 		double oValue, bool oIncrement, bool oDecrement, int faID, std::string& errorMessage)
 	{
 		date = oDate;
@@ -152,6 +154,7 @@ namespace BusinessLayer
 		decrement = oDecrement;
 		fixedAssetsID = faID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateFixedAssetsOperations(id, date, name, value, increment,
 			decrement, fixedAssetsID, errorMessage))
 		{
@@ -164,9 +167,10 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool FixedAssetsOperations::UpdateFixedAssetsOperations(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsOperations::UpdateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateFixedAssetsOperations(id, date, name, value, increment,
 			decrement, fixedAssetsID, errorMessage))
 		{
@@ -190,7 +194,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool FixedAssetsOperations::GetFixedAssetsOperationsByID(DataLayer::OrmasDal& ormasDal, int fID, std::string& errorMessage)
+	bool FixedAssetsOperations::GetFixedAssetsOperationsByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fID, std::string& errorMessage)
 	{
 		if (fID <= 0)
 			return false;
@@ -219,8 +223,8 @@ namespace BusinessLayer
 	{
 		if (0 == id && date == "" && name == "" && 0.0 == value 
 			&& false == increment && false == decrement && 0 == fixedAssetsID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void FixedAssetsOperations::Clear()
@@ -234,7 +238,7 @@ namespace BusinessLayer
 		fixedAssetsID = 0;
 	}
 
-	bool FixedAssetsOperations::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string oDate, std::string oName, double oValue, std::string& errorMessage)
+	bool FixedAssetsOperations::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName, double oValue, std::string& errorMessage)
 	{
 		FixedAssetsOperations fixedAssetsOperations;
 		fixedAssetsOperations.Clear();
@@ -254,7 +258,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool FixedAssetsOperations::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool FixedAssetsOperations::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		FixedAssetsOperations fixedAssetsOperations;
 		fixedAssetsOperations.Clear();

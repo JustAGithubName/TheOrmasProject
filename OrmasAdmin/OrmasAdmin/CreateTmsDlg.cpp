@@ -56,10 +56,10 @@ void CreateTmsDlg::SetID(int ID, QString childName)
 			{
 				salaryEdit->setText(QString::number(ID));
 				BusinessLayer::Salary salary;
-				if (salary.GetSalaryByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (salary.GetSalaryByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					BusinessLayer::User user;
-					if (user.GetUserByID(dialogBL->GetOrmasDal(), salary.GetEmployeeID(), errorMessage))
+					if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), salary.GetEmployeeID(), errorMessage))
 					{
 						namePh->setText(user.GetName().c_str());
 						surnamePh->setText(user.GetSurname().c_str());
@@ -85,10 +85,10 @@ void CreateTmsDlg::FillEditElements(int sID, double tWorkedTime, QString tDate)
 	workedTimeEdit->setText(QString::number(tWorkedTime));
 	dateEdit->setDate(QDate::fromString(tDate, "dd.MM.yyyy"));
 	BusinessLayer::Salary salary;
-	if (salary.GetSalaryByID(dialogBL->GetOrmasDal(), sID, errorMessage))
+	if (salary.GetSalaryByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), sID, errorMessage))
 	{
 		BusinessLayer::User user;
-		if (user.GetUserByID(dialogBL->GetOrmasDal(), salary.GetEmployeeID(), errorMessage))
+		if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), salary.GetEmployeeID(), errorMessage))
 		{
 			namePh->setText(user.GetName().c_str());
 			surnamePh->setText(user.GetSurname().c_str());
@@ -124,7 +124,7 @@ void CreateTmsDlg::CreateTimesheet()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetTimesheetParams(salaryEdit->text().toInt(), workedTimeEdit->text().toDouble(), dateEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateTimesheet(timesheet, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -133,7 +133,7 @@ void CreateTmsDlg::CreateTimesheet()
 				{
 					BusinessLayer::Salary *salary = new BusinessLayer::Salary;
 					BusinessLayer::User *employee = new BusinessLayer::User;
-					if (!salary->GetSalaryByID(dialogBL->GetOrmasDal(), timesheet->GetSalaryID(), errorMessage))
+					if (!salary->GetSalaryByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), timesheet->GetSalaryID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -144,7 +144,7 @@ void CreateTmsDlg::CreateTimesheet()
 						return;
 					}
 
-					if (!employee->GetUserByID(dialogBL->GetOrmasDal(), salary->GetEmployeeID(), errorMessage))
+					if (!employee->GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), salary->GetEmployeeID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -170,7 +170,13 @@ void CreateTmsDlg::CreateTimesheet()
 					delete employee;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 		
 			Close();
@@ -205,7 +211,7 @@ void CreateTmsDlg::EditTimesheet()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetTimesheetParams(salaryEdit->text().toInt(), workedTimeEdit->text().toDouble(), dateEdit->text(), timesheet->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateTimesheet(timesheet, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -214,7 +220,7 @@ void CreateTmsDlg::EditTimesheet()
 					{
 						BusinessLayer::Salary *salary = new BusinessLayer::Salary;
 						BusinessLayer::User *employee = new BusinessLayer::User;
-						if (!salary->GetSalaryByID(dialogBL->GetOrmasDal(), timesheet->GetSalaryID(), errorMessage))
+						if (!salary->GetSalaryByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), timesheet->GetSalaryID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -225,7 +231,7 @@ void CreateTmsDlg::EditTimesheet()
 							return;
 						}
 
-						if (!employee->GetUserByID(dialogBL->GetOrmasDal(), salary->GetEmployeeID(), errorMessage))
+						if (!employee->GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), salary->GetEmployeeID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -248,7 +254,13 @@ void CreateTmsDlg::EditTimesheet()
 						delete salary;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 			
 				Close();

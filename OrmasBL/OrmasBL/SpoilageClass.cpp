@@ -90,12 +90,12 @@ namespace BusinessLayer
 		currencyID = sCurrencyID;
 	}
 
-	bool Spoilage::CreateSpoilage(DataLayer::OrmasDal& ormasDal, std::string sDate, int eID, double sCount,
+	bool Spoilage::CreateSpoilage(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sDate, int eID, double sCount,
 		double sSum, int stsID, int cID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, sDate, sCount, sSum, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, sDate, sCount, sSum, cID, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		date = sDate;
@@ -105,11 +105,12 @@ namespace BusinessLayer
 		statusID = stsID;
 		currencyID = cID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateSpoilage(id, date, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (CreateSpoilageEntry(ormasDal, employeeID, sum, currencyID, errorMessage))
+				if (CreateSpoilageEntry(globalVar, ormasDal, employeeID, sum, currencyID, errorMessage))
 				{
 					//ormasDal.CommitTransaction(errorMessage);
 					return true;
@@ -131,19 +132,20 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Spoilage::CreateSpoilage(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Spoilage::CreateSpoilage(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateSpoilage(id, date, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (CreateSpoilageEntry(ormasDal, employeeID, sum, currencyID, errorMessage))
+				if (CreateSpoilageEntry(globalVar, ormasDal, employeeID, sum, currencyID, errorMessage))
 				{
 					//ormasDal.CommitTransaction(errorMessage);
 					return true;
@@ -164,16 +166,16 @@ namespace BusinessLayer
 		//ormasDal.StartTransaction(errorMessage);
 		return false;
 	}
-	bool Spoilage::DeleteSpoilage(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Spoilage::DeleteSpoilage(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
 		Spoilage spl;
-		if (!spl.GetSpoilageByID(ormasDal, id, errorMessage))
+		if (!spl.GetSpoilageByID(globalVar, ormasDal, id, errorMessage))
 		{
 			return false;
 		}
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		if (spl.GetStatusID() == statusMap.find("EXECUTED")->second)
@@ -209,10 +211,10 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Spoilage::UpdateSpoilage(DataLayer::OrmasDal& ormasDal, std::string sDate, int eID, double sCount,
+	bool Spoilage::UpdateSpoilage(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sDate, int eID, double sCount,
 		double sSum, int stsID, int cID, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		date = sDate;
@@ -222,14 +224,15 @@ namespace BusinessLayer
 		statusID = stsID;
 		currencyID = cID;
 		//ormasDal.StartTransaction(errorMessage);
-		previousSum = GetCurrentSum(ormasDal, id, errorMessage);
-		prevCount = GetCurrentCount(ormasDal, id, errorMessage);
-		previousStatusID = GetCurrentStatusID(ormasDal, id, errorMessage);
+		previousSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
+		prevCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateSpoilage(id, date, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (CreateSpoilageEntry(ormasDal, employeeID, sum, previousSum, currencyID, errorMessage))
+				if (CreateSpoilageEntry(globalVar, ormasDal, employeeID, sum, previousSum, currencyID, errorMessage))
 				{
 					//ormasDal.CommitTransaction(errorMessage);
 					return true;
@@ -244,7 +247,7 @@ namespace BusinessLayer
 			{
 				if (count != prevCount || sum != previousSum)
 				{
-					if (CreateSpoilageEntry(ormasDal, employeeID, sum, previousSum, currencyID, errorMessage))
+					if (CreateSpoilageEntry(globalVar, ormasDal, employeeID, sum, previousSum, currencyID, errorMessage))
 					{
 						//ormasDal.CommitTransaction(errorMessage);
 						return true;
@@ -271,20 +274,21 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Spoilage::UpdateSpoilage(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Spoilage::UpdateSpoilage(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(ormasDal, errorMessage);
+		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
 		//ormasDal.StartTransaction(errorMessage);
-		previousSum = GetCurrentSum(ormasDal, id, errorMessage);
-		prevCount = GetCurrentCount(ormasDal, id, errorMessage);
-		previousStatusID = GetCurrentStatusID(ormasDal, id, errorMessage);
+		previousSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
+		prevCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
+		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateSpoilage(id, date, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (CreateSpoilageEntry(ormasDal, employeeID, sum, previousSum, currencyID, errorMessage))
+				if (CreateSpoilageEntry(globalVar, ormasDal, employeeID, sum, previousSum, currencyID, errorMessage))
 				{
 					//ormasDal.CommitTransaction(errorMessage);
 					return true;
@@ -299,7 +303,7 @@ namespace BusinessLayer
 			{
 				if (count != prevCount || sum != previousSum)
 				{
-					if (CreateSpoilageEntry(ormasDal, employeeID, sum, previousSum, currencyID, errorMessage))
+					if (CreateSpoilageEntry(globalVar, ormasDal, employeeID, sum, previousSum, currencyID, errorMessage))
 					{
 						//ormasDal.CommitTransaction(errorMessage);
 						return true;
@@ -336,7 +340,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Spoilage::GetSpoilageByID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	bool Spoilage::GetSpoilageByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		if (oID <= 0)
 			return false;
@@ -364,8 +368,8 @@ namespace BusinessLayer
 	bool Spoilage::IsEmpty()
 	{
 		if (0 == id && date == "" && 0 == count && 0 == sum && 0 == employeeID && 0 == statusID && 0 == currencyID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void Spoilage::Clear()
@@ -379,7 +383,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool Spoilage::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string sDate, double sCount, double sSum,
+	bool Spoilage::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string sDate, double sCount, double sSum,
 		int cID, std::string& errorMessage)
 	{
 		Spoilage spoilage;
@@ -401,7 +405,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Spoilage::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Spoilage::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Spoilage spoilage;
 		spoilage.Clear();
@@ -422,69 +426,69 @@ namespace BusinessLayer
 		return true;
 	}
 	
-	bool Spoilage::CreateSpoilageEntry(DataLayer::OrmasDal& ormasDal, int eID, double oSum, int cID, std::string& errorMessage)
+	bool Spoilage::CreateSpoilageEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, double oSum, int cID, std::string& errorMessage)
 	{
 		CompanyAccountRelation cAccRel;
 		CompanyEmployeeRelation cEmpRel;
 
-		int companyID = cEmpRel.GetCompanyByEmployeeID(ormasDal, eID, errorMessage);
-		int debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "55040", errorMessage);
-		int credAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int companyID = cEmpRel.GetCompanyByEmployeeID(globalVar, ormasDal, eID, errorMessage);
+		int debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55040", errorMessage);
+		int credAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			return false;
 		}
-		if (this->CreateEntry(ormasDal, debAccID, oSum, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+		if (this->CreateEntry(globalVar, ormasDal, debAccID, oSum, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
 
-	bool Spoilage::CreateSpoilageEntry(DataLayer::OrmasDal& ormasDal, int eID, double oSum, double prevSum, int cID, std::string& errorMessage)
+	bool Spoilage::CreateSpoilageEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, double oSum, double prevSum, int cID, std::string& errorMessage)
 	{
 		CompanyAccountRelation cAccRel;
 		CompanyEmployeeRelation cEmpRel;
 		
-		int companyID = cEmpRel.GetCompanyByEmployeeID(ormasDal, eID, errorMessage);
-		int debAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "55040", errorMessage);
-		int credAccID = cAccRel.GetAccountIDByCompanyID(ormasDal, companyID, "10730", errorMessage);
+		int companyID = cEmpRel.GetCompanyByEmployeeID(globalVar, ormasDal, eID, errorMessage);
+		int debAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55040", errorMessage);
+		int credAccID = cAccRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
 		if (0 == debAccID || 0 == credAccID)
 		{
 			return false;
 		}
-		if (this->CreateEntry(ormasDal, debAccID, oSum, credAccID, prevSum, ormasDal.GetSystemDateTime(), errorMessage))
+		if (this->CreateEntry(globalVar, ormasDal, debAccID, oSum, credAccID, prevSum, ormasDal.GetSystemDateTime(), errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
 
-	double Spoilage::GetCurrentSum(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	double Spoilage::GetCurrentSum(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Spoilage spoilage;
-		if (spoilage.GetSpoilageByID(ormasDal, oID, errorMessage))
+		if (spoilage.GetSpoilageByID(globalVar, ormasDal, oID, errorMessage))
 			return spoilage.GetSum();
 		return 0;
 	}
 
-	double Spoilage::GetCurrentCount(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	double Spoilage::GetCurrentCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Spoilage spoilage;
-		if (spoilage.GetSpoilageByID(ormasDal, oID, errorMessage))
+		if (spoilage.GetSpoilageByID(globalVar, ormasDal, oID, errorMessage))
 			return spoilage.GetCount();
 		return 0;
 	}
 
-	int Spoilage::GetCurrentStatusID(DataLayer::OrmasDal& ormasDal, int oID, std::string& errorMessage)
+	int Spoilage::GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage)
 	{
 		Spoilage spoilage;
-		if (spoilage.GetSpoilageByID(ormasDal, oID, errorMessage))
+		if (spoilage.GetSpoilageByID(globalVar, ormasDal, oID, errorMessage))
 			return spoilage.GetStatusID();
 		return 0;
 	}
 
-	bool Spoilage::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Spoilage::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -493,11 +497,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Операция списания"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -508,7 +512,7 @@ namespace BusinessLayer
 		}
 		return true;
 	}
-	bool Spoilage::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage)
+	bool Spoilage::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, double previousSum, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -517,11 +521,11 @@ namespace BusinessLayer
 		entry.SetValue(previousSum);
 		entry.SetCreditingAccountID(debAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена списания"));
-		if (entry.CreateEntry(ormasDal, errorMessage, true))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage, true))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -538,11 +542,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Операция списания"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}

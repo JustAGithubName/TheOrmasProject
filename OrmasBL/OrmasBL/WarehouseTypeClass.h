@@ -32,24 +32,24 @@ namespace BusinessLayer{
 		void SetName(std::string);
 
 		// Create, delete and update WarehouseType
-		bool CreateWarehouseType(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateWarehouseType(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteWarehouseType(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateWarehouseType(DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string wtPurpose, std::string wtName, std::string& errorMessage);
-		bool UpdateWarehouseType(DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string wtPurpose, std::string wtName, std::string& errorMessage);
+		bool CreateWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string wtPurpose, std::string wtName, std::string& errorMessage);
+		bool UpdateWarehouseType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string wtPurpose, std::string wtName, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetWarehouseTypeByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		bool GetWarehouseTypeByCode(DataLayer::OrmasDal& ormasDal, std::string wtCode, std::string& errorMessage);
-		int GetWarehouseTypeID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool GetWarehouseTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		bool GetWarehouseTypeByCode(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wtCode, std::string& errorMessage);
+		int GetWarehouseTypeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
-		static std::map<std::string, int> GetWarehouseTypesAsMap(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		static std::map<std::string, int> GetWarehouseTypesAsMap(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string cName, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //WarehouseTypeCLASS_H

@@ -64,7 +64,7 @@ void CreateEtrDlg::SetID(int ID, QString childName)
 			{
 				daIDEdit->setText(QString::number(ID));
 				BusinessLayer::Account account;
-				if (account.GetAccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					daNumberEdit->setReadOnly(true);
 					daNumberEdit->setText(account.GetNumber().c_str());
@@ -74,7 +74,7 @@ void CreateEtrDlg::SetID(int ID, QString childName)
 			{
 				caIDEdit->setText(QString::number(ID));
 				BusinessLayer::Account account;
-				if (account.GetAccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					caNumberEdit->setReadOnly(true);
 					caNumberEdit->setText(account.GetNumber().c_str());
@@ -84,7 +84,7 @@ void CreateEtrDlg::SetID(int ID, QString childName)
 			{
 				daIDEdit->setText(QString::number(ID));
 				BusinessLayer::Subaccount subaccount;
-				if (subaccount.GetSubaccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (subaccount.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					daNumberEdit->setReadOnly(true);
 					daNumberEdit->setText(subaccount.GetNumber().c_str());
@@ -94,7 +94,7 @@ void CreateEtrDlg::SetID(int ID, QString childName)
 			{
 				caIDEdit->setText(QString::number(ID));
 				BusinessLayer::Subaccount subaccount;
-				if (subaccount.GetSubaccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (subaccount.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					caNumberEdit->setReadOnly(true);
 					caNumberEdit->setText(subaccount.GetNumber().c_str());
@@ -122,25 +122,25 @@ void CreateEtrDlg::FillEditElements(QString eDate, int daID, double eValue, int 
 	caIDEdit->setText(QString::number(caID));
 	descriptionTextEdit->setText(eDescription);
 	BusinessLayer::Account account1;
-	if (account1.GetAccountByID(dialogBL->GetOrmasDal(), daID, errorMessage))
+	if (account1.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), daID, errorMessage))
 	{
 		daNumberEdit->setReadOnly(true);
 		daNumberEdit->setText(account1.GetNumber().c_str());
 	}
 	BusinessLayer::Account account2;
-	if (account2.GetAccountByID(dialogBL->GetOrmasDal(), caID, errorMessage))
+	if (account2.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), caID, errorMessage))
 	{
 		caNumberEdit->setReadOnly(true);
 		caNumberEdit->setText(account2.GetNumber().c_str());
 	}
 	BusinessLayer::Subaccount subaccount1;
-	if (subaccount1.GetSubaccountByID(dialogBL->GetOrmasDal(), daID, errorMessage))
+	if (subaccount1.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), daID, errorMessage))
 	{
 		daNumberEdit->setReadOnly(true);
 		daNumberEdit->setText(subaccount1.GetNumber().c_str());
 	}
 	BusinessLayer::Subaccount subaccount2;
-	if (subaccount2.GetSubaccountByID(dialogBL->GetOrmasDal(), caID, errorMessage))
+	if (subaccount2.GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), caID, errorMessage))
 	{
 		caNumberEdit->setReadOnly(true);
 		caNumberEdit->setText(subaccount2.GetNumber().c_str());
@@ -179,7 +179,7 @@ void CreateEtrDlg::CreateEntry()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetEntryParams(dateEdit->text(), daIDEdit->text().toInt(), valueEdit->text().toDouble(), caIDEdit->text().toInt(), descriptionTextEdit->toPlainText());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateEntry(entry, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -188,8 +188,8 @@ void CreateEtrDlg::CreateEntry()
 				{
 					BusinessLayer::Account *dAccount = new BusinessLayer::Account;
 					BusinessLayer::Subaccount *dSAccount = new BusinessLayer::Subaccount;
-					if (!dAccount->GetAccountByID(dialogBL->GetOrmasDal(), entry->GetDebitingAccountID(), errorMessage)
-						&& !dSAccount->GetSubaccountByID(dialogBL->GetOrmasDal(), entry->GetDebitingAccountID(), errorMessage))
+					if (!dAccount->GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entry->GetDebitingAccountID(), errorMessage)
+						&& !dSAccount->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entry->GetDebitingAccountID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -202,8 +202,8 @@ void CreateEtrDlg::CreateEntry()
 					}
 					BusinessLayer::Account *cAccount = new BusinessLayer::Account;
 					BusinessLayer::Subaccount *cSAccount = new BusinessLayer::Subaccount;
-					if (!cAccount->GetAccountByID(dialogBL->GetOrmasDal(), entry->GetCreditingAccountID(), errorMessage)
-						&& !cSAccount->GetSubaccountByID(dialogBL->GetOrmasDal(), entry->GetCreditingAccountID(), errorMessage))
+					if (!cAccount->GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entry->GetCreditingAccountID(), errorMessage)
+						&& !cSAccount->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entry->GetCreditingAccountID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -249,7 +249,13 @@ void CreateEtrDlg::CreateEntry()
 					delete cSAccount;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 		
 			Close();
@@ -285,7 +291,7 @@ void CreateEtrDlg::EditEntry()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetEntryParams(dateEdit->text(), daIDEdit->text().toInt(), valueEdit->text().toDouble(), caIDEdit->text().toInt(), descriptionTextEdit->toPlainText(), entry->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateEntry(entry, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -294,8 +300,8 @@ void CreateEtrDlg::EditEntry()
 					{
 						BusinessLayer::Account *dAccount = new BusinessLayer::Account;
 						BusinessLayer::Subaccount *dSAccount = new BusinessLayer::Subaccount;
-						if (!dAccount->GetAccountByID(dialogBL->GetOrmasDal(), entry->GetDebitingAccountID(), errorMessage)
-							&& !dSAccount->GetSubaccountByID(dialogBL->GetOrmasDal(), entry->GetDebitingAccountID(), errorMessage))
+						if (!dAccount->GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entry->GetDebitingAccountID(), errorMessage)
+							&& !dSAccount->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entry->GetDebitingAccountID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -308,8 +314,8 @@ void CreateEtrDlg::EditEntry()
 						}
 						BusinessLayer::Account *cAccount = new BusinessLayer::Account;
 						BusinessLayer::Subaccount *cSAccount = new BusinessLayer::Subaccount;
-						if (!cAccount->GetAccountByID(dialogBL->GetOrmasDal(), entry->GetCreditingAccountID(), errorMessage)
-							&& !cSAccount->GetSubaccountByID(dialogBL->GetOrmasDal(), entry->GetCreditingAccountID(), errorMessage))
+						if (!cAccount->GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entry->GetCreditingAccountID(), errorMessage)
+							&& !cSAccount->GetSubaccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), entry->GetCreditingAccountID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -353,7 +359,13 @@ void CreateEtrDlg::EditEntry()
 						
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else
@@ -563,7 +575,7 @@ void CreateEtrDlg::DATextChanged()
 	if (daNumberEdit->text().length() == 5 || daNumberEdit->text().length() == 6)
 	{
 		BusinessLayer::Account account;
-		if (account.GetAccountByNumber(dialogBL->GetOrmasDal(), daNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), daNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			daIDEdit->setText(QString::number(account.GetID()));
 			if (account.GetName(dialogBL->GetOrmasDal()).c_str() != nullptr)
@@ -578,7 +590,7 @@ void CreateEtrDlg::DATextChanged()
 	else if (daNumberEdit->text().length() == 15)
 	{
 		BusinessLayer::Subaccount subaccount;
-		if (subaccount.GetSubaccountByNumber(dialogBL->GetOrmasDal(), daNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (subaccount.GetSubaccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), daNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			daIDEdit->setText(QString::number(subaccount.GetID()));
 			if (subaccount.GetName(dialogBL->GetOrmasDal()).c_str() != nullptr)
@@ -602,7 +614,7 @@ void CreateEtrDlg::CATextChanged()
 	if (caNumberEdit->text().length() == 5 || caNumberEdit->text().length() == 6)
 	{
 		BusinessLayer::Account account;
-		if (account.GetAccountByNumber(dialogBL->GetOrmasDal(), caNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), caNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			caIDEdit->setText(QString::number(account.GetID()));
 			if (account.GetName(dialogBL->GetOrmasDal()).c_str() != nullptr)
@@ -617,7 +629,7 @@ void CreateEtrDlg::CATextChanged()
 	else if (caNumberEdit->text().length() == 15)
 	{
 		BusinessLayer::Subaccount subaccount;
-		if (subaccount.GetSubaccountByNumber(dialogBL->GetOrmasDal(), caNumberEdit->text().toUtf8().constData(), errorMessage))
+		if (subaccount.GetSubaccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), caNumberEdit->text().toUtf8().constData(), errorMessage))
 		{
 			caIDEdit->setText(QString::number(subaccount.GetID()));
 			if (subaccount.GetName(dialogBL->GetOrmasDal()).c_str() != nullptr)

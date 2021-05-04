@@ -70,7 +70,7 @@ void CreateOthSTypeDlg::CreateOtherStocksType()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetOthSTypeParams(nameEdit->text(), shortNameEdit->text(), codeEdit->text());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateOtherStocksType(othSType, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -85,7 +85,13 @@ void CreateOthSTypeDlg::CreateOtherStocksType()
 				}
 			}
 
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -115,7 +121,7 @@ void CreateOthSTypeDlg::EditOtherStocksType()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetOthSTypeParams(nameEdit->text(), shortNameEdit->text(), codeEdit->text(), othSType->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateOtherStocksType(othSType, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -130,7 +136,13 @@ void CreateOthSTypeDlg::EditOtherStocksType()
 					}
 				}
 
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

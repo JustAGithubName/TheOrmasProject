@@ -54,7 +54,7 @@ void CreateCARDlg::SetID(int ID, QString childName)
 				accountEdit->setText(QString::number(ID));
 			}
 			BusinessLayer::Account account;
-			if (account.GetAccountByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+			if (account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 			{
 				numberPh->setText(account.GetNumber().c_str());
 			}
@@ -75,7 +75,7 @@ void CreateCARDlg::FillEditElements(int caCompanyID, int caAccountID)
 	accountEdit->setText(QString::number(caAccountID));
 	companyCmb->setCurrentIndex(companyCmb->findData(QVariant(caAccountID)));
 	BusinessLayer::Account account;
-	if (account.GetAccountByID(dialogBL->GetOrmasDal(), caAccountID, errorMessage))
+	if (account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), caAccountID, errorMessage))
 	{
 		numberPh->setText(account.GetNumber().c_str());
 	}
@@ -106,7 +106,7 @@ void CreateCARDlg::CreateCompanyAccount()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetCompanyAccountParams(companyCmb->currentData().toInt(), accountEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateCompanyAccountRelation(companyAccount, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -115,8 +115,8 @@ void CreateCARDlg::CreateCompanyAccount()
 				{
 					BusinessLayer::Company *company = new BusinessLayer::Company();
 					BusinessLayer::Account *account = new BusinessLayer::Account();
-					if (!company->GetCompanyByID(dialogBL->GetOrmasDal(), companyAccount->GetCompanyID(), errorMessage)
-						|| !account->GetAccountByID(dialogBL->GetOrmasDal(), companyAccount->GetAccountID(), errorMessage))
+					if (!company->GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyAccount->GetCompanyID(), errorMessage)
+						|| !account->GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyAccount->GetAccountID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						dialogBL->CancelTransaction(errorMessage);
@@ -142,7 +142,13 @@ void CreateCARDlg::CreateCompanyAccount()
 					delete account;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 			
 			Close();
@@ -175,7 +181,7 @@ void CreateCARDlg::EditCompanyAccount()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetCompanyAccountParams(companyCmb->currentData().toInt(), accountEdit->text().toInt(), companyAccount->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateCompanyAccountRelation(companyAccount, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -184,8 +190,8 @@ void CreateCARDlg::EditCompanyAccount()
 					{
 						BusinessLayer::Company *company = new BusinessLayer::Company();
 						BusinessLayer::Account *account = new BusinessLayer::Account();
-						if (!company->GetCompanyByID(dialogBL->GetOrmasDal(), companyAccount->GetCompanyID(), errorMessage)
-							|| !account->GetAccountByID(dialogBL->GetOrmasDal(), companyAccount->GetAccountID(), errorMessage))
+						if (!company->GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyAccount->GetCompanyID(), errorMessage)
+							|| !account->GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), companyAccount->GetAccountID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -209,7 +215,13 @@ void CreateCARDlg::EditCompanyAccount()
 						delete account;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}

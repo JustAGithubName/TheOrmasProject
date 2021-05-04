@@ -34,20 +34,20 @@ namespace BusinessLayer
 
 
 		//Create, delete, update methods
-		bool CreateInventoryHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdateInventoryHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeleteInventoryHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreateInventoryHistory(DataLayer::OrmasDal& ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage);
-		bool UpdateInventoryHistory(DataLayer::OrmasDal& ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage);
+		bool CreateInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage);
+		bool UpdateInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetInventoryHistoryByID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage);
+		bool GetInventoryHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //InventoryHistoryCLASS_H

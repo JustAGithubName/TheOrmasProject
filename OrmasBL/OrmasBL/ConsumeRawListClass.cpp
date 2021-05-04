@@ -78,7 +78,7 @@ namespace BusinessLayer
 		currencyID = cCurrencyID;
 	}
 
-	bool ConsumeRawList::CreateConsumeRawList(DataLayer::OrmasDal& ormasDal, int crID, int pID, double crlCount, double crlSum,
+	bool ConsumeRawList::CreateConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int pID, double crlCount, double crlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -94,7 +94,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeRawList::CreateConsumeRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeRawList::CreateConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateConsumeRawList(id, consumeRawID, productID, count, sum, statusID, currencyID, errorMessage))
@@ -103,7 +103,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeRawList::DeleteConsumeRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeRawList::DeleteConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteItemInConsumeRawList(id, errorMessage))
 		{
@@ -112,7 +112,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeRawList::DeleteListByConsumeRawID(DataLayer::OrmasDal& ormasDal, int crID, std::string& errorMessage)
+	bool ConsumeRawList::DeleteListByConsumeRawID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, std::string& errorMessage)
 	{
 		consumeRawID = crID;
 		if (ormasDal.DeleteListByConsumeRawID(consumeRawID, errorMessage))
@@ -123,7 +123,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool ConsumeRawList::UpdateConsumeRawList(DataLayer::OrmasDal& ormasDal, int crID, int pID, double crlCount, double crlSum,
+	bool ConsumeRawList::UpdateConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int pID, double crlCount, double crlSum,
 		int sID, int cID, std::string& errorMessage)
 	{
 		consumeRawID = crID;
@@ -138,7 +138,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool ConsumeRawList::UpdateConsumeRawList(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeRawList::UpdateConsumeRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateConsumeRawList(id, consumeRawID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -156,7 +156,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool ConsumeRawList::GetConsumeRawListByID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool ConsumeRawList::GetConsumeRawListByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -199,7 +199,7 @@ namespace BusinessLayer
 		currencyID = 0;
 	}
 
-	bool ConsumeRawList::IsDuplicate(DataLayer::OrmasDal& ormasDal, int crID, int pID, double crlCount, double crlSum,
+	bool ConsumeRawList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int crID, int pID, double crlCount, double crlSum,
 		int cID, std::string& errorMessage)
 	{
 		ConsumeRawList consumeRawList;
@@ -222,7 +222,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool ConsumeRawList::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool ConsumeRawList::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		ConsumeRawList consumeRawList;
 		consumeRawList.Clear();

@@ -42,23 +42,23 @@ namespace BusinessLayer{
 
 
 		// Create, delete and update CashboxTransaction
-		bool CreateCashboxTransaction(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool UpdateCashboxTransaction(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool DeleteCashboxTransaction(DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
-		bool CreateCashboxTransaction(DataLayer::OrmasDal &ormasDal, int cashbID, int cashiID, int accID, int ownID, int paymID, int withID, std::string& errorMessage);
-		bool UpdateCashboxTransaction(DataLayer::OrmasDal &ormasDal, int cashbID, int cashiID, int accID, int ownID, int paymID, int withID, std::string& errorMessage);
+		bool CreateCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdateCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeleteCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreateCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cashbID, int cashiID, int accID, int ownID, int paymID, int withID, std::string& errorMessage);
+		bool UpdateCashboxTransaction(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cashbID, int cashiID, int accID, int ownID, int paymID, int withID, std::string& errorMessage);
 
 		//Generate filter string for class
 		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetCashboxTransactionByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage);
-		bool GetCashboxTransactionByPaymentID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage);
-		bool GetCashboxTransactionByWithdrawalID(DataLayer::OrmasDal& ormasDal, int wID, std::string& errorMessage);
-		bool GetCashboxTransactionByCashierID(DataLayer::OrmasDal& ormasDal, int cierID, std::string& errorMessage);
+		bool GetCashboxTransactionByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
+		bool GetCashboxTransactionByPaymentID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		bool GetCashboxTransactionByWithdrawalID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
+		bool GetCashboxTransactionByCashierID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cierID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //CASHBOXTRANSACTIONCLASS_H

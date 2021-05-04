@@ -44,9 +44,9 @@ namespace BusinessLayer{
 		paymentID = pID;
 	}
 
-	bool PaymentEmployeeRelation::CreatePaymentEmployeeRelation(DataLayer::OrmasDal &ormasDal, int pID, int eID, std::string& errorMessage)
+	bool PaymentEmployeeRelation::CreatePaymentEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int eID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, pID, eID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pID, eID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		employeeID = eID;
@@ -62,9 +62,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool PaymentEmployeeRelation::CreatePaymentEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PaymentEmployeeRelation::CreatePaymentEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreatePaymentEmployee(id, paymentID, employeeID, errorMessage))
@@ -77,7 +77,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool PaymentEmployeeRelation::DeletePaymentEmployeeRelation(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PaymentEmployeeRelation::DeletePaymentEmployeeRelation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeletePaymentEmployee(paymentID, employeeID, errorMessage))
 		{
@@ -102,7 +102,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::vector<int> PaymentEmployeeRelation::GetAllPaymentByEmployeeID(DataLayer::OrmasDal& ormasDal, int eID, std::string& errorMessage)
+	std::vector<int> PaymentEmployeeRelation::GetAllPaymentByEmployeeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string& errorMessage)
 	{
 		std::vector<int> paymentIDVector;
 		PaymentEmployeeRelation peRelation;
@@ -120,7 +120,7 @@ namespace BusinessLayer{
 		return paymentIDVector;
 	}
 
-	std::vector<int> PaymentEmployeeRelation::GetAllEmployeeByPaymentID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	std::vector<int> PaymentEmployeeRelation::GetAllEmployeeByPaymentID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		std::vector<int> employeeIDVector;
 		PaymentEmployeeRelation peRelation;
@@ -153,7 +153,7 @@ namespace BusinessLayer{
 		paymentID = 0;
 	}
 
-	bool PaymentEmployeeRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int eID, std::string& errorMessage)
+	bool PaymentEmployeeRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int eID, std::string& errorMessage)
 	{
 		PaymentEmployeeRelation peRelation;
 		peRelation.Clear();
@@ -172,7 +172,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool PaymentEmployeeRelation::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool PaymentEmployeeRelation::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		PaymentEmployeeRelation peRelation;
 		peRelation.Clear();

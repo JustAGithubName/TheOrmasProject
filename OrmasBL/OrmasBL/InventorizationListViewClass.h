@@ -18,6 +18,7 @@ namespace BusinessLayer
 		InventorizationListView(DataLayer::inventorizationListViewCollection);
 		InventorizationListView(){};
 		~InventorizationListView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		//InventorizationListView class Accessors
 		std::string GetProductName();
@@ -27,6 +28,14 @@ namespace BusinessLayer
 		std::string GetMeasureName();
 		std::string GetSumCurrencyName();
 		std::string GetStatusName();
+
+		void SetProductName(std::string);
+		void SetPrice(double);
+		void SetCurrencyName(std::string);
+		void SetVolume(double);
+		void SetMeasureName(std::string);
+		void SetSumCurrencyName(std::string);
+		void SetStatusName(std::string);
 	};
 }
 #endif //InventorizationLISTVIEWCLASS_H

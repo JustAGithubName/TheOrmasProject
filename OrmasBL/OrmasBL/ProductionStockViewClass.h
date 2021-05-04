@@ -20,6 +20,7 @@ namespace BusinessLayer
 		ProductionStockView(DataLayer::productionStockViewCollection);
 		ProductionStockView(){};
 		~ProductionStockView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		//ProductionStockView class Accessors
 		std::string GetProductName();
@@ -31,6 +32,16 @@ namespace BusinessLayer
 		std::string GetWarehouseName();
 		std::string GetSubaccountNumber();
 		std::string GetStatusName();
+
+		void SetProductName(std::string);
+		void SetPrice(double);
+		void SetCurrencyName(std::string);
+		void SetVolume(double);
+		void SetMeasureName(std::string);
+		void SetSumCurrencyName(std::string);
+		void SetWarehouseName(std::string);
+		void SetSubaccountNumber(std::string);
+		void SetStatusName(std::string);
 	};
 }
 #endif //ProductionStockVIEWCLASS_H

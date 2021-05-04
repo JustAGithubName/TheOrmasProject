@@ -12,6 +12,7 @@ namespace BusinessLayer
 		volume = std::get<4>(pCollection);
 		measureName = std::get<5>(pCollection);
 		companyName = std::get<6>(pCollection);
+		otherStocksTypeName = std::get<7>(pCollection);
 		companyID = std::get<8>(pCollection);
 		measureID = std::get<9>(pCollection);
 		currencyID = std::get<10>(pCollection);
@@ -29,5 +30,36 @@ namespace BusinessLayer
 	std::string OtherStocksView::GetCurrencyName()
 	{
 		return currencyName;
+	}
+	std::string OtherStocksView::GetOtherStocksTypeName()
+	{
+		return otherStocksTypeName;
+	}
+
+	void OtherStocksView::SetCompanyName(std::string oCompanyName)
+	{
+		companyName = oCompanyName;
+	}
+	void OtherStocksView::SetMeasureName(std::string oMeasureName)
+	{
+		measureName = oMeasureName;
+	}
+	void OtherStocksView::SetCurrencyName(std::string oCurrencyName)
+	{
+		currencyName = oCurrencyName;
+	}
+	void OtherStocksView::SetOtherStocksTypeName(std::string oOtherStocksTypeName)
+	{
+		otherStocksTypeName = oOtherStocksTypeName;
+	}
+
+	std::string OtherStocksView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !name.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty() || !companyName.empty() 
+			|| 0 != companyID || 0 != measureID || 0 != currencyID || 0 != otherStocksTypeID)
+		{
+			return ormasDal.GetFilterForOthStView(id, name, price, currencyName, volume, measureName, companyName, otherStocksTypeName, companyID, measureID, currencyID, otherStocksTypeID);
+		}
+		return "";
 	}
 }

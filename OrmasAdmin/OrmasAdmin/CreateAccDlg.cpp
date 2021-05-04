@@ -58,7 +58,7 @@ void CreateAccDlg::SetID(int ID, QString childName)
 			{
 				chartOfAccEdit->setText(QString::number(ID));
 				BusinessLayer::ChartOfAccounts coAcc;
-				if (coAcc.GetChartOfAccountsByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (coAcc.GetChartOfAccountsByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					numberEdit->setText(coAcc.GetNumber().c_str());
 					accNamePh->setText(coAcc.GetName().c_str());
@@ -82,7 +82,7 @@ void CreateAccDlg::FillEditElements(QString aNumber, double aStartBalance, doubl
 	startBalanceEdit->setText(QString::number(aStartBalance, 'f', 3));
 	currentBalanceEdit->setText(QString::number(aCurrentBalance, 'f', 3));
 	BusinessLayer::ChartOfAccounts aoAcc;
-	if (aoAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), aNumber.toUtf8().constData(), errorMessage))
+	if (aoAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), aNumber.toUtf8().constData(), errorMessage))
 	{
 		
 		chartOfAccEdit->setText(QString::number(aoAcc.GetID()));
@@ -118,7 +118,7 @@ void CreateAccDlg::CreateAccount()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetAccountParams(numberEdit->text(), startBalanceEdit->text().toDouble(), currentBalanceEdit->text().toDouble());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateAccount(account, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -134,7 +134,13 @@ void CreateAccDlg::CreateAccount()
 					itemModel->appendRow(accountItem);
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -168,7 +174,7 @@ void CreateAccDlg::EditAccount()
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetAccountParams(numberEdit->text(), startBalanceEdit->text().toDouble(), currentBalanceEdit->text().toDouble(),
 				 account->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateAccount(account, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -181,7 +187,13 @@ void CreateAccDlg::EditAccount()
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

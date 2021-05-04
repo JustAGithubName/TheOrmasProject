@@ -37,4 +37,33 @@ namespace BusinessLayer{
 	{
 		return roleName;
 	}
+
+	void PurveyorView::SetCountryName(std::string pCountryName)
+	{
+		countryName = pCountryName;
+	}
+	void PurveyorView::SetRegionName(std::string pRegionName)
+	{
+		regionName = pRegionName;
+	}
+	void PurveyorView::SetCityName(std::string pCityName)
+	{
+		cityName = pCityName;
+	}
+	void PurveyorView::SetRoleName(std::string pRoleName)
+	{
+		roleName = pRoleName;
+	}
+
+	std::string PurveyorView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || !name.empty() || !surname.empty() || !phone.empty() || !countryName.empty() || !regionName.empty() || !cityName.empty() || !address.empty()
+			|| !companyName.empty() || !roleName.empty() || !password.empty() || !email.empty() || 0 != roleID || 0 != locationID)
+		{
+			return ormasDal.GetFilterFoPurveyorView(id, name, surname, phone, countryName, regionName, cityName, address, companyName, roleName,
+				password, email, roleID, locationID);
+		}
+		return "";
+	}
+
 }

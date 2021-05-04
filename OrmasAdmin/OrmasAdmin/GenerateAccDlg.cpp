@@ -43,12 +43,12 @@ void GenerateAcc::Generate()
 			account->SetStartBalance(0.0);
 			account->SetCurrentBalance(0.0);
 
-			if (account->CreateAccount(dialogBL->GetOrmasDal(), errorMessage))
+			if (account->CreateAccount(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage))
 			{
 				caRelation->Clear();
 				caRelation->SetAccountID(account->GetID());
 				caRelation->SetCompanyID(companyCmb->currentData().toInt());
-				if (!caRelation->CreateCompanyAccountRelation(dialogBL->GetOrmasDal(), errorMessage))
+				if (!caRelation->CreateCompanyAccountRelation(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage))
 				{
 					QMessageBox::information(NULL, QString(tr("Info")),
 						QString(tr("Cannot create relation with generated account and company! Please contact with Administrator!")),

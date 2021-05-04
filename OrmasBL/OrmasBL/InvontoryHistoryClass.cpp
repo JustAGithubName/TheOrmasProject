@@ -51,9 +51,9 @@ namespace BusinessLayer
 		changeDate = iChangeDate;
 	}
 
-	bool InventoryHistory::CreateInventoryHistory(DataLayer::OrmasDal& ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage)
+	bool InventoryHistory::CreateInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, invID, iComment, iChangeDate, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, invID, iComment, iChangeDate, errorMessage))
 			return true;
 		id = ormasDal.GenerateID();
 		inventoryID = invID;
@@ -72,9 +72,9 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool InventoryHistory::CreateInventoryHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventoryHistory::CreateInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return true;
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.CreateInventoryHistory(id, inventoryID, comment, changeDate, errorMessage))
@@ -88,7 +88,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool InventoryHistory::DeleteInventoryHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventoryHistory::DeleteInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -102,7 +102,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool InventoryHistory::UpdateInventoryHistory(DataLayer::OrmasDal& ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage)
+	bool InventoryHistory::UpdateInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage)
 	{
 		inventoryID = invID;
 		comment = iComment;
@@ -119,7 +119,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool InventoryHistory::UpdateInventoryHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventoryHistory::UpdateInventoryHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (0 != id && ormasDal.UpdateInventoryHistory(id, inventoryID, comment, changeDate, errorMessage))
@@ -143,7 +143,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool InventoryHistory::GetInventoryHistoryByID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage)
+	bool InventoryHistory::GetInventoryHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage)
 	{
 		if (iID <= 0)
 			return false;
@@ -168,8 +168,8 @@ namespace BusinessLayer
 	bool InventoryHistory::IsEmpty()
 	{
 		if (0 == id && 0 == inventoryID && comment == "" &&  changeDate == "")
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void InventoryHistory::Clear()
@@ -180,7 +180,7 @@ namespace BusinessLayer
 		changeDate = "";
 	}
 
-	bool InventoryHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage)
+	bool InventoryHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int invID, std::string iComment, std::string iChangeDate, std::string& errorMessage)
 	{
 		InventoryHistory inventoryHistory;
 		inventoryHistory.Clear();
@@ -200,7 +200,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool InventoryHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool InventoryHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		InventoryHistory inventoryHistory;
 		inventoryHistory.Clear();

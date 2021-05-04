@@ -50,4 +50,44 @@ namespace BusinessLayer
 		return measureName;
 	}
 
+
+	void ReceiptProductListView::SetProductName(std::string cProductName)
+	{
+		productName = cProductName;
+	}
+	void ReceiptProductListView::SetPrice(double cPrice)
+	{
+		price = cPrice;
+	}
+	void  ReceiptProductListView::SetCurrencyName(std::string cCurrencyName)
+	{
+		currencyName = cCurrencyName;
+	}
+	void ReceiptProductListView::SetVolume(double cVolume)
+	{
+		volume = cVolume;
+	}
+	void ReceiptProductListView::SetStatusName(std::string cStatusName)
+	{
+		statusName = cStatusName;
+	}
+	void ReceiptProductListView::SetSumCurrencyName(std::string cSumCurrencyName)
+	{
+		sumCurrencyName = cSumCurrencyName;
+	}
+	void ReceiptProductListView::SetMeasureName(std::string cMeasureName)
+	{
+		measureName = cMeasureName;
+	}
+
+	std::string ReceiptProductListView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || 0 != receiptProductID || !productName.empty() || 0 != price || !currencyName.empty() || 0 != volume || !measureName.empty()
+			|| 0 != count || 0 != sum || !sumCurrencyName.empty() || !statusName.empty() || 0 != productID || 0 != statusID || 0 != currencyID)
+		{
+			return ormasDal.GetFilterForRcpProdListView(id, receiptProductID, productName, price, currencyName, volume, measureName, count, sum,
+				sumCurrencyName, statusName, productID, statusID, currencyID);
+		}
+		return "";
+	}
 }

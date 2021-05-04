@@ -64,7 +64,7 @@ void CreateSAccDlg::SetID(int ID, QString childName)
 			{
 				chartOfAccEdit->setText(QString::number(ID));
 				BusinessLayer::ChartOfAccounts coSAcc;
-				if (coSAcc.GetChartOfAccountsByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (coSAcc.GetChartOfAccountsByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					accNamePh->setText(coSAcc.GetName().c_str());
 				}
@@ -73,7 +73,7 @@ void CreateSAccDlg::SetID(int ID, QString childName)
 			{
 				statusEdit->setText(QString::number(ID));
 				BusinessLayer::Status status;
-				if (status.GetStatusByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					statusPh->setText(status.GetName().c_str());
 				}
@@ -108,12 +108,12 @@ void CreateSAccDlg::FillEditElements(QString aNumber, double aStartBalance, doub
 	detailsEdit->setText(aDetails);
 	BusinessLayer::ChartOfAccounts aoSAcc;
 	BusinessLayer::Status status;
-	if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->GetOrmasDal(), aNumber.left(5).toUtf8().constData(), errorMessage))
+	if (aoSAcc.GetChartOfAccountsByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), aNumber.left(5).toUtf8().constData(), errorMessage))
 	{
 		chartOfAccEdit->setText(QString::number(aoSAcc.GetID()));
 		accNamePh->setText(aoSAcc.GetName().c_str());
 	}
-	if (status.GetStatusByID(dialogBL->GetOrmasDal(), sID, errorMessage))
+	if (status.GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), sID, errorMessage))
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
@@ -161,7 +161,7 @@ void CreateSAccDlg::CreateSubaccount()
 			currencyCmb->currentData().toInt(), statusEdit->text().toInt(), 
 			openedDateEdit->text(), "", detailsEdit->text());
 		subaccount->SetParentAccountID(parentAccID);
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateSubaccount(subaccount, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -169,7 +169,7 @@ void CreateSAccDlg::CreateSubaccount()
 				if (!parentDataForm->IsClosed())
 				{
 					BusinessLayer::ChartOfAccounts *coSAcc = new BusinessLayer::ChartOfAccounts;
-					if (!coSAcc->GetChartOfAccountsByID(dialogBL->GetOrmasDal(), chartOfAccEdit->text().toInt(), errorMessage))
+					if (!coSAcc->GetChartOfAccountsByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), chartOfAccEdit->text().toInt(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -183,9 +183,9 @@ void CreateSAccDlg::CreateSubaccount()
 					BusinessLayer::Status *status = new BusinessLayer::Status;
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 					BusinessLayer::Account *account = new BusinessLayer::Account;
-					if (!status->GetStatusByID(dialogBL->GetOrmasDal(), subaccount->GetStatusID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), subaccount->GetCurrencyID(), errorMessage)
-						|| !account->GetAccountByNumber(dialogBL->GetOrmasDal(), coSAcc->GetNumber(), errorMessage))
+					if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subaccount->GetStatusID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subaccount->GetCurrencyID(), errorMessage)
+						|| !account->GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), coSAcc->GetNumber(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -220,7 +220,13 @@ void CreateSAccDlg::CreateSubaccount()
 					delete coSAcc;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 		
 			Close();
 		}
@@ -263,7 +269,7 @@ void CreateSAccDlg::EditSubaccount()
 			if (0 == parAccID)
 				return;
 			subaccount->SetParentAccountID(parAccID);
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateSubaccount(subaccount, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -271,7 +277,7 @@ void CreateSAccDlg::EditSubaccount()
 					if (!parentDataForm->IsClosed())
 					{
 						BusinessLayer::ChartOfAccounts *coSAcc = new BusinessLayer::ChartOfAccounts;
-						if (!coSAcc->GetChartOfAccountsByID(dialogBL->GetOrmasDal(), chartOfAccEdit->text().toInt(), errorMessage))
+						if (!coSAcc->GetChartOfAccountsByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), chartOfAccEdit->text().toInt(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -285,9 +291,9 @@ void CreateSAccDlg::EditSubaccount()
 						BusinessLayer::Status *status = new BusinessLayer::Status;
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency;
 						BusinessLayer::Account *account = new BusinessLayer::Account;
-						if (!status->GetStatusByID(dialogBL->GetOrmasDal(), subaccount->GetStatusID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), subaccount->GetCurrencyID(), errorMessage)
-							|| !account->GetAccountByNumber(dialogBL->GetOrmasDal(), coSAcc->GetNumber(), errorMessage))
+						if (!status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subaccount->GetStatusID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), subaccount->GetCurrencyID(), errorMessage)
+							|| !account->GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), coSAcc->GetNumber(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -320,7 +326,13 @@ void CreateSAccDlg::EditSubaccount()
 						delete coSAcc;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				
 				Close();
 			}
@@ -477,11 +489,11 @@ void CreateSAccDlg::GenerateNumber()
 	BusinessLayer::Currency currency;
 	if (chartOfAccEdit->text().toInt() == 0 || chartOfAccEdit->text().isEmpty())
 		return;
-	if (!coAcc.GetChartOfAccountsByID(dialogBL->GetOrmasDal(), chartOfAccEdit->text().toInt(), errorMessage))
+	if (!coAcc.GetChartOfAccountsByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), chartOfAccEdit->text().toInt(), errorMessage))
 		return;
 	std::string number = coAcc.GetNumber();
 
-	if (!account.GetAccountByNumber(dialogBL->GetOrmasDal(), coAcc.GetNumber(), errorMessage))
+	if (!account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), coAcc.GetNumber(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr(errorMessage.c_str())),
@@ -489,7 +501,7 @@ void CreateSAccDlg::GenerateNumber()
 		errorMessage.clear();
 		return;
 	}
-	if (!currency.GetCurrencyByID(dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage))
+	if (!currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr(errorMessage.c_str())),
@@ -498,7 +510,7 @@ void CreateSAccDlg::GenerateNumber()
 		return;
 	}
 	number.append(std::to_string(currency.GetCode()));
-	std::string genAccRawNumber = subaccount->GenerateRawNumber(dialogBL->GetOrmasDal(), errorMessage);
+	std::string genAccRawNumber = subaccount->GenerateRawNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	if (genAccRawNumber.empty())
 	{
 		QMessageBox::information(NULL, QString(tr("Info")),
@@ -515,7 +527,7 @@ int CreateSAccDlg::GetParentAccNumber(std::string subNumber)
 {
 	std::string parentNumber = subNumber.substr(0, 5);
 	BusinessLayer::Account account;
-	if (!account.GetAccountByNumber(dialogBL->GetOrmasDal(), parentNumber, errorMessage))
+	if (!account.GetAccountByNumber(dialogBL->globalVar, dialogBL->GetOrmasDal(), parentNumber, errorMessage))
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr(errorMessage.c_str())),

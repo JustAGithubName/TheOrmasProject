@@ -88,10 +88,10 @@ namespace BusinessLayer{
 		subaccountID = subaccID;
 	}
 
-	bool Warehouse::CreateWarehouse(DataLayer::OrmasDal &ormasDal, std::string wName, std::string wAddress, std::string wPhone,
+	bool Warehouse::CreateWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wName, std::string wAddress, std::string wPhone,
 		int wTypeID, int subaccID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, subaccID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, subaccID, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(wName, wAddress, wPhone);
@@ -110,9 +110,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Warehouse::CreateWarehouse(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Warehouse::CreateWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateWarehouse(id, name, address, phone, warehouseTypeID, subaccountID, errorMessage))
@@ -125,7 +125,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Warehouse::DeleteWarehouse(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Warehouse::DeleteWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteWarehouse(id, errorMessage))
 		{
@@ -139,7 +139,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Warehouse::UpdateWarehouse(DataLayer::OrmasDal &ormasDal, std::string wName, std::string wAddress, std::string wPhone,
+	bool Warehouse::UpdateWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string wName, std::string wAddress, std::string wPhone,
 		int wTypeID, int subaccID, std::string& errorMessage)
 	{
 		TrimStrings(wName, wAddress, wPhone);
@@ -158,7 +158,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Warehouse::UpdateWarehouse(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Warehouse::UpdateWarehouse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateWarehouse(id, name, address, phone, warehouseTypeID, subaccountID, errorMessage))
 		{
@@ -180,7 +180,16 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Warehouse::GetWarehouseByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	std::string Warehouse::GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> wIDList)
+	{
+		if (0 != id || 0 != warehouseTypeID || 0 != subaccountID || !name.empty() || !address.empty() || !phone.empty())
+		{
+			return ormasDal.GetINFilterForWarehouseID(wIDList);
+		}
+		return "";
+	}
+
+	bool Warehouse::GetWarehouseByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -204,7 +213,25 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	int Warehouse::GetWarehouseID(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	std::vector<int>  Warehouse::GetAllWarehouseIDByTypeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage)
+	{
+		std::vector<int> wID;
+		if (tID <= 0)
+			return wID;
+		warehouseTypeID = tID;
+		std::string filter = GenerateFilter(ormasDal);
+		std::vector<DataLayer::warehouseViewCollection> warehouseVector = ormasDal.GetWarehouse(errorMessage, filter);
+		if (0 != warehouseVector.size())
+		{
+			for each (auto item in warehouseVector)
+			{
+				wID.push_back(std::get<0>(item));
+			}
+		}
+		return wID;
+	}
+
+	int Warehouse::GetWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		std::string filter = this->GenerateFilter(ormasDal);
 		std::vector<DataLayer::warehouseViewCollection> warehouseVector = ormasDal.GetWarehouse(errorMessage, filter);
@@ -246,7 +273,7 @@ namespace BusinessLayer{
 			boost::trim(wPhone);
 	}
 
-	bool Warehouse::IsDuplicate(DataLayer::OrmasDal& ormasDal, int subaccID, std::string& errorMessage)
+	bool Warehouse::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int subaccID, std::string& errorMessage)
 	{
 		Warehouse warehouse;
 		warehouse.Clear();
@@ -264,7 +291,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Warehouse::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Warehouse::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Warehouse warehouse;
 		warehouse.Clear();

@@ -68,7 +68,7 @@ void CreateProdDlg::SetID(int ID, QString childName)
 			{
 				companyEdit->setText(QString::number(ID));
 				BusinessLayer::Company company;
-				if (company.GetCompanyByID(dialogBL->GetOrmasDal(), ID, errorMessage))
+				if (company.GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
 					companyNamePh->setText(company.GetName().c_str());
 				}
@@ -103,7 +103,7 @@ void CreateProdDlg::FillEditElements(int pCompanyID, QString pProductName, doubl
 	currencyCmb->setCurrentIndex(currencyCmb->findData(QVariant(pCurrencyID)));
 	measureCmb->setCurrentIndex(measureCmb->findData(QVariant(pMeasureID)));
 	BusinessLayer::Company company;
-	if (company.GetCompanyByID(dialogBL->GetOrmasDal(), pCompanyID, errorMessage))
+	if (company.GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), pCompanyID, errorMessage))
 	{
 		companyNamePh->setText(company.GetName().c_str());
 	}
@@ -149,7 +149,7 @@ void CreateProdDlg::CreateProduct()
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetProductParams(companyEdit->text().toInt(), nameEdit->text(), volumeEdit->text().toDouble(), measureCmb->currentData().toInt(),
 			priceEdit->text().toDouble(), prodTypeCmb->currentData().toInt(), shelfLifeEdit->text().toInt(), currencyCmb->currentData().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateProduct(product, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -161,10 +161,10 @@ void CreateProdDlg::CreateProduct()
 					BusinessLayer::ProductType *prodType = new BusinessLayer::ProductType();
 					BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 
-					if (!company->GetCompanyByID(dialogBL->GetOrmasDal(), product->GetCompanyID(), errorMessage)
-						|| !measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-						|| !prodType->GetProductTypeByID(dialogBL->GetOrmasDal(), product->GetProductTypeID(), errorMessage)
-						|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
+					if (!company->GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCompanyID(), errorMessage)
+						|| !measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
+						|| !prodType->GetProductTypeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetProductTypeID(), errorMessage)
+						|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -200,7 +200,13 @@ void CreateProdDlg::CreateProduct()
 					delete currency;
 				}
 			}
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 		
 			Close();
@@ -240,7 +246,7 @@ void CreateProdDlg::EditProduct()
 			SetProductParams(companyEdit->text().toInt(), nameEdit->text(), volumeEdit->text().toDouble(), measureCmb->currentData().toInt(),
 				priceEdit->text().toDouble(), prodTypeCmb->currentData().toInt(), shelfLifeEdit->text().toInt(), currencyCmb->currentData().toInt(),
 				product->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateProduct(product, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -256,10 +262,10 @@ void CreateProdDlg::EditProduct()
 						BusinessLayer::ProductType *prodType = new BusinessLayer::ProductType();
 						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 
-						if (!company->GetCompanyByID(dialogBL->GetOrmasDal(), product->GetCompanyID(), errorMessage)
-							|| !measure->GetMeasureByID(dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-							|| !prodType->GetProductTypeByID(dialogBL->GetOrmasDal(), product->GetProductTypeID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
+						if (!company->GetCompanyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCompanyID(), errorMessage)
+							|| !measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
+							|| !prodType->GetProductTypeByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetProductTypeID(), errorMessage)
+							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -292,7 +298,13 @@ void CreateProdDlg::EditProduct()
 						delete currency;
 					}
 				}
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 
 			
 				Close();

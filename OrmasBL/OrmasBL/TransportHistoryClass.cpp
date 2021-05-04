@@ -13,7 +13,8 @@ namespace BusinessLayer
 		sum = std::get<4>(sCollection);
 		statusID = std::get<5>(sCollection);
 		currencyID = std::get<6>(sCollection);
-		historyDate = std::get<7>(sCollection);
+		fromDate = std::get<7>(sCollection);
+		tillDate = std::get<8>(sCollection);
 	}
 
 	int TransportHistory::GetID()
@@ -51,9 +52,14 @@ namespace BusinessLayer
 		return transportID;
 	}
 
-	std::string TransportHistory::GetHistoryDate()
+	std::string TransportHistory::GetFromDate()
 	{
-		return historyDate;
+		return fromDate;
+	}
+
+	std::string TransportHistory::GetTillDate()
+	{
+		return tillDate;
 	}
 
 	void TransportHistory::SetID(int sID)
@@ -86,13 +92,18 @@ namespace BusinessLayer
 		transportID = stransportID;
 	}
 
-	void TransportHistory::SetHistoryDate(std::string date)
+	void TransportHistory::SetFromDate(std::string fDate)
 	{
-		historyDate = date;
+		fromDate = fDate;
 	}
 
-	bool TransportHistory::CreateTransportHistory(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
-		int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage)
+	void TransportHistory::SetTillDate(std::string tDate)
+	{
+		tillDate = tDate;
+	}
+
+	bool TransportHistory::CreateTransportHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double sCount, double sSum,
+		int sID, int cID,  std::string sFromDate, std::string sTillDate, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		productID = pID;
@@ -100,24 +111,25 @@ namespace BusinessLayer
 		sum = sSum;
 		statusID = sID;
 		currencyID = cID;
-		transportID = wID;
-		historyDate = sHistoryDate;
-		if (0 != id && ormasDal.CreateTransportHistory(id, transportID, productID, count, sum, statusID, currencyID, historyDate, errorMessage))
+		transportID = tID;
+		fromDate = sFromDate;
+		tillDate = sTillDate;
+		if (0 != id && ormasDal.CreateTransportHistory(id, transportID, productID, count, sum, statusID, currencyID, fromDate, tillDate, errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
-	bool TransportHistory::CreateTransportHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool TransportHistory::CreateTransportHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
-		if (0 != id && ormasDal.CreateTransportHistory(id, transportID, productID, count, sum, statusID, currencyID, historyDate, errorMessage))
+		if (0 != id && ormasDal.CreateTransportHistory(id, transportID, productID, count, sum, statusID, currencyID, fromDate, tillDate, errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
-	bool TransportHistory::DeleteTransportHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool TransportHistory::DeleteTransportHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteTransportHistory(id, errorMessage))
 		{
@@ -127,35 +139,36 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool TransportHistory::UpdateTransportHistory(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
-		int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage)
+	bool TransportHistory::UpdateTransportHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, int pID, double sCount, double sSum,
+		int sID, int cID,  std::string sFromDate, std::string sTillDate, std::string& errorMessage)
 	{
 		productID = pID;
 		count = sCount;
 		sum = sSum;
 		statusID = sID;
 		currencyID = cID;
-		transportID = wID;
-		historyDate = sHistoryDate;
+		transportID = tID;
+		fromDate = sFromDate;
+		tillDate = sTillDate;
 		if (count < 0 || sum < 0)
 		{
 			errorMessage = "Count or sum cannot be less then 0!";
 			return false;
 		}
-		if (0 != id && ormasDal.UpdateTransportHistory(id, transportID, productID, count, sum, statusID, currencyID,  historyDate, errorMessage))
+		if (0 != id && ormasDal.UpdateTransportHistory(id, transportID, productID, count, sum, statusID, currencyID, fromDate, tillDate, errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
-	bool TransportHistory::UpdateTransportHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool TransportHistory::UpdateTransportHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (count < 0 || sum < 0)
 		{
 			errorMessage = "Count or sum cannot be less then 0!";
 			return false;
 		}
-		if (0 != id && ormasDal.UpdateTransportHistory(id, transportID, productID, count, sum, statusID, currencyID,  historyDate, errorMessage))
+		if (0 != id && ormasDal.UpdateTransportHistory(id, transportID, productID, count, sum, statusID, currencyID, fromDate, tillDate, errorMessage))
 		{
 			return true;
 		}
@@ -164,14 +177,14 @@ namespace BusinessLayer
 
 	std::string TransportHistory::GenerateFilter(DataLayer::OrmasDal& ormasDal)
 	{
-		if (0 != id || 0 != productID || 0 != count || 0 != sum || 0 != statusID || 0 != transportID || !historyDate.empty())
+		if (0 != id || 0 != productID || 0 != count || 0 != sum || 0 != statusID || 0 != transportID || !fromDate.empty() || !tillDate.empty())
 		{
-			return ormasDal.GetFilterForTransportHistory(id, transportID, productID, count, sum, statusID, currencyID, historyDate);
+			return ormasDal.GetFilterForTransportHistory(id, transportID, productID, count, sum, statusID, currencyID, fromDate, tillDate);
 		}
 		return "";
 	}
 
-	bool TransportHistory::GetTransportHistoryByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool TransportHistory::GetTransportHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -187,7 +200,8 @@ namespace BusinessLayer
 			sum = std::get<4>(transportHistoryVector.at(0));
 			statusID = std::get<5>(transportHistoryVector.at(0));
 			currencyID = std::get<6>(transportHistoryVector.at(0));
-			historyDate = std::get<7>(transportHistoryVector.at(0));
+			fromDate = std::get<7>(transportHistoryVector.at(0));
+			tillDate = std::get<8>(transportHistoryVector.at(0));
 			return true;
 		}
 		else
@@ -197,7 +211,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool TransportHistory::GetTransportHistoryByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool TransportHistory::GetTransportHistoryByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -213,7 +227,8 @@ namespace BusinessLayer
 			sum = std::get<4>(transportHistoryVector.at(0));
 			statusID = std::get<5>(transportHistoryVector.at(0));
 			currencyID = std::get<6>(transportHistoryVector.at(0));
-			historyDate = std::get<7>(transportHistoryVector.at(0));
+			fromDate = std::get<7>(transportHistoryVector.at(0));
+			tillDate = std::get<7>(transportHistoryVector.at(0));
 			return true;
 		}
 		else
@@ -223,7 +238,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool TransportHistory::GetTransportHistoryByProductAndtransportID(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool TransportHistory::GetTransportHistoryByProductAndtransportID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -242,7 +257,8 @@ namespace BusinessLayer
 			sum = std::get<4>(transportHistoryVector.at(0));
 			statusID = std::get<5>(transportHistoryVector.at(0));
 			currencyID = std::get<6>(transportHistoryVector.at(0));
-			historyDate = std::get<7>(transportHistoryVector.at(0));
+			fromDate = std::get<7>(transportHistoryVector.at(0));
+			tillDate = std::get<8>(transportHistoryVector.at(0));
 			return true;
 		}
 		else
@@ -254,7 +270,7 @@ namespace BusinessLayer
 
 	bool TransportHistory::IsEmpty()
 	{
-		if (0 == id && 0 == count && 0 == sum && 0 == productID && 0 == statusID && 0 == currencyID && 0 == transportID && historyDate.empty())
+		if (0 == id && 0 == count && 0 == sum && 0 == productID && 0 == statusID && 0 == currencyID && 0 == transportID && fromDate.empty() && tillDate.empty())
 			return true;
 		return false;
 	}
@@ -268,10 +284,11 @@ namespace BusinessLayer
 		statusID = 0;
 		currencyID = 0;
 		transportID = 0;
-		historyDate.empty();
+		fromDate.empty();
+		tillDate.empty();
 	}
 
-	bool TransportHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool TransportHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		TransportHistory transportHistory;
 		transportHistory.Clear();
@@ -290,7 +307,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool TransportHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool TransportHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		TransportHistory transportHistory;
 		transportHistory.Clear();

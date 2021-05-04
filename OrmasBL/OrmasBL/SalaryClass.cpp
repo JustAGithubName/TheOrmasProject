@@ -91,10 +91,10 @@ namespace BusinessLayer{
 		isBonus = sIsBonus;
 	}
 
-	bool Salary::CreateSalary(DataLayer::OrmasDal &ormasDal, int uID, double sValue, int cID, int stID, std::string sDate,
+	bool Salary::CreateSalary(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, double sValue, int cID, int stID, std::string sDate,
 		bool sIsBonus, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, uID, sValue, cID, sDate, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, uID, sValue, cID, sDate, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		employeeID = uID;
@@ -113,9 +113,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Salary::CreateSalary(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Salary::CreateSalary(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (ormasDal.CreateSalary(id, employeeID, value, currencyID, salaryTypeID, date, isBonus, errorMessage))
@@ -128,7 +128,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Salary::DeleteSalary(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Salary::DeleteSalary(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteSalary(id, errorMessage))
 		{
@@ -142,7 +142,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Salary::UpdateSalary(DataLayer::OrmasDal &ormasDal, int uID, double sValue, int cID, int stID, std::string sDate,
+	bool Salary::UpdateSalary(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, double sValue, int cID, int stID, std::string sDate,
 		bool sIsBonus, std::string& errorMessage)
 	{
 		employeeID = uID;
@@ -161,7 +161,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Salary::UpdateSalary(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Salary::UpdateSalary(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.UpdateSalary(id, employeeID, value, currencyID, salaryTypeID, date, isBonus, errorMessage))
 		{
@@ -183,7 +183,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Salary::GetSalaryByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool Salary::GetSalaryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -226,7 +226,7 @@ namespace BusinessLayer{
 		isBonus = false;
 	}
 	
-	bool Salary::IsDuplicate(DataLayer::OrmasDal& ormasDal, int uID, double sValue, int cID, std::string sDate, std::string& errorMessage)
+	bool Salary::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, double sValue, int cID, std::string sDate, std::string& errorMessage)
 	{
 		Salary salary;
 		salary.Clear();
@@ -247,7 +247,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Salary::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Salary::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Salary salary;
 		salary.Clear();

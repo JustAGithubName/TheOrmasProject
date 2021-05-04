@@ -14,12 +14,19 @@ namespace BusinessLayer{
 		AccessView(DataLayer::accessesViewCollection);
 		AccessView(){};
 		~AccessView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// AccessView class Accessors
 		std::string GetRoleName();
 		std::string GetAccessItemEng();
 		std::string GetAccessItemRu();
 		std::string GetDivision();
+		
+		// AccessView class Accessors
+		void SetRoleName(std::string);
+		void SetAccessItemEng(std::string);
+		void SetAccessItemRu(std::string);
+		void SetDivision(std::string);
 	};
 }
 #endif //ACCESSVIEWCLASS_H

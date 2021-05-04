@@ -91,7 +91,7 @@ namespace BusinessLayer
 		historyDate = date;
 	}
 
-	bool StockHistory::CreateStockHistory(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+	bool StockHistory::CreateStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 		int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
@@ -108,7 +108,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool StockHistory::CreateStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool StockHistory::CreateStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateStockHistory(id, productID, count, sum, statusID, currencyID, warehouseID, historyDate, errorMessage))
@@ -117,7 +117,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool StockHistory::DeleteStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool StockHistory::DeleteStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteStockHistory(id, errorMessage))
 		{
@@ -127,7 +127,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool StockHistory::UpdateStockHistory(DataLayer::OrmasDal& ormasDal, int pID, double sCount, double sSum,
+	bool StockHistory::UpdateStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, double sCount, double sSum,
 		int sID, int cID, int wID, std::string sHistoryDate, std::string& errorMessage)
 	{
 		productID = pID;
@@ -148,7 +148,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool StockHistory::UpdateStockHistory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool StockHistory::UpdateStockHistory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (count < 0 || sum < 0)
 		{
@@ -171,7 +171,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool StockHistory::GetStockHistoryByID(DataLayer::OrmasDal& ormasDal, int sID, std::string& errorMessage)
+	bool StockHistory::GetStockHistoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, std::string& errorMessage)
 	{
 		if (sID <= 0)
 			return false;
@@ -197,7 +197,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool StockHistory::GetStockHistoryByProductID(DataLayer::OrmasDal& ormasDal, int pID, std::string& errorMessage)
+	bool StockHistory::GetStockHistoryByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -223,7 +223,7 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool StockHistory::GetStockHistoryByProductAndWarehouseID(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool StockHistory::GetStockHistoryByProductAndWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		if (pID <= 0)
 			return false;
@@ -271,7 +271,7 @@ namespace BusinessLayer
 		historyDate.empty();
 	}
 
-	bool StockHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, int pID, int wID, std::string& errorMessage)
+	bool StockHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, int wID, std::string& errorMessage)
 	{
 		StockHistory StockHistory;
 		StockHistory.Clear();
@@ -290,7 +290,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool StockHistory::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool StockHistory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		StockHistory StockHistory;
 		StockHistory.Clear();

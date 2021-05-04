@@ -167,7 +167,7 @@ void CreateCltDlg::CreateClient()
 		SetClientParams(emailEdit->text(), nameEdit->text(), surnameEdit->text(), phoneEdit->text(), addressEdit->text(),
 			roleVector.at(0).GetID(), passwordEdit->text(), activatedCmbBox->currentText(), firmEdit->text(),
 			firmNumEdit->text(), locationEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateClient(client, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -176,7 +176,7 @@ void CreateCltDlg::CreateClient()
 				{
 					BusinessLayer::Location *location = new BusinessLayer::Location();
 					if (roleVector.size() < 1
-						|| !location->GetLocationByID(dialogBL->GetOrmasDal(), client->GetLocationID(), errorMessage))
+						|| !location->GetLocationByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), client->GetLocationID(), errorMessage))
 					{
 						dialogBL->CancelTransaction(errorMessage);
 						QMessageBox::information(NULL, QString(tr("Warning")),
@@ -213,7 +213,13 @@ void CreateCltDlg::CreateClient()
 				}
 			}
 			delete role;
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 
 			Close();
 		}
@@ -267,7 +273,7 @@ void CreateCltDlg::EditClient()
 			SetClientParams(emailEdit->text(), nameEdit->text(), surnameEdit->text(), phoneEdit->text(), addressEdit->text(),
 				roleVector.at(0).GetID(), passwordEdit->text(), activatedCmbBox->currentText(), firmEdit->text(),
 				firmNumEdit->text(), locationEdit->text().toInt(), client->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateClient(client, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -284,7 +290,7 @@ void CreateCltDlg::EditClient()
 						BusinessLayer::Location *location = new BusinessLayer::Location();
 
 						if (roleVector.size() < 1
-							|| !location->GetLocationByID(dialogBL->GetOrmasDal(), client->GetLocationID(), errorMessage))
+							|| !location->GetLocationByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), client->GetLocationID(), errorMessage))
 						{
 							dialogBL->CancelTransaction(errorMessage);
 							dialogBL->CancelTransaction(errorMessage);
@@ -317,7 +323,13 @@ void CreateCltDlg::EditClient()
 
 				
 				delete role;
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

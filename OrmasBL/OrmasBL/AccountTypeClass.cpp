@@ -53,9 +53,9 @@ namespace BusinessLayer{
 		number = aNumber;
 	}
 
-	bool AccountType::CreateAccountType(DataLayer::OrmasDal& ormasDal, std::string aName, int aNumber, std::string aComment, std::string& errorMessage)
+	bool AccountType::CreateAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aName, int aNumber, std::string aComment, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, aName, aNumber, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, aName, aNumber, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		TrimStrings(aName, aComment);
@@ -72,9 +72,9 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccountType::CreateAccountType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccountType::CreateAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreateAccountType(id, name, number, comment, errorMessage))
@@ -87,7 +87,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccountType::DeleteAccountType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccountType::DeleteAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.DeleteAccountType(id, errorMessage))
 		{
@@ -100,7 +100,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccountType::UpdateAccountType(DataLayer::OrmasDal& ormasDal, std::string aName, int aNumber, std::string aComment, std::string& errorMessage)
+	bool AccountType::UpdateAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aName, int aNumber, std::string aComment, std::string& errorMessage)
 	{
 		TrimStrings(aName, aComment);
 		name = aName;
@@ -116,7 +116,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool AccountType::UpdateAccountType(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccountType::UpdateAccountType(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateAccountType(id, name, number, comment, errorMessage))
 		{
@@ -138,7 +138,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool AccountType::GetAccountTypeByID(DataLayer::OrmasDal& ormasDal, int aID, std::string& errorMessage)
+	bool AccountType::GetAccountTypeByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)
 			return false;
@@ -160,7 +160,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool AccountType::GetAccountTypeByNumber(DataLayer::OrmasDal& ormasDal, int aNumber, std::string& errorMessage)
+	bool AccountType::GetAccountTypeByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aNumber, std::string& errorMessage)
 	{
 		if (aNumber <= 0)
 			return false;
@@ -205,7 +205,7 @@ namespace BusinessLayer{
 			boost::trim(aComment);
 	}
 
-	bool AccountType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string aName, int aNumber, std::string& errorMessage)
+	bool AccountType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aName, int aNumber, std::string& errorMessage)
 	{
 		AccountType accountType;
 		accountType.Clear();
@@ -224,7 +224,7 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool AccountType::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool AccountType::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		AccountType accountType;
 		accountType.Clear();

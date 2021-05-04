@@ -67,7 +67,7 @@ namespace BusinessLayer{
 		phone = cPhone;
 	}
 
-	bool Creditor::CreateCreditor(DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, int bID, int uID, std::string& errorMessage)
+	bool Creditor::CreateCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, int bID, int uID, std::string& errorMessage)
 	{
 		TrimStrings(cName, cAddress, cPhone);
 		id = ormasDal.GenerateID();
@@ -78,25 +78,25 @@ namespace BusinessLayer{
 		userID = uID;
 		if (ormasDal.CreateCreditor(id, name, address, phone, bankID, userID,  errorMessage))
 		{
-			if (CreateBalanceForCreditor(ormasDal, errorMessage))
+			if (CreateBalanceForCreditor(globalVar, ormasDal, errorMessage))
 				return true;
 			return false;
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Creditor::CreateCreditor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Creditor::CreateCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.CreateCreditor(id, name, address, phone, bankID, userID, errorMessage))
 		{
-			if (CreateBalanceForCreditor(ormasDal, errorMessage))
+			if (CreateBalanceForCreditor(globalVar, ormasDal, errorMessage))
 				return true;
 			return false;
 		}
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Creditor::DeleteCreditor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Creditor::DeleteCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
 		if (!errorMessage.empty())
@@ -108,7 +108,7 @@ namespace BusinessLayer{
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Creditor::UpdateCreditor(DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, int bID, int uID, std::string& errorMessage)
+	bool Creditor::UpdateCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string cName, std::string cAddress, std::string cPhone, int bID, int uID, std::string& errorMessage)
 	{
 		TrimStrings(cName, cAddress, cPhone);
 		name = cName;
@@ -123,7 +123,7 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
-	bool Creditor::UpdateCreditor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Creditor::UpdateCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (ormasDal.UpdateCreditor(id, name, address, phone, bankID, userID, errorMessage))
 		{
@@ -141,7 +141,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	std::string Creditor::GenerateINFilter(DataLayer::OrmasDal& ormasDal, std::vector<int> creditorIDList)
+	std::string Creditor::GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> creditorIDList)
 	{
 		if (creditorIDList.size()>0)
 		{
@@ -150,7 +150,7 @@ namespace BusinessLayer{
 		return "";
 	}
 
-	bool Creditor::GetCreditorByID(DataLayer::OrmasDal& ormasDal, int cID, std::string& errorMessage)
+	bool Creditor::GetCreditorByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage)
 	{
 		if (cID <= 0)
 			return false;
@@ -201,30 +201,30 @@ namespace BusinessLayer{
 			boost::trim(cPhone);
 	}
 
-	bool Creditor::CreateBalanceForCreditor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Creditor::CreateBalanceForCreditor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Currency currency;
 		std::string number = "";
 		std::string genAccRawNumber = "";
-		int currID = currency.GetMainTradeCurrencyID(ormasDal, errorMessage);
+		int currID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
 		if (0 != currID)
 		{
 			Status status;
-			if (!status.GetStatusByName(ormasDal, "OPEN", errorMessage))
+			if (!status.GetStatusByName(globalVar, ormasDal, "OPEN", errorMessage))
 				return false;
-			if (!currency.GetCurrencyByID(ormasDal, currID, errorMessage))
+			if (!currency.GetCurrencyByID(globalVar, ormasDal, currID, errorMessage))
 				return false;
 			Subaccount subaccount;
 			Account account;
 
 			account.Clear();
-			if (account.GetAccountByNumber(ormasDal, "22120", errorMessage))
+			if (account.GetAccountByNumber(globalVar, ormasDal, "22120", errorMessage))
 				number = std::to_string(10410);
 			if (number.empty())
 				return false;
 
 			number.append(std::to_string(currency.GetCode()));
-			genAccRawNumber = subaccount.GenerateRawNumber(ormasDal, errorMessage);
+			genAccRawNumber = subaccount.GenerateRawNumber(globalVar, ormasDal, errorMessage);
 			if (genAccRawNumber.empty())
 				return false;
 			number.append(genAccRawNumber);
@@ -242,7 +242,7 @@ namespace BusinessLayer{
 			subaccount.SetClosedDate("");
 			subaccount.SetDetails(owner);
 
-			if (!subaccount.CreateSubaccount(ormasDal, errorMessage))
+			if (!subaccount.CreateSubaccount(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		return false;

@@ -78,7 +78,7 @@ void CreateMsrDlg::CreateMeasure()
 	{
 		DataForm *parentDataForm = (DataForm*) parentForm;
 		SetMeasureParams(nameEdit->text(), shortNameEdit->text(), unitEdit->text().toInt());
-		dialogBL->StartTransaction(errorMessage);
+		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateMeasure(measure,errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -93,7 +93,13 @@ void CreateMsrDlg::CreateMeasure()
 				}
 			}
 			
-			dialogBL->CommitTransaction(errorMessage);
+			if (!dialogBL->CommitTransaction(errorMessage))
+			{
+				dialogBL->CancelTransaction(errorMessage);
+				QMessageBox::information(NULL, QString(tr("Warning")),
+					QString(tr(errorMessage.c_str())),
+					QString(tr("Ok")));
+			}
 			Close();
 		}
 		else
@@ -123,7 +129,7 @@ void CreateMsrDlg::EditMeasure()
 		{
 			DataForm *parentDataForm = (DataForm*) parentForm;
 			SetMeasureParams(nameEdit->text(), shortNameEdit->text(), unitEdit->text().toInt(), measure->GetID());
-			dialogBL->StartTransaction(errorMessage);
+			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateMeasure(measure,errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -137,7 +143,13 @@ void CreateMsrDlg::EditMeasure()
 					}
 				}
 				
-				dialogBL->CommitTransaction(errorMessage);
+				if (!dialogBL->CommitTransaction(errorMessage))
+				{
+					dialogBL->CancelTransaction(errorMessage);
+					QMessageBox::information(NULL, QString(tr("Warning")),
+						QString(tr(errorMessage.c_str())),
+						QString(tr("Ok")));
+				}
 				Close();
 			}
 			else

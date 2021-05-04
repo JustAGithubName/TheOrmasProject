@@ -143,10 +143,10 @@ namespace BusinessLayer
 		subaccountID = subID;
 	}
 
-	bool Inventory::CreateInventory(DataLayer::OrmasDal& ormasDal, std::string iName, double iCost, int depID, std::string iLocation, 
+	bool Inventory::CreateInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string iName, double iCost, int depID, std::string iLocation, 
 		int sID, std::string sooDate, std::string eooDate, std::string iNumber, std::string bNumber, int subID, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, iName, iNumber, bNumber, iCost, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, iName, iNumber, bNumber, iCost, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		name = iName;
@@ -160,14 +160,15 @@ namespace BusinessLayer
 		barcodeNumber = bNumber;
 		subaccountID = subID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateInventory(id, name, cost, departmentID, location, statusID, startOfOperationDate,
 			endOfOperationDate, inventoryNumber, barcodeNumber, subaccountID, errorMessage))
 		{
 			Status sts;
-			if (!sts.GetStatusByID(ormasDal, statusID, errorMessage))
+			if (!sts.GetStatusByID(globalVar, ormasDal, statusID, errorMessage))
 				return false;
 			InventoryHistory iHis;
-			if (!iHis.CreateInventoryHistory(ormasDal, id, sts.GetName(), ormasDal.GetSystemDate(), errorMessage))
+			if (!iHis.CreateInventoryHistory(globalVar, ormasDal, id, sts.GetName(), ormasDal.GetSystemDate(), errorMessage))
 				return false;
 			return true;
 		}
@@ -179,20 +180,21 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Inventory::CreateInventory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Inventory::CreateInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(ormasDal, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, errorMessage))
 			return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateInventory(id, name, cost, departmentID, location, statusID, startOfOperationDate,
 			endOfOperationDate, inventoryNumber, barcodeNumber, subaccountID, errorMessage))
 		{
 			Status sts;
-			if (!sts.GetStatusByID(ormasDal, statusID, errorMessage))
+			if (!sts.GetStatusByID(globalVar, ormasDal, statusID, errorMessage))
 				return false;
 			InventoryHistory iHis;
-			if (!iHis.CreateInventoryHistory(ormasDal, id, sts.GetName(), ormasDal.GetSystemDate(), errorMessage))
+			if (!iHis.CreateInventoryHistory(globalVar, ormasDal, id, sts.GetName(), ormasDal.GetSystemDate(), errorMessage))
 				return false;
 			return true;
 		}
@@ -203,7 +205,7 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Inventory::DeleteInventory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Inventory::DeleteInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//if (!ormasDal.StartTransaction(errorMessage))
 		//	return false;
@@ -217,7 +219,7 @@ namespace BusinessLayer
 		}
 		return false;
 	}
-	bool Inventory::UpdateInventory(DataLayer::OrmasDal& ormasDal, std::string iName, double iCost, int depID, std::string iLocation, 
+	bool Inventory::UpdateInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string iName, double iCost, int depID, std::string iLocation, 
 		int sID, std::string sooDate, std::string eooDate, std::string iNumber, std::string bNumber, int subID, std::string& errorMessage)
 	{
 		name = iName;
@@ -231,14 +233,15 @@ namespace BusinessLayer
 		barcodeNumber = bNumber;
 		subaccountID = subID;
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateInventory(id, name, cost, departmentID, location, statusID, startOfOperationDate,
 			endOfOperationDate, inventoryNumber, barcodeNumber, subaccountID, errorMessage))
 		{
 			Status sts;
-			if (!sts.GetStatusByID(ormasDal, statusID, errorMessage))
+			if (!sts.GetStatusByID(globalVar, ormasDal, statusID, errorMessage))
 				return false;
 			InventoryHistory iHis;
-			if (!iHis.CreateInventoryHistory(ormasDal, id, sts.GetName(), ormasDal.GetSystemDate(), errorMessage))
+			if (!iHis.CreateInventoryHistory(globalVar, ormasDal, id, sts.GetName(), ormasDal.GetSystemDate(), errorMessage))
 				return false;
 			return true;
 		}
@@ -249,17 +252,18 @@ namespace BusinessLayer
 		//ormasDal.CancelTransaction(errorMessage);
 		return false;
 	}
-	bool Inventory::UpdateInventory(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Inventory::UpdateInventory(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		//ormasDal.StartTransaction(errorMessage);
+		globalVar->currentOperationID = id;		
 		if (0 != id && ormasDal.UpdateInventory(id, name, cost, departmentID, location, statusID, startOfOperationDate,
 			endOfOperationDate, inventoryNumber, barcodeNumber, subaccountID, errorMessage))
 		{
 			Status sts;
-			if (!sts.GetStatusByID(ormasDal, statusID, errorMessage))
+			if (!sts.GetStatusByID(globalVar, ormasDal, statusID, errorMessage))
 				return false;
 			InventoryHistory iHis;
-			if (!iHis.CreateInventoryHistory(ormasDal, id, sts.GetName(), ormasDal.GetSystemDate(), errorMessage))
+			if (!iHis.CreateInventoryHistory(globalVar, ormasDal, id, sts.GetName(), ormasDal.GetSystemDate(), errorMessage))
 				return false;
 			return true;
 		}
@@ -282,7 +286,7 @@ namespace BusinessLayer
 		return "";
 	}
 
-	bool Inventory::GetInventoryByID(DataLayer::OrmasDal& ormasDal, int iID, std::string& errorMessage)
+	bool Inventory::GetInventoryByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int iID, std::string& errorMessage)
 	{
 		if (iID <= 0)
 			return false;
@@ -316,8 +320,8 @@ namespace BusinessLayer
 		if (0 == id && name == "" && 0.0 == cost && 0 == departmentID && location == "" && 0 == statusID
 			&& startOfOperationDate == "" && endOfOperationDate == "" && inventoryNumber == "" && barcodeNumber == ""
 			&& 0 == subaccountID)
-			return false;
-		return true;
+			return true;
+		return false;
 	}
 
 	void Inventory::Clear()
@@ -335,7 +339,7 @@ namespace BusinessLayer
 		subaccountID = 0;
 	}
 
-	bool Inventory::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string iName, std::string iNumber, std::string bNumber, double iCost, std::string& errorMessage)
+	bool Inventory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string iName, std::string iNumber, std::string bNumber, double iCost, std::string& errorMessage)
 	{
 		Inventory inventory;
 		inventory.Clear();
@@ -356,7 +360,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Inventory::IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage)
+	bool Inventory::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		Inventory inventory;
 		inventory.Clear();
@@ -377,18 +381,18 @@ namespace BusinessLayer
 		return true;
 	}
 	
-	bool Inventory::CreateInventoryEntry(DataLayer::OrmasDal& ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage)
+	bool Inventory::CreateInventoryEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage)
 	{
 		if (purID > 0)
 		{
 			Balance balance;
-			if (balance.GetBalanceByUserID(ormasDal, purID, errorMessage))
+			if (balance.GetBalanceByUserID(globalVar, ormasDal, purID, errorMessage))
 			{
 				int debAccID = 0;
 				int credAccID = 0;
 				debAccID = debitingAccID;
 				credAccID = balance.GetSubaccountID();
-				if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 				{
 					return true;
 				}
@@ -401,7 +405,7 @@ namespace BusinessLayer
 			Balance tempBalance;
 			Subaccount sub;
 			Account account;
-			if (!account.GetAccountByNumber(ormasDal, "10520", errorMessage))
+			if (!account.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 				return false;
 			balance.SetUserID(acctbID);
 			std::string filter = balance.GenerateFilter(ormasDal);
@@ -413,9 +417,9 @@ namespace BusinessLayer
 				{
 					sub.Clear();
 					tempBalance.Clear();
-					if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+					if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 						return false;
-					if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+					if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 					{
 						if (sub.GetParentAccountID() == account.GetID())
 						{
@@ -430,7 +434,7 @@ namespace BusinessLayer
 			}
 			if (balance.GetSubaccountID() <= 0)
 				return false;
-			if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+			if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 			{
 				int debAccID = debitingAccID;
 				int credAccID = balance.GetSubaccountID();
@@ -438,7 +442,7 @@ namespace BusinessLayer
 				{
 					return false;
 				}
-				if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 				{
 					return true;
 				}
@@ -452,7 +456,7 @@ namespace BusinessLayer
 			{
 				return false;
 			}
-			if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 			{
 				return true;
 			}
@@ -460,18 +464,18 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Inventory::CreateInventoryEntryReverce(DataLayer::OrmasDal& ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage)
+	bool Inventory::CreateInventoryEntryReverce(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int acctbID, int purID, int accID, int debitingAccID, double value, std::string execDate, std::string& errorMessage)
 	{
 		if (purID > 0)
 		{
 			Balance balance;
-			if (balance.GetBalanceByUserID(ormasDal, purID, errorMessage))
+			if (balance.GetBalanceByUserID(globalVar, ormasDal, purID, errorMessage))
 			{
 				int debAccID = 0;
 				int credAccID = 0;
 				debAccID = balance.GetSubaccountID();
 				credAccID = debitingAccID;
-				if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 				{
 					return true;
 				}
@@ -484,7 +488,7 @@ namespace BusinessLayer
 			Balance tempBalance;
 			Subaccount sub;
 			Account account;
-			if (!account.GetAccountByNumber(ormasDal, "10520", errorMessage))
+			if (!account.GetAccountByNumber(globalVar, ormasDal, "10520", errorMessage))
 				return false;
 			balance.SetUserID(acctbID);
 			std::string filter = balance.GenerateFilter(ormasDal);
@@ -496,9 +500,9 @@ namespace BusinessLayer
 				{
 					sub.Clear();
 					tempBalance.Clear();
-					if (!tempBalance.GetBalanceByID(ormasDal, std::get<0>(item), errorMessage))
+					if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
 						return false;
-					if (sub.GetSubaccountByID(ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+					if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
 					{
 						if (sub.GetParentAccountID() == account.GetID())
 						{
@@ -513,7 +517,7 @@ namespace BusinessLayer
 			}
 			if (balance.GetSubaccountID() <= 0)
 				return false;
-			if (balance.GetBalanceBySubaccountID(ormasDal, balance.GetSubaccountID(), errorMessage))
+			if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
 			{
 				int debAccID = balance.GetSubaccountID();
 				int credAccID = debitingAccID;
@@ -521,7 +525,7 @@ namespace BusinessLayer
 				{
 					return false;
 				}
-				if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 				{
 					return true;
 				}
@@ -535,7 +539,7 @@ namespace BusinessLayer
 			{
 				return false;
 			}
-			if (this->CreateEntry(ormasDal, debAccID, value, credAccID, execDate, errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, execDate, errorMessage))
 			{
 				return true;
 			}
@@ -543,17 +547,17 @@ namespace BusinessLayer
 		return false;
 	}
 
-	bool Inventory::CreateInventoryEntryWriteOFF(DataLayer::OrmasDal& ormasDal, int inventoryID, std::string& errorMessage)
+	bool Inventory::CreateInventoryEntryWriteOFF(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int inventoryID, std::string& errorMessage)
 	{
 		Inventory inv;
 		DivisionAccountRelation daRel;
-		if (!inv.GetInventoryByID(ormasDal, inventoryID, errorMessage))
+		if (!inv.GetInventoryByID(globalVar, ormasDal, inventoryID, errorMessage))
 			return false;
 		
 		Subaccount subAcc;
-		if (!subAcc.GetSubaccountByID(ormasDal, inv.GetSubaccountID(), errorMessage))
+		if (!subAcc.GetSubaccountByID(globalVar, ormasDal, inv.GetSubaccountID(), errorMessage))
 			return false;
-		if (!daRel.GetDARelationByDivisionIDAndCode(ormasDal, inv.GetDepartmentID(), "TO WRITE-OFF", errorMessage))
+		if (!daRel.GetDARelationByDivisionIDAndCode(globalVar, ormasDal, inv.GetDepartmentID(), "TO WRITE-OFF", errorMessage))
 			return false;
 		int debAccID = daRel.GetAccountID();
 		int credAccID = inv.GetSubaccountID();
@@ -561,14 +565,14 @@ namespace BusinessLayer
 		{
 			return false;
 		}
-		if (this->CreateEntryWriteOFF(ormasDal, debAccID, subAcc.GetCurrentBalance(), credAccID, ormasDal.GetSystemDate(), errorMessage))
+		if (this->CreateEntryWriteOFF(globalVar, ormasDal, debAccID, subAcc.GetCurrentBalance(), credAccID, ormasDal.GetSystemDate(), errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
 
-	bool Inventory::CreateEntry(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Inventory::CreateEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -577,11 +581,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Покупака инвентаря!"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -593,7 +597,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Inventory::CreateEntryCancel(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Inventory::CreateEntryCancel(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -602,11 +606,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Отмена покупки инвентаря"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -618,7 +622,7 @@ namespace BusinessLayer
 		return true;
 	}
 
-	bool Inventory::CreateEntryWriteOFF(DataLayer::OrmasDal& ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
+	bool Inventory::CreateEntryWriteOFF(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage)
 	{
 		Entry entry;
 		EntryOperationRelation eoRelation;
@@ -627,11 +631,11 @@ namespace BusinessLayer
 		entry.SetValue(currentSum);
 		entry.SetCreditingAccountID(credAccID);
 		entry.SetDescription(wstring_to_utf8(L"Списание инвентаря"));
-		if (entry.CreateEntry(ormasDal, errorMessage))
+		if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
 		{
 			eoRelation.SetEntryID(entry.GetID());
 			eoRelation.SetOperationID(id);
-			if (!eoRelation.CreateEntryOperationRelation(ormasDal, errorMessage))
+			if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
 			{
 				return false;
 			}
@@ -649,26 +653,26 @@ namespace BusinessLayer
 		return myconv.to_bytes(str);
 	}
 
-	int Inventory::GenerateSubaccount(DataLayer::OrmasDal& ormasDal, double currentValue, std::string& errorMessage)
+	int Inventory::GenerateSubaccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, double currentValue, std::string& errorMessage)
 	{
 		Account account;
 		Subaccount subaccount;
-		if (!account.GetAccountByNumber(ormasDal, "10730", errorMessage))
+		if (!account.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
 			return 0;
 		Currency currency;
 		std::string number = "";
 		std::string genAccRawNumber = "";
-		int currID = currency.GetMainTradeCurrencyID(ormasDal, errorMessage);
+		int currID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
 		if (0 != currID)
 		{
 			Status status;
-			if (!status.GetStatusByName(ormasDal, "OPEN", errorMessage))
+			if (!status.GetStatusByName(globalVar, ormasDal, "OPEN", errorMessage))
 				return false;
-			if (!currency.GetCurrencyByID(ormasDal, currID, errorMessage))
+			if (!currency.GetCurrencyByID(globalVar, ormasDal, currID, errorMessage))
 				return false;
 			number = account.GetNumber();
 			number.append(std::to_string(currency.GetCode()));
-			genAccRawNumber = subaccount.GenerateRawNumber(ormasDal, errorMessage);
+			genAccRawNumber = subaccount.GenerateRawNumber(globalVar, ormasDal, errorMessage);
 			if (genAccRawNumber.empty())
 				return false;
 			number.append(genAccRawNumber);
@@ -681,7 +685,7 @@ namespace BusinessLayer
 			subaccount.SetOpenedDate(ormasDal.GetSystemDate());
 			subaccount.SetClosedDate("");
 			subaccount.SetDetails("Generated by system");
-			if (!subaccount.CreateSubaccount(ormasDal, errorMessage))
+			if (!subaccount.CreateSubaccount(globalVar, ormasDal, errorMessage))
 				return 0;
 			return subaccount.GetID();
 		}

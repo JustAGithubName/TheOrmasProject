@@ -12,10 +12,14 @@ namespace BusinessLayer{
 		InventoryView(DataLayer::inventoryViewCollection);
 		InventoryView(){};
 		~InventoryView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// InventoryView class Accessors
 		std::string GetDivisionName();
 		std::string GetStatusName();
+
+		void SetDivisionName(std::string);
+		void SetStatusName(std::string);
 	};
 }
 

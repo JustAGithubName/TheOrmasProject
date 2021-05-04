@@ -14,12 +14,18 @@ namespace BusinessLayer{
 		JobpriceView(DataLayer::jobpriceViewCollection);
 		JobpriceView(){};
 		~JobpriceView(){};
+		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal) override;
 
 		// BalanceView class Accessors
 		std::string GetProductName();
 		std::string GetCurrencyName();
 		std::string GetMeasureName();
 		std::string GetPositionName();
+
+		void SetProductName(std::string);
+		void SetCurrencyName(std::string);
+		void SetMeasureName(std::string);
+		void SetPositionName(std::string);
 	};
 }
 

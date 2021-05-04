@@ -32,28 +32,28 @@ namespace BusinessLayer{
 		void SetLocationID(int);
 
 		//Create, delete, update methods
-		bool CreatePurveyor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool UpdatePurveyor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool DeletePurveyor(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		bool CreatePurveyor(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+		bool CreatePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool UpdatePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool DeletePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool CreatePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 			std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string pCompanyName,
 			int lID, std::string& errorMessage);
-		bool UpdatePurveyor(DataLayer::OrmasDal& ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
+		bool UpdatePurveyor(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uEmail, std::string uName, std::string uSurname, std::string uPhone,
 			std::string uAddress, int uRoleID, std::string uPassword, bool uActivated, std::string pCompanyName,
 			int lID, std::string& errorMessage);
 
 		//Generate filter string for class
-		std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
-		bool GetPurveyorByID(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
-		bool GetPurveyorByCredentials(DataLayer::OrmasDal& ormasDal, std::string uPhone, std::string uEmail, std::string uPassword);
+		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		bool GetPurveyorByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
+		bool GetPurveyorByCredentials(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uPhone, std::string uEmail, std::string uPassword);
 		bool IsEmpty();
 		void Clear();
 	private:
 		void TrimStrings(std::string&, std::string&, std::string&, std::string&, std::string&, std::string&, std::string&);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string uName, std::string uSurname, std::string uPhone,
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string uName, std::string uSurname, std::string uPhone,
 			int uRoleID, std::string pCompanyName, std::string& errorMessage);
-		bool IsDuplicate(DataLayer::OrmasDal& ormasDal, std::string& errorMessage);
-		std::string GetCurrentPhone(DataLayer::OrmasDal& ormasDal, int uID, std::string& errorMessage);
+		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		std::string GetCurrentPhone(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string& errorMessage);
 	};
 }
 #endif

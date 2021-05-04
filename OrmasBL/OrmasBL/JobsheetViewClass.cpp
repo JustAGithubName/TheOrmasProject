@@ -13,6 +13,7 @@ namespace BusinessLayer{
 		count = std::get<6>(pCollection);
 		measureName = std::get<7>(pCollection);
 		productID = std::get<8>(pCollection);
+		employeeID = std::get<9>(pCollection);
 	}
 
 	std::string JobsheetView::GetEmployeeName()
@@ -38,5 +39,40 @@ namespace BusinessLayer{
 	std::string JobsheetView::GetMeasureName()
 	{
 		return measureName;
+	}
+
+	void JobsheetView::SetEmployeeName(std::string jEmployeeName)
+	{
+		employeeName = jEmployeeName;
+	}
+
+	void JobsheetView::SetEmployeeSurname(std::string jEmployeeSurname)
+	{
+		employeeSurname = jEmployeeSurname;
+	}
+
+	void JobsheetView::SetEmployeePhone(std::string jEmployeePhone)
+	{
+		employeePhone = jEmployeePhone;
+	}
+
+	void JobsheetView::SetProductName(std::string jProductName)
+	{
+		productName = jProductName;
+	}
+
+	void JobsheetView::SetMeasureName(std::string jMeasureName)
+	{
+		measureName = jMeasureName;
+	}
+
+	std::string JobsheetView::GenerateFilter(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || date.empty() || employeeName.empty() || employeeSurname.empty() || employeePhone.empty() || productName.empty() || 0.0 != count 
+			|| measureName.empty() || 0 != productID || 0 != employeeID)
+		{
+			return ormasDal.GetFilterForJobsheetView(id, date, employeeName, employeeSurname, employeePhone, productName, count, measureName, productID, employeeID);
+		}
+		return "";
 	}
 }
