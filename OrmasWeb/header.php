@@ -13,29 +13,37 @@
 		?>
 	</head>
 	<body>
-		<div id="action-bar">
-			<div id="logo">
-				<a href="exit.php">ORMAS</a>
-			</div>
-			<div id="action-bar-wrap">
-				<?php 
-					if(!empty($_SESSION['name']) and !empty($_SESSION['surname']) and !empty($_SESSION['password']) and !empty($_SESSION['role_id']))
-					{
-						echo"<div id='user-img-div'></div>";
-					}
-				?>
-				<div id="action-bar-content">
-					<?php
-						if(!empty($_SESSION['name']) and !empty($_SESSION['surname']) and !empty($_SESSION['password']) and !empty($_SESSION['role_id']))
-						{	
-							echo("<a href='exit.php'>".$_SESSION['name']." ".$_SESSION['surname']."</a>");
-						}
-						else
-						{
-							//if($PageTitle != "Регистрация")
-								//echo("<a href='registration.php'>Регистрация</a>");
-						}
-					?>
+		<nav class="nav navbar navbar-expand-lg  bg-light">
+			<div class="action-bar container-fluid">
+				<div class="logo">
+					<a class="" href="exit.php">
+						ORMAS
+					</a>
+					
+				</div>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav ml-auto">
+						<?php 
+							/*if(!empty($_SESSION['name']) and !empty($_SESSION['surname']) and !empty($_SESSION['password']) and !empty($_SESSION['role_id']))
+							{
+								echo"<div class'user-img-div'></div>";
+							}*/
+						?>
+						<div class="action-bar-content">
+							<?php
+								if(!empty($_SESSION['name']) and !empty($_SESSION['surname']) and !empty($_SESSION['password']) and !empty($_SESSION['role_id']))
+								{	
+									echo("<li class='nav-item'><a class='nav-link'  href='exit.php'>".$_SESSION['name']." ".$_SESSION['surname']."</a></li>");
+								}
+								else
+								{
+									//if($PageTitle != "Регистрация")
+									//echo("<li class='nav-item'><span class='glyphicon glyphicon-envelope'></span><a class='nav-link' href='registration.php'>Регистрация</a></li>");
+								}
+							?>
+						</div>
+					</ul>
 				</div>
 			</div>
-		</div>
+			
+		</nav>

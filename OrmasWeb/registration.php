@@ -117,50 +117,53 @@
 ?>
 
 <div id = "content">
-	<div id="regis-content">
+	<div class="regis-content">
 		<form action="registration.php" method="post">
-				<div id="for_error_messages">
+				<div class="for_error_messages">
 					
 				</div>
 				<div class='close-bar'>
 				</div>
-				<div id="regis-main-label">Регистрация</div>
-				<div id="regis-row">
+				<div class="regis-main-label">Регистрация</div>
+				<div class="regis-row">
 					<label id="regis-label">Имя:</label>
 					<input name="name" type="text" required/>
-					<div id="message"><label ></label></div>
+					<div class="message"><label ></label></div>
 				</div>
-				<div id="regis-row">
+				<div class="regis-row">
 					<label id="regis-label">Фамилия:</label>
 					<input name="surname" type="text" required/>
-					<div id="message"><label ></label></div>
+					<div class="message"><label ></label></div>
 				</div>
-				<div id="regis-row">
+				<div class="regis-row">
 					<label id="regis-label">E-mail:</label>
 					<input name="email" type="email"/>
-					<div id="message"><label ></label></div>
+					<div class="message"><label ></label></div>
 				</div>
-				<div id="regis-row">
+				<div class="regis-row">
 					<label id="regis-label">Номер телефона:</label>
 					<input name="phone" type="text" required/>
-					<div id="message"><label ></label></div>
+					<div class="message"><label ></label></div>
 				</div>
-				<div id="regis-row">
+				<div class="regis-row">
 					<label id="regis-label">Адрес:</label>
 					<input name="address"  type="text" required/>
-					<div id="message"><label ></label></div>
-				</div id="regis-row">
-				<div id="regis-row">
+					<div class="message"><label ></label></div>
+				</div>
+				
+				<div class="regis-row">
 					<label id="regis-label">Название фирмы(магазина):</label>
 					<input name="firm" id="firm" type="text" required/>
-					<div id="message"><label ></label></div>
-				</div id="regis-row">
-				<div id="regis-row">
+					<div class="message"><label ></label></div>
+				</div>
+				
+				<div class="regis-row">
 					<label id="regis-label">Номер фирмы(магазина):</label>
 					<input name="number"  type="text"/>
-					<div id="message"><label ></label></div>
-				</div id="regis-row">
-				<div id="regis-row">
+					<div class="message"><label ></label></div>
+				</div>
+				
+				<div class="regis-row">
 					<label id="regis-label">Регион:</label>
 					<select name="location" id="location">
 					<?php
@@ -176,15 +179,15 @@
 						}
 					?>
 					</select>
-					<div id="message"><label ></label></div>
+					<div class="message"><label ></label></div>
 				</div>
-				<div id="regis-row">
+				<div class="regis-row">
 					<label id="regis-label">Пароль:</label>
 					<input name="password" type="password" required/>
-					<div id="message"><label ></label></div>
+					<div class="message"><label ></label></div>
 				</div>
-				<div id="regis-row">
-					<div id="button-position">
+				<div class="regis-row">
+					<div class="button-position">
 						<input id="regis-button" type="submit" name="submit" value="Зарегистрироватся"/>
 					</div>
 				</div>

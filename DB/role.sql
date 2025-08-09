@@ -90,14 +90,10 @@ INSERT INTO "OrmasSchema".roles(
     VALUES ((SELECT nextval('"OrmasSchema".id_seq')), '0030', 'STOCK INSPECTOR', 'Inspecting a warehouses');
 INSERT INTO "OrmasSchema".roles(
             role_id, role_code, role_name, comment)
-    VALUES ((SELECT nextval('"OrmasSchema".id_seq')), '0030', 'PURVEYOR MANEGER', 'Control all purveyors');
-
-
-
-
-
-
-
+    VALUES ((SELECT nextval('"OrmasSchema".id_seq')), '0031', 'PURVEYOR MANEGER', 'Control all purveyors');
+INSERT INTO "OrmasSchema".roles(
+            role_id, role_code, role_name, comment)
+    VALUES ((SELECT nextval('"OrmasSchema".id_seq')), '0032', 'REGIONAL MANAGER', 'Regional meneger of sale department');
 
 
 

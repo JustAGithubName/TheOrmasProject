@@ -9,6 +9,8 @@
 		<meta name="robots" content="none" />
 		<LINK rel="stylesheet" media="screen" type="text/css" title="Style" href="css/mainstyle.css">
 		<?php
+		  session_unset();
+		  session_destroy();
           if(empty($_SESSION['login'])) 
           {
 				echo '<script type="text/javascript"> window.location = "index.php";</script>';

@@ -8,8 +8,10 @@
 CreateOrdDlg::CreateOrdDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWidget *parent) :QDialog(parent)
 {
 	setupUi(this);
+	
 	//setModal(true);
 	dialogBL = ormasBL;
+
 	parentForm = parent;
 	DataForm *dataFormParent = (DataForm *)this->parentForm;
 	mainForm = (MainForm *)dataFormParent->GetParent();
@@ -68,6 +70,7 @@ CreateOrdDlg::CreateOrdDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWi
 	QObject::connect(sumEdit, &QLineEdit::textChanged, this, &CreateOrdDlg::TextEditChanged);
 	QObject::connect(this, SIGNAL(CloseCreatedForms()), ((MainForm*)((DataForm*)parent)->GetParent()), SLOT(CloseChildsByName()));
 	InitComboBox();
+	
 }
 
 CreateOrdDlg::~CreateOrdDlg()
@@ -501,6 +504,15 @@ void CreateOrdDlg::Close()
 
 void CreateOrdDlg::OpenCltDlg()
 {
+	if (employeeEdit->text().toInt() == 0 || employeeEdit->text().toInt() < 0)
+	{
+		QString message = tr("Enter employee before!");
+		mainForm->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Enter employee before!")),
+			QString(tr("Ok")));
+		return;
+	}
 	this->hide();
 	this->setModal(false);
 	this->show();
@@ -710,10 +722,19 @@ void CreateOrdDlg::OpenOrdListDlg()
 {
 	if (employeeEdit->text().toInt() == 0 || employeeEdit->text().toInt() < 0)
 	{
-		QString message = tr("Enter stock employee before!");
+		QString message = tr("Enter employee before!");
 		mainForm->statusBar()->showMessage(message);
 		QMessageBox::information(NULL, QString(tr("Warning")),
-			QString(tr("Enter stock employee before!")),
+			QString(tr("Enter employee before!")),
+			QString(tr("Ok")));
+		return;
+	}
+	if (clientEdit->text().toInt() == 0 || clientEdit->text().toInt() < 0)
+	{
+		QString message = tr("Enter client before!");
+		mainForm->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Enter client before!")),
 			QString(tr("Ok")));
 		return;
 	}
@@ -727,7 +748,8 @@ void CreateOrdDlg::OpenOrdListDlg()
 	dForm->hide();
 	dForm->setWindowModality(Qt::WindowModal);
 	dForm->orderID = order->GetID();
-	dForm->employeeID = order->GetEmployeeID();
+	dForm->employeeID = employeeEdit->text().toInt();
+	dForm->clientID = clientEdit->text().toInt();
 	BusinessLayer::OrderList orderList;
 	orderList.SetOrderID(order->GetID());
 	std::string orderListFilter = orderList.GenerateFilter(dialogBL->GetOrmasDal());
@@ -789,7 +811,8 @@ void CreateOrdDlg::InitComboBox()
 	{
 		for (unsigned int i = 0; i < curVector.size(); i++)
 		{
-			currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
+			if (curVector[i].GetMainTrade() == true)
+				currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
 		}
 	}
 }

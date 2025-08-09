@@ -39,5 +39,7 @@ private:
 	MainForm* mainForm;
 	QStandardItemModel *itemModel;
 	QModelIndex mIndex;
+	unsigned int employeeID = 0;
+	unsigned int clientID = 0;
 };
 #endif //CREATEORDLITDLG_H

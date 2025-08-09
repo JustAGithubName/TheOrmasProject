@@ -245,12 +245,15 @@ void GenerateAgentRep::Generate()
 		return;
 	}
 	QString reportText = file.readAll();
+	//open file
 
+	//find all cliets
 	std::vector<int> clientID;
 	BusinessLayer::Relation relation;
 	clientID = relation.GetUser2IDByUser1ID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeEdit->text().toInt(), errorMessage);
 	BusinessLayer::User user;
 	std::string clientFilter = user.GenerateINFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), clientID);
+	//find all cliets
 
 	BusinessLayer::Payment payment;
 
@@ -310,15 +313,16 @@ void GenerateAgentRep::Generate()
 	std::map<std::pair< std::string, int>, double> productRetConsumeMap;
 
 
-	BusinessLayer::TransportHistory startHistory;
-	BusinessLayer::TransportHistory endHistory;
+	BusinessLayer::TransportChangeLog startChangeLog;
+	BusinessLayer::TransportChangeLog endChangeLog;
 	std::string historyFilter;
 	std::map<int, double> productCountStart;
 	std::map<int, double> productSumStart;
 	std::map<int, double> productCountEnd;
 	std::map<int, double> productSumEnd;
-	std::vector<BusinessLayer::TransportHistory> vecStartHisList;
-	std::vector<BusinessLayer::TransportHistory> vecEndHisList;
+	std::vector<BusinessLayer::TransportChangeLog> vecStartChangeList;
+	std::vector<BusinessLayer::TransportChangeLog> vecEndChangeList;
+	std::vector<BusinessLayer::TransportChangeLog> tempVector;
 
 	BusinessLayer::Transport transport;
 	BusinessLayer::TransportList transportList;
@@ -334,7 +338,7 @@ void GenerateAgentRep::Generate()
 	double sum = 0;
 	double sumRet = 0;
 	QString documentBody;
-	QString tableBody;
+	QString *tableBody = new QString() ;
 
 	std::map<int, double> totalCount;
 	std::map<int, double> totalSum;
@@ -348,7 +352,7 @@ void GenerateAgentRep::Generate()
 	reportText.replace(QString("fromDatePh"), fromDateEdit->text(), Qt::CaseInsensitive);
 	reportText.replace(QString("tillDatePh"), tillDateEdit->text(), Qt::CaseInsensitive);
 
-	tableBody.clear();
+	tableBody->clear();
 
 	ret.Clear();
 	ret.SetStatusID(status.GetID());
@@ -406,28 +410,43 @@ void GenerateAgentRep::Generate()
 	transport.Clear();
 	if (transport.GetTransportByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), employeeEdit->text().toInt(), errorMessage))
 	{
-		startHistory.Clear();
-		startHistory.SetTransportID(transport.GetID());
-		startHistory.SetFromDate(prevMonthEnd);
-		std::string filterTranStart = startHistory.GenerateFilter(dialogBL->GetOrmasDal());
-		vecStartHisList = dialogBL->GetAllDataForClass<BusinessLayer::TransportHistory>(errorMessage, filterTranStart);
-
-		endHistory.Clear();
-		endHistory.SetTransportID(transport.GetID());
-		endHistory.SetTillDate(tillDateEdit->text().toStdString());
-		std::string filterTranEnd = endHistory.GenerateFilter(dialogBL->GetOrmasDal());
-		vecEndHisList = dialogBL->GetAllDataForClass<BusinessLayer::TransportHistory>(errorMessage, filterTranEnd);
-
 		transportList.Clear();
 		transportList.SetTransportID(transport.GetID());
 		std::string filterTranList = transportList.GenerateFilter(dialogBL->GetOrmasDal());
 		vecTranList = dialogBL->GetAllDataForClass<BusinessLayer::TransportListView>(errorMessage, filterTranList);
+
+		std::string filterTranStart = "";
+		std::string filterTranEnd = "";
+		for each (auto item in vecTranList)
+		{
+			startChangeLog.Clear();
+			startChangeLog.SetTransportID(transport.GetID());
+			startChangeLog.SetProductID(item.GetProductID());
+			startChangeLog.SetLogDate(prevMonthEnd);
+			filterTranStart.clear();
+			filterTranStart = startChangeLog.GenerateFilterForDateLess(dialogBL->GetOrmasDal());
+			tempVector.clear();
+			tempVector = dialogBL->GetAllDataForClass<BusinessLayer::TransportChangeLog>(1, 0, errorMessage, filterTranStart);
+			if (tempVector.size()>0)
+				vecStartChangeList.push_back(tempVector.at(0));
+
+			endChangeLog.Clear();
+			endChangeLog.SetTransportID(transport.GetID());
+			endChangeLog.SetProductID(item.GetProductID());
+			endChangeLog.SetLogDate(tillDateEdit->text().toStdString());
+			filterTranEnd.clear();
+			filterTranEnd = endChangeLog.GenerateFilterForDateLess(dialogBL->GetOrmasDal());
+			tempVector.clear();
+			tempVector = dialogBL->GetAllDataForClass<BusinessLayer::TransportChangeLog>(1, 0, errorMessage, filterTranEnd);
+			if (tempVector.size()>0)
+				vecEndChangeList.push_back(tempVector.at(0));
+		}
 	}
 
 	
-	if (vecOrder.size() == 0 && vecConsume.size() == 0 && vecStartHisList.size() == 0)
+	if (vecOrder.size() == 0 && vecConsume.size() == 0 && vecStartChangeList.size() == 0)
 	{
-		tableBody += "Нет данных!";
+		*tableBody += "Нет данных!";
 	}
 	else
 	{
@@ -440,21 +459,21 @@ void GenerateAgentRep::Generate()
 		productSumRet.clear();
 		sum = 0;
 		sumRet = 0;
-		tableBody += QString::fromWCharArray(L"Сотрудник: ");
-		tableBody += expeditor.GetSurname().c_str();
-		tableBody += " ";
-		tableBody += expeditor.GetName().c_str();
-		tableBody += "  ";
-		tableBody += QString::fromWCharArray(L"Телефон: ");
-		tableBody += expeditor.GetPhone().c_str();
-		tableBody += "<br/>";
+		*tableBody += QString::fromWCharArray(L"Сотрудник: ");
+		*tableBody += expeditor.GetSurname().c_str();
+		*tableBody += " ";
+		*tableBody += expeditor.GetName().c_str();
+		*tableBody += "  ";
+		*tableBody += QString::fromWCharArray(L"Телефон: ");
+		*tableBody += expeditor.GetPhone().c_str();
+		*tableBody += "<br/>";
 
-		tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-		tableBody += "<th><b>" + QString::fromWCharArray(L"Наименование продукта") + "</b></th>";
-		tableBody += "<th><b>" + QString::fromWCharArray(L"В транспорте на начало") + "</b></th>";
-		tableBody += "<th><b>" + QString::fromWCharArray(L"Приход") + "</b></th>";
-		tableBody += "<th><b>" + QString::fromWCharArray(L"Расход") + "</b></th>";
-		tableBody += "<th><b>" + QString::fromWCharArray(L"В транспорте на конец") + "</b></th>";
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b>" + QString::fromWCharArray(L"Наименование продукта") + "</b></th>";
+		*tableBody += "<th><b>" + QString::fromWCharArray(L"В транспорте на начало") + "</b></th>";
+		*tableBody += "<th><b>" + QString::fromWCharArray(L"Приход") + "</b></th>";
+		*tableBody += "<th><b>" + QString::fromWCharArray(L"Расход") + "</b></th>";
+		*tableBody += "<th><b>" + QString::fromWCharArray(L"В транспорте на конец") + "</b></th>";
 
 		if (vecClientView.size() > 0)
 		{
@@ -476,6 +495,7 @@ void GenerateAgentRep::Generate()
 				}
 
 			}
+			vecClientView.clear();
 		}
 
 		if (vecTranList.size() > 0)
@@ -492,11 +512,12 @@ void GenerateAgentRep::Generate()
 				}
 
 			}
+			vecTranList.clear();
 		}
 
-		if (vecStartHisList.size() > 0)
+		if (vecStartChangeList.size() > 0)
 		{
-			for each (auto item in vecStartHisList)
+			for each (auto item in vecStartChangeList)
 			{
 				if (productCountStart.find(item.GetProductID()) != productCountStart.end())
 				{
@@ -510,11 +531,12 @@ void GenerateAgentRep::Generate()
 				}
 
 			}
+			vecStartChangeList.clear();
 		}
 		
-		if (vecEndHisList.size() > 0)
+		if (vecEndChangeList.size() > 0)
 		{
-			for each (auto item in vecEndHisList)
+			for each (auto item in vecEndChangeList)
 			{
 				if (productCountEnd.find(item.GetProductID()) != productCountEnd.end())
 				{
@@ -528,6 +550,7 @@ void GenerateAgentRep::Generate()
 				}
 
 			}
+			vecEndChangeList.clear();
 		}
 
 		if (vecOrder.size() > 0)
@@ -585,7 +608,7 @@ void GenerateAgentRep::Generate()
 				orderListFilter.clear();
 				orderList.SetOrderID(item.GetID());
 				orderListFilter = orderList.GenerateFilter(dialogBL->GetOrmasDal());
-				vecOrderListRet.clear();
+  				vecOrderListRet.clear();
 				vecOrderListRet = dialogBL->GetAllDataForClass<BusinessLayer::OrderListView>(errorMessage, orderListFilter);
 				if (vecOrderListRet.size() > 0)
 				{
@@ -800,44 +823,46 @@ void GenerateAgentRep::Generate()
 			{
 				sum += productSum.find(mapCountItem.first)->second;
 			}
-			tableBody += "<tr>";
-			tableBody += "<td>" + QString(product.GetName().c_str()) + "</td>";
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString(product.GetName().c_str()) + "</td>";
 			if (productCountStart.find(mapCountItem.first) != productCountStart.end())
 			{
-				tableBody += "<td>" + QString::number(productCountStart.find(mapCountItem.first)->second) + "</td>";
+				*tableBody += "<td>" + QString::number(productCountStart.find(mapCountItem.first)->second) + "</td>";
 			}
 			else
 			{
-				tableBody += "<td> 0 </td>";
+				*tableBody += "<td> 0 </td>";
 			}
 			if (productCountCon.find(mapCountItem.first) != productCountCon.end())
 			{
-				tableBody += "<td>" + QString::number(productCountCon.find(mapCountItem.first)->second, 'f', 3) + "</td>";
+				*tableBody += "<td>" + QString::number(productCountCon.find(mapCountItem.first)->second, 'f', 3) + "</td>";
 			}
 			else
 			{
-				tableBody += "<td> 0 </td>";
+				*tableBody += "<td> 0 </td>";
 			}
 			if (productCount.find(mapCountItem.first) != productCount.end())
 			{
-				tableBody += "<td>" + QString::number(productCount.find(mapCountItem.first)->second, 'f', 3) + "</td>";
+				*tableBody += "<td>" + QString::number(productCount.find(mapCountItem.first)->second, 'f', 3) + "</td>";
 			}
 			else
 			{
-				tableBody += "<td> 0 </td>";
+				*tableBody += "<td> 0 </td>";
 			}
 			if (productCountEnd.find(mapCountItem.first) != productCountEnd.end())
 			{
-				tableBody += "<td>" + QString::number(productCountEnd.find(mapCountItem.first)->second, 'f', 3) + "</td>";
+				*tableBody += "<td>" + QString::number(productCountEnd.find(mapCountItem.first)->second, 'f', 3) + "</td>";
 			}
 			else
 			{
-				tableBody += "<td> 0 </td>";
+				*tableBody += "<td> 0 </td>";
 			}
 
 
-			tableBody += "</tr>";
+			*tableBody += "</tr>";
 		}
+
+		productIDCycle.clear();
 
 		BusinessLayer::Relation rel;
 		BusinessLayer::User user;
@@ -871,710 +896,798 @@ void GenerateAgentRep::Generate()
 				{
 					sumCashier += paymenyItem.GetValue();
 				}
+				allPaymens.clear();
 			}
 		}
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString::fromWCharArray(L"Вся выручка") + "</td>";
-		tableBody += "<td><b>" + QString::number(sum, 'f', 3) + "</b></td>";
-		tableBody += "<td>" + QString::fromWCharArray(L"Вся выручка с вычетом возврата") + "</td>";
-		tableBody += "<td><b>" + QString::number(sum - sumRet, 'f', 3) + "</b></td>";
-		tableBody += "</tr>";
-		tableBody += "</table>";
-		tableBody += "<br/><br/>";
-	}
+		allClients.clear();
 
-	//consume out
-	BusinessLayer::ConsumeProduct conProd;
-	tableBody += QString::fromWCharArray(L"Поступление товара из склада");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сотрудник склада") + "</div></b></th>";
+		*tableBody += "<tr>";
+		*tableBody += "<td></td>";
+		*tableBody += "<td>" + QString::fromWCharArray(L"Вся выручка") + "</td>";
+		*tableBody += "<td><b>" + QString::number(sum, 'f', 3) + "</b></td>";
+		*tableBody += "<td>" + QString::fromWCharArray(L"Вся выручка с вычетом возврата") + "</td>";
+		*tableBody += "<td><b>" + QString::number(sum - sumRet, 'f', 3) + "</b></td>";
+		*tableBody += "</tr>";
+		*tableBody += "</table>";
+		*tableBody += "<br/><br/>";
+	}
+	
 	QString username;
-	for each (auto consumeItem  in vecConsume)
-	{
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString::number(consumeItem.GetID()) + "</td>";
-		tableBody += "<td>" + QString(consumeItem.GetDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString(consumeItem.GetExecutionDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString::number(consumeItem.GetCount()) + "</td>";
-		tableBody += "<td>" + QString(consumeItem.GetStatusName().c_str()) + "</td>";
-		username = consumeItem.GetStockEmployeeName().c_str();
-		username += " ";
-		username += consumeItem.GetStockEmployeeSurname().c_str();
-		tableBody += "<td>" + username + "</td>";
-		tableBody += "</tr>";
-	}
-	tableBody += "</table><br/><br/>";
-	
-	// consume hash
-	conProd.Clear();
-	tableBody += QString::fromWCharArray(L"Поступление товара по наименованию и количеству");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
-	for each (auto mapCountItem in productCountCon)
-	{
-		product.Clear();
-		product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
-		tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
-		
-	}
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
-
 	int productCounter = 1;
 	double clientSum = 0;
-	for (std::map<int, std::string>::iterator dateIt = consumeDateMap.begin(); dateIt != consumeDateMap.end(); dateIt++)
-	{
-		clientSum = 0;
+	double prodCountSum = 0;
+	double prodSumSum = 0;
+	double allSum = 0;
+	double allCount = 0;
 
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
-		for (std::map<int, double>::iterator conIt = productCountCon.begin(); conIt != productCountCon.end(); conIt++)
+	{ //consume related outs
+		//consume out
+		BusinessLayer::ConsumeProduct conProd;
+		*tableBody += QString::fromWCharArray(L"Поступление товара из склада");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сотрудник склада") + "</div></b></th>";
+	
+		for each (auto consumeItem  in vecConsume)
+		{
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString::number(consumeItem.GetID()) + "</td>";
+			*tableBody += "<td>" + QString(consumeItem.GetDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString(consumeItem.GetExecutionDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString::number(consumeItem.GetCount()) + "</td>";
+			*tableBody += "<td>" + QString(consumeItem.GetStatusName().c_str()) + "</td>";
+			username = consumeItem.GetStockEmployeeName().c_str();
+			username += " ";
+			username += consumeItem.GetStockEmployeeSurname().c_str();
+			*tableBody += "<td>" + username + "</td>";
+			*tableBody += "</tr>";
+		}
+		vecConsume.clear();
+		*tableBody += "</table><br/><br/>";
+
+		// consume hash
+		conProd.Clear();
+		*tableBody += QString::fromWCharArray(L"Поступление товара по наименованию и количеству");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
+		int totalTableCount = 0;
+		for (auto mapCountItem : productCountCon)
 		{
 			product.Clear();
-			if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
-				continue;
-			if (productConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productConsumeMap.end())
+			if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage))
 			{
-				tableBody += "<td>" + QString::number(productConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
-				clientSum += productConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				*tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
+				totalTableCount++;
 			}
-			else
-			{
-				tableBody += "<td></td>";
-			}
-			productCounter++;
 		}
-		if (clientSum>0)
-			tableBody += "<td>" + QString::number(clientSum) + "</td>";
-		tableBody += "</tr>";
-	}
-	
-	tableBody += "</table><br/><br/>";
 
-	//consume return
-	
-	tableBody += QString::fromWCharArray(L"Возврат товара на склад");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сотрудник склада") + "</div></b></th>";
-	username.clear();
-	for each (auto consumeItem  in vecConsumeRet)
-	{
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString::number(consumeItem.GetID()) + "</td>";
-		tableBody += "<td>" + QString(consumeItem.GetDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString(consumeItem.GetExecutionDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString::number(consumeItem.GetCount()) + "</td>";
-		tableBody += "<td>" + QString(consumeItem.GetStatusName().c_str()) + "</td>";
-		username = consumeItem.GetStockEmployeeName().c_str();
-		username += " ";
-		username += consumeItem.GetStockEmployeeSurname().c_str();
-		tableBody += "<td>" + username + "</td>";
-		tableBody += "</tr>";
-	}
-	tableBody += "</table><br/><br/>";
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общая сумма") + "</div></b></th>";
 
-	// consume hash return
-	conProd.Clear();
-	tableBody += QString::fromWCharArray(L"Возврат товара по наименованию и количеству");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
-	for each (auto mapCountItem in productRetCountCon)
-	{
-		product.Clear();
-		product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
-		tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
 		
-	}
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
-
-	
-	for (std::map<int, std::string>::iterator dateIt = consumeRetDateMap.begin(); dateIt != consumeRetDateMap.end(); dateIt++)
-	{
-		clientSum = 0;
-
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
-		for (std::map<int, double>::iterator conIt = productRetCountCon.begin(); conIt != productRetCountCon.end(); conIt++)
+		for (std::map<int, std::string>::iterator dateIt = consumeDateMap.begin(); dateIt != consumeDateMap.end(); dateIt++)
 		{
-			product.Clear();
-			if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
-				continue;
-			if (productRetConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productRetConsumeMap.end())
+			prodCountSum = 0;
+			prodSumSum = 0;
+
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
+			for (std::map<int, double>::iterator conIt = productCountCon.begin(); conIt != productCountCon.end(); conIt++)
 			{
-				tableBody += "<td>" + QString::number(productRetConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
-				clientSum += productRetConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				product.Clear();
+				if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
+					continue;
+				if (productConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productConsumeMap.end())
+				{
+					*tableBody += "<td>" + QString::number(productConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
+					prodCountSum += productConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+					allCount += prodCountSum;
+					prodSumSum += productConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second * product.GetPrice();
+					allSum += prodSumSum;
+				}
+				else
+				{
+					*tableBody += "<td></td>";
+				}
+				productCounter++;
+			}
+			if (prodCountSum > 0)
+			{
+				*tableBody += "<td>" + QString::number(prodCountSum) + "</td>";
+				*tableBody += "<td>" + QString::number(prodSumSum) + "</td>";
 			}
 			else
 			{
-				tableBody += "<td></td>";
+				*tableBody += "<td>" + QString::number(0) + "</td>";
+				*tableBody += "<td>" + QString::number(0) + "</td>";
 			}
-			productCounter++;
+				
+			*tableBody += "</tr>";
 		}
-		if (clientSum>0)
-			tableBody += "<td>" + QString::number(clientSum) + "</td>";
-		tableBody += "</tr>";
+		*tableBody += "<tr>";
+		*tableBody += "<td>"+ QString::fromWCharArray(L"Итого") +"</td>";
+		for (int i = 0; i < totalTableCount; ++i)
+		{
+			*tableBody += "<td></td>";
+		}
+		*tableBody += "<td>" + QString::number(allCount) + "</td>";
+		*tableBody += "<td>" + QString::number(allSum,'f',3) + "</td>";
+		*tableBody += "</tr>";
+		consumeDateMap.clear();
+		*tableBody += "</table><br/><br/>";
+
+		//consume return
+
+		*tableBody += QString::fromWCharArray(L"Возврат товара на склад");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сотрудник склада") + "</div></b></th>";
+		username.clear();
+		for (auto consumeItem : vecConsumeRet)
+		{
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString::number(consumeItem.GetID()) + "</td>";
+			*tableBody += "<td>" + QString(consumeItem.GetDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString(consumeItem.GetExecutionDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString::number(consumeItem.GetCount()) + "</td>";
+			*tableBody += "<td>" + QString(consumeItem.GetStatusName().c_str()) + "</td>";
+			username = consumeItem.GetStockEmployeeName().c_str();
+			username += " ";
+			username += consumeItem.GetStockEmployeeSurname().c_str();
+			*tableBody += "<td>" + username + "</td>";
+			*tableBody += "</tr>";
+		}
+		vecConsumeRet.clear();
+		*tableBody += "</table><br/><br/>";
+
+		// consume hash return
+		conProd.Clear();
+		*tableBody += QString::fromWCharArray(L"Возврат товара по наименованию и количеству");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
+		for (auto mapCountItem : productRetCountCon)
+		{
+			product.Clear();
+			product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
+			*tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
+
+		}
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
+
+
+		for (std::map<int, std::string>::iterator dateIt = consumeRetDateMap.begin(); dateIt != consumeRetDateMap.end(); dateIt++)
+		{
+			clientSum = 0;
+
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
+			for (std::map<int, double>::iterator conIt = productRetCountCon.begin(); conIt != productRetCountCon.end(); conIt++)
+			{
+				product.Clear();
+				if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
+					continue;
+				if (productRetConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productRetConsumeMap.end())
+				{
+					*tableBody += "<td>" + QString::number(productRetConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
+					clientSum += productRetConsumeMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				}
+				else
+				{
+					*tableBody += "<td></td>";
+				}
+				productCounter++;
+			}
+			if (clientSum > 0)
+				*tableBody += "<td>" + QString::number(clientSum) + "</td>";
+			*tableBody += "</tr>";
+		}
+
+		*tableBody += "</table><br/><br/>";
 	}
-
-	tableBody += "</table><br/><br/>";
-
-	//order
+	
 	BusinessLayer::Order saleOrder;
-	tableBody += QString::fromWCharArray(L"Продажа товара из транспорта");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
-	
-	username.clear();
-	for each (auto orderItem  in vecOrder)
-	{
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString::number(orderItem.GetID()) + "</td>";
-		tableBody += "<td>" + QString(orderItem.GetDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString(orderItem.GetExecutionDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString::number(orderItem.GetCount()) + "</td>";
-		tableBody += "<td>" + QString::number(orderItem.GetSum()) + "</td>";
-		tableBody += "<td>" + QString(orderItem.GetStatusName().c_str()) + "</td>";
-		username = orderItem.GetClientName().c_str();
-		username += " ";
-		username += orderItem.GetClientSurname().c_str();
-		username += " ";
-		username += orderItem.GetClientPhone().c_str();
-		tableBody += "<td>" + username + "</td>";
-		tableBody += "</tr>";
-	}
-	tableBody += "</table><br/><br/>";
-
-	// order hash
-	saleOrder.Clear();
-	tableBody += QString::fromWCharArray(L"Продажа товара по наименованию и количеству");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
-	for each (auto mapCountItem in productCount)
-	{
-		product.Clear();
-		if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage))
-			continue;
-		tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>";
-		tableBody += QString(product.GetName().c_str());
-		tableBody += "</div></b></th>";
-	}
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
-
-	productCounter = 1;
-	clientSum = 0;
 	std::string currentDate = "";
-	for (std::map<int, std::string>::iterator dateIt = orderDateMap.begin(); dateIt != orderDateMap.end(); dateIt++)
-	{
-		clientSum = 0;
-		if (currentDate == dateIt->second.c_str())
-		{
-			continue;
-		}
-		else
-		{
-			currentDate = dateIt->second.c_str();
-		}
 
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
+	{ //order related outs
+		//order
 		
-		for (std::map<int, double>::iterator conIt = productCount.begin(); conIt != productCount.end(); conIt++)
+		*tableBody += QString::fromWCharArray(L"Продажа товара из транспорта");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
+
+		username.clear();
+		for (auto orderItem : vecOrder)
+		{
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString::number(orderItem.GetID()) + "</td>";
+			*tableBody += "<td>" + QString(orderItem.GetDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString(orderItem.GetExecutionDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString::number(orderItem.GetCount()) + "</td>";
+			*tableBody += "<td>" + QString::number(orderItem.GetSum()) + "</td>";
+			*tableBody += "<td>" + QString(orderItem.GetStatusName().c_str()) + "</td>";
+			username = orderItem.GetClientName().c_str();
+			username += " ";
+			username += orderItem.GetClientSurname().c_str();
+			username += " ";
+			username += orderItem.GetClientPhone().c_str();
+			*tableBody += "<td>" + username + "</td>";
+			*tableBody += "</tr>";
+		}
+		*tableBody += "</table><br/><br/>";
+
+		// order hash
+		saleOrder.Clear();
+		*tableBody += QString::fromWCharArray(L"Продажа товара по наименованию и количеству");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
+		for (auto mapCountItem : productCount)
 		{
 			product.Clear();
-			if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
+			if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage))
 				continue;
-			if (productOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productOrderMap.end())
-			{
-				tableBody += "<td>" + QString::number(productOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
-				clientSum += productOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
-			}
-			else
-			{
-				tableBody += "<td></td>";
-			}
-			productCounter++;
+			*tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>";
+			*tableBody += QString(product.GetName().c_str());
+			*tableBody += "</div></b></th>";
 		}
-		if (clientSum>0)
-			tableBody += "<td>" + QString::number(clientSum) + "</td>";
-		tableBody += "</tr>";
-	}
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
 
-	tableBody += "</table><br/><br/>";
-
-	//order return
-	
-	tableBody += QString::fromWCharArray(L"Отмена проданных товаров, возврат на транспорт");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
-
-	username.clear();
-	for each (auto orderItem  in vecOrderRet)
-	{
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString::number(orderItem.GetID()) + "</td>";
-		tableBody += "<td>" + QString(orderItem.GetDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString(orderItem.GetExecutionDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString::number(orderItem.GetCount()) + "</td>";
-		tableBody += "<td>" + QString::number(orderItem.GetSum()) + "</td>";
-		tableBody += "<td>" + QString(orderItem.GetStatusName().c_str()) + "</td>";
-		username = orderItem.GetClientName().c_str();
-		username += " ";
-		username += orderItem.GetClientSurname().c_str();
-		username += " ";
-		username += orderItem.GetClientPhone().c_str();
-		tableBody += "<td>" + username + "</td>";
-		tableBody += "</tr>";
-	}
-	tableBody += "</table><br/><br/>";
-
-	// order return hash
-	saleOrder.Clear();
-	tableBody += QString::fromWCharArray(L"Отмена продажи по наименованию и количеству товара");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
-	for each (auto mapCountItem in productRetCount)
-	{
-		product.Clear();
-		product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
-		tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
-
-	}
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
-
-	productCounter = 1;
-	clientSum = 0;
-	currentDate.clear();
-	for (std::map<int, std::string>::iterator dateIt = orderRetDateMap.begin(); dateIt != orderRetDateMap.end(); dateIt++)
-	{
+		productCounter = 1;
 		clientSum = 0;
-		if (currentDate == dateIt->second.c_str())
+		
+		for (std::map<int, std::string>::iterator dateIt = orderDateMap.begin(); dateIt != orderDateMap.end(); dateIt++)
 		{
-			continue;
-		}
-		else
-		{
-			currentDate = dateIt->second.c_str();
-		}
-
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
-
-		for (std::map<int, double>::iterator conIt = productRetCount.begin(); conIt != productRetCount.end(); conIt++)
-		{
-			product.Clear();
-			if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
-				continue;
-			if (productRetOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productRetOrderMap.end())
+			clientSum = 0;
+			if (currentDate == dateIt->second.c_str())
 			{
-				tableBody += "<td>" + QString::number(productRetOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
-				clientSum += productRetOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				continue;
 			}
 			else
 			{
-				tableBody += "<td></td>";
+				currentDate = dateIt->second.c_str();
 			}
-			productCounter++;
+
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
+
+			for (std::map<int, double>::iterator conIt = productCount.begin(); conIt != productCount.end(); conIt++)
+			{
+				product.Clear();
+				if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
+					continue;
+				if (productOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productOrderMap.end())
+				{
+					*tableBody += "<td>" + QString::number(productOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
+					clientSum += productOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				}
+				else
+				{
+					*tableBody += "<td></td>";
+				}
+				productCounter++;
+			}
+			if (clientSum > 0)
+				*tableBody += "<td>" + QString::number(clientSum) + "</td>";
+			*tableBody += "</tr>";
 		}
-		if (clientSum>0)
-			tableBody += "<td>" + QString::number(clientSum) + "</td>";
-		tableBody += "</tr>";
-	}
 
-	tableBody += "</table><br/><br/>";
+		*tableBody += "</table><br/><br/>";
 
-	//return
 
-	tableBody += QString::fromWCharArray(L"Возврат от клиента на склад");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
+		//order return
+		*tableBody += QString::fromWCharArray(L"Отмена проданных товаров, возврат на транспорт");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
 
-	username.clear();
-	for each (auto returnItem  in vecReturn)
-	{
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString::number(returnItem.GetID()) + "</td>";
-		tableBody += "<td>" + QString(returnItem.GetDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString(returnItem.GetExecutionDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString::number(returnItem.GetCount()) + "</td>";
-		tableBody += "<td>" + QString::number(returnItem.GetSum()) + "</td>";
-		tableBody += "<td>" + QString(returnItem.GetStatusName().c_str()) + "</td>";
-		username = returnItem.GetClientName().c_str();
-		username += " ";
-		username += returnItem.GetClientSurname().c_str();
-		username += " ";
-		username += returnItem.GetClientPhone().c_str();
-		tableBody += "<td>" + username + "</td>";
-		tableBody += "</tr>";
-	}
-	tableBody += "</table><br/><br/>";
+		username.clear();
+		for (auto orderItem : vecOrderRet)
+		{
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString::number(orderItem.GetID()) + "</td>";
+			*tableBody += "<td>" + QString(orderItem.GetDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString(orderItem.GetExecutionDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString::number(orderItem.GetCount()) + "</td>";
+			*tableBody += "<td>" + QString::number(orderItem.GetSum()) + "</td>";
+			*tableBody += "<td>" + QString(orderItem.GetStatusName().c_str()) + "</td>";
+			username = orderItem.GetClientName().c_str();
+			username += " ";
+			username += orderItem.GetClientSurname().c_str();
+			username += " ";
+			username += orderItem.GetClientPhone().c_str();
+			*tableBody += "<td>" + username + "</td>";
+			*tableBody += "</tr>";
+		}
+		vecOrder.clear();
+		*tableBody += "</table><br/><br/>";
 
-	// return hash
-	saleOrder.Clear();
-	tableBody += QString::fromWCharArray(L"Возврат от клиента по наименованию и количеству товара");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		// order return hash
+		saleOrder.Clear();
+		*tableBody += QString::fromWCharArray(L"Отмена продажи по наименованию и количеству товара");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
 
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
-	for each (auto mapCountItem in productCountRet)
-	{
-		product.Clear();
-		product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
-		tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
+		for (auto mapCountItem : productRetCount)
+		{
+			product.Clear();
+			product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
+			*tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
 
-	}
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
+		}
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
 
-	productCounter = 1;
-	clientSum = 0;
-	currentDate.clear();
-	for (std::map<int, std::string>::iterator dateIt = returnDateMap.begin(); dateIt != returnDateMap.end(); dateIt++)
-	{
+		productCounter = 1;
 		clientSum = 0;
-		if (currentDate == dateIt->second.c_str())
+		currentDate.clear();
+		for (std::map<int, std::string>::iterator dateIt = orderRetDateMap.begin(); dateIt != orderRetDateMap.end(); dateIt++)
 		{
-			continue;
-		}
-		else
-		{
-			currentDate = dateIt->second.c_str();
-		}
-
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
-
-		for (std::map<int, double>::iterator conIt = productCountRet.begin(); conIt != productCountRet.end(); conIt++)
-		{
-			product.Clear();
-			if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
-				continue;
-			if (productReturnMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productReturnMap.end())
+			clientSum = 0;
+			if (currentDate == dateIt->second.c_str())
 			{
-				tableBody += "<td>" + QString::number(productReturnMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
-				clientSum += productReturnMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				continue;
 			}
 			else
 			{
-				tableBody += "<td></td>";
+				currentDate = dateIt->second.c_str();
 			}
-			productCounter++;
+
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
+
+			for (std::map<int, double>::iterator conIt = productRetCount.begin(); conIt != productRetCount.end(); conIt++)
+			{
+				product.Clear();
+				if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
+					continue;
+				if (productRetOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productRetOrderMap.end())
+				{
+					*tableBody += "<td>" + QString::number(productRetOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
+					clientSum += productRetOrderMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				}
+				else
+				{
+					*tableBody += "<td></td>";
+				}
+				productCounter++;
+			}
+			if (clientSum > 0)
+				*tableBody += "<td>" + QString::number(clientSum) + "</td>";
+			*tableBody += "</tr>";
 		}
-		if (clientSum>0)
-			tableBody += "<td>" + QString::number(clientSum) + "</td>";
-		tableBody += "</tr>";
+		orderRetDateMap.clear();
+
+		*tableBody += "</table><br/><br/>";
 	}
 
-	tableBody += "</table><br/><br/>";
+	{//return related outs
+		//return
 
-	//return ret
+		*tableBody += QString::fromWCharArray(L"Возврат от клиента на склад");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
 
-	tableBody += QString::fromWCharArray(L"Отмена возврата от клиента");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
+		username.clear();
+		for (auto returnItem : vecReturn)
+		{
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString::number(returnItem.GetID()) + "</td>";
+			*tableBody += "<td>" + QString(returnItem.GetDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString(returnItem.GetExecutionDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString::number(returnItem.GetCount()) + "</td>";
+			*tableBody += "<td>" + QString::number(returnItem.GetSum()) + "</td>";
+			*tableBody += "<td>" + QString(returnItem.GetStatusName().c_str()) + "</td>";
+			username = returnItem.GetClientName().c_str();
+			username += " ";
+			username += returnItem.GetClientSurname().c_str();
+			username += " ";
+			username += returnItem.GetClientPhone().c_str();
+			*tableBody += "<td>" + username + "</td>";
+			*tableBody += "</tr>";
+		}
+		*tableBody += "</table><br/><br/>";
 
-	username.clear();
-	for each (auto returnItem  in vecReturnRet)
-	{
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString::number(returnItem.GetID()) + "</td>";
-		tableBody += "<td>" + QString(returnItem.GetDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString(returnItem.GetExecutionDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString::number(returnItem.GetCount()) + "</td>";
-		tableBody += "<td>" + QString::number(returnItem.GetSum()) + "</td>";
-		tableBody += "<td>" + QString(returnItem.GetStatusName().c_str()) + "</td>";
-		username = returnItem.GetClientName().c_str();
-		username += " ";
-		username += returnItem.GetClientSurname().c_str();
-		username += " ";
-		username += returnItem.GetClientPhone().c_str();
-		tableBody += "<td>" + username + "</td>";
-		tableBody += "</tr>";
-	}
-	tableBody += "</table><br/><br/>";
+		// return hash
+		saleOrder.Clear();
+		*tableBody += QString::fromWCharArray(L"Возврат от клиента по наименованию и количеству товара");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
 
-	//return return hash
-	saleOrder.Clear();
-	tableBody += QString::fromWCharArray(L"Отмена возврата от клиента по наименованию и количеству товара");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
+		for (auto mapCountItem : productCountRet)
+		{
+			product.Clear();
+			product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
+			*tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
 
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
-	for each (auto mapCountItem in productRetCountRet)
-	{
-		product.Clear();
-		product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
-		tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
-	}
-	tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
+		}
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
 
-	productCounter = 1;
-	clientSum = 0;
-	currentDate.clear();
-	for (std::map<int, std::string>::iterator dateIt = returnRetDateMap.begin(); dateIt != returnRetDateMap.end(); dateIt++)
-	{
+		productCounter = 1;
 		clientSum = 0;
-		if (currentDate == dateIt->second.c_str())
+		currentDate.clear();
+		for (std::map<int, std::string>::iterator dateIt = returnDateMap.begin(); dateIt != returnDateMap.end(); dateIt++)
 		{
-			continue;
-		}
-		else
-		{
-			currentDate = dateIt->second.c_str();
-		}
-
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
-
-		for (std::map<int, double>::iterator conIt = productRetCountRet.begin(); conIt != productRetCountRet.end(); conIt++)
-		{
-			product.Clear();
-			if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
-				continue;
-			if (productReturnRetMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productReturnRetMap.end())
+			clientSum = 0;
+			if (currentDate == dateIt->second.c_str())
 			{
-				tableBody += "<td>" + QString::number(productReturnRetMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
-				clientSum += productReturnRetMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				continue;
 			}
 			else
 			{
-				tableBody += "<td></td>";
+				currentDate = dateIt->second.c_str();
 			}
-			productCounter++;
+
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
+
+			for (std::map<int, double>::iterator conIt = productCountRet.begin(); conIt != productCountRet.end(); conIt++)
+			{
+				product.Clear();
+				if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
+					continue;
+				if (productReturnMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productReturnMap.end())
+				{
+					*tableBody += "<td>" + QString::number(productReturnMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
+					clientSum += productReturnMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				}
+				else
+				{
+					*tableBody += "<td></td>";
+				}
+				productCounter++;
+			}
+			if (clientSum > 0)
+				*tableBody += "<td>" + QString::number(clientSum) + "</td>";
+			*tableBody += "</tr>";
 		}
-		if (clientSum>0)
-			tableBody += "<td>" + QString::number(clientSum) + "</td>";
-		tableBody += "</tr>";
+		returnDateMap.clear();
+		*tableBody += "</table><br/><br/>";
+
+		//return ret
+
+		*tableBody += QString::fromWCharArray(L"Отмена возврата от клиента");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата создания") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата исполнения") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Количество") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
+
+		username.clear();
+		for (auto returnItem : vecReturnRet)
+		{
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString::number(returnItem.GetID()) + "</td>";
+			*tableBody += "<td>" + QString(returnItem.GetDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString(returnItem.GetExecutionDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString::number(returnItem.GetCount()) + "</td>";
+			*tableBody += "<td>" + QString::number(returnItem.GetSum()) + "</td>";
+			*tableBody += "<td>" + QString(returnItem.GetStatusName().c_str()) + "</td>";
+			username = returnItem.GetClientName().c_str();
+			username += " ";
+			username += returnItem.GetClientSurname().c_str();
+			username += " ";
+			username += returnItem.GetClientPhone().c_str();
+			*tableBody += "<td>" + username + "</td>";
+			*tableBody += "</tr>";
+		}
+		vecReturn.clear();
+
+		*tableBody += "</table><br/><br/>";
+
+		//return return hash
+		saleOrder.Clear();
+		*tableBody += QString::fromWCharArray(L"Отмена возврата от клиента по наименованию и количеству товара");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Дата") + "</div></b></th>";
+		for (auto mapCountItem : productRetCountRet)
+		{
+			product.Clear();
+			product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mapCountItem.first, errorMessage);
+			*tableBody += "<th style='height:300px; vertical-align:bottom;text-align:center;'><b><div style='transform: rotate(-90deg); max-width:20px; white-space:nowrap;'>" + QString(product.GetName().c_str()) + "</div></b></th>";
+		}
+		*tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Общее количество") + "</div></b></th>";
+
+		productCounter = 1;
+		clientSum = 0;
+		currentDate.clear();
+		for (std::map<int, std::string>::iterator dateIt = returnRetDateMap.begin(); dateIt != returnRetDateMap.end(); dateIt++)
+		{
+			clientSum = 0;
+			if (currentDate == dateIt->second.c_str())
+			{
+				continue;
+			}
+			else
+			{
+				currentDate = dateIt->second.c_str();
+			}
+
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString(dateIt->second.c_str()) + "</td>";
+
+			for (std::map<int, double>::iterator conIt = productRetCountRet.begin(); conIt != productRetCountRet.end(); conIt++)
+			{
+				product.Clear();
+				if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), conIt->first, errorMessage))
+					continue;
+				if (productReturnRetMap.find(std::pair<std::string, int>(dateIt->second, conIt->first)) != productReturnRetMap.end())
+				{
+					*tableBody += "<td>" + QString::number(productReturnRetMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second) + "</td>";
+					clientSum += productReturnRetMap.find(std::pair<std::string, int>(dateIt->second, conIt->first))->second;
+				}
+				else
+				{
+					*tableBody += "<td></td>";
+				}
+				productCounter++;
+			}
+			if (clientSum > 0)
+				*tableBody += "<td>" + QString::number(clientSum) + "</td>";
+			*tableBody += "</tr>";
+		}
+		productRetCountRet.clear();
+		*tableBody += "</table><br/><br/>";
 	}
-
-	tableBody += "</table><br/><br/>";
-
-	//payment
-
-	tableBody += QString::fromWCharArray(L"Оплата клиента");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата оплаты") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
-
-	username.clear();
-	std::vector<int> subID;
-	std::map<int, double> paymentMap;
-	std::map<int, int> clientSubID;
-	std::map<int, double> startBalValue;
-	std::map<int, double> endBalValue;
-	for each (auto paymentItem  in vecPaymet)
-	{
-		tableBody += "<tr>";
-		tableBody += "<td>" + QString::number(paymentItem.GetID()) + "</td>";
-		tableBody += "<td>" + QString(paymentItem.GetDate().c_str()) + "</td>";
-		tableBody += "<td>" + QString::number(paymentItem.GetValue()) + "</td>";
-		tableBody += "<td>" + QString(paymentItem.GetStatusName().c_str()) + "</td>";
-		username = paymentItem.GetUsername().c_str();
-		username += " ";
-		username += paymentItem.GetUserSurname().c_str();
-		username += " ";
-		username += paymentItem.GetUserPhone().c_str();
-		tableBody += "<td>" + username + "</td>";
-		tableBody += "</tr>";
-		subID.push_back(paymentItem.GetSubaccountID());
 	
-		if (paymentMap.find(paymentItem.GetUserID()) != paymentMap.end())
+	{//payment related outs
+		//payment
+
+		*tableBody += QString::fromWCharArray(L"Оплата клиента");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"ID") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Дата оплаты") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Сумма") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Статус") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
+
+		username.clear();
+		std::vector<int> subID;
+		std::map<int, double> paymentMap;
+		std::map<int, int> clientSubID;
+		std::map<int, double> startBalValue;
+		std::map<int, double> endBalValue;
+		for (auto paymentItem : vecPaymet)
 		{
-			paymentMap.find(paymentItem.GetUserID())->second = paymentMap.find(paymentItem.GetUserID())->second + paymentItem.GetValue();
+			*tableBody += "<tr>";
+			*tableBody += "<td>" + QString::number(paymentItem.GetID()) + "</td>";
+			*tableBody += "<td>" + QString(paymentItem.GetDate().c_str()) + "</td>";
+			*tableBody += "<td>" + QString::number(paymentItem.GetValue()) + "</td>";
+			*tableBody += "<td>" + QString(paymentItem.GetStatusName().c_str()) + "</td>";
+			username = paymentItem.GetUsername().c_str();
+			username += " ";
+			username += paymentItem.GetUserSurname().c_str();
+			username += " ";
+			username += paymentItem.GetUserPhone().c_str();
+			*tableBody += "<td>" + username + "</td>";
+			*tableBody += "</tr>";
+			subID.push_back(paymentItem.GetSubaccountID());
+
+			if (paymentMap.find(paymentItem.GetUserID()) != paymentMap.end())
+			{
+				paymentMap.find(paymentItem.GetUserID())->second = paymentMap.find(paymentItem.GetUserID())->second + paymentItem.GetValue();
+			}
+			else
+			{
+				paymentMap.insert(std::make_pair(paymentItem.GetUserID(), paymentItem.GetValue()));
+			}
+			clientSubID.insert(std::make_pair(paymentItem.GetUserID(), paymentItem.GetSubaccountID()));
 		}
-		else
+		vecPaymet.clear();
+		*tableBody += "</table><br/><br/>";
+
+		//payment hash
+		BusinessLayer::SubaccountHistory sHistoryStart;
+		BusinessLayer::SubaccountHistory sHistoryEnd;
+		BusinessLayer::Subaccount subaccount;
+
+		std::string filterSub = subaccount.GenerateINFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), subID);
+		sHistoryStart.SetTillDate(prevMonthEnd);
+		std::string filterHis = sHistoryStart.GenerateFilter(dialogBL->GetOrmasDal());
+		std::vector<std::string> filterLists;
+		filterLists.push_back(filterSub);
+		filterLists.push_back(filterHis);
+		filterHis = dialogBL->GetOrmasDal().ConcatenateFilters(filterLists);
+		std::vector<BusinessLayer::SubaccountHistory> vecBalanceStart = dialogBL->GetAllDataForClass<BusinessLayer::SubaccountHistory>(errorMessage, filterHis);
+
+		filterLists.clear();
+		filterHis.clear();
+		sHistoryEnd.SetTillDate(tillDateEdit->text().toStdString());
+		filterHis = sHistoryEnd.GenerateFilter(dialogBL->GetOrmasDal());
+		filterLists.push_back(filterSub);
+		filterLists.push_back(filterHis);
+		filterHis = dialogBL->GetOrmasDal().ConcatenateFilters(filterLists);
+		std::vector<BusinessLayer::SubaccountHistory> vecBalanceEnd = dialogBL->GetAllDataForClass<BusinessLayer::SubaccountHistory>(errorMessage, filterHis);
+
+		if (vecBalanceStart.size() > 0)
 		{
-			paymentMap.insert(std::make_pair(paymentItem.GetUserID(), paymentItem.GetValue()));
+			for (auto item : vecBalanceStart)
+			{
+
+				if (startBalValue.find(item.GetSubaccountID()) != startBalValue.end())
+				{
+					startBalValue.find(item.GetSubaccountID())->second = startBalValue.find(item.GetSubaccountID())->second + item.GetCurrentBalance();
+				}
+				else
+				{
+					startBalValue.insert(std::make_pair(item.GetSubaccountID(), item.GetCurrentBalance()));
+				}
+
+			}
 		}
-		clientSubID.insert(std::make_pair(paymentItem.GetUserID(), paymentItem.GetSubaccountID()));
-	}
-	tableBody += "</table><br/><br/>";
-
-	//payment hash
-	BusinessLayer::SubaccountHistory sHistoryStart;
-	BusinessLayer::SubaccountHistory sHistoryEnd;
-	BusinessLayer::Subaccount subaccount;
-	
-	std::string filterSub = subaccount.GenerateINFilter(dialogBL->globalVar, dialogBL->GetOrmasDal(), subID);
-	sHistoryStart.SetTillDate(prevMonthEnd);
-	std::string filterHis = sHistoryStart.GenerateFilter(dialogBL->GetOrmasDal());
-	std::vector<std::string> filterLists;
-	filterLists.push_back(filterSub);
-	filterLists.push_back(filterHis);
-	filterHis = dialogBL->GetOrmasDal().ConcatenateFilters(filterLists);
-	std::vector<BusinessLayer::SubaccountHistory> vecBalanceStart = dialogBL->GetAllDataForClass<BusinessLayer::SubaccountHistory>(errorMessage, filterHis);
-
-	filterLists.clear();
-	filterHis.clear();
-	sHistoryEnd.SetTillDate(tillDateEdit->text().toStdString());
-	filterHis = sHistoryEnd.GenerateFilter(dialogBL->GetOrmasDal());
-	filterLists.push_back(filterSub);
-	filterLists.push_back(filterHis);
-	filterHis = dialogBL->GetOrmasDal().ConcatenateFilters(filterLists);
-	std::vector<BusinessLayer::SubaccountHistory> vecBalanceEnd = dialogBL->GetAllDataForClass<BusinessLayer::SubaccountHistory>(errorMessage, filterHis);
-
-	if (vecBalanceStart.size() > 0)
-	{
-		for each (auto item in vecBalanceStart)
+		vecBalanceStart.clear();
+		if (vecBalanceEnd.size() > 0)
 		{
+			for (auto item : vecBalanceEnd)
+			{
+
+				if (endBalValue.find(item.GetSubaccountID()) != endBalValue.end())
+				{
+					endBalValue.find(item.GetSubaccountID())->second = endBalValue.find(item.GetSubaccountID())->second + item.GetCurrentBalance();
+				}
+				else
+				{
+					endBalValue.insert(std::make_pair(item.GetSubaccountID(), item.GetCurrentBalance()));
+				}
+
+			}
+		}
+		
+		vecBalanceEnd.clear();
+		
+		*tableBody += QString::fromWCharArray(L"Суммарная заделжность/оплата клиентов");
+		*tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Осаток на начало") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Задолженность") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Оплачено") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Осаток на конец") + "</div></b></th>";
+
+		double sratSum = 0;
+		double paymentSum = 0;
+		double debtSum = 0;
+		double endSum = 0;
+		double creds = 0;
+
+		BusinessLayer::Balance balance;
+		BusinessLayer::SubaccountHistory subHis;
+		std::vector<BusinessLayer::SubaccountHistory> vecClientBalanceEnd;
+		for (int ID : clientID)
+		{
+			*tableBody += "<tr>";
+			if (clientInfoMap.find(ID) != clientInfoMap.end())
+			{
+				*tableBody += "<td>" + QString(clientInfoMap.find(ID)->second.c_str()) + "</td>";
+			}
+			else
+			{
+				*tableBody += "<td> </td>";
+			}
+			if (clientSubID.find(ID) != clientSubID.end())
+			{
+				if (startBalValue.find(clientSubID.find(ID)->second) != startBalValue.end())
+				{
+					*tableBody += "<td>" + QString::number(startBalValue.find(clientSubID.find(ID)->second)->second) + "</td>";
+					sratSum += startBalValue.find(clientSubID.find(ID)->second)->second;
+				}
+				else
+				{
+					*tableBody += "<td>0</td>";
+				}
+			}
+			else
+			{
+				*tableBody += "<td>0</td>";
+			}
+			if (debt.find(ID) != debt.end())
+			{
+				if (cred.find(ID) != cred.end())
+				{
+					creds = cred.find(ID)->second;
+				}
+				else
+				{
+					creds = 0;
+				}
+				*tableBody += "<td>" + QString::number(debt.find(ID)->second - creds) + "</td>";
+				debtSum += debt.find(ID)->second - creds;
+			}
+			else
+			{
+				*tableBody += "<td>0</td>";
+			}
+			if (paymentMap.find(ID) != paymentMap.end())
+			{
+				*tableBody += "<td>" + QString::number(paymentMap.find(ID)->second) + "</td>";
+				paymentSum += paymentMap.find(ID)->second;
+			}
+			else
+			{
+				*tableBody += "<td>0</td>";
+			}
 			
-			if (startBalValue.find(item.GetSubaccountID()) != startBalValue.end())
+			//problem section
+			if (clientSubID.find(ID) != clientSubID.end())
 			{
-				startBalValue.find(item.GetSubaccountID())->second = startBalValue.find(item.GetSubaccountID())->second + item.GetCurrentBalance();
+				if (endBalValue.find(clientSubID.find(ID)->second) != endBalValue.end())
+				{
+					double temp = 0;
+					temp = endBalValue.find(clientSubID.find(ID)->second)->second;
+					*tableBody += "<td>" + QString::number(temp) + "</td>";
+					endSum += temp;
+				}
+				else
+				{
+					*tableBody += "<td>0</td>";
+				}
 			}
 			else
 			{
-				startBalValue.insert(std::make_pair(item.GetSubaccountID(), item.GetCurrentBalance()));
+				balance.Clear();
+				if (balance.GetBalanceByUserID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
+				{
+					subHis.Clear();
+					filterHis.clear();
+					subHis.SetSubaccountID(balance.GetSubaccountID());
+					subHis.SetTillDate(tillDateEdit->text().toStdString());
+					filterHis = subHis.GenerateFilter(dialogBL->GetOrmasDal());
+					vecClientBalanceEnd = dialogBL->GetAllDataForClass<BusinessLayer::SubaccountHistory>(errorMessage, filterHis);
+					if (vecClientBalanceEnd.size() > 0)
+					{
+						*tableBody += "<td>" + QString::number(vecClientBalanceEnd.at(0).GetCurrentBalance()) + "</td>";
+						endSum += vecClientBalanceEnd.at(0).GetCurrentBalance();
+					}
+					else
+					{
+						*tableBody += "<td>0</td>";
+					}
+				}
+				else
+				{
+					*tableBody += "<td>0</td>";
+				}
+				
 			}
-
+			vecClientBalanceEnd.clear();
+			*tableBody += "</tr>";
 		}
+		*tableBody += "<th><b><div '>" + QString::fromWCharArray(L"По всем клиентам") + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::number(sratSum) + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::number(debtSum) + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::number(paymentSum) + "</div></b></th>";
+		*tableBody += "<th><b><div '>" + QString::number(endSum) + "</div></b></th>";
+		*tableBody += "</table><br/><br/>";
 	}
-
-	if (vecBalanceEnd.size() > 0)
-	{
-		for each (auto item in vecBalanceEnd)
-		{
-
-			if (endBalValue.find(item.GetSubaccountID()) != endBalValue.end())
-			{
-				endBalValue.find(item.GetSubaccountID())->second = endBalValue.find(item.GetSubaccountID())->second + item.GetCurrentBalance();
-			}
-			else
-			{
-				endBalValue.insert(std::make_pair(item.GetSubaccountID(), item.GetCurrentBalance()));
-			}
-
-		}
-	}
-
-	tableBody += QString::fromWCharArray(L"Суммарная заделжность/оплата клиентов");
-	tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Осаток на начало") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Задолженность") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Оплачено") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"Осаток на конец") + "</div></b></th>";
 	
-	double sratSum = 0;
-	double paymentSum = 0;
-	double debtSum = 0;
-	double endSum = 0;
-	double creds = 0;
-	for each  (int ID in clientID)
-	{
-		tableBody += "<tr>";
-		if (clientInfoMap.find(ID) != clientInfoMap.end())
-		{
-			tableBody += "<td>" + QString(clientInfoMap.find(ID)->second.c_str()) + "</td>";
-		}
-		else
-		{
-			tableBody += "<td> </td>";
-		}
-		if (clientSubID.find(ID) != clientSubID.end())
-		{
-			if (startBalValue.find(clientSubID.find(ID)->second) != startBalValue.end())
-			{
-				tableBody += "<td>" + QString::number(startBalValue.find(clientSubID.find(ID)->second)->second) + "</td>";
-				sratSum += startBalValue.find(clientSubID.find(ID)->second)->second;
-			}
-			else
-			{
-				tableBody += "<td>0</td>";
-			}
-		}
-		else
-		{
-			tableBody += "<td>0</td>";
-		}
-		if (debt.find(ID) != debt.end())
-		{
-			if (cred.find(ID) != cred.end())
-			{
-				creds = cred.find(ID)->second;
-			}
-			else
-			{
-				creds = 0;
-			}
-			tableBody += "<td>" + QString::number(debt.find(ID)->second - creds) + "</td>";
-			debtSum += debt.find(ID)->second - creds;
-		}
-		else
-		{
-			tableBody += "<td>0</td>";
-		}
-		if (paymentMap.find(ID) != paymentMap.end())
-		{
-			tableBody += "<td>" + QString::number(paymentMap.find(ID)->second) + "</td>";
-			paymentSum += paymentMap.find(ID)->second;
-		}
-		else
-		{
-			tableBody += "<td>0</td>";
-		}
-		if (clientSubID.find(ID) != clientSubID.end())
-		{
-			if (endBalValue.find(clientSubID.find(ID)->second) != endBalValue.end())
-			{
-				tableBody += "<td>" + QString::number(endBalValue.find(clientSubID.find(ID)->second)->second) + "</td>";
-				endSum += endBalValue.find(clientSubID.find(ID)->second)->second;
-			}
-			else
-			{
-				tableBody += "<td>0</td>";
-			}
-		}
-		else
-		{
-			tableBody += "<td>0</td>";
-		}
-		
-		
-		tableBody += "</tr>";
-	}
-	tableBody += "<th><b><div '>" + QString::fromWCharArray(L"По всем клиентам") + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::number(sratSum) + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::number(debtSum) + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::number(paymentSum) + "</div></b></th>";
-	tableBody += "<th><b><div '>" + QString::number(endSum) + "</div></b></th>";
-	tableBody += "</table><br/><br/>";
-
 	documentBody += tableBody;
 
 
@@ -1584,7 +1697,7 @@ void GenerateAgentRep::Generate()
 	docForm->SetContent(reportText);
 	docForm->webEngineView->show();
 	docForm->show();
-
+	delete tableBody;
 	Close();
 }
 

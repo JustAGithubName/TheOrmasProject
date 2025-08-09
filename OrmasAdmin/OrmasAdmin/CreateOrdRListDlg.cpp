@@ -14,6 +14,8 @@ CreateOrdRListDlg::CreateOrdRListDlg(BusinessLayer::OrmasBL *ormasBL, bool updat
 	mainForm = (MainForm *)dataFormParent->GetParent();
 	orderRawID = ((DataForm*)parent)->orderRawID;
 	employeeID = ((DataForm*)parent)->employeeID;
+	currencyID = ((DataForm*)parent)->currencyID;
+	currencyCmb->setEnabled(false);
 	vDouble = new QDoubleValidator(0.00, 1000000000.00, 3, this);
 	vInt = new QIntValidator(0, 1000000000, this);
 	productEdit->setValidator(vInt);
@@ -23,6 +25,15 @@ CreateOrdRListDlg::CreateOrdRListDlg(BusinessLayer::OrmasBL *ormasBL, bool updat
 	statusEdit->setValidator(vInt);
 	sumEdit->setValidator(vDouble);
 	sumEdit->setMaxLength(17);
+	orderRawBtn->setEnabled(false);
+	
+	BusinessLayer::Currency currency;
+	if (currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyID, errorMessage))
+	{
+		currenctCurrency->setText(currency.GetShortName().c_str());
+	}
+
+
 	if (true == updateFlag)
 	{
 		QObject::connect(addBtn, &QPushButton::released, this, &CreateOrdRListDlg::EditProductInList);
@@ -66,7 +77,17 @@ void CreateOrdRListDlg::SetProductData(int productID)
 		{
 			measurePh->setText(measure.GetName().c_str());
 		}
-		oldPriceLb->setText(QString::number(product.GetPrice()));
+		BusinessLayer::Currency currency;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
+		if (mainCurID > 0)
+		{
+			if (currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mainCurID, errorMessage))
+			{
+				oldPriceLb->setText(QString::number(product.GetPrice()));
+				oldPriceCurrency->setText(currency.GetShortName().c_str());
+			}
+		}
 	}
 }
 
@@ -96,7 +117,17 @@ void CreateOrdRListDlg::SetID(int ID, QString childName)
 					{
 						measurePh->setText(measure.GetName().c_str());
 					}
-					oldPriceLb->setText(QString::number(product.GetPrice()));
+					BusinessLayer::Currency currency;
+					int mainCurID = 0;
+					mainCurID = currency.GetMainTradeCurrencyID(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
+					if (mainCurID > 0)
+					{
+						if (currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mainCurID, errorMessage))
+						{
+							oldPriceLb->setText(QString::number(product.GetPrice()));
+							oldPriceCurrency->setText(currency.GetShortName().c_str());
+						}
+					}
 				}
 			}
 			if (childName == QString("orderRawForm"))
@@ -213,7 +244,6 @@ void CreateOrdRListDlg::AddProductToList()
 
 		BusinessLayer::Measure *measure = new BusinessLayer::Measure();
 
-		BusinessLayer::Currency *currency = new BusinessLayer::Currency();
 		BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
 
 		if (!product->GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), productEdit->text().toInt(), errorMessage))
@@ -224,14 +254,14 @@ void CreateOrdRListDlg::AddProductToList()
 			errorMessage.clear();
 			delete product;
 			delete measure;
-			delete currency;
+			
 			return;
 		}
 		else
 		{
 			if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-				|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
-				|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage))
+				
+				|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyID, errorMessage))
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr(errorMessage.c_str())),
@@ -239,7 +269,7 @@ void CreateOrdRListDlg::AddProductToList()
 				errorMessage.clear();
 				delete product;
 				delete measure;
-				delete currency;
+				
 				return;
 			}
 		}
@@ -248,13 +278,13 @@ void CreateOrdRListDlg::AddProductToList()
 		{
 			SetOrdRListParams(orderRawID, productEdit->text().toInt(),
 				countEdit->text().toDouble(), (countEdit->text().toDouble() * product->GetPrice()),
-				statusVector.at(0).GetID(), product->GetCurrencyID());
+				statusVector.at(0).GetID(), currencyID);
 		}
 		else
 		{
 			SetOrdRListParams(orderRawID, productEdit->text().toInt(),
 				countEdit->text().toDouble(), sumEdit->text().toDouble(),
-				statusVector.at(0).GetID(), product->GetCurrencyID());
+				statusVector.at(0).GetID(), currencyID);
 		}
 		orderRawList->employeeID = employeeID;
 		if (dialogBL->CreateOrderRawList(orderRawList, errorMessage))
@@ -275,7 +305,7 @@ void CreateOrdRListDlg::AddProductToList()
 					}
 					productListItem << new QStandardItem(product->GetName().c_str())
 						<< new QStandardItem(QString::number(product->GetPrice()))
-						<< new QStandardItem(currency->GetShortName().c_str())
+						<< new QStandardItem(sumCurrency->GetShortName().c_str())
 						<< new QStandardItem(QString::number(product->GetVolume()))
 						<< new QStandardItem(measure->GetName().c_str())
 						<< new QStandardItem(QString::number(orderRawList->GetCount(), 'f', 3))
@@ -291,7 +321,7 @@ void CreateOrdRListDlg::AddProductToList()
 			}
 			delete measure;
 			delete product;
-			delete currency;
+			
 			Close();
 		}
 		else
@@ -355,11 +385,11 @@ void CreateOrdRListDlg::EditProductInList()
 					{
 						BusinessLayer::Measure *measure = new BusinessLayer::Measure();
 						BusinessLayer::Status *status = new BusinessLayer::Status();
-						BusinessLayer::Currency *currency = new BusinessLayer::Currency();
+					
 						BusinessLayer::Currency *sumCurrency = new BusinessLayer::Currency();
 						if (!measure->GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetMeasureID(), errorMessage)
-							|| !currency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product->GetCurrencyID(), errorMessage)
-							|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage)
+							
+							|| !sumCurrency->GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyID, errorMessage)
 							|| !status->GetStatusByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), statusEdit->text().toInt(), errorMessage))
 						{
 							QMessageBox::information(NULL, QString(tr("Warning")),
@@ -369,7 +399,7 @@ void CreateOrdRListDlg::EditProductInList()
 							delete product;
 							delete measure;
 							delete status;
-							delete currency;
+							
 							return;
 						}
 
@@ -378,7 +408,7 @@ void CreateOrdRListDlg::EditProductInList()
 						itemModel->item(mIndex.row(), 1)->setText(QString::number(orderRawList->GetOrderRawID()));
 						itemModel->item(mIndex.row(), 2)->setText(product->GetName().c_str());
 						itemModel->item(mIndex.row(), 3)->setText(QString::number(product->GetPrice()));
-						itemModel->item(mIndex.row(), 4)->setText(currency->GetShortName().c_str());
+						itemModel->item(mIndex.row(), 4)->setText(sumCurrency->GetShortName().c_str());
 						itemModel->item(mIndex.row(), 5)->setText(QString::number(product->GetVolume()));
 						itemModel->item(mIndex.row(), 6)->setText(measure->GetName().c_str());
 						itemModel->item(mIndex.row(), 7)->setText(QString::number(orderRawList->GetCount(), 'f', 3));
@@ -393,7 +423,7 @@ void CreateOrdRListDlg::EditProductInList()
 						emit DataIsChanged();
 						delete measure;
 						delete status;
-						delete currency;
+						
 					}
 				}
 				delete product;
@@ -600,7 +630,8 @@ void CreateOrdRListDlg::InitComboBox()
 	{
 		for (unsigned int i = 0; i < curVector.size(); i++)
 		{
-			currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
+			if (curVector[i].GetID() == currencyID)
+				currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
 		}
 	}
 }
@@ -629,13 +660,45 @@ void CreateOrdRListDlg::TextEditChanged()
 
 void CreateOrdRListDlg::InspectPrice()
 {
-	if (sumEdit->text().toDouble() > 0 && countEdit->text().toDouble() > 0)
-		newPriceLb->setText(QString::number(sumEdit->text().toDouble() / countEdit->text().toDouble(), 'f',3));
+	BusinessLayer::Currency currency;
+	int mainCurID = 0;
+	mainCurID = currency.GetMainTradeCurrencyID(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
+	if (mainCurID > 0)
+	{
+		if (mainCurID == currencyCmb->currentData().toInt())
+		{
+			if (sumEdit->text().toDouble() > 0 && countEdit->text().toDouble() > 0)
+			{
+				currency.Clear();
+				if (currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mainCurID, errorMessage))
+				{
+					newPriceLb->setText(QString::number(sumEdit->text().toDouble() / countEdit->text().toDouble(), 'f', 3));
+					newPriceCurrency->setText(currency.GetShortName().c_str());
+				}
+			}
+		}
+		else
+		{
+			BusinessLayer::CurrencyRate currencyRate;
+			if (currencyRate.GetCurrencyRateByFromCurrencyID(dialogBL->globalVar, dialogBL->GetOrmasDal(), currencyCmb->currentData().toInt(), errorMessage))
+			{
+				if (sumEdit->text().toDouble() > 0 && countEdit->text().toDouble() > 0)
+				{
+					currency.Clear();
+					if (currency.GetCurrencyByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), mainCurID, errorMessage))
+					{
+						newPriceLb->setText(QString::number(sumEdit->text().toDouble() *currencyRate.GetToValue() / currencyRate.GetFromValue() / countEdit->text().toDouble(), 'f', 3));
+						newPriceCurrency->setText(currency.GetShortName().c_str());
+					}
+				}
+			}
+		}
+	}
 }
 
 bool CreateOrdRListDlg::BlockWrongPrice(QString newPrice, QString oldPrice)
 {
-	if (newPrice.toDouble() >= oldPrice.toDouble()/1.25 && newPrice.toDouble() <= oldPrice.toDouble()*1.25)
+	if (newPrice.toDouble() >= oldPrice.toDouble() / 1.25 && newPrice.toDouble() <= oldPrice.toDouble()*1.25)
 		return true;
 	return false;
 }

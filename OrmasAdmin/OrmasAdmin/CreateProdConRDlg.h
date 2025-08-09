@@ -41,6 +41,7 @@ private:
 	QWidget* parentForm;
 	MainForm* mainForm;
 	bool CheckAccess();
+	void AutoSelectUser();
 	QStandardItemModel *itemModel;
 	QModelIndex mIndex;
 };

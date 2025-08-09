@@ -7,7 +7,18 @@
 #include "StatusClass.h"
 #include "CompanyAccountRelationClass.h"
 #include "CompanyEmployeeRelationClass.h"
-
+#include "WarehouseEmployeeRelationClass.h"
+#include "WarehouseClass.h"
+#include "SubaccountClass.h"
+#include "AccountClass.h"
+#include "EntryOperationRelationClass.h"
+#include "EntrySubaccountRelationClass.h"
+#include "EntryClass.h"
+#include "StatusClass.h"
+#include "CurrencyClass.h"
+#include "CurrencyRateClass.h"
+#include "OrderRawListClass.h"
+#include "OrderRawListViewClass.h"
 
 namespace BusinessLayer
 {
@@ -110,10 +121,10 @@ namespace BusinessLayer
 		currencyID = oCurrencyID;
 	}
 
-	bool OrderRaw::CreateOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, std::string oExecDate, 
+	bool OrderRaw::CreateOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, std::string oExecDate,
 		int eID, double oCount, double oSum, int sID, int cID, std::string& errorMessage)
 	{
-		if (IsDuplicate(globalVar, ormasDal, pID, oDate, eID ,oCount, oSum, cID, errorMessage))
+		if (IsDuplicate(globalVar, ormasDal, pID, oDate, eID, oCount, oSum, cID, errorMessage))
 			return false;
 		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
@@ -131,42 +142,113 @@ namespace BusinessLayer
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
-				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
+				Currency currency;
+				CurrencyRate currencyRate;
+				int mainCurID = 0;
+				mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+				if (0 == mainCurID)
+					return false;
+				if (mainCurID == currencyID)
 				{
-					if (!CheckDocumentCorrectness(ormasDal))
+					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 					{
-						errorMessage = "Document isn't correct. Check sum and count in list!";
+						if (!CheckDocumentCorrectness(globalVar, ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
+						if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+							return false;
+						return true;
+					}
+					else
+					{
 						return false;
 					}
-					return true;
 				}
 				else
 				{
-					return false;
+					currency.Clear();
+					if (!currency.GetCurrencyByID(globalVar, ormasDal, currencyID, errorMessage))
+						return false;
+					if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currency.GetID(), errorMessage))
+						return false;
+					if (ChangesAtStockForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+					{
+						if (!CheckDocumentCorrectness(globalVar, ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
+						if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+							return false;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
-				if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
+				Currency currency;
+				CurrencyRate currencyRate;
+				int mainCurID = 0;
+				mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+				if (0 == mainCurID)
+					return false;
+				if (mainCurID == currencyID)
 				{
-					if (!CheckDocumentCorrectness(ormasDal))
+					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 					{
-						errorMessage = "Document isn't correct. Check sum and count in list!";
+						if (!CheckDocumentCorrectness(globalVar, ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
+						if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+							return false;
+						return true;
+					}
+					else
+					{
 						return false;
 					}
-					return true;
 				}
 				else
 				{
-					return false;
+					currency.Clear();
+					if (!currency.GetCurrencyByID(globalVar, ormasDal, currencyID, errorMessage))
+						return false;
+					if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currency.GetID(), errorMessage))
+						return false;
+					if (ChangesAtStockReverseForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+					{
+						if (!CheckDocumentCorrectness(globalVar, ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
+						if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+							return false;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
+			if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+				return false;
 			return true;
 		}
 		if (errorMessage.empty())
 		{
 			errorMessage = "Warning! ID is 0, or some unexpected error. Please contact with provider.";
 		}
+
 		return false;
 	}
 
@@ -182,36 +264,106 @@ namespace BusinessLayer
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
-				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
+				Currency currency;
+				CurrencyRate currencyRate;
+				int mainCurID = 0;
+				mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+				if (0 == mainCurID)
+					return false;
+				if (mainCurID == currencyID)
 				{
-					if (!CheckDocumentCorrectness(ormasDal))
+					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 					{
-						errorMessage = "Document isn't correct. Check sum and count in list!";
+						if (!CheckDocumentCorrectness(globalVar, ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
+						if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+							return false;
+						return true;
+					}
+					else
+					{
 						return false;
 					}
-					return true;
 				}
 				else
 				{
-					return false;
+					currency.Clear();
+					if (!currency.GetCurrencyByID(globalVar, ormasDal, currencyID, errorMessage))
+						return false;
+					if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currency.GetID(), errorMessage))
+						return false;
+					if (ChangesAtStockForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+					{
+						if (!CheckDocumentCorrectness(globalVar, ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
+						if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+							return false;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
-				if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
+				Currency currency;
+				CurrencyRate currencyRate;
+				int mainCurID = 0;
+				mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+				if (0 == mainCurID)
+					return false;
+				if (mainCurID == currencyID)
 				{
-					if (!CheckDocumentCorrectness(ormasDal))
+					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 					{
-						errorMessage = "Document isn't correct. Check sum and count in list!";
+						if (!CheckDocumentCorrectness(globalVar, ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
+						if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+							return false;
+						return true;
+					}
+					else
+					{
 						return false;
 					}
-					return true;
 				}
 				else
 				{
-					return false;
+					currency.Clear();
+					if (!currency.GetCurrencyByID(globalVar, ormasDal, currencyID, errorMessage))
+						return false;
+					if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currency.GetID(), errorMessage))
+						return false;
+					if (ChangesAtStockReverseForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+					{
+						if (!CheckDocumentCorrectness(globalVar, ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
+						if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+							return false;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
+			if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, errorMessage))
+				return false;
 			return true;
 		}
 		if (errorMessage.empty())
@@ -270,9 +422,11 @@ namespace BusinessLayer
 		}
 		return false;
 	}
+
 	bool OrderRaw::UpdateOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string oDate, std::string oExecnDate,
 		int eID, double oCount, double oSum, int sID, int cID, std::string& errorMessage)
 	{
+		
 		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
@@ -291,6 +445,10 @@ namespace BusinessLayer
 		previousCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
 		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
 		globalVar->currentOperationID = id;
+
+		if (!ActualizeOrderList(globalVar, ormasDal, errorMessage))
+			return false;
+
 		if (0 != id && ormasDal.UpdateOrderRaw(id, purveyorID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID != statusMap.find("ERROR")->second &&
@@ -299,36 +457,97 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
-					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
+					Currency currency;
+					CurrencyRate currencyRate;
+					int mainCurID = 0;
+					mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+					if (0 == mainCurID)
+						return false;
+					if (mainCurID == currencyID)
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
+						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
+							if (!CheckDocumentCorrectness(globalVar, ormasDal))
+							{
+								errorMessage = "Document isn't correct. Check sum and count in list!";
+								return false;
+							}
+							if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+								return false;
+							return true;
+						}
+						else
+						{
+							//ormasDal.CommitTransaction(errorMessage);
 							return false;
 						}
-						return true;
 					}
 					else
 					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return false;
+						if (ChangesAtStockForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+						{
+							if (!CheckDocumentCorrectness(globalVar, ormasDal))
+							{
+								errorMessage = "Document isn't correct. Check sum and count in list!";
+								return false;
+							}
+							if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+								return false;
+							return true;
+						}
+						else
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return false;
+						}
 					}
 				}
 				else if (statusID == statusMap.find("RETURN")->second)
 				{
-					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
+					Currency currency;
+					CurrencyRate currencyRate;
+					int mainCurID = 0;
+					mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+					if (0 == mainCurID)
+						return false;
+					if (mainCurID == currencyID)
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
+						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
+							if (!CheckDocumentCorrectness(globalVar, ormasDal))
+							{
+								errorMessage = "Document isn't correct. Check sum and count in list!";
+								return false;
+							}
+							if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+								return false;
+							return true;
+						}
+						else
+						{
+							//ormasDal.CommitTransaction(errorMessage);
 							return false;
 						}
-						return true;
 					}
 					else
 					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return false;
+						if (ChangesAtStockReverseForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+						{
+							if (!CheckDocumentCorrectness(globalVar, ormasDal))
+							{
+								errorMessage = "Document isn't correct. Check sum and count in list!";
+								return false;
+							}
+							if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+								return false;
+							return true;
+						}
+						else
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return false;
+						}
+
 					}
 				}
 				else
@@ -342,38 +561,96 @@ namespace BusinessLayer
 				{
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
-
-						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
+						Currency currency;
+						CurrencyRate currencyRate;
+						int mainCurID = 0;
+						mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+						if (0 == mainCurID)
+							return false;
+						if (mainCurID == currencyID)
 						{
-							if (!CheckDocumentCorrectness(ormasDal))
+							if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 							{
-								errorMessage = "Document isn't correct. Check sum and count in list!";
+								if (!CheckDocumentCorrectness(globalVar, ormasDal))
+								{
+									errorMessage = "Document isn't correct. Check sum and count in list!";
+									return false;
+								}
+								if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+									return false;
+								return true;
+							}
+							else
+							{
+								//ormasDal.CommitTransaction(errorMessage);
 								return false;
 							}
-							return true;
 						}
 						else
 						{
-							//ormasDal.CommitTransaction(errorMessage);
-							return false;
+							if (ChangesAtStockReverseForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+							{
+								if (!CheckDocumentCorrectness(globalVar, ormasDal))
+								{
+									errorMessage = "Document isn't correct. Check sum and count in list!";
+									return false;
+								}
+								if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+									return false;
+								return true;
+							}
+							else
+							{
+								//ormasDal.CommitTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
-
-						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
+						Currency currency;
+						CurrencyRate currencyRate;
+						int mainCurID = 0;
+						mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+						if (0 == mainCurID)
+							return false;
+						if (mainCurID == currencyID)
 						{
-							if (!CheckDocumentCorrectness(ormasDal))
+							if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 							{
-								errorMessage = "Document isn't correct. Check sum and count in list!";
+								if (!CheckDocumentCorrectness(globalVar, ormasDal))
+								{
+									errorMessage = "Document isn't correct. Check sum and count in list!";
+									return false;
+								}
+								if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+									return false;
+								return true;
+							}
+							else
+							{
+								//ormasDal.CommitTransaction(errorMessage);
 								return false;
 							}
-							return true;
 						}
 						else
 						{
-							//ormasDal.CommitTransaction(errorMessage);
-							return false;
+							if (ChangesAtStockForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+							{
+								if (!CheckDocumentCorrectness(globalVar, ormasDal))
+								{
+									errorMessage = "Document isn't correct. Check sum and count in list!";
+									return false;
+								}
+								if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+									return false;
+								return true;
+							}
+							else
+							{
+								//ormasDal.CommitTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 				}
@@ -385,34 +662,34 @@ namespace BusinessLayer
 			}
 			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
-				{
-				
-					return true;
-				}
-				else
-				{
-					
-					return false;
-				}
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
+			{
+
+			return true;
+			}
+			else
+			{
+
+			return false;
+			}
 			}
 			if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (count != previousCount || sum != previousSum)
-				{
-					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, prodCountMap, previousSum, errorMessage))
-					{
-						
-						return true;
-					}
-					else
-					{
-						
-						return false;
-					}
-				}
+			if (count != previousCount || sum != previousSum)
+			{
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, prodCountMap, previousSum, errorMessage))
+			{
+
+			return true;
 			}
-			
+			else
+			{
+
+			return false;
+			}
+			}
+			}
+
 			return true;
 			*/
 		}
@@ -420,7 +697,7 @@ namespace BusinessLayer
 		{
 			errorMessage = "Warning! ID is 0, or some unexpected error. Please contact with provider.";
 		}
-		
+
 		return false;
 	}
 	bool OrderRaw::UpdateOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
@@ -434,7 +711,11 @@ namespace BusinessLayer
 		previousSum = GetCurrentSum(globalVar, ormasDal, id, errorMessage);
 		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
 		previousCount = GetCurrentCount(globalVar, ormasDal, id, errorMessage);
-		globalVar->currentOperationID = id;			
+		globalVar->currentOperationID = id;
+
+		if (!ActualizeOrderList(globalVar, ormasDal, errorMessage))
+			return false;
+
 		if (0 != id && ormasDal.UpdateOrderRaw(id, purveyorID, date, executionDate, employeeID, count, sum, statusID, currencyID, errorMessage))
 		{
 			if (statusID != statusMap.find("ERROR")->second &&
@@ -443,36 +724,97 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
-					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
+					Currency currency;
+					CurrencyRate currencyRate;
+					int mainCurID = 0;
+					mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+					if (0 == mainCurID)
+						return false;
+					if (mainCurID == currencyID)
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
+						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
+							if (!CheckDocumentCorrectness(globalVar, ormasDal))
+							{
+								errorMessage = "Document isn't correct. Check sum and count in list!";
+								return false;
+							}
+							if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+								return false;
+							return true;
+						}
+						else
+						{
+							//ormasDal.CommitTransaction(errorMessage);
 							return false;
 						}
-						return true;
 					}
 					else
 					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return false;
+						if (ChangesAtStockForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+						{
+							if (!CheckDocumentCorrectness(globalVar, ormasDal))
+							{
+								errorMessage = "Document isn't correct. Check sum and count in list!";
+								return false;
+							}
+							if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+								return false;
+							return true;
+						}
+						else
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return false;
+						}
 					}
 				}
 				else if (statusID == statusMap.find("RETURN")->second)
 				{
-					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
+
+					Currency currency;
+					CurrencyRate currencyRate;
+					int mainCurID = 0;
+					mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+					if (0 == mainCurID)
+						return false;
+					if (mainCurID == currencyID)
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
+						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
+							if (!CheckDocumentCorrectness(globalVar, ormasDal))
+							{
+								errorMessage = "Document isn't correct. Check sum and count in list!";
+								return false;
+							}
+							if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+								return false;
+							return true;
+						}
+						else
+						{
+							//ormasDal.CommitTransaction(errorMessage);
 							return false;
 						}
-						return true;
 					}
 					else
 					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return false;
+						if (ChangesAtStockReverseForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+						{
+							if (!CheckDocumentCorrectness(globalVar, ormasDal))
+							{
+								errorMessage = "Document isn't correct. Check sum and count in list!";
+								return false;
+							}
+							if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+								return false;
+							return true;
+						}
+						else
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return false;
+						}
 					}
 				}
 				else
@@ -487,40 +829,101 @@ namespace BusinessLayer
 
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
-
-						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
+						Currency currency;
+						CurrencyRate currencyRate;
+						int mainCurID = 0;
+						mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+						if (0 == mainCurID)
+							return false;
+						if (mainCurID == currencyID)
 						{
-							if (!CheckDocumentCorrectness(ormasDal))
+							if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, errorMessage))
 							{
-								errorMessage = "Document isn't correct. Check sum and count in list!";
+								if (!CheckDocumentCorrectness(globalVar, ormasDal))
+								{
+									errorMessage = "Document isn't correct. Check sum and count in list!";
+									return false;
+								}
+								if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+									return false;
+								return true;
+							}
+							else
+							{
+								//ormasDal.CommitTransaction(errorMessage);
 								return false;
 							}
-							return true;
 						}
 						else
 						{
-							//ormasDal.CommitTransaction(errorMessage);
-							return false;
+							if (ChangesAtStockReverseForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+							{
+								if (!CheckDocumentCorrectness(globalVar, ormasDal))
+								{
+									errorMessage = "Document isn't correct. Check sum and count in list!";
+									return false;
+								}
+								if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+									return false;
+								return true;
+							}
+							else
+							{
+								//ormasDal.CommitTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
-
-						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
+						Currency currency;
+						CurrencyRate currencyRate;
+						int mainCurID = 0;
+						mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+						if (0 == mainCurID)
+							return false;
+						if (mainCurID == currencyID)
 						{
-							if (!CheckDocumentCorrectness(ormasDal))
+							if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
 							{
-								errorMessage = "Document isn't correct. Check sum and count in list!";
+								if (!CheckDocumentCorrectness(globalVar, ormasDal))
+								{
+									errorMessage = "Document isn't correct. Check sum and count in list!";
+									return false;
+								}
+								if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+									return false;
+								return true;
+							}
+							else
+							{
+								//ormasDal.CommitTransaction(errorMessage);
 								return false;
 							}
-							return true;
 						}
 						else
 						{
-							//ormasDal.CommitTransaction(errorMessage);
-							return false;
+							if (ChangesAtStockForMulticurrency(globalVar, ormasDal, id, employeeID, sum*currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+							{
+								if (!CheckDocumentCorrectness(globalVar, ormasDal))
+								{
+									errorMessage = "Document isn't correct. Check sum and count in list!";
+									return false;
+								}
+								if (!CheckDataWriteCorrectness(globalVar, ormasDal, id, employeeID, statusID, previousStatusID, errorMessage))
+									return false;
+								return true;
+							}
+							else
+							{
+								//ormasDal.CommitTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
+
+					if (!ReverceCorrectionEntries(globalVar, ormasDal, id, errorMessage))
+						return false;
 				}
 				else
 				{
@@ -530,41 +933,41 @@ namespace BusinessLayer
 			}
 			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
-				{
-					
-					return true;
-				}
-				else
-				{
-				
-					return false;
-				}
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, errorMessage))
+			{
+
+			return true;
+			}
+			else
+			{
+
+			return false;
+			}
 			}
 			if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
 			{
-				if (count != previousCount || sum != previousSum)
-				{
-					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, prodCountMap, previousSum, errorMessage))
-					{
-						
-						return true;
-					}
-					else
-					{
-						
-						return false;
-					}
-				}
+			if (count != previousCount || sum != previousSum)
+			{
+			if (ChangesAtStock(globalVar, ormasDal, id, employeeID, prodCountMap, previousSum, errorMessage))
+			{
+
+			return true;
+			}
+			else
+			{
+
+			return false;
+			}
+			}
 			}*/
-			
+
 			return true;
 		}
 		if (errorMessage.empty())
 		{
 			errorMessage = "Warning! ID is 0, or some unexpected error. Please contact with provider.";
 		}
-		
+
 		return false;
 	}
 
@@ -715,6 +1118,24 @@ namespace BusinessLayer
 		return stock.ChangingByOrderRaw(globalVar, ormasDal, cpID, empID, pProdCountMap, pSum, errorMessage);
 	}
 
+	bool OrderRaw::ChangesAtStockForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int empID, double mainCurSum, std::string& errorMessage)
+	{
+		Stock stock;
+		return stock.ChangingByOrderRawForMulticurrency(globalVar, ormasDal, cpID, empID, errorMessage);
+	}
+
+	bool OrderRaw::ChangesAtStockReverseForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int empID, double mainCurSum, std::string& errorMessage)
+	{
+		Stock stock;
+		return stock.ChangingByOrderRawReverseForMulticurrency(globalVar, ormasDal, cpID, empID, errorMessage);
+	}
+
+	bool OrderRaw::ChangesAtStockForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, int empID, std::map<int, double> pProdCountMap, double pSum, double mainCurSum, std::string& errorMessage)
+	{
+		Stock stock;
+		return stock.ChangingByOrderRawForMulticurrency(globalVar, ormasDal, cpID, empID, pProdCountMap, pSum, errorMessage);
+	}
+
 	double OrderRaw::GetCurrentCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage)
 	{
 		OrderRaw rRaw;
@@ -739,7 +1160,7 @@ namespace BusinessLayer
 		}
 		return mapProdCount;
 	}
-	bool OrderRaw::CheckDocumentCorrectness(DataLayer::OrmasDal& ormasDal)
+	bool OrderRaw::CheckDocumentCorrectness(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal)
 	{
 		std::string errorMessage;
 		OrderRawList rPList;
@@ -749,18 +1170,414 @@ namespace BusinessLayer
 		std::string filter = rPList.GenerateFilter(ormasDal);
 		std::vector<DataLayer::orderRawListViewCollection> productListVector = ormasDal.GetOrderRawList(errorMessage, filter);
 
+		OrderRaw orderRaw;
+		if (!orderRaw.GetOrderRawByID(globalVar, ormasDal, id, errorMessage))
+			return false;
 		if (productListVector.size() > 0)
 		{
 			for each (auto item in productListVector)
 			{
-				checkCount += std::get<7>(item);
-				checkSum += std::get<8>(item);
+				if (std::get<13>(item) == orderRaw.GetCurrencyID())
+				{
+					checkCount += std::get<7>(item);
+					checkSum += std::get<8>(item);
+				}
 			}
 		}
 
-		if (std::round(sum * 10) / 10 != std::round(checkSum * 10) / 10
-			|| std::round(count * 10) / 10 != std::round(checkCount * 10) / 10)
+		if (fabs(sum - checkSum) > 0.01 || fabs(count - checkCount) > 0.01)
 			return false;
 		return true;
+	}
+
+	bool  OrderRaw::CheckDataWriteCorrectness(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, int stockEmployeeID, int statusID, std::string& errorMessage)
+	{
+		BusinessLayer::WarehouseEmployeeRelation weRel;
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, stockEmployeeID, errorMessage))
+			return false;
+		BusinessLayer::Warehouse warehouse;
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
+			return false;
+		BusinessLayer::Subaccount subaccount;
+		
+
+		Stock stock;
+		double sum = 0;
+		stock.SetWarehouseID(warehouse.GetID());
+		std::string filter = stock.GenerateFilter(ormasDal);
+		std::vector<DataLayer::stockViewCollection> stockVector = ormasDal.GetStock(errorMessage, filter);
+
+		for (const auto& item : stockVector)
+		{
+			sum += std::get<7>(item);
+		}
+
+		double correctingSum = 0;
+		if (!GeneratedValueForCorrecting(globalVar, ormasDal, oRawID, correctingSum, statusID, errorMessage))
+			return false;
+		
+		if (!subaccount.GetSubaccountByID(globalVar, ormasDal, warehouse.GetSubaccountID(), errorMessage))
+			return false;
+		if (fabs(sum - subaccount.GetCurrentBalance() + correctingSum) > 1)
+			return false;
+		return true;
+	}
+
+	bool  OrderRaw::CheckDataWriteCorrectness(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, int stockEmployeeID, int statusID, int prevStatusID, std::string& errorMessage)
+	{
+		BusinessLayer::WarehouseEmployeeRelation weRel;
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, stockEmployeeID, errorMessage))
+			return false;
+		BusinessLayer::Warehouse warehouse;
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
+			return false;
+		BusinessLayer::Subaccount subaccount;
+	
+
+		Stock stock;
+		double sum = 0;
+		stock.SetWarehouseID(warehouse.GetID());
+		std::string filter = stock.GenerateFilter(ormasDal);
+		std::vector<DataLayer::stockViewCollection> stockVector = ormasDal.GetStock(errorMessage, filter);
+
+		for (const auto& item : stockVector)
+		{
+			sum += std::get<7>(item);
+		}
+
+		double correctingSum = 0;
+		if (!GeneratedValueForCorrecting(globalVar, ormasDal, oRawID, correctingSum, statusID, prevStatusID, errorMessage))
+			return false;
+		
+		if (!subaccount.GetSubaccountByID(globalVar, ormasDal, warehouse.GetSubaccountID(), errorMessage))
+			return false;
+		if (fabs(sum - subaccount.GetCurrentBalance() + correctingSum) > 1)
+			return false;
+		return true;
+	}
+
+	bool OrderRaw::GeneratedValueForCorrecting(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, double& sum, int statusID,  std::string& errorMessage)
+	{
+		sum = 0;
+
+		OrderRaw oRaw;
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, oRawID, errorMessage))
+			return false;
+		EntryOperationRelation eoRel;
+		eoRel.SetOperationID(oRawID);
+		std::string filter = eoRel.GenerateFilter(ormasDal);
+		std::vector<DataLayer::entryOperationCollection> eoCollection = ormasDal.GetEntryOperation(errorMessage, filter);
+		std::vector<int> entryID;
+		for (const auto& item : eoCollection)
+		{
+			entryID.push_back(std::get<1>(item));
+		}
+
+		if (entryID.size() > 0)
+		{
+			Account acc;
+			if (!acc.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
+				return false;
+			Entry entry;
+			for each (auto entryIDItem in entryID)
+			{
+				entry.Clear();
+				if (!entry.GetEntryByID(globalVar, ormasDal, entryIDItem, errorMessage))
+					return false;
+				if (entry.GetDebitingAccountID() == acc.GetID())
+					sum -= entry.GetValue();
+				if (entry.GetCreditingAccountID() == acc.GetID())
+					sum += entry.GetValue();
+			}
+		}
+		return true;
+	}
+
+	bool OrderRaw::GeneratedValueForCorrecting(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, double& sum, int statusID, int prevStatusID, std::string& errorMessage)
+	{
+		sum = 0;
+
+		Status errorStatus;
+		Status executeStatus;
+		Status returnStatus;
+		if (!errorStatus.GetStatusByName(globalVar, ormasDal, "ERROR", errorMessage))
+			return false;
+		if (!executeStatus.GetStatusByName(globalVar, ormasDal, "EXECUTED", errorMessage))
+			return false;
+		if (!returnStatus.GetStatusByName(globalVar, ormasDal, "RETURN", errorMessage))
+			return false;
+		if (prevStatusID == executeStatus.GetID() || prevStatusID == returnStatus.GetID())
+		{
+			return ReverceErrorCorrectionEntries(globalVar, ormasDal, oRawID, errorMessage);
+		}
+		if (statusID == executeStatus.GetID() || statusID == returnStatus.GetID())
+			return true;
+		
+			
+
+		OrderRaw oRaw;
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, oRawID, errorMessage))
+			return false;
+		EntryOperationRelation eoRel;
+		eoRel.SetOperationID(oRawID);
+		std::string filter = eoRel.GenerateFilter(ormasDal);
+		std::vector<DataLayer::entryOperationCollection> eoCollection = ormasDal.GetEntryOperation(errorMessage, filter);
+		std::vector<int> entryID;
+		for (const auto& item : eoCollection)
+		{
+			entryID.push_back(std::get<1>(item));
+		}
+
+		if (entryID.size() > 0)
+		{
+			Account acc;
+			if (!acc.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
+				return false;
+			Entry entry;
+			for each (auto entryIDItem in entryID)
+			{
+				entry.Clear();
+				if (!entry.GetEntryByID(globalVar, ormasDal, entryIDItem, errorMessage))
+					return false;
+				if (entry.GetDebitingAccountID() == acc.GetID())
+					sum -= entry.GetValue();
+				if (entry.GetCreditingAccountID() == acc.GetID())
+					sum += entry.GetValue();
+			}
+		}
+		return true;
+	}
+
+	bool OrderRaw::ReverceCorrectionEntries(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, std::string& errorMessage)
+	{
+		OrderRaw oRaw;
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, oRawID, errorMessage))
+			return false;
+		EntryOperationRelation eoRel;
+		eoRel.SetOperationID(oRawID);
+		std::string filter = eoRel.GenerateFilter(ormasDal);
+		std::vector<DataLayer::entryOperationCollection> eoCollection = ormasDal.GetEntryOperation(errorMessage, filter);
+		std::vector<int> entryID;
+		for (const auto& item : eoCollection)
+		{
+			entryID.push_back(std::get<1>(item));
+		}
+
+		if (entryID.size() > 0)
+		{
+			Account acc;
+			if (!acc.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
+				return false;
+			Entry entry;
+			Entry corrEntry;
+			EntrySubaccountRelation esRel;
+			EntryOperationRelation eoRel;
+			std::vector<int> subID;
+			for each (auto entryIDItem in entryID)
+			{
+				subID.clear();
+				entry.Clear();
+				corrEntry.Clear();
+				esRel.Clear();
+				eoRel.Clear();
+				if (!entry.GetEntryByID(globalVar, ormasDal, entryIDItem, errorMessage))
+					return false;
+				subID = esRel.GetAllSubaccountByEntryID(globalVar, ormasDal, entryIDItem, errorMessage);
+				if (entry.GetDebitingAccountID() != acc.GetID() && entry.GetCreditingAccountID() != acc.GetID())
+					continue;
+				if (entry.GetDebitingAccountID() == acc.GetID())
+				{
+					corrEntry.SetCreditingAccountID(entry.GetDebitingAccountID());
+				}
+				else
+				{
+					corrEntry.SetCreditingAccountID(subID.at(0));
+				}
+				if (entry.GetCreditingAccountID() == acc.GetID())
+				{
+					corrEntry.SetDebitingAccountID(entry.GetCreditingAccountID());
+				}
+				else
+				{
+					corrEntry.SetDebitingAccountID(subID.at(0));
+				}
+				corrEntry.SetDate(ormasDal.GetSystemDate());
+				corrEntry.SetDescription(entry.GetDescription());
+				corrEntry.SetValue(entry.GetValue());
+
+				if (corrEntry.CreateEntry(globalVar, ormasDal, errorMessage))
+				{
+					eoRel.SetEntryID(corrEntry.GetID());
+					eoRel.SetOperationID(oRawID);
+					if (!eoRel.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+						return false;
+				}
+				else
+				{
+					return false;
+				}
+
+				
+			}
+		}
+		return true;
+	}
+
+	bool OrderRaw::ReverceErrorCorrectionEntries(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, std::string& errorMessage)
+	{
+		OrderRaw oRaw;
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, oRawID, errorMessage))
+			return false;
+		EntryOperationRelation eoRel;
+		eoRel.SetOperationID(oRawID);
+		std::string filter = eoRel.GenerateFilter(ormasDal);
+		std::vector<DataLayer::entryOperationCollection> eoCollection = ormasDal.GetEntryOperation(errorMessage, filter);
+		std::vector<int> entryID;
+		for (const auto& item : eoCollection)
+		{
+			entryID.push_back(std::get<1>(item));
+		}
+
+		if (entryID.size() > 0)
+		{
+			Account acc;
+			if (!acc.GetAccountByNumber(globalVar, ormasDal, "10730", errorMessage))
+				return false;
+			Entry entry;
+			Entry corrEntry;
+			EntrySubaccountRelation esRel;
+			EntryOperationRelation eoRel;
+			std::vector<int> subID;
+			for each (auto entryIDItem in entryID)
+			{
+				subID.clear();
+				entry.Clear();
+				corrEntry.Clear();
+				esRel.Clear();
+				eoRel.Clear();
+				if (!entry.GetEntryByID(globalVar, ormasDal, entryIDItem, errorMessage))
+					return false;
+				subID = esRel.GetAllSubaccountByEntryID(globalVar, ormasDal, entryIDItem, errorMessage);
+				if (entry.GetDebitingAccountID() != acc.GetID() && entry.GetCreditingAccountID() != acc.GetID())
+					continue;
+				if (entry.GetDebitingAccountID() == acc.GetID())
+				{
+					corrEntry.SetCreditingAccountID(entry.GetDebitingAccountID());
+				}
+				else
+				{
+					corrEntry.SetCreditingAccountID(subID.at(0));
+				}
+				if (entry.GetCreditingAccountID() == acc.GetID())
+				{
+					corrEntry.SetDebitingAccountID(entry.GetCreditingAccountID());
+				}
+				else
+				{
+					corrEntry.SetDebitingAccountID(subID.at(0));
+				}
+				corrEntry.SetDate(ormasDal.GetSystemDate());
+				corrEntry.SetDescription(entry.GetDescription());
+				corrEntry.SetValue(entry.GetValue() * 2);
+
+				if (corrEntry.CreateEntry(globalVar, ormasDal, errorMessage))
+				{
+					eoRel.SetEntryID(corrEntry.GetID());
+					eoRel.SetOperationID(oRawID);
+					if (!eoRel.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+						return false;
+				}
+				else
+				{
+					return false;
+				}
+
+
+			}
+		}
+		return true;
+	}
+
+	bool OrderRaw::ActualizeOrderList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
+	{
+		if (id <= 0)
+			return false;
+		if (currencyID <= 0)
+			return false;
+
+		Currency currency;
+		CurrencyRate currencyRate;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
+		if (mainCurID == currencyID)
+			return true;
+		std::vector<OrderRawListView> oRawListVec;
+		std::vector<OrderRawListView> oRawListVecMain;
+		OrderRawList oList;
+
+		if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currencyID, errorMessage))
+			return false;
+		
+		oList.SetOrderRawID(id);
+		oList.SetCurrencyID(currencyID);
+		std::string filter = oList.GenerateFilter(ormasDal);
+		std::vector<DataLayer::orderRawListViewCollection> orderRawListVector = ormasDal.GetOrderRawList(errorMessage, filter);
+		if (0 != orderRawListVector.size())
+		{
+			oList.Clear();
+			oList.SetOrderRawID(id);
+			oList.SetCurrencyID(mainCurID);
+			std::string filter2 = oList.GenerateFilter(ormasDal);
+			std::vector<DataLayer::orderRawListViewCollection> orderRawListVectorMain = ormasDal.GetOrderRawList(errorMessage, filter2);
+
+			if (orderRawListVectorMain.size() == 0)
+				return false;
+			
+			for each (auto item in orderRawListVector)
+			{
+				oRawListVec.push_back(OrderRawListView(item));
+			}
+
+			for each (auto item in orderRawListVectorMain)
+			{
+				oRawListVecMain.push_back(OrderRawListView(item));
+			}
+
+			if (oRawListVecMain.size() != oRawListVec.size())
+				return false;
+
+			std::vector<OrderRawListView>::iterator it;
+			for each (auto list in oRawListVec)
+			{
+				
+				it = std::find_if(oRawListVecMain.begin(), oRawListVecMain.end(), [&list](OrderRawListView& currentList){
+					if (currentList.GetOrderRawID() == list.GetOrderRawID() &&
+						currentList.GetProductID() == list.GetProductID())
+						return true;
+					return false;
+				});
+
+				if (it == oRawListVecMain.end())
+					return false;
+
+				if (fabs(it->GetSum() - list.GetSum()* currencyRate.GetToValue()/currencyRate.GetFromValue())>0.1)
+				{
+					oList.Clear();
+					oList.SetID(it->GetID());
+					oList.SetProductID(it->GetProductID());
+					oList.SetCurrencyID(it->GetCurrencyID());
+					oList.SetOrderRawID(it->GetOrderRawID());
+					oList.SetCount(it->GetCount());
+					oList.SetStatusID(it->GetStatusID());
+					oList.SetSum(list.GetSum()* currencyRate.GetToValue() / currencyRate.GetFromValue());
+					if (!oList.SimpleUpdateOrderRawList(globalVar, ormasDal, errorMessage))
+						return false;
+				}				
+			}
+			return true;
+		}
+		return false;
 	}
 }

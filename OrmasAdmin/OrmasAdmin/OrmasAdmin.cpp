@@ -21,8 +21,8 @@ int main(int argc, char* argv[])
 	QResource::registerResource("OrmasResource.rcc");
 	BusinessLayer::OrmasBL *oBL = new BusinessLayer::OrmasBL();
 	ConfigParser conParser;
-	/*conParser.dbIPAddress = "109.74.68.244";
-	conParser.dbName = "FarhundaDB";
+	/*conParser.dbIPAddress = "10.154.184.247";
+	conParser.dbName = "SogdianaDB";
 	conParser.dbPassword = "postgres2018";
 	conParser.dbUsername = "postgres";
 	conParser.port = 5432;*/

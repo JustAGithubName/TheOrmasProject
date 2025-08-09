@@ -41,10 +41,12 @@ private slots :
 	void OpenSpecificationForm();
 	void OpenSpecificationListForm();
 	void OpenPriceForm();
+	void OpenPriceExtensionForm();
 	void OpenNetCostForm();
 	void OpenEmployeeProductForm();
 	void OpenBranchProductForm();
 	void OpenOtherStocksForm();
+	void OpenNetCostCoefficientForm();
 
 	void OpenOrderForm();	
 	void OpenOrderListForm();
@@ -79,6 +81,8 @@ private slots :
 	void OpenAccountForm();
 	void OpenSubaccountForm();
 	void OpenSubaccountLimitForm();
+	void OpenMulticurrencyForm();
+	void OpenCurrencyRateForm();
 	void GenerateAccountsForm();
 	void GenerateOneAccountForm();	
 	void OpenSalaryForm();
@@ -128,11 +132,13 @@ private slots :
 	void AccountCardForm();
 	void WarehouseTurnoverForm();
 	void DailySalesReportForm();
+	void ExpeditorMonthlyReportForm();
 	void CommonReportForm();
 	void AgentReportForm();
 	void FixedAssetsForm();
 	void WarehouseReportForm();
-	
+	void ReturnReportForm();
+	void AnalysisReportForm();
 
 	void OpenCompanyForm();
 	void OpenCurrencyForm();

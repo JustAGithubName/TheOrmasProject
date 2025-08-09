@@ -299,6 +299,9 @@ void CreateWrhDlg::GenerateSubaccount()
 	BusinessLayer::WarehouseType wType;
 	wType.SetCode("PRODUCT");
 	int wTypeID = wType.GetWarehouseTypeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
+	BusinessLayer::WarehouseType wType2;
+	wType2.SetCode("EXPIRED");
+	int wTypeID2 = wType.GetWarehouseTypeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
 	std::string filter;
 	curr.SetShortName("TJS");
 	filter = curr.GenerateFilter(dialogBL->GetOrmasDal());
@@ -306,7 +309,7 @@ void CreateWrhDlg::GenerateSubaccount()
 	if (curVec.size()>0)
 	{
 		std::string number = "";
-		if (wTypeCmb->currentData().toInt() == wTypeID)
+		if (wTypeCmb->currentData().toInt() == wTypeID || wTypeCmb->currentData().toInt() == wTypeID2)
 		{
 			number += "10740";
 			number += std::to_string(curVec.at(0).GetCode());

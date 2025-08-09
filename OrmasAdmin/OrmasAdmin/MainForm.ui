@@ -90,10 +90,12 @@
     <addaction name="actionSpecifications"/>
     <addaction name="actionSpecificationList"/>
     <addaction name="actionPrices"/>
+    <addaction name="actionPriceExtention"/>
     <addaction name="actionNetCost"/>
     <addaction name="actionEmployeeProducts"/>
     <addaction name="actionBranchProducts"/>
     <addaction name="actionOtherStocks"/>
+    <addaction name="actionNetCostCoefficient"/>
    </widget>
    <widget class="QMenu" name="menuOrders">
     <property name="title">
@@ -164,6 +166,8 @@
     <addaction name="actionBalances"/>
     <addaction name="actionAccounts"/>
     <addaction name="actionSubaccounts"/>
+    <addaction name="actionMulticurrency"/>
+    <addaction name="actionCurrencyRate"/>
     <addaction name="actionSubaccountLimit"/>
     <addaction name="actionGenerateOneAccount"/>
     <addaction name="actionGenerateAccounts"/>
@@ -231,10 +235,13 @@
     <addaction name="actionWarehouseTurnover"/>
     <addaction name="actionDailySalesReport"/>
     <addaction name="actionCommonReport"/>
+    <addaction name="actionExpeditorMonthlyReport"/>
     <addaction name="actionAgentReport"/>
     <addaction name="separator"/>
     <addaction name="actionFixedAssetsReport"/>
     <addaction name="actionWarehouseReport"/>
+    <addaction name="actionReturnReport"/>
+    <addaction name="actionAnalysisReport"/>
    </widget>
    <widget class="QMenu" name="menuFixedAssets">
     <property name="title">
@@ -899,6 +906,41 @@
   <action name="actionWarehouseReport">
    <property name="text">
     <string>Warehouse report</string>
+   </property>
+  </action>
+  <action name="actionPriceExtention">
+   <property name="text">
+    <string>Price extention</string>
+   </property>
+  </action>
+  <action name="actionNetCostCoefficient">
+   <property name="text">
+    <string>Net cost coefficient</string>
+   </property>
+  </action>
+  <action name="actionMulticurrency">
+   <property name="text">
+    <string>Multicurrency</string>
+   </property>
+  </action>
+  <action name="actionCurrencyRate">
+   <property name="text">
+    <string>Currency rate</string>
+   </property>
+  </action>
+  <action name="actionReturnReport">
+   <property name="text">
+    <string>Return report</string>
+   </property>
+  </action>
+  <action name="actionAnalysisReport">
+   <property name="text">
+    <string>Analysis report</string>
+   </property>
+  </action>
+  <action name="actionExpeditorMonthlyReport">
+   <property name="text">
+    <string>Expeditor monthly report</string>
    </property>
   </action>
  </widget>

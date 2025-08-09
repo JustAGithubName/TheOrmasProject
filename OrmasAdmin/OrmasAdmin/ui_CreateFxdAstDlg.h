@@ -87,7 +87,7 @@ public:
     QLabel *surnameLb;
     QPushButton *purveyorBtn;
     QLabel *surLb;
-    QLineEdit *accID;
+    QLineEdit *accIDEdit;
     QLineEdit *accableIDEdit;
     QPushButton *accountBtn;
     QLabel *accLB;
@@ -119,7 +119,7 @@ public:
     {
         if (CreateFxdAst->objectName().isEmpty())
             CreateFxdAst->setObjectName(QStringLiteral("CreateFxdAst"));
-        CreateFxdAst->resize(946, 621);
+        CreateFxdAst->resize(946, 725);
         CreateFxdAst->setLocale(QLocale(QLocale::English, QLocale::UnitedStates));
         CreateFxdAst->setModal(false);
         gridLayout = new QGridLayout(CreateFxdAst);
@@ -402,11 +402,11 @@ public:
 
         gridLayout_5->addWidget(surLb, 3, 0, 1, 1);
 
-        accID = new QLineEdit(sourceGbx);
-        accID->setObjectName(QStringLiteral("accID"));
-        accID->setReadOnly(true);
+        accIDEdit = new QLineEdit(sourceGbx);
+        accIDEdit->setObjectName(QStringLiteral("accIDEdit"));
+        accIDEdit->setReadOnly(true);
 
-        gridLayout_5->addWidget(accID, 4, 1, 1, 1);
+        gridLayout_5->addWidget(accIDEdit, 4, 1, 1, 1);
 
         accableIDEdit = new QLineEdit(sourceGbx);
         accableIDEdit->setObjectName(QStringLiteral("accableIDEdit"));

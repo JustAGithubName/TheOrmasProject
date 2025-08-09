@@ -14,6 +14,7 @@ CreateOrdListDlg::CreateOrdListDlg(BusinessLayer::OrmasBL *ormasBL, bool updateF
 	mainForm = (MainForm *)dataFormParent->GetParent();
 	orderID = ((DataForm*)parent)->orderID;
 	employeeID = ((DataForm*)parent)->employeeID;
+	clientID = ((DataForm*)parent)->clientID;
 	vDouble = new QDoubleValidator(0.00, 1000000000.00, 3, this);
 	vInt = new QIntValidator(0, 1000000000, this);
 	productEdit->setValidator(vInt);
@@ -223,6 +224,8 @@ void CreateOrdListDlg::AddProductToList()
 			countEdit->text().toDouble(), (countEdit->text().toDouble() * product->GetPrice()),
 				statusVector.at(0).GetID(), product->GetCurrencyID());
 		
+		orderList->employeeID = employeeID;
+		orderList->clientID = clientID;
 		if (dialogBL->CreateOrderList(orderList, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -240,7 +243,7 @@ void CreateOrdListDlg::AddProductToList()
 						productListItem << new QStandardItem(QString::number(0));
 					}
 					productListItem << new QStandardItem(product->GetName().c_str())
-						<< new QStandardItem(QString::number(product->GetPrice()))
+						<< new QStandardItem(QString::number(orderList->GetSum() / orderList->GetCount(),'f',2))
 						<< new QStandardItem(currency->GetShortName().c_str())
 						<< new QStandardItem(QString::number(product->GetVolume()))
 						<< new QStandardItem(measure->GetName().c_str())
@@ -304,6 +307,8 @@ void CreateOrdListDlg::EditProductInList()
 			SetOrderListParams(orderEdit->text().toInt(),
 				productEdit->text().toInt(), countEdit->text().toDouble(), sumEdit->text().toDouble(), statusEdit->text().toInt(),
 				orderList->GetCurrencyID(), orderList->GetID());
+			orderList->employeeID = employeeID;
+			orderList->clientID = clientID;
 			if (dialogBL->UpdateOrderList(orderList, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -334,7 +339,7 @@ void CreateOrdListDlg::EditProductInList()
 						QModelIndex mIndex = parentDataForm->tableView->selectionModel()->currentIndex();
 						itemModel->item(mIndex.row(), 1)->setText(QString::number(orderList->GetOrderID()));
 						itemModel->item(mIndex.row(), 2)->setText(product->GetName().c_str());
-						itemModel->item(mIndex.row(), 3)->setText(QString::number(product->GetPrice()));
+						itemModel->item(mIndex.row(), 3)->setText(QString::number(orderList->GetSum() / orderList->GetCount(), 'f', 2));
 						itemModel->item(mIndex.row(), 4)->setText(currency->GetShortName().c_str());
 						itemModel->item(mIndex.row(), 5)->setText(QString::number(product->GetVolume()));
 						itemModel->item(mIndex.row(), 6)->setText(measure->GetName().c_str());
@@ -570,7 +575,8 @@ void CreateOrdListDlg::InitComboBox()
 	{
 		for (unsigned int i = 0; i < curVector.size(); i++)
 		{
-			currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
+			if (curVector[i].GetMainTrade() == true)
+				currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
 		}
 	}
 }

@@ -94,7 +94,10 @@ namespace BusinessLayer
 		currencyID = cID;
 		double middlePrice = CalculateMiddleSum(globalVar, ormasDal, stockEmployeeID, pID, errorMessage);
 		if (0 == middlePrice)
+		{
+			errorMessage = "Sorry, product price is 0!";
 			return false;
+		}
 		sum = crlCount * middlePrice;
 		Product product;
 		if (!product.GetProductByID(globalVar, ormasDal, pID, errorMessage))
@@ -115,7 +118,11 @@ namespace BusinessLayer
 	{
 		double middlePrice = CalculateMiddleSum(globalVar, ormasDal, stockEmployeeID, productID, errorMessage);
 		if (0 == middlePrice)
+		{
+			errorMessage = "Sorry, product price is 0!";
 			return false;
+		}
+			
 		sum = count * middlePrice;
 		id = ormasDal.GenerateID();
 		Product product;
@@ -285,7 +292,7 @@ namespace BusinessLayer
 	{
 		WarehouseEmployeeRelation weRel;
 		Stock stock;
-		double mPrice;
+		double mPrice=0;
 		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, seID, errorMessage))
 			return 0;
 		if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, pID, weRel.GetWarehouseID(), errorMessage))
@@ -294,7 +301,22 @@ namespace BusinessLayer
 		}
 		else
 		{
-			mPrice = std::round(stock.GetSum() / stock.GetCount() * 1000) / 1000;
+			if (0 != stock.GetSum())
+			{
+				mPrice = std::round(stock.GetSum() / stock.GetCount() * 1000) / 1000;
+			}
+			else
+			{
+				Product product;
+				if (!product.GetProductByID(globalVar, ormasDal, stock.GetProductID(),  errorMessage))
+				{
+					return 0;
+				}
+				else
+				{
+					mPrice = product.GetPrice();
+				}
+			}
 			return mPrice;
 		}
 		return 0;

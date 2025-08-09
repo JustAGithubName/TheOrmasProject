@@ -80,6 +80,8 @@ namespace BusinessLayer{
 		return ormasDal.ConcatenateFilters(filterList);
 	}
 
+
+	//get data 
 	template<>
 	std::vector<AccessView> OrmasBL::GetAllDataForClass<AccessView>(std::string& errorMessage, std::string filter)
 	{
@@ -786,6 +788,28 @@ namespace BusinessLayer{
 	}
 
 	template<>
+	std::vector<CurrencyRateView> OrmasBL::GetAllDataForClass<CurrencyRateView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<CurrencyRateView> vecForCurrencyRate;
+		std::vector<DataLayer::currenciesRateViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCurrenciesRate(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCurrenciesRate(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForCurrencyRate.push_back(CurrencyRateView(data));
+			}
+		}
+		return vecForCurrencyRate;
+	}
+
+	template<>
 	std::vector<Creditor> OrmasBL::GetAllDataForClass<Creditor>(std::string& errorMessage, std::string filter)
 	{
 		std::vector<Creditor> vecForCreditor;
@@ -1469,6 +1493,28 @@ namespace BusinessLayer{
 	}
 
 	template<>
+	std::vector<MulticurrencyView> OrmasBL::GetAllDataForClass<MulticurrencyView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<MulticurrencyView> vecForMulticurrency;
+		std::vector<DataLayer::multicurrencyViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetMulticurrency( errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetMulticurrency( errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForMulticurrency.push_back(MulticurrencyView(data));
+			}
+		}
+		return vecForMulticurrency;
+	}
+
+	template<>
 	std::vector<NetCostView> OrmasBL::GetAllDataForClass<NetCostView>(std::string& errorMessage, std::string filter)
 	{
 		std::vector<NetCostView> vecFornetCost;
@@ -1488,6 +1534,50 @@ namespace BusinessLayer{
 			}
 		}
 		return vecFornetCost;
+	}
+
+	template<>
+	std::vector<NetCostHistory> OrmasBL::GetAllDataForClass<NetCostHistory>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<NetCostHistory> vecFornetCostHis;
+		std::vector<DataLayer::netCostHistoryCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetNetCostHistory(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetNetCostHistory(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFornetCostHis.push_back(NetCostHistory(data));
+			}
+		}
+		return vecFornetCostHis;
+	}
+
+	template<>
+	std::vector<NetCostCoefficientView> OrmasBL::GetAllDataForClass<NetCostCoefficientView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<NetCostCoefficientView> vecFornetCostCoef;
+		std::vector<DataLayer::netCostCoefficientViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetNetCostCoefficient(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetNetCostCoefficient(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFornetCostCoef.push_back(NetCostCoefficientView(data));
+			}
+		}
+		return vecFornetCostCoef;
 	}
 
 	template<>
@@ -1532,6 +1622,28 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForOrderList;
+	}
+
+	template<>
+	std::vector<OrderPriceCorrection> OrmasBL::GetAllDataForClass<OrderPriceCorrection>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<OrderPriceCorrection> vecForOrderPriceCorrection;
+		std::vector<DataLayer::orderPriceCorrectionCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetOrderPriceCorrection(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetOrderPriceCorrection(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForOrderPriceCorrection.push_back(OrderPriceCorrection(data));
+			}
+		}
+		return vecForOrderPriceCorrection;
 	}
 
 	template<>
@@ -1774,6 +1886,28 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForPrices;
+	}
+
+	template<>
+	std::vector<PriceExtensionView> OrmasBL::GetAllDataForClass<PriceExtensionView>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<PriceExtensionView> vecForPriceEx;
+		std::vector<DataLayer::priceExtensionViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPriceExtension(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPriceExtension(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPriceEx.push_back(PriceExtensionView(data));
+			}
+		}
+		return vecForPriceEx;
 	}
 
 	template<>
@@ -2262,6 +2396,28 @@ namespace BusinessLayer{
 			}
 		}
 		return vecForReturnList;
+	}
+
+	template<>
+	std::vector<ReturnPriceCorrection> OrmasBL::GetAllDataForClass<ReturnPriceCorrection>(std::string& errorMessage, std::string filter)
+	{
+		std::vector<ReturnPriceCorrection> vecForReturn;
+		std::vector<DataLayer::returnPriceCorrectionCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetReturnPriceCorrection(errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetReturnPriceCorrection(errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForReturn.push_back(ReturnPriceCorrection(data));
+			}
+		}
+		return vecForReturn;
 	}
 
 	template<>
@@ -3078,6 +3234,3164 @@ namespace BusinessLayer{
 		}
 		return vecForWriteOffRawList;
 	}
+
+
+	//get data with limit
+	template<>
+	std::vector<AccessView> OrmasBL::GetAllDataForClass<AccessView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccessView> vecForAccess;
+		std::vector<DataLayer::accessesViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccesses(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccesses(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccess.push_back(AccessView(data));
+			}
+		}
+		return vecForAccess;
+	}
+
+	template<>
+	std::vector<AccessItem> OrmasBL::GetAllDataForClass<AccessItem>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccessItem> vecForAccessItems;
+		std::vector<DataLayer::accessItemsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccessItems(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccessItems(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccessItems.push_back(AccessItem(data));
+			}
+		}
+		return vecForAccessItems;
+	}
+
+	template<>
+	std::vector<Account> OrmasBL::GetAllDataForClass<Account>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Account> vecForAccount;
+		std::vector<DataLayer::accountsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccounts(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccounts(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccount.push_back(Account(data));
+			}
+		}
+		return vecForAccount;
+	}
+
+	template<>
+	std::vector<AccountableView> OrmasBL::GetAllDataForClass<AccountableView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountableView> vecForAccountable;
+		std::vector<DataLayer::accountableViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountable(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountable(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountable.push_back(AccountableView(data));
+			}
+		}
+		return vecForAccountable;
+	}
+
+	template<>
+	std::vector<AccountableDocument> OrmasBL::GetAllDataForClass<AccountableDocument>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountableDocument> vecForAccountableDoc;
+		std::vector<DataLayer::accountableDocumentCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountableDocument(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountableDocument(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountableDoc.push_back(AccountableDocument(data));
+			}
+		}
+		return vecForAccountableDoc;
+	}
+
+	template<>
+	std::vector<AccountableEntry> OrmasBL::GetAllDataForClass<AccountableEntry>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountableEntry> vecForAccountableEtr;
+		std::vector<DataLayer::accountableEntryCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountableEntry(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountableEntry(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountableEtr.push_back(AccountableEntry(data));
+			}
+		}
+		return vecForAccountableEtr;
+	}
+
+	template<>
+	std::vector<AccountablePaymentRelation> OrmasBL::GetAllDataForClass<AccountablePaymentRelation>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountablePaymentRelation> vecForAccountablePay;
+		std::vector<DataLayer::accountablePaymentCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountablePayment(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountablePayment(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountablePay.push_back(AccountablePaymentRelation(data));
+			}
+		}
+		return vecForAccountablePay;
+	}
+
+	template<>
+	std::vector<AccountableWithdrawalRelation> OrmasBL::GetAllDataForClass<AccountableWithdrawalRelation>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountableWithdrawalRelation> vecForAccountableWith;
+		std::vector<DataLayer::accountableWithdrawalCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountableWithdrawal(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountableWithdrawal(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountableWith.push_back(AccountableWithdrawalRelation(data));
+			}
+		}
+		return vecForAccountableWith;
+	}
+
+	template<>
+	std::vector<AccountHistory> OrmasBL::GetAllDataForClass<AccountHistory>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountHistory> vecForAccountHis;
+		std::vector<DataLayer::accountHistoryCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountHistory(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountHistory(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountHis.push_back(AccountHistory(data));
+			}
+		}
+		return vecForAccountHis;
+	}
+
+	template<>
+	std::vector<AccountChangeLog> OrmasBL::GetAllDataForClass<AccountChangeLog>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountChangeLog> vecForAccountLog;
+		std::vector<DataLayer::accountChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountChangeLog(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountChangeLog(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountLog.push_back(AccountChangeLog(data));
+			}
+		}
+		return vecForAccountLog;
+	}
+
+
+	template<>
+	std::vector<AccountType> OrmasBL::GetAllDataForClass<AccountType>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AccountType> vecForAccountType;
+		std::vector<DataLayer::accountTypeCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAccountType(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAccountType(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAccountType.push_back(AccountType(data));
+			}
+		}
+		return vecForAccountType;
+	}
+
+	template<>
+	std::vector<AmortizeGroup> OrmasBL::GetAllDataForClass<AmortizeGroup>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AmortizeGroup> vecForAmortizeGroup;
+		std::vector<DataLayer::amortizeGroupCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAmortizeGroup(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAmortizeGroup(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAmortizeGroup.push_back(AmortizeGroup(data));
+			}
+		}
+		return vecForAmortizeGroup;
+	}
+
+	template<>
+	std::vector<AmortizeType> OrmasBL::GetAllDataForClass<AmortizeType>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<AmortizeType> vecForAmortizeType;
+		std::vector<DataLayer::amortizeTypeCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetAmortizeType(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetAmortizeType(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForAmortizeType.push_back(AmortizeType(data));
+			}
+		}
+		return vecForAmortizeType;
+	}
+
+	template<>
+	std::vector<BalanceView> OrmasBL::GetAllDataForClass<BalanceView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<BalanceView> vecForBalance;
+		std::vector<DataLayer::balancesViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetBalances(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetBalances(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForBalance.push_back(BalanceView(data));
+			}
+		}
+		return vecForBalance;
+	}
+
+	template<>
+	std::vector<Branch> OrmasBL::GetAllDataForClass<Branch>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Branch> vecForBranch;
+		std::vector<DataLayer::branchesCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetBranches(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetBranches(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForBranch.push_back(Branch(data));
+			}
+		}
+		return vecForBranch;
+	}
+
+	template<>
+	std::vector<BranchSubaccountRelationView> OrmasBL::GetAllDataForClass<BranchSubaccountRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<BranchSubaccountRelationView> vecForBranchSub;
+		std::vector<DataLayer::branchSubaccountViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetBranchSubaccount(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetBranchSubaccount(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForBranchSub.push_back(BranchSubaccountRelationView(data));
+			}
+		}
+		return vecForBranchSub;
+	}
+
+	template<>
+	std::vector<BorrowerView> OrmasBL::GetAllDataForClass<BorrowerView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<BorrowerView> vecForBorrower;
+		std::vector<DataLayer::borrowersViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetBorrowers(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetBorrowers(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForBorrower.push_back(BorrowerView(data));
+			}
+		}
+		return vecForBorrower;
+	}
+
+	template<>
+	std::vector<CashboxView> OrmasBL::GetAllDataForClass<CashboxView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<CashboxView> vecForCashbox;
+		std::vector<DataLayer::cashboxViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCashbox(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCashbox(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForCashbox.push_back(CashboxView(data));
+			}
+		}
+		return vecForCashbox;
+	}
+
+	template<>
+	std::vector<CashboxTransaction> OrmasBL::GetAllDataForClass<CashboxTransaction>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<CashboxTransaction> vecForCashboxTr;
+		std::vector<DataLayer::cashboxTransactionCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCashboxTransaction(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCashboxTransaction(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForCashboxTr.push_back(CashboxTransaction(data));
+			}
+		}
+		return vecForCashboxTr;
+	}
+
+	template<>
+	std::vector<CashboxEmployeeRelationView> OrmasBL::GetAllDataForClass<CashboxEmployeeRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<CashboxEmployeeRelationView> vecForCashboxEmployee;
+		std::vector<DataLayer::cashboxEmployeeViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCashboxEmployee(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCashboxEmployee(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForCashboxEmployee.push_back(CashboxEmployeeRelationView(data));
+			}
+		}
+		return vecForCashboxEmployee;
+	}
+
+	template<>
+	std::vector<ChartOfAccountsView> OrmasBL::GetAllDataForClass<ChartOfAccountsView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ChartOfAccountsView> vecForChartOfAccount;
+		std::vector<DataLayer::chartOfAccountsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetChartOfAccounts(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetChartOfAccounts(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForChartOfAccount.push_back(ChartOfAccountsView(data));
+			}
+		}
+		return vecForChartOfAccount;
+	}
+
+	template<>
+	std::vector<ClientView> OrmasBL::GetAllDataForClass<ClientView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ClientView> vecForClient;
+		std::vector<DataLayer::clientsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetClients(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetClients(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForClient.push_back(ClientView(data));
+			}
+		}
+		return vecForClient;
+	}
+
+	template<>
+	std::vector<CompanyAccountRelationView> OrmasBL::GetAllDataForClass<CompanyAccountRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<CompanyAccountRelationView> vecForComAccRel;
+		std::vector<DataLayer::companyAccountViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCompanyAccount(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCompanyAccount(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForComAccRel.push_back(CompanyAccountRelationView(data));
+			}
+		}
+		return vecForComAccRel;
+	}
+
+	template<>
+	std::vector<CompanyEmployeeRelationView> OrmasBL::GetAllDataForClass<CompanyEmployeeRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<CompanyEmployeeRelationView> vecForComEmpRel;
+		std::vector<DataLayer::companyEmployeeViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCompanyEmployee(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCompanyEmployee(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForComEmpRel.push_back(CompanyEmployeeRelationView(data));
+			}
+		}
+		return vecForComEmpRel;
+	}
+
+	template<>
+	std::vector<Company> OrmasBL::GetAllDataForClass<Company>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Company> vecForCompany;
+		std::vector<DataLayer::companiesCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCompanies(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCompanies(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForCompany.push_back(Company(data));
+			}
+		}
+		return vecForCompany;
+	}
+
+	template<>
+	std::vector<ConsumeProductView> OrmasBL::GetAllDataForClass<ConsumeProductView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ConsumeProductView> vecForConsumeProduct;
+		std::vector<DataLayer::consumeProductsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetConsumeProducts(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetConsumeProducts(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForConsumeProduct.push_back(ConsumeProductView(data));
+			}
+		}
+		return vecForConsumeProduct;
+	}
+
+	template<>
+	std::vector<ConsumeProductListView> OrmasBL::GetAllDataForClass<ConsumeProductListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ConsumeProductListView> vecForConsumeProductList;
+		std::vector<DataLayer::consumeProductListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetConsumeProductList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetConsumeProductList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForConsumeProductList.push_back(ConsumeProductListView(data));
+			}
+		}
+		return vecForConsumeProductList;
+	}
+
+	template<>
+	std::vector<ConsumeRawView> OrmasBL::GetAllDataForClass<ConsumeRawView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ConsumeRawView> vecForConsumeRaw;
+		std::vector<DataLayer::consumeRawsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetConsumeRaws(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetConsumeRaws(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForConsumeRaw.push_back(ConsumeRawView(data));
+			}
+		}
+		return vecForConsumeRaw;
+	}
+
+	template<>
+	std::vector<ConsumeRawListView> OrmasBL::GetAllDataForClass<ConsumeRawListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ConsumeRawListView> vecForConsumeRawList;
+		std::vector<DataLayer::consumeRawListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetConsumeRawList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetConsumeRawList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForConsumeRawList.push_back(ConsumeRawListView(data));
+			}
+		}
+		return vecForConsumeRawList;
+	}
+
+	template<>
+	std::vector<ConsumeOtherStocksView> OrmasBL::GetAllDataForClass<ConsumeOtherStocksView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ConsumeOtherStocksView> vecForConsumeOthS;
+		std::vector<DataLayer::consumeOtherStocksViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetConsumeOtherStocks(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetConsumeOtherStocks(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForConsumeOthS.push_back(ConsumeOtherStocksView(data));
+			}
+		}
+		return vecForConsumeOthS;
+	}
+
+	template<>
+	std::vector<ConsumeOtherStocksListView> OrmasBL::GetAllDataForClass<ConsumeOtherStocksListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ConsumeOtherStocksListView> vecForConsumeOthSList;
+		std::vector<DataLayer::consumeOtherStocksListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetConsumeOtherStocksList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetConsumeOtherStocksList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForConsumeOthSList.push_back(ConsumeOtherStocksListView(data));
+			}
+		}
+		return vecForConsumeOthSList;
+	}
+
+	template<>
+	std::vector<Currency> OrmasBL::GetAllDataForClass<Currency>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Currency> vecForCurrency;
+		std::vector<DataLayer::currenciesCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCurrencies(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCurrencies(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForCurrency.push_back(Currency(data));
+			}
+		}
+		return vecForCurrency;
+	}
+
+	template<>
+	std::vector<CurrencyRateView> OrmasBL::GetAllDataForClass<CurrencyRateView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<CurrencyRateView> vecForCurrencyRate;
+		std::vector<DataLayer::currenciesRateViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCurrenciesRate(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCurrenciesRate(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForCurrencyRate.push_back(CurrencyRateView(data));
+			}
+		}
+		return vecForCurrencyRate;
+	}
+
+
+	template<>
+	std::vector<Creditor> OrmasBL::GetAllDataForClass<Creditor>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Creditor> vecForCreditor;
+		std::vector<DataLayer::creditorsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetCreditors(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetCreditors(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForCreditor.push_back(Creditor(data));
+			}
+		}
+		return vecForCreditor;
+	}
+
+	template<>
+	std::vector<DivisionAccountRelationView> OrmasBL::GetAllDataForClass<DivisionAccountRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<DivisionAccountRelationView> vecForDivisionAccount;
+		std::vector<DataLayer::divisionAccountViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetDivisionAccount(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetDivisionAccount(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForDivisionAccount.push_back(DivisionAccountRelationView(data));
+			}
+		}
+		return vecForDivisionAccount;
+	}
+
+	template<>
+	std::vector<DivisionEmployeeRelation> OrmasBL::GetAllDataForClass<DivisionEmployeeRelation>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<DivisionEmployeeRelation> vecForDivisionEmployee;
+		std::vector<DataLayer::divisionEmployeeCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetDivisionEmployee(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetDivisionEmployee(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForDivisionEmployee.push_back(DivisionEmployeeRelation(data));
+			}
+		}
+		return vecForDivisionEmployee;
+	}
+
+	template<>
+	std::vector<Division> OrmasBL::GetAllDataForClass<Division>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Division> vecForDivision;
+		std::vector<DataLayer::divisionsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetDivisions(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetDivisions(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForDivision.push_back(Division(data));
+			}
+		}
+		return vecForDivision;
+	}
+
+	template<>
+	std::vector<EmployeeView> OrmasBL::GetAllDataForClass<EmployeeView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<EmployeeView> vecForEmployee;
+		std::vector<DataLayer::employeesViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetEmployees(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetEmployees(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForEmployee.push_back(EmployeeView(data));
+			}
+		}
+		return vecForEmployee;
+	}
+
+	template<>
+	std::vector<EmployeeProductRelationView> OrmasBL::GetAllDataForClass<EmployeeProductRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<EmployeeProductRelationView> vecForEmplProd;
+		std::vector<DataLayer::employeeProductViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetEmployeeProduct(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetEmployeeProduct(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForEmplProd.push_back(EmployeeProductRelationView(data));
+			}
+		}
+		return vecForEmplProd;
+	}
+
+
+	template<>
+	std::vector<EntryView> OrmasBL::GetAllDataForClass<EntryView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<EntryView> vecForEntry;
+		std::vector<DataLayer::entriesViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetEntries(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetEntries(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForEntry.push_back(EntryView(data));
+			}
+		}
+		return vecForEntry;
+	}
+
+	template<>
+	std::vector<ExtendedEntryView> OrmasBL::GetAllDataForClass<ExtendedEntryView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ExtendedEntryView> vecForEntry;
+		std::vector<DataLayer::entriesFullViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetExtendedEntries(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetExtendedEntries(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForEntry.push_back(ExtendedEntryView(data));
+			}
+		}
+		return vecForEntry;
+	}
+
+	template<>
+	std::vector<FullExtendedEntryView> OrmasBL::GetAllDataForClass<FullExtendedEntryView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<FullExtendedEntryView> vecForEntry;
+		std::vector<DataLayer::entriesFullJoinViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetFullExtendedEntries(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetFullExtendedEntries(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForEntry.push_back(FullExtendedEntryView(data));
+			}
+		}
+		return vecForEntry;
+	}
+
+	template<>
+	std::vector<EntryRouting> OrmasBL::GetAllDataForClass<EntryRouting>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<EntryRouting> vecForEntryRouting;
+		std::vector<DataLayer::entryRoutingCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetEntryRouting(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetEntryRouting(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForEntryRouting.push_back(EntryRouting(data));
+			}
+		}
+		return vecForEntryRouting;
+	}
+
+	template<>
+	std::vector<ExpenseDocument> OrmasBL::GetAllDataForClass<ExpenseDocument>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ExpenseDocument> vecForExpenseDoc;
+		std::vector<DataLayer::expenseDocumentCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetExpenseDocument(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetExpenseDocument(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForExpenseDoc.push_back(ExpenseDocument(data));
+			}
+		}
+		return vecForExpenseDoc;
+	}
+
+	template<>
+	std::vector<EntrySubaccountRelation> OrmasBL::GetAllDataForClass<EntrySubaccountRelation>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<EntrySubaccountRelation> vecForEntrySubaccount;
+		std::vector<DataLayer::entrySubaccountCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetEntrySubaccount(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetEntrySubaccount(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForEntrySubaccount.push_back(EntrySubaccountRelation(data));
+			}
+		}
+		return vecForEntrySubaccount;
+	}
+
+	template<>
+	std::vector<FinancialReport> OrmasBL::GetAllDataForClass<FinancialReport>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<FinancialReport> vecForFinRep;
+		std::vector<DataLayer::financialReportCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetFinancialReport(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetFinancialReport(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForFinRep.push_back(FinancialReport(data));
+			}
+		}
+		return vecForFinRep;
+	}
+
+	template<>
+	std::vector<FixedAssetsView> OrmasBL::GetAllDataForClass<FixedAssetsView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<FixedAssetsView> vecFixedAssRep;
+		std::vector<DataLayer::fixedAssetsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetFixedAssets(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetFixedAssets(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFixedAssRep.push_back(FixedAssetsView(data));
+			}
+		}
+		return vecFixedAssRep;
+	}
+
+	template<>
+	std::vector<FixedAssetsUnion> OrmasBL::GetAllDataForClass<FixedAssetsUnion>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<FixedAssetsUnion> vecFixedAssUnionRep;
+		std::vector<DataLayer::fixedAssetsUnionCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetFixedAssetsUnion(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetFixedAssetsUnion(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFixedAssUnionRep.push_back(FixedAssetsUnion(data));
+			}
+		}
+		return vecFixedAssUnionRep;
+	}
+
+	template<>
+	std::vector<FixedAssetsDetailsView> OrmasBL::GetAllDataForClass<FixedAssetsDetailsView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<FixedAssetsDetailsView> vecFixedAssDetailsRep;
+		std::vector<DataLayer::fixedAssetsDetailsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetFixedAssetsDetails(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetFixedAssetsDetails(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFixedAssDetailsRep.push_back(FixedAssetsDetailsView(data));
+			}
+		}
+		return vecFixedAssDetailsRep;
+	}
+
+	template<>
+	std::vector<FixedAssetsOperations> OrmasBL::GetAllDataForClass<FixedAssetsOperations>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<FixedAssetsOperations> vecFixedAssOperRep;
+		std::vector<DataLayer::fixedAssetsOperationsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetFixedAssetsOperation(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetFixedAssetsOperation(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFixedAssOperRep.push_back(FixedAssetsOperations(data));
+			}
+		}
+		return vecFixedAssOperRep;
+	}
+
+	template<>
+	std::vector<FixedAssetsSpecification> OrmasBL::GetAllDataForClass<FixedAssetsSpecification>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<FixedAssetsSpecification> vecFixedAssSpecRep;
+		std::vector<DataLayer::fixedAssetsSpecificationCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetFixedAssetsSpecification(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetFixedAssetsSpecification(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFixedAssSpecRep.push_back(FixedAssetsSpecification(data));
+			}
+		}
+		return vecFixedAssSpecRep;
+	}
+
+	template<>
+	std::vector<Group> OrmasBL::GetAllDataForClass<Group>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Group> vecGroup;
+		std::vector<DataLayer::groupsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetGroups(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetGroups(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecGroup.push_back(Group(data));
+			}
+		}
+		return vecGroup;
+	}
+
+	template<>
+	std::vector<InventorizationView> OrmasBL::GetAllDataForClass<InventorizationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<InventorizationView> vecForInventorization;
+		std::vector<DataLayer::inventorizationsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetInventorizations(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetInventorizations(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForInventorization.push_back(InventorizationView(data));
+			}
+		}
+		return vecForInventorization;
+	}
+
+	template<>
+	std::vector<InventorizationListView> OrmasBL::GetAllDataForClass<InventorizationListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<InventorizationListView> vecForInventorizationList;
+		std::vector<DataLayer::inventorizationListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetInventorizationList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetInventorizationList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForInventorizationList.push_back(InventorizationListView(data));
+			}
+		}
+		return vecForInventorizationList;
+	}
+
+	template<>
+	std::vector<InventoryView> OrmasBL::GetAllDataForClass<InventoryView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<InventoryView> vecForInventory;
+		std::vector<DataLayer::inventoryViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetInventory(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetInventory(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForInventory.push_back(InventoryView(data));
+			}
+		}
+		return vecForInventory;
+	}
+
+	template<>
+	std::vector<InventoryUnion> OrmasBL::GetAllDataForClass<InventoryUnion>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<InventoryUnion> vecForInventoryUn;
+		std::vector<DataLayer::inventoryUnionViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetInventoryUnion(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetInventoryUnion(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForInventoryUn.push_back(InventoryUnion(data));
+			}
+		}
+		return vecForInventoryUn;
+	}
+
+	template<>
+	std::vector<InventoryHistory> OrmasBL::GetAllDataForClass<InventoryHistory>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<InventoryHistory> vecForInventoryHist;
+		std::vector<DataLayer::inventoryHistoryCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetInventoryHistory(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetInventoryHistory(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForInventoryHist.push_back(InventoryHistory(data));
+			}
+		}
+		return vecForInventoryHist;
+	}
+
+	template<>
+	std::vector<JobpriceView> OrmasBL::GetAllDataForClass<JobpriceView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<JobpriceView> vecForJobprice;
+		std::vector<DataLayer::jobpriceViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetJobprice(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetJobprice(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForJobprice.push_back(JobpriceView(data));
+			}
+		}
+		return vecForJobprice;
+	}
+
+	template<>
+	std::vector<JobsheetView> OrmasBL::GetAllDataForClass<JobsheetView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<JobsheetView> vecForJobsheet;
+		std::vector<DataLayer::jobsheetViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetJobsheet(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetJobsheet(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForJobsheet.push_back(JobsheetView(data));
+			}
+		}
+		return vecForJobsheet;
+	}
+
+	template<>
+	std::vector<LowValueStockView> OrmasBL::GetAllDataForClass<LowValueStockView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<LowValueStockView> vecForLVStock;
+		std::vector<DataLayer::lowValueStockViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetLowValueStock(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetLowValueStock(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForLVStock.push_back(LowValueStockView(data));
+			}
+		}
+		return vecForLVStock;
+	}
+
+	template<>
+	std::vector<LowValueStockHistoryView> OrmasBL::GetAllDataForClass<LowValueStockHistoryView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<LowValueStockHistoryView> vecForLVStockHistory;
+		std::vector<DataLayer::lowValueStockHistoryViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetLowValueStockHistory(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetLowValueStockHistory(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForLVStockHistory.push_back(LowValueStockHistoryView(data));
+			}
+		}
+		return vecForLVStockHistory;
+	}
+
+	template<>
+	std::vector<LowValueStockChangeLog> OrmasBL::GetAllDataForClass<LowValueStockChangeLog>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<LowValueStockChangeLog> vecForLVStockLog;
+		std::vector<DataLayer::lowValueStockChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetLowValueStockChangeLog(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetLowValueStockChangeLog(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForLVStockLog.push_back(LowValueStockChangeLog(data));
+			}
+		}
+		return vecForLVStockLog;
+	}
+
+	template<>
+	std::vector<Location> OrmasBL::GetAllDataForClass<Location>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Location> vecForLocation;
+		std::vector<DataLayer::locationsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetLocations(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetLocations(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForLocation.push_back(Location(data));
+			}
+		}
+		return vecForLocation;
+	}
+
+	template<>
+	std::vector<Measure> OrmasBL::GetAllDataForClass<Measure>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Measure> vecForMeasure;
+		std::vector<DataLayer::measuresCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetMeasures(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetMeasures(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForMeasure.push_back(Measure(data));
+			}
+		}
+		return vecForMeasure;
+	}
+
+	template<>
+	std::vector<MulticurrencyView> OrmasBL::GetAllDataForClass<MulticurrencyView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<MulticurrencyView> vecForMulticurrency;
+		std::vector<DataLayer::multicurrencyViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetMulticurrency(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetMulticurrency(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForMulticurrency.push_back(MulticurrencyView(data));
+			}
+		}
+		return vecForMulticurrency;
+	}
+
+	template<>
+	std::vector<NetCostView> OrmasBL::GetAllDataForClass<NetCostView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<NetCostView> vecFornetCost;
+		std::vector<DataLayer::netCostViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetNetCost(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetNetCost(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFornetCost.push_back(NetCostView(data));
+			}
+		}
+		return vecFornetCost;
+	}
+
+	template<>
+	std::vector<NetCostHistory> OrmasBL::GetAllDataForClass<NetCostHistory>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<NetCostHistory> vecFornetCostHis;
+		std::vector<DataLayer::netCostHistoryCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetNetCostHistory(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetNetCostHistory(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFornetCostHis.push_back(NetCostHistory(data));
+			}
+		}
+		return vecFornetCostHis;
+	}
+
+	template<>
+	std::vector<NetCostCoefficientView> OrmasBL::GetAllDataForClass<NetCostCoefficientView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<NetCostCoefficientView> vecFornetCostCoef;
+		std::vector<DataLayer::netCostCoefficientViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetNetCostCoefficient(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetNetCostCoefficient(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecFornetCostCoef.push_back(NetCostCoefficientView(data));
+			}
+		}
+		return vecFornetCostCoef;
+	}
+
+	template<>
+	std::vector<OrderView> OrmasBL::GetAllDataForClass<OrderView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<OrderView> vecForOrder;
+		std::vector<DataLayer::ordersViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetOrders(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetOrders(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForOrder.push_back(OrderView(data));
+			}
+		}
+		return vecForOrder;
+	}
+
+	template<>
+	std::vector<OrderListView> OrmasBL::GetAllDataForClass<OrderListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<OrderListView> vecForOrderList;
+		std::vector<DataLayer::orderListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetOrderList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetOrderList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForOrderList.push_back(OrderListView(data));
+			}
+		}
+		return vecForOrderList;
+	}
+
+	template<>
+	std::vector<OrderPriceCorrection> OrmasBL::GetAllDataForClass<OrderPriceCorrection>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<OrderPriceCorrection> vecForOrderPriceCorrection;
+		std::vector<DataLayer::orderPriceCorrectionCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetOrderPriceCorrection(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetOrderPriceCorrection(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForOrderPriceCorrection.push_back(OrderPriceCorrection(data));
+			}
+		}
+		return vecForOrderPriceCorrection;
+	}
+
+
+	template<>
+	std::vector<OrderRawView> OrmasBL::GetAllDataForClass<OrderRawView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<OrderRawView> vecForOrderRaw;
+		std::vector<DataLayer::orderRawsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetOrderRaws(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetOrderRaws(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForOrderRaw.push_back(OrderRawView(data));
+			}
+		}
+		return vecForOrderRaw;
+	}
+
+	template<>
+	std::vector<OrderRawListView> OrmasBL::GetAllDataForClass<OrderRawListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<OrderRawListView> vecForOrderRawList;
+		std::vector<DataLayer::orderListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetOrderRawList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetOrderRawList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForOrderRawList.push_back(OrderRawListView(data));
+			}
+		}
+		return vecForOrderRawList;
+	}
+
+	template<>
+	std::vector<OtherStocksView> OrmasBL::GetAllDataForClass<OtherStocksView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<OtherStocksView> vecForOtherStockst;
+		std::vector<DataLayer::otherStocksViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetOtherStocks(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetOtherStocks(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForOtherStockst.push_back(OtherStocksView(data));
+			}
+		}
+		return vecForOtherStockst;
+	}
+
+	template<>
+	std::vector<OtherStocksType> OrmasBL::GetAllDataForClass<OtherStocksType>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<OtherStocksType> vecForOtherStockst;
+		std::vector<DataLayer::otherStocksTypeCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetOtherStocksType(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetOtherStocksType(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForOtherStockst.push_back(OtherStocksType(data));
+			}
+		}
+		return vecForOtherStockst;
+	}
+
+	template<>
+	std::vector<PaymentView> OrmasBL::GetAllDataForClass<PaymentView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<PaymentView> vecForPayment;
+		std::vector<DataLayer::paymentsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPayments(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPayments(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPayment.push_back(PaymentView(data));
+			}
+		}
+		return vecForPayment;
+	}
+
+	template<>
+	std::vector<PayslipView> OrmasBL::GetAllDataForClass<PayslipView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<PayslipView> vecForPayslip;
+		std::vector<DataLayer::payslipsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPayslips(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPayslips(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPayslip.push_back(PayslipView(data));
+			}
+		}
+		return vecForPayslip;
+	}
+
+	template<>
+	std::vector<PercentRate> OrmasBL::GetAllDataForClass<PercentRate>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<PercentRate> vecForPercentRate;
+		std::vector<DataLayer::percentRateCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPercentRate(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPercentRate(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPercentRate.push_back(PercentRate(data));
+			}
+		}
+		return vecForPercentRate;
+	}
+
+	template<>
+	std::vector<Photo> OrmasBL::GetAllDataForClass<Photo>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Photo> vecForPhoto;
+		std::vector<DataLayer::photosCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPhotos(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPhotos(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPhoto.push_back(Photo(data));
+			}
+		}
+		return vecForPhoto;
+	}
+
+	template<>
+	std::vector<PostingFixedAssetsView> OrmasBL::GetAllDataForClass<PostingFixedAssetsView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<PostingFixedAssetsView> vecForPosFX;
+		std::vector<DataLayer::postingFixedAssetsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPostingFixedAssets(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPostingFixedAssets(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPosFX.push_back(PostingFixedAssetsView(data));
+			}
+		}
+		return vecForPosFX;
+	}
+
+	template<>
+	std::vector<Position> OrmasBL::GetAllDataForClass<Position>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Position> vecForPosition;
+		std::vector<DataLayer::positionsCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPositions(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPositions(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPosition.push_back(Position(data));
+			}
+		}
+		return vecForPosition;
+	}
+
+	template<>
+	std::vector<PriceView> OrmasBL::GetAllDataForClass<PriceView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<PriceView> vecForPrices;
+		std::vector<DataLayer::pricesViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPrices(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPrices(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPrices.push_back(PriceView(data));
+			}
+		}
+		return vecForPrices;
+	}
+
+	template<>
+	std::vector<PriceExtensionView> OrmasBL::GetAllDataForClass<PriceExtensionView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<PriceExtensionView> vecForPriceEx;
+		std::vector<DataLayer::priceExtensionViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPriceExtension(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPriceExtension(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForPriceEx.push_back(PriceExtensionView(data));
+			}
+		}
+		return vecForPriceEx;
+	}
+
+	template<>
+	std::vector<ProductView> OrmasBL::GetAllDataForClass<ProductView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductView> vecForProduct;
+		std::vector<DataLayer::productsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProducts(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProducts(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProduct.push_back(ProductView(data));
+			}
+		}
+		return vecForProduct;
+	}
+
+
+	template<>
+	std::vector<Production> OrmasBL::GetAllDataForClass<Production>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Production> vecForProduction;
+		std::vector<DataLayer::productionCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProduction(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProduction(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProduction.push_back(Production(data));
+			}
+		}
+		return vecForProduction;
+	}
+
+	template<>
+	std::vector<ProductionListView> OrmasBL::GetAllDataForClass<ProductionListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductionListView> vecForProductionList;
+		std::vector<DataLayer::productionListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProductionList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProductionList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProductionList.push_back(ProductionListView(data));
+			}
+		}
+		return vecForProductionList;
+	}
+
+	template<>
+	std::vector<ProductionConsumeRawView> OrmasBL::GetAllDataForClass<ProductionConsumeRawView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductionConsumeRawView> vecForProdConsumeRaw;
+		std::vector<DataLayer::productionConsumeRawsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProductionConsumeRaws(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProductionConsumeRaws(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProdConsumeRaw.push_back(ProductionConsumeRawView(data));
+			}
+		}
+		return vecForProdConsumeRaw;
+	}
+
+	template<>
+	std::vector<ProductionConsumeRawListView> OrmasBL::GetAllDataForClass<ProductionConsumeRawListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductionConsumeRawListView> vecForProdConsumeRawList;
+		std::vector<DataLayer::productionConsumeRawListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProductionConsumeRawList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProductionConsumeRawList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProdConsumeRawList.push_back(ProductionConsumeRawListView(data));
+			}
+		}
+		return vecForProdConsumeRawList;
+	}
+
+	template<>
+	std::vector<ProductionPlanView> OrmasBL::GetAllDataForClass<ProductionPlanView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductionPlanView> vecForProductionPlan;
+		std::vector<DataLayer::productionPlanViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProductionPlan(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProductionPlan(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProductionPlan.push_back(ProductionPlanView(data));
+			}
+		}
+		return vecForProductionPlan;
+	}
+
+	template<>
+	std::vector<ProductionPlanListView> OrmasBL::GetAllDataForClass<ProductionPlanListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductionPlanListView> vecForProductionPlanList;
+		std::vector<DataLayer::productionPlanListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProductionPlanList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProductionPlanList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProductionPlanList.push_back(ProductionPlanListView(data));
+			}
+		}
+		return vecForProductionPlanList;
+	}
+
+
+	template<>
+	std::vector<ProductionStockView> OrmasBL::GetAllDataForClass<ProductionStockView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductionStockView> vecForProductionStock;
+		std::vector<DataLayer::productionStockViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProductionStock(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProductionStock(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProductionStock.push_back(ProductionStockView(data));
+			}
+		}
+		return vecForProductionStock;
+	}
+
+
+	template<>
+	std::vector<ProductType> OrmasBL::GetAllDataForClass<ProductType>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductType> vecForProductType;
+		std::vector<DataLayer::productTypeCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProductTypes(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProductTypes(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProductType.push_back(ProductType(data));
+			}
+		}
+		return vecForProductType;
+	}
+
+	template<>
+	std::vector<ProductBranchRelationView> OrmasBL::GetAllDataForClass<ProductBranchRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ProductBranchRelationView> vecForProductBranch;
+		std::vector<DataLayer::productBranchViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetProductBranch(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetProductBranch(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProductBranch.push_back(ProductBranchRelationView(data));
+			}
+		}
+		return vecForProductBranch;
+	}
+
+	template<>
+	std::vector<PurveyorView> OrmasBL::GetAllDataForClass<PurveyorView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<PurveyorView> vecForProductType;
+		std::vector<DataLayer::purveyorsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetPurveyors(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetPurveyors(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForProductType.push_back(PurveyorView(data));
+			}
+		}
+		return vecForProductType;
+	}
+
+	template<>
+	std::vector<ReceiptOtherStocksView> OrmasBL::GetAllDataForClass<ReceiptOtherStocksView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ReceiptOtherStocksView> vecForReceiptOthS;
+		std::vector<DataLayer::receiptOtherStocksViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetReceiptOtherStocks(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetReceiptOtherStocks(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForReceiptOthS.push_back(ReceiptOtherStocksView(data));
+			}
+		}
+		return vecForReceiptOthS;
+	}
+
+	template<>
+	std::vector<ReceiptOtherStocksListView> OrmasBL::GetAllDataForClass<ReceiptOtherStocksListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ReceiptOtherStocksListView> vecForReceiptOthSList;
+		std::vector<DataLayer::receiptProductListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetReceiptOtherStocksList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetReceiptOtherStocksList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForReceiptOthSList.push_back(ReceiptOtherStocksListView(data));
+			}
+		}
+		return vecForReceiptOthSList;
+	}
+
+	template<>
+	std::vector<ReceiptProductView> OrmasBL::GetAllDataForClass<ReceiptProductView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ReceiptProductView> vecForReceiptProduct;
+		std::vector<DataLayer::receiptProductsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetReceiptProducts(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetReceiptProducts(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForReceiptProduct.push_back(ReceiptProductView(data));
+			}
+		}
+		return vecForReceiptProduct;
+	}
+
+	template<>
+	std::vector<ReceiptProductListView> OrmasBL::GetAllDataForClass<ReceiptProductListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ReceiptProductListView> vecForReceiptProducList;
+		std::vector<DataLayer::receiptProductListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetReceiptProductList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetReceiptProductList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForReceiptProducList.push_back(ReceiptProductListView(data));
+			}
+		}
+		return vecForReceiptProducList;
+	}
+
+	template<>
+	std::vector<StockTransferView> OrmasBL::GetAllDataForClass<StockTransferView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<StockTransferView> vecForStockTransfer;
+		std::vector<DataLayer::stockTransferViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStockTransfer(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStockTransfer(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStockTransfer.push_back(StockTransferView(data));
+			}
+		}
+		return vecForStockTransfer;
+	}
+
+	template<>
+	std::vector<StockTransferListView> OrmasBL::GetAllDataForClass<StockTransferListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<StockTransferListView> vecForStockTransferList;
+		std::vector<DataLayer::stockTransferListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStockTransferList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStockTransferList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStockTransferList.push_back(StockTransferListView(data));
+			}
+		}
+		return vecForStockTransferList;
+	}
+
+	template<>
+	std::vector<RefundView> OrmasBL::GetAllDataForClass<RefundView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<RefundView> vecForRefund;
+		std::vector<DataLayer::refundsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetRefunds(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetRefunds(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForRefund.push_back(RefundView(data));
+			}
+		}
+		return vecForRefund;
+	}
+
+	template<>
+	std::vector<RelationView> OrmasBL::GetAllDataForClass<RelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<RelationView> vecForRelation;
+		std::vector<DataLayer::relationsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetRelations(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetRelations(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForRelation.push_back(RelationView(data));
+			}
+		}
+		return vecForRelation;
+	}
+
+	template<>
+	std::vector<RelationType> OrmasBL::GetAllDataForClass<RelationType>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<RelationType> vecForRelationType;
+		std::vector<DataLayer::relationTypeCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetRelationType(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetRelationType(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForRelationType.push_back(RelationType(data));
+			}
+		}
+		return vecForRelationType;
+	}
+
+
+	template<>
+	std::vector<ReturnView> OrmasBL::GetAllDataForClass<ReturnView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ReturnView> vecForReturn;
+		std::vector<DataLayer::returnsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetReturns(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetReturns(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForReturn.push_back(ReturnView(data));
+			}
+		}
+		return vecForReturn;
+	}
+
+	template<>
+	std::vector<ReturnListView> OrmasBL::GetAllDataForClass<ReturnListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ReturnListView> vecForReturnList;
+		std::vector<DataLayer::returnListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetReturnList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetReturnList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForReturnList.push_back(ReturnListView(data));
+			}
+		}
+		return vecForReturnList;
+	}
+
+	template<>
+	std::vector<ReturnPriceCorrection> OrmasBL::GetAllDataForClass<ReturnPriceCorrection>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ReturnPriceCorrection> vecForReturnPriceCorrection;
+		std::vector<DataLayer::returnPriceCorrectionCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetReturnPriceCorrection(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetReturnPriceCorrection(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForReturnPriceCorrection.push_back(ReturnPriceCorrection(data));
+			}
+		}
+		return vecForReturnPriceCorrection;
+	}
+
+	template<>
+	std::vector<Role> OrmasBL::GetAllDataForClass<Role>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Role> vecForRole;
+		std::vector<DataLayer::rolesCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetRoles(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetRoles(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForRole.push_back(Role(data));
+			}
+		}
+		return vecForRole;
+	}
+
+	template<>
+	std::vector<SalaryView> OrmasBL::GetAllDataForClass<SalaryView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SalaryView> vecForSalary;
+		std::vector<DataLayer::salariesViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSalaries(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSalaries(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSalary.push_back(SalaryView(data));
+			}
+		}
+		return vecForSalary;
+	}
+
+	template<>
+	std::vector<ShareholderView> OrmasBL::GetAllDataForClass<ShareholderView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<ShareholderView> vecForSareholder;
+		std::vector<DataLayer::shareholdersViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetShareholders(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetShareholders(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSareholder.push_back(ShareholderView(data));
+			}
+		}
+		return vecForSareholder;
+	}
+
+	template<>
+	std::vector<SalaryType> OrmasBL::GetAllDataForClass<SalaryType>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SalaryType> vecForSalaryType;
+		std::vector<DataLayer::salaryTypeCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSalaryType(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSalaryType(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSalaryType.push_back(SalaryType(data));
+			}
+		}
+		return vecForSalaryType;
+	}
+
+	template<>
+	std::vector<SpecificationListView> OrmasBL::GetAllDataForClass<SpecificationListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SpecificationListView> vecForSpecificationList;
+		std::vector<DataLayer::specificationListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSpecificationList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSpecificationList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSpecificationList.push_back(SpecificationListView(data));
+			}
+		}
+		return vecForSpecificationList;
+	}
+
+	template<>
+	std::vector<SpecificationChangeLog> OrmasBL::GetAllDataForClass<SpecificationChangeLog>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SpecificationChangeLog> vecForSpecificationLog;
+		std::vector<DataLayer::specificationChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSpecificationChangeLog(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSpecificationChangeLog(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSpecificationLog.push_back(SpecificationChangeLog(data));
+			}
+		}
+		return vecForSpecificationLog;
+	}
+
+	template<>
+	std::vector<SpecificationView> OrmasBL::GetAllDataForClass<SpecificationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SpecificationView> vecForSpecification;
+		std::vector<DataLayer::specificationsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSpecifications(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSpecifications(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSpecification.push_back(SpecificationView(data));
+			}
+		}
+		return vecForSpecification;
+	}
+
+	template<>
+	std::vector<SpoilageListView> OrmasBL::GetAllDataForClass<SpoilageListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SpoilageListView> vecForSpoilageList;
+		std::vector<DataLayer::spoilageListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSpoilageList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSpoilageList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSpoilageList.push_back(SpoilageListView(data));
+			}
+		}
+		return vecForSpoilageList;
+	}
+
+	template<>
+	std::vector<SpoilageView> OrmasBL::GetAllDataForClass<SpoilageView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SpoilageView> vecForSpoilage;
+		std::vector<DataLayer::spoilageViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSpoilage(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSpoilage(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSpoilage.push_back(SpoilageView(data));
+			}
+		}
+		return vecForSpoilage;
+	}
+
+	template<>
+	std::vector<State> OrmasBL::GetAllDataForClass<State>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<State> vecForState;
+		std::vector<DataLayer::stateCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetState(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetState(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForState.push_back(State(data));
+			}
+		}
+		return vecForState;
+	}
+
+	template<>
+	std::vector<Status> OrmasBL::GetAllDataForClass<Status>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Status> vecForStatus;
+		std::vector<DataLayer::statusCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStatus(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStatus(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStatus.push_back(Status(data));
+			}
+		}
+		return vecForStatus;
+	}
+
+	template<>
+	std::vector<StatusRuleView> OrmasBL::GetAllDataForClass<StatusRuleView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<StatusRuleView> vecForStatusRule;
+		std::vector<DataLayer::statusRuleViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStatusRule(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStatusRule(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStatusRule.push_back(StatusRuleView(data));
+			}
+		}
+		return vecForStatusRule;
+	}
+
+	template<>
+	std::vector<StockView> OrmasBL::GetAllDataForClass<StockView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<StockView> vecForStock;
+		std::vector<DataLayer::stockViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStock(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStock(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStock.push_back(StockView(data));
+			}
+		}
+		return vecForStock;
+	}
+
+	template<>
+	std::vector<StockLimitView> OrmasBL::GetAllDataForClass<StockLimitView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<StockLimitView> vecForStockLimit;
+		std::vector<DataLayer::stockLimitViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStockLimit(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStockLimit(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStockLimit.push_back(StockLimitView(data));
+			}
+		}
+		return vecForStockLimit;
+	}
+
+	template<>
+	std::vector<StockHistoryView> OrmasBL::GetAllDataForClass<StockHistoryView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<StockHistoryView> vecForStockHistory;
+		std::vector<DataLayer::stockHistoryViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStockHistory(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStockHistory(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStockHistory.push_back(StockHistoryView(data));
+			}
+		}
+		return vecForStockHistory;
+	}
+
+	template<>
+	std::vector<StockChangeLog> OrmasBL::GetAllDataForClass<StockChangeLog>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<StockChangeLog> vecForStockLog;
+		std::vector<DataLayer::stockChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetStockChangeLog(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetStockChangeLog(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStockLog.push_back(StockChangeLog(data));
+			}
+		}
+		return vecForStockLog;
+	}
+
+	template<>
+	std::vector<SubaccountView> OrmasBL::GetAllDataForClass<SubaccountView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SubaccountView> vecForSubaccount;
+		std::vector<DataLayer::subaccountsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSubaccounts(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSubaccounts(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSubaccount.push_back(SubaccountView(data));
+			}
+		}
+		return vecForSubaccount;
+	}
+
+	template<>
+	std::vector<SubaccountLimitView> OrmasBL::GetAllDataForClass<SubaccountLimitView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SubaccountLimitView> vecForSubaccountLimit;
+		std::vector<DataLayer::subaccountLimitViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSubaccountLimit(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSubaccountLimit(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSubaccountLimit.push_back(SubaccountLimitView(data));
+			}
+		}
+		return vecForSubaccountLimit;
+	}
+
+	template<>
+	std::vector<SubaccountChangeLog> OrmasBL::GetAllDataForClass<SubaccountChangeLog>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SubaccountChangeLog> vecForSubaccountLog;
+		std::vector<DataLayer::subaccountChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSubaccountChangeLog(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSubaccountChangeLog(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSubaccountLog.push_back(SubaccountChangeLog(data));
+			}
+		}
+		return vecForSubaccountLog;
+	}
+
+	template<>
+	std::vector<SubaccountHistory> OrmasBL::GetAllDataForClass<SubaccountHistory>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<SubaccountHistory> vecForSubaccountHis;
+		std::vector<DataLayer::subaccountHistoryCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetSubaccountHistory(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetSubaccountHistory(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForSubaccountHis.push_back(SubaccountHistory(data));
+			}
+		}
+		return vecForSubaccountHis;
+	}
+
+	template<>
+	std::vector<Tax> OrmasBL::GetAllDataForClass<Tax>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<Tax> vecForTax;
+		std::vector<DataLayer::taxesCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetTaxes(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetTaxes(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForTax.push_back(Tax(data));
+			}
+		}
+		return vecForTax;
+	}
+
+
+	template<>
+	std::vector<TimesheetView> OrmasBL::GetAllDataForClass<TimesheetView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<TimesheetView> vecForStock;
+		std::vector<DataLayer::timesheetViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetTimesheet(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetTimesheet(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForStock.push_back(TimesheetView(data));
+			}
+		}
+		return vecForStock;
+	}
+
+	template<>
+	std::vector<TransportView> OrmasBL::GetAllDataForClass<TransportView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<TransportView> vecForTransport;
+		std::vector<DataLayer::transportsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetTransports(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetTransports(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForTransport.push_back(TransportView(data));
+			}
+		}
+		return vecForTransport;
+	}
+
+	template<>
+	std::vector<TransportHistory> OrmasBL::GetAllDataForClass<TransportHistory>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<TransportHistory> vecForTransport;
+		std::vector<DataLayer::transportHistoryCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetTransportHistory(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetTransportHistory(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForTransport.push_back(TransportHistory(data));
+			}
+		}
+		return vecForTransport;
+	}
+
+	template<>
+	std::vector<TransportChangeLog> OrmasBL::GetAllDataForClass<TransportChangeLog>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<TransportChangeLog> vecForTransportLog;
+		std::vector<DataLayer::transportChangeLogCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetTransportChangeLog(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetTransportChangeLog(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForTransportLog.push_back(TransportChangeLog(data));
+			}
+		}
+		return vecForTransportLog;
+	}
+
+	template<>
+	std::vector<TransportListView> OrmasBL::GetAllDataForClass<TransportListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<TransportListView> vecForTransportList;
+		std::vector<DataLayer::transportListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetTransportList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetTransportList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForTransportList.push_back(TransportListView(data));
+			}
+		}
+		return vecForTransportList;
+	}
+
+	template<>
+	std::vector<UserView> OrmasBL::GetAllDataForClass<UserView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<UserView> vecForUser;
+		std::vector<DataLayer::usersViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetUsers(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetUsers(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForUser.push_back(UserView(data));
+			}
+		}
+		return vecForUser;
+	}
+
+	template<>
+	std::vector<UserExtendedView> OrmasBL::GetAllDataForClass<UserExtendedView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<UserExtendedView> vecForUser;
+		std::vector<DataLayer::userExtendedViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetUserExtended(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetUserExtended(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForUser.push_back(UserExtendedView(data));
+			}
+		}
+		return vecForUser;
+	}
+
+	template<>
+	std::vector<UserGroupRelationView> OrmasBL::GetAllDataForClass<UserGroupRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<UserGroupRelationView> vecForUserGroup;
+		std::vector<DataLayer::userGroupViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetUserGroup(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetUserGroup(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForUserGroup.push_back(UserGroupRelationView(data));
+			}
+		}
+		return vecForUserGroup;
+	}
+
+	template<>
+	std::vector<WarehouseView> OrmasBL::GetAllDataForClass<WarehouseView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<WarehouseView> vecForWarehouse;
+		std::vector<DataLayer::warehouseViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetWarehouse(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetWarehouse(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForWarehouse.push_back(WarehouseView(data));
+			}
+		}
+		return vecForWarehouse;
+	}
+
+	template<>
+	std::vector<WarehouseType> OrmasBL::GetAllDataForClass<WarehouseType>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<WarehouseType> vecForWarehouseType;
+		std::vector<DataLayer::warehouseTypeCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetWarehouseType(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetWarehouseType(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForWarehouseType.push_back(WarehouseType(data));
+			}
+		}
+		return vecForWarehouseType;
+	}
+
+	template<>
+	std::vector<WarehouseEmployeeRelationView> OrmasBL::GetAllDataForClass<WarehouseEmployeeRelationView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<WarehouseEmployeeRelationView> vecForWarehouseRel;
+		std::vector<DataLayer::warehouseEmployeeViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetWarehouseEmployee(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetWarehouseEmployee(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForWarehouseRel.push_back(WarehouseEmployeeRelationView(data));
+			}
+		}
+		return vecForWarehouseRel;
+	}
+
+	template<>
+	std::vector<WithdrawalView> OrmasBL::GetAllDataForClass<WithdrawalView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<WithdrawalView> vecForWithdrawal;
+		std::vector<DataLayer::withdrawalsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetWithdrawals(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetWithdrawals(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForWithdrawal.push_back(WithdrawalView(data));
+			}
+		}
+		return vecForWithdrawal;
+	}
+
+	template<>
+	std::vector<WriteOffView> OrmasBL::GetAllDataForClass<WriteOffView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<WriteOffView> vecForWriteOff;
+		std::vector<DataLayer::writeOffsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetWriteOffs(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetWriteOffs(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForWriteOff.push_back(WriteOffView(data));
+			}
+		}
+		return vecForWriteOff;
+	}
+
+	template<>
+	std::vector<WriteOffListView> OrmasBL::GetAllDataForClass<WriteOffListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<WriteOffListView> vecForWriteOffList;
+		std::vector<DataLayer::writeOffListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetWriteOffList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetWriteOffList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForWriteOffList.push_back(WriteOffListView(data));
+			}
+		}
+		return vecForWriteOffList;
+	}
+
+	template<>
+	std::vector<WriteOffRawView> OrmasBL::GetAllDataForClass<WriteOffRawView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<WriteOffRawView> vecForWriteOffRaw;
+		std::vector<DataLayer::writeOffRawsViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetWriteOffRaws(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetWriteOffRaws(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForWriteOffRaw.push_back(WriteOffRawView(data));
+			}
+		}
+		return vecForWriteOffRaw;
+	}
+
+	template<>
+	std::vector<WriteOffRawListView> OrmasBL::GetAllDataForClass<WriteOffRawListView>(int limit, int offset, std::string& errorMessage, std::string filter)
+	{
+		std::vector<WriteOffRawListView> vecForWriteOffRawList;
+		std::vector<DataLayer::writeOffListViewCollection> dataCollection;
+		if (filter.empty())
+		{
+			dataCollection = ormasDal.GetWriteOffRawList(limit, offset, errorMessage);
+		}
+		else
+		{
+			dataCollection = ormasDal.GetWriteOffRawList(limit, offset, errorMessage, filter);
+		}
+		if (!dataCollection.empty()){
+			for (auto data : dataCollection)
+			{
+				vecForWriteOffRawList.push_back(WriteOffRawListView(data));
+			}
+		}
+		return vecForWriteOffRawList;
+	}
+
 
 	/// \brief	Creates the access.///
 	///
@@ -4788,25 +8102,7 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool OrmasBL::CreateCurrency(BusinessLayer::Currency* currency, std::string& errorMessage)
-	{
-		try
-		{
-			if (0 != currency->GetCode() && !currency->GetName().empty() && !currency->GetShortName().empty() && 0 != currency->GetUnit())
-			{
-				return currency->CreateCurrency(globalVar, ormasDal, errorMessage);
-			}
-			else
-			{
-				errorMessage = "Error! Currency code, name and short name must not be empty. Please fill up them!";
-			}
-		}
-		catch (...)
-		{
-			errorMessage = "Fatal error! Please contact with application provider.";
-		}
-		return false;
-	}
+	
 
 	bool OrmasBL::CreateConsumeOtherStocks(BusinessLayer::ConsumeOtherStocks* consumeOthS, std::string& errorMessage)
 	{
@@ -4960,6 +8256,25 @@ namespace BusinessLayer{
 		return false;
 	}
 
+	bool OrmasBL::CreateCurrency(BusinessLayer::Currency* currency, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != currency->GetCode() && !currency->GetName().empty() && !currency->GetShortName().empty() && 0 != currency->GetUnit())
+			{
+				return currency->CreateCurrency(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Currency code, name and short name must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
 	
 	bool OrmasBL::UpdateCurrency(BusinessLayer::Currency* currency, std::string& errorMessage)
 	{
@@ -4992,6 +8307,68 @@ namespace BusinessLayer{
 			else
 			{
 				errorMessage = "Error! Currency ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateCurrencyRate(BusinessLayer::CurrencyRate* currencyRate, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != currencyRate->GetFromCurrencyID() && 0 != currencyRate->GetFromValue() && 0 != currencyRate->GetToCurrencyID() &&
+				0 != currencyRate->GetToValue() && !currencyRate->GetChangeDate().empty() )
+			{
+				return currencyRate->CreateCurrencyRate(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateCurrencyRate(BusinessLayer::CurrencyRate* currencyRate, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != currencyRate->GetFromCurrencyID() && 0 != currencyRate->GetFromValue() && 0 != currencyRate->GetToCurrencyID() &&
+				0 != currencyRate->GetToValue() && !currencyRate->GetChangeDate().empty())
+			{
+				return currencyRate->UpdateCurrencyRate(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All fields must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteCurrencyRate(BusinessLayer::CurrencyRate* currencyRate, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != currencyRate->GetID())
+			{
+				return currencyRate->DeleteCurrencyRate(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Currency rate ID is 0. Some thing goes wrong!";
 			}
 		}
 		catch (...)
@@ -6483,6 +9860,89 @@ namespace BusinessLayer{
 		return false;
 	}
 
+
+	bool OrmasBL::DeleteMeasure(BusinessLayer::Measure* measure, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != measure->GetID())
+			{
+				return measure->DeleteMeasure(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Measure ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+
+
+	bool OrmasBL::CreateMulticurrency(BusinessLayer::Multicurrency* multicurrency, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != multicurrency->GetSubaccountCurrencyID() && 0 != multicurrency->GetSubaccountMainCurrencyID())
+			{
+				return multicurrency->CreateMulticurrency(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All feils must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateMulticurrency(BusinessLayer::Multicurrency* multicurrency, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != multicurrency->GetSubaccountCurrencyID() && 0 != multicurrency->GetSubaccountMainCurrencyID())
+			{
+				return multicurrency->UpdateMulticurrency(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! All feils must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteMulticurrency(BusinessLayer::Multicurrency* multicurrency, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != multicurrency->GetID())
+			{
+				return multicurrency->DeleteMulticurrency(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Multicurrency ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
 	bool OrmasBL::CreateLowValueStock(BusinessLayer::LowValueStock* stock, std::string& errorMessage)
 	{
 		try
@@ -6669,26 +10129,6 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool OrmasBL::DeleteMeasure(BusinessLayer::Measure* measure, std::string& errorMessage)
-	{
-		try
-		{
-			if (0 != measure->GetID())
-			{
-				return measure->DeleteMeasure(globalVar, ormasDal, errorMessage);
-			}
-			else
-			{
-				errorMessage = "Error! Measure ID is 0. Some thing goes wrong!";
-			}			
-		}
-		catch (...)
-		{
-			errorMessage = "Fatal error! Please contact with application provider."; 
-		}
-		return false;
-	}
-
 	bool OrmasBL::CreateNetCost(BusinessLayer::NetCost* netCost, std::string& errorMessage)
 	{
 		try
@@ -6740,6 +10180,126 @@ namespace BusinessLayer{
 			else
 			{
 				errorMessage = "Error! Price ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateNetCostHistory(BusinessLayer::NetCostHistory* netCostHis, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != netCostHis->GetProductID() && 0.0 != netCostHis->GetValue() && 0 != netCostHis->GetCurrencyID() && !netCostHis->GetDate().empty())
+			{
+				return netCostHis->CreateNetCostHistory(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Product , currency, date and value must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateNetCostHistory(BusinessLayer::NetCostHistory* netCostHis, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != netCostHis->GetProductID() && 0.0 != netCostHis->GetValue() && 0 != netCostHis->GetCurrencyID() && !netCostHis->GetDate().empty())
+			{
+				return netCostHis->UpdateNetCostHistory(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Product, currency, date and value must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteNetCostHistory(BusinessLayer::NetCostHistory* netCostHis, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != netCostHis->GetID())
+			{
+				return netCostHis->DeleteNetCostHistory(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Net cost history ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateNetCostCoefficient(BusinessLayer::NetCostCoefficient* netCostCoeff, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != netCostCoeff->GetProductID() && 0.0 != netCostCoeff->GetValue())
+			{
+				return netCostCoeff->CreateNetCostCoefficient(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Product , currency, date and value must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateNetCostCoefficient(BusinessLayer::NetCostCoefficient* netCostCoeff, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != netCostCoeff->GetProductID() && 0.0 != netCostCoeff->GetValue())
+			{
+				return netCostCoeff->UpdateNetCostCoefficient(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Product, currency, date and value must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteNetCostCoefficient(BusinessLayer::NetCostCoefficient* netCostCoeff, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != netCostCoeff->GetID())
+			{
+				return netCostCoeff->DeleteNetCostCoefficient(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Net cost coefficient ID is 0. Some thing goes wrong!";
 			}
 		}
 		catch (...)
@@ -6899,6 +10459,69 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
+
+	bool OrmasBL::CreateOrderPriceCorrection(BusinessLayer::OrderPriceCorrection* orderPrice, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != orderPrice->GetOrderID() && 0 != orderPrice->GetPriceExtensionID()
+				&& 0 != orderPrice->GetOrderListID() && 0 != orderPrice->GetStandartValue() && 0 != orderPrice->GetNewValue())
+			{
+				return orderPrice->CreateOrderPriceCorrection(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateOrderPriceCorrection(BusinessLayer::OrderPriceCorrection* orderPrice, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != orderPrice->GetOrderID() && 0 != orderPrice->GetPriceExtensionID()
+				&& 0 != orderPrice->GetOrderListID() && 0 != orderPrice->GetStandartValue() && 0 != orderPrice->GetNewValue())
+			{
+				return orderPrice->UpdateOrderPriceCorrection(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteOrderPriceCorrection(BusinessLayer::OrderPriceCorrection* orderPrice, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != orderPrice->GetID())
+			{
+				return orderPrice->DeleteOrderPriceCorrection(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Order list ID is 0. Something goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
 
 	bool OrmasBL::CreateOrderRaw(BusinessLayer::OrderRaw* orderRaw, std::string& errorMessage)
 	{
@@ -7601,6 +11224,67 @@ namespace BusinessLayer{
 		}
 		return false;
 	}
+
+	bool OrmasBL::CreatePriceExtension(BusinessLayer::PriceExtension* priceEx, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != priceEx->GetProductID()  && !priceEx->GetDate().empty())
+			{
+				return priceEx->CreatePriceExtension(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Price , value, date and value must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdatePriceExtension(BusinessLayer::PriceExtension* priceEx, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != priceEx->GetProductID()  && !priceEx->GetDate().empty())
+			{
+				return priceEx->UpdatePriceExtension(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Price , value, date and value must not be empty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeletePriceExtension(BusinessLayer::PriceExtension* priceEx, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != priceEx->GetID())
+			{
+				return priceEx->DeletePriceExtension(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Price ID is 0. Some thing goes wrong!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
 
 	bool OrmasBL::CreateProduct(BusinessLayer::Product* product, std::string& errorMessage)
 	{
@@ -9141,6 +12825,68 @@ namespace BusinessLayer{
 			else
 			{
 				errorMessage = "Error! Role name and code must not be empty. Please fill up it!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::CreateReturnPriceCorrection(BusinessLayer::ReturnPriceCorrection* returnPrice, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != returnPrice->GetReturnID() && 0 != returnPrice->GetPriceExtensionID()
+				&& 0 != returnPrice->GetReturnListID() && 0 != returnPrice->GetStandartValue() && 0 != returnPrice->GetNewValue())
+			{
+				return returnPrice->CreateReturnPriceCorrection(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One or several feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::UpdateReturnPriceCorrection(BusinessLayer::ReturnPriceCorrection* returnPrice, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != returnPrice->GetReturnID() && 0 != returnPrice->GetPriceExtensionID()
+				&& 0 != returnPrice->GetReturnListID() && 0 != returnPrice->GetStandartValue() && 0 != returnPrice->GetNewValue())
+			{
+				return returnPrice->UpdateReturnPriceCorrection(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! One of feilds are emplty. Please fill up them!";
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Fatal error! Please contact with application provider.";
+		}
+		return false;
+	}
+
+	bool OrmasBL::DeleteReturnPriceCorrection(BusinessLayer::ReturnPriceCorrection* returnPrice, std::string& errorMessage)
+	{
+		try
+		{
+			if (0 != returnPrice->GetID())
+			{
+				return returnPrice->DeleteReturnPriceCorrection(globalVar, ormasDal, errorMessage);
+			}
+			else
+			{
+				errorMessage = "Error! Order list ID is 0. Something goes wrong!";
 			}
 		}
 		catch (...)
@@ -11489,6 +15235,21 @@ namespace BusinessLayer{
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
+		if (!CorrectingNetCostInConsumeProduct())
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (!CorrectingNetCostInStockTransfer())
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		//if (!ConsumeDocSetError())
+		//{
+			//ormasDal.CancelTransaction(errorMessage);
+			//return false;
+		//}
 		if (!CorrectingEntries())
 		{
 			//ormasDal.CancelTransaction(errorMessage);
@@ -11515,6 +15276,10 @@ namespace BusinessLayer{
 			return false;
 		}
 		if (!SaveTransportState("", tillDate))
+		{
+			return false;
+		}
+		if (!SaveNetCostState("", tillDate))
 		{
 			return false;
 		}
@@ -11669,7 +15434,7 @@ namespace BusinessLayer{
 		//save state of accounts
 		std::vector<TransportListView> vecForTransportList;
 		std::vector<DataLayer::transportListViewCollection> transportListCollection;
-		transportListCollection = ormasDal.GetTransportList(errorMessage);
+		transportListCollection = ormasDal.GetTransportList(0,0,errorMessage);
 		if (!transportListCollection.empty())
 		{
 			for each (auto data in transportListCollection)
@@ -11690,6 +15455,36 @@ namespace BusinessLayer{
 			tranHis.SetFromDate(tillDate);
 			tranHis.SetTillDate(tillDate);
 			if (!tranHis.CreateTransportHistory(globalVar, ormasDal, errorMessage))
+				return false;
+		}
+		return true;
+	}
+
+	bool OrmasBL::SaveNetCostState(std::string fromDate, std::string tillDate)
+	{
+		std::string errorMessage = "";
+		//save state of accounts
+		std::vector<NetCostView> vecForNetCost;
+		std::vector<DataLayer::netCostViewCollection> netCostCollection;
+		netCostCollection = ormasDal.GetNetCost(errorMessage);
+		if (!netCostCollection.empty()){
+			for (auto data : netCostCollection)
+			{
+				vecForNetCost.push_back(NetCostView(data));
+			}
+		}
+		NetCostHistory netCostkHis;
+		for each (auto item in vecForNetCost)
+		{
+			netCostkHis.Clear();
+			netCostkHis.SetID(ormasDal.GenerateID());
+			netCostkHis.SetDate(tillDate);
+			netCostkHis.SetValue(item.GetValue());
+			netCostkHis.SetCurrencyID(item.GetCurrencyID());
+			netCostkHis.SetProductID(item.GetProductID());
+			netCostkHis.SetIsOutdated(item.GetIsOutdated());
+			netCostkHis.SetHistoryDate(tillDate);
+			if (!netCostkHis.CreateNetCostHistory(globalVar, ormasDal, errorMessage))
 				return false;
 		}
 		return true;
@@ -11976,7 +15771,13 @@ namespace BusinessLayer{
 		std::string entryText="";
 		Entry entry;
 		Division division;
-		std::vector<FixedAssetsView> astVect = this->GetAllDataForClass<FixedAssetsView>(errorMessage);
+		Status status;
+		if (!status.GetStatusByName(globalVar, ormasDal, "IN USE", errorMessage))
+			return false;
+		FixedAssets fx;
+		fx.SetStatusID(status.GetID());
+		std::string filter = fx.GenerateFilter(ormasDal);
+		std::vector<FixedAssetsView> astVect = this->GetAllDataForClass<FixedAssetsView>(errorMessage, filter);
 		for each (auto fa in astVect)
 		{
 			if (fa.GetIsAmortize() == true)
@@ -12161,20 +15962,29 @@ namespace BusinessLayer{
 		std::multimap<double, int> mapNetCost;
 		for(unsigned int i = 0; i < vecForSpec.size(); i++)
 		{
-			mapNetCost.insert(std::make_pair(vecForSpec[i].GetSum(), vecForSpec[i].GetProductID()));
+			if (mapProducedProducts.find(vecForSpec[i].GetProductID()) != mapProducedProducts.end())
+				mapNetCost.insert(std::make_pair(vecForSpec[i].GetSum(), vecForSpec[i].GetProductID()));
 		}
 
-		//Calculate product coificient
+		//Calculate product coifficient and multiple to setted coefficient in net cost coefficient table
 		std::map<int, double> coif;
+		NetCostCoefficient netCostCoeff;
 
 		int i = 0;
 		double divide = 0;
 		divide = mapNetCost.begin()->first;
 		for each (auto item in mapNetCost)
 		{
+			netCostCoeff.Clear();
+			if (!netCostCoeff.GetNetCostCoefficientByProductID(globalVar, ormasDal, item.second, errorMessage))
+			{
+				errorMessage = "Net cost coefficient is missed!";
+				return false;
+			}
+				
 			if (i == 0)
-				coif.insert(std::make_pair(item.second, 1));
-			coif.insert(std::make_pair(item.second, (item.first / divide)));
+				coif.insert(std::make_pair(item.second, 1 * (1 + netCostCoeff.GetValue())));
+			coif.insert(std::make_pair(item.second, (item.first / divide)*(1 + netCostCoeff.GetValue())));
 			i++;
 		}
 
@@ -12222,6 +16032,7 @@ namespace BusinessLayer{
 
 	bool OrmasBL::CorrectingNetCostInStock()
 	{
+		//to do correct production stock for new month if in stock have some products
 		std::string errorMessage = "";
 		std::vector<StockView> stockVector = this->GetAllDataForClass<StockView>(errorMessage);
 		if (stockVector.size() > 0)
@@ -12234,6 +16045,7 @@ namespace BusinessLayer{
 			ProductType pType;
 			NetCost nCost;
 			Subaccount subaccount;
+			
 			int companyID = 0;
 			double difference = 0;
 			for each (auto stockItem in stockVector)
@@ -12301,6 +16113,13 @@ namespace BusinessLayer{
 								stockItem.SetSum(stockItem.GetCount()*nCost.GetValue());
 								if (!stockItem.UpdateStock(globalVar, ormasDal, errorMessage))
 									return false;
+								
+							}
+							else
+							{
+								stockItem.SetSum(stockItem.GetCount()*nCost.GetValue());
+								if (!stockItem.UpdateStock(globalVar, ormasDal, errorMessage))
+									return false;
 							}
 						}
 					}
@@ -12313,79 +16132,250 @@ namespace BusinessLayer{
 	bool OrmasBL::CorrectingNetCostInTransport()
 	{
 		std::string errorMessage = "";
-		std::vector<TransportListView> transporListVector = this->GetAllDataForClass<TransportListView>(errorMessage);
-		if (transporListVector.size() > 0)
+		ProductType pType;
+		if (!pType.GetProductTypeByCode(globalVar, ormasDal, "PRODUCT", errorMessage))
+			return false;
+		Product product;
+		product.SetProductTypeID(pType.GetID());
+		std::string filter = product.GenerateFilter(ormasDal);
+		std::vector<ProductView> productVector = this->GetAllDataForClass<ProductView>(errorMessage, filter);
+		if (productVector.size() > 0)
 		{
-			Product product;
-			ProductType pType;
-			NetCost nCost;
-			int companyID = 0;
-			double difference = 0;
-			for each (auto listItem in transporListVector)
+			std::vector<TransportListView> transporListVector;
+			TransportList trList;
+			
+			for each (auto productItem in productVector)
 			{
 				product.Clear();
-				pType.Clear();
-				nCost.Clear();
-				difference = 0;
-				if (!listItem.IsEmpty())
+				if (!product.GetProductByID(globalVar, ormasDal, productItem.GetID(), errorMessage))
+					return false;
+				transporListVector.clear();
+				trList.Clear();
+				filter.clear();
+				trList.SetProductID(productItem.GetID());
+				filter = trList.GenerateFilter(ormasDal);
+				transporListVector = this->GetAllDataForClass<TransportListView>(errorMessage, filter);
+				if (transporListVector.size() > 0)
 				{
-					errorMessage = "";
-					if (0 == listItem.GetCount())
+					NetCost nCost;
+					int companyID = 0;
+					double difference = 0;
+					for each (auto listItem in transporListVector)
 					{
-						continue;
-					}
-					else
-					{
-						if (!product.GetProductByID(globalVar, ormasDal, listItem.GetProductID(), errorMessage))
-							return false;
-						if (!pType.GetProductTypeByCode(globalVar, ormasDal, "PRODUCT", errorMessage))
-							return false;
-						if (product.GetProductTypeID() == pType.GetID())
+						if (0 != listItem.GetCount())
 						{
-							if (!nCost.GetNetCostByProductID(globalVar, ormasDal, listItem.GetProductID(), errorMessage))
-								return false;
-							companyID = product.GetCompanyID();
-							difference = listItem.GetCount()*nCost.GetValue() - listItem.GetSum();
-							if (difference > 0 && difference != 0)
+							nCost.Clear();
+							difference = 0;
+							if (!listItem.IsEmpty())
 							{
-								CompanyAccountRelation caRel;
-								int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
-								int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
-								if (0 == debAccID || 0 == credAccID)
-								{
+								errorMessage = "";
+
+								if (!nCost.GetNetCostByProductID(globalVar, ormasDal, listItem.GetProductID(), errorMessage))
 									return false;
-								}
-								if (!listItem.CreateEntry(globalVar, ormasDal, debAccID, difference, credAccID, errorMessage))
+								companyID = product.GetCompanyID();
+								difference = listItem.GetCount()*nCost.GetValue() - listItem.GetSum();
+								if (difference > 0 && difference != 0)
 								{
-									return false;
+									CompanyAccountRelation caRel;
+									int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
+									int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
+									if (0 == debAccID || 0 == credAccID)
+									{
+										return false;
+									}
+									if (!listItem.CreateEntry(globalVar, ormasDal, debAccID, difference, credAccID, errorMessage))
+									{
+										return false;
+									}
 								}
+								if (difference < 0 && difference != 0)
+								{
+									CompanyAccountRelation caRel;
+									int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
+									int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
+									if (0 == debAccID || 0 == credAccID)
+									{
+										return false;
+									}
+									if (!listItem.CreateEntry(globalVar, ormasDal, debAccID, difference * (-1), credAccID, errorMessage))
+									{
+										return false;
+									}
+								}
+								listItem.SetSum(listItem.GetCount()*nCost.GetValue());
+								if (!listItem.UpdateTransportList(globalVar, ormasDal, errorMessage))
+									return false;
+
 							}
-							if (difference < 0 && difference != 0)
-							{
-								CompanyAccountRelation caRel;
-								int debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
-								int credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10742", errorMessage);
-								if (0 == debAccID || 0 == credAccID)
-								{
-									return false;
-								}
-								if (!listItem.CreateEntry(globalVar, ormasDal, debAccID, difference * (-1), credAccID, errorMessage))
-								{
-									return false;
-								}
-							}
-							listItem.SetSum(listItem.GetCount()*nCost.GetValue());
-							if (!listItem.UpdateTransportList(globalVar, ormasDal, errorMessage))
-								return false;
+
+
 						}
+
 
 					}
 				}
 			}
+			
 		}
 		return true;
 	}
 
+	bool OrmasBL::CorrectingNetCostInConsumeProduct()
+	{
+		std::string errorMessage = "";
+		Product product;
+
+		Status status;
+		if (!status.GetStatusByName(globalVar, ormasDal, "CONSUMED", errorMessage))
+			return false;
+		ConsumeProduct conProd;
+		conProd.SetStatusID(status.GetID());
+		std::string filter = conProd.GenerateFilter(ormasDal);
+		std::vector<ConsumeProductView> consumeVector = this->GetAllDataForClass<ConsumeProductView>(errorMessage, filter);
+
+		if (consumeVector.size() > 0)
+		{
+			double sum = 0.0;
+			for each (auto consumeItem in consumeVector)
+			{
+				std::vector<ConsumeProductListView> consumeProductListVector;
+				ConsumeProductList trList;
+
+				product.Clear();
+				consumeProductListVector.clear();
+				trList.Clear();
+				filter.clear();
+				trList.SetConsumeProductID(consumeItem.GetID());
+				filter = trList.GenerateFilter(ormasDal);
+				consumeProductListVector = this->GetAllDataForClass<ConsumeProductListView>(errorMessage, filter);
+				if (consumeProductListVector.size() > 0)
+				{
+					NetCost nCost;
+
+					for each (auto listItem in consumeProductListVector)
+					{
+						if (0 != listItem.GetCount())
+						{
+							nCost.Clear();
+							if (!listItem.IsEmpty())
+							{
+								errorMessage = "";
+
+								if (!nCost.GetNetCostByProductID(globalVar, ormasDal, listItem.GetProductID(), errorMessage))
+									return false;
+								listItem.SetSum(listItem.GetCount()*nCost.GetValue());
+								sum += listItem.GetCount()*nCost.GetValue();
+								if (!listItem.UpdateConsumeProductList(globalVar, ormasDal, errorMessage))
+									return false;
+							}
+						}
+					}
+					consumeItem.SetSum(sum);
+					if (!consumeItem.UpdateConsumeProduct(globalVar, ormasDal, errorMessage))
+						return false;
+					sum = 0.0;
+				}
+			}
+		}
+		return true;
+
+	}
+
+	bool OrmasBL::CorrectingNetCostInStockTransfer()
+	{
+		std::string errorMessage = "";
+		Product product;
+
+		Status status;
+		if (!status.GetStatusByName(globalVar, ormasDal, "RECEIPTED", errorMessage))
+			return false;
+		StockTransfer stockTr;
+		stockTr.SetStatusID(status.GetID());
+		std::string filter = stockTr.GenerateFilter(ormasDal);
+		std::vector<StockTransferView> transferVector = this->GetAllDataForClass<StockTransferView>(errorMessage, filter);
+
+		if (transferVector.size() > 0)
+		{
+			double sum = 0.0;
+			for each (auto stockItem in transferVector)
+			{
+				std::vector<StockTransferListView> consumeTransferListVector;
+				StockTransferList tranList;
+
+				product.Clear();
+				consumeTransferListVector.clear();
+				tranList.Clear();
+				filter.clear();
+				tranList.SetStockTransferID(stockItem.GetID());
+				filter = tranList.GenerateFilter(ormasDal);
+				consumeTransferListVector = this->GetAllDataForClass<StockTransferListView>(errorMessage, filter);
+				if (consumeTransferListVector.size() > 0)
+				{
+					NetCost nCost;
+
+					for each (auto listItem in consumeTransferListVector)
+					{
+						if (0 != listItem.GetCount())
+						{
+							nCost.Clear();
+							if (!listItem.IsEmpty())
+							{
+								errorMessage = "";
+
+								if (!nCost.GetNetCostByProductID(globalVar, ormasDal, listItem.GetProductID(), errorMessage))
+									return false;
+								listItem.SetSum(listItem.GetCount()*nCost.GetValue());
+								sum += listItem.GetCount()*nCost.GetValue();
+								if (!listItem.UpdateStockTransferList(globalVar, ormasDal, errorMessage))
+									return false;
+							}
+						}
+					}
+					stockItem.SetSum(sum);
+					if (!stockItem.UpdateStockTransfer(globalVar, ormasDal, errorMessage))
+						return false;
+					sum = 0.0;
+				}
+			}
+		}
+		return true;
+
+	}
+
+	bool OrmasBL::ConsumeDocSetError()
+	{
+		std::string errorMessage = "";
+		Status status;
+		if (!status.GetStatusByName(globalVar, ormasDal, "CONSUMED", errorMessage))
+			return false;
+		ConsumeProduct conProd;
+		conProd.SetStatusID(status.GetID());
+		std::string filter = conProd.GenerateFilter(ormasDal);
+		std::vector<ConsumeProductView> consumeVector = this->GetAllDataForClass<ConsumeProductView>(errorMessage, filter);
+
+		if (consumeVector.size() > 0)
+		{
+			status.Clear();
+			if(!status.GetStatusByName(globalVar, ormasDal, "ERROR", errorMessage))
+				return false;
+
+			for each (auto listItem in consumeVector)
+			{
+				conProd.Clear();
+				if (!conProd.GetConsumeProductByID(globalVar, ormasDal, listItem.GetID(), errorMessage))
+					return false;
+				
+				conProd.SetStatusID(status.GetID());
+
+				if (!conProd.SimpleUpdateConsumeProduct(globalVar, ormasDal, errorMessage))
+					return false;
+			}
+		}
+		return true;
+
+	}
+
+	
 	bool OrmasBL::GenerateReports(std::string fromDate, std::string tillDate)
 	{
 		std::string errorMessage = "";
@@ -12503,6 +16493,10 @@ namespace BusinessLayer{
 
 	bool OrmasBL::CalculateCloseOfMonth(std::string fromDate, std::string tillDate)
 	{
+		std::vector<DataLayer::subaccountsViewCollection> subaccountVector;
+		Subaccount subaccount;
+		std::string subFilter = "";
+		Account account;
 		//save state of accounts
 		std::string errorMessage = "";
 		std::vector<Account> vecForAccount;
@@ -12532,29 +16526,84 @@ namespace BusinessLayer{
 				}
 				else
 				{
+					account.Clear();
 					if (item.GetCurrentBalance() > 0)
 					{
-						entry.Clear();
-						entry.SetID(ormasDal.GenerateID());
-						entry.SetDebitingAccountID(acc70000);
-						entry.SetValue(item.GetCurrentBalance());
-						entry.SetCreditingAccountID(item.GetID());
-						entry.SetDate(ormasDal.GetSystemDateTime());
-						entry.SetDescription(wstring_to_utf8(L"Закрытие счетов на конец месяца"));
-						if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
-							return false;
+						if (account.HaveSubaccount(globalVar, ormasDal, item.GetID()))
+						{
+							subaccountVector.clear();
+							subaccount.Clear();
+							subFilter.clear();
+							subaccount.SetParentAccountID(item.GetID());
+							subFilter = subaccount.GenerateFilter(ormasDal);
+							std::vector<DataLayer::subaccountsViewCollection> subaccountVector = ormasDal.GetSubaccounts(errorMessage, subFilter);
+							if (0 < subaccountVector.size())
+							{
+								for each (auto subItem in subaccountVector)
+								{
+									entry.Clear();
+									entry.SetID(ormasDal.GenerateID());
+									entry.SetDebitingAccountID(acc70000);
+									entry.SetValue(std::get<5>(subItem));
+									entry.SetCreditingAccountID(std::get<0>(subItem));
+									entry.SetDate(ormasDal.GetSystemDateTime());
+									entry.SetDescription(wstring_to_utf8(L"Закрытие счетов на конец месяца"));
+									if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
+										return false;
+								}
+							}
+						}
+						else
+						{
+							entry.Clear();
+							entry.SetID(ormasDal.GenerateID());
+							entry.SetDebitingAccountID(acc70000);
+							entry.SetValue(item.GetCurrentBalance());
+							entry.SetCreditingAccountID(item.GetID());
+							entry.SetDate(ormasDal.GetSystemDateTime());
+							entry.SetDescription(wstring_to_utf8(L"Закрытие счетов на конец месяца"));
+							if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
+								return false;
+						}
 					}
 					else if (item.GetCurrentBalance() < 0)
 					{
-						entry.Clear();
-						entry.SetID(ormasDal.GenerateID());
-						entry.SetDebitingAccountID(item.GetID());
-						entry.SetValue(item.GetCurrentBalance() * (-1));
-						entry.SetCreditingAccountID(acc70000);
-						entry.SetDate(ormasDal.GetSystemDateTime());
-						entry.SetDescription(wstring_to_utf8(L"Закрытие счетов на конец месяца"));
-						if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
-							return false;
+						if (account.HaveSubaccount(globalVar, ormasDal, item.GetID()))
+						{
+							subaccountVector.clear();
+							subaccount.Clear();
+							subFilter.clear();
+							subaccount.SetParentAccountID(item.GetID());
+							subFilter = subaccount.GenerateFilter(ormasDal);
+							std::vector<DataLayer::subaccountsViewCollection> subaccountVector = ormasDal.GetSubaccounts(errorMessage, subFilter);
+							if (0 < subaccountVector.size())
+							{
+								for each (auto subItem in subaccountVector)
+								{
+									entry.Clear();
+									entry.SetID(ormasDal.GenerateID());
+									entry.SetDebitingAccountID(std::get<0>(subItem));
+									entry.SetValue(std::get<5>(subItem) * (-1));
+									entry.SetCreditingAccountID(acc70000);
+									entry.SetDate(ormasDal.GetSystemDateTime());
+									entry.SetDescription(wstring_to_utf8(L"Закрытие счетов на конец месяца"));
+									if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
+										return false;
+								}
+							}
+						}
+						else
+						{
+							entry.Clear();
+							entry.SetID(ormasDal.GenerateID());
+							entry.SetDebitingAccountID(item.GetID());
+							entry.SetValue(item.GetCurrentBalance() * (-1));
+							entry.SetCreditingAccountID(acc70000);
+							entry.SetDate(ormasDal.GetSystemDateTime());
+							entry.SetDescription(wstring_to_utf8(L"Закрытие счетов на конец месяца"));
+							if (!entry.CreateEntry(globalVar, ormasDal, errorMessage))
+								return false;
+						}
 					}
 				}
 			}

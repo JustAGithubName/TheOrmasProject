@@ -777,9 +777,9 @@ namespace BusinessLayer
 			}
 		}
 
-		if (std::round(sum * 10) / 10 != std::round(checkSum * 10) / 10
-			|| std::round(count * 10) / 10 != std::round(checkCount * 10) / 10)
+		if (fabs(sum - checkSum) > 0.01 || fabs(count - checkCount) > 0.01)
 			return false;
+			
 		return true;
 	}
 }

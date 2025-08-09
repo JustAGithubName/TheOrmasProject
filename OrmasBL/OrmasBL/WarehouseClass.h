@@ -50,6 +50,7 @@ namespace BusinessLayer{
 		virtual std::string GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> wIDList);
 		bool GetWarehouseByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cID, std::string& errorMessage);
 		int GetWarehouseID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		int GetWarehouseIDByUserIDAndTypeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int userID, int typeID, std::string& errorMessage);
 		std::vector<int>  GetAllWarehouseIDByTypeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int tID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();

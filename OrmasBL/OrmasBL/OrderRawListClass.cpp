@@ -7,6 +7,8 @@
 #include "CompanyClass.h"
 #include "WarehouseClass.h"
 #include "WarehouseEmployeeRelationClass.h"
+#include "CurrencyClass.h"
+#include "CurrencyRateClass.h"
 #include <codecvt>
 
 
@@ -91,69 +93,6 @@ namespace BusinessLayer
 	bool OrderRawList::CreateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 		int sID, int cID, std::string& errorMessage)
 	{
-		int subAccID = GetSubaccountIDForEmployee(globalVar, ormasDal, errorMessage);
-		if (0 == subAccID)
-			return false;
-		Product product;
-		if (!product.GetProductByID(globalVar, ormasDal, pID, errorMessage))
-			return false;
-		if (product.GetPrice()*olCount > olSum || product.GetPrice()*olCount < olSum)
-		{
-			double newPrice = 0;
-			newPrice = round(olSum / olCount * 1000) / 1000;
-			if (newPrice != product.GetPrice())
-			{
-				product.SetPrice(newPrice);
-				if (!product.UpdateProduct(globalVar, ormasDal,errorMessage))
-					return false;
-				double correctionValue = 0;
-				correctionValue = round((newPrice*olCount - olSum) * 1000) / 1000;
-				if (correctionValue != 0)
-				{
-					int companyID = product.GetCompanyID();
-					int debAccID = 0;
-					int credAccID = 0;
-					CompanyAccountRelation caRel;
-					Entry entry;
-					if (correctionValue > 0)
-					{
-						debAccID = subAccID;
-						credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
-						entry.SetValue(correctionValue);
-					}
-					if (correctionValue < 0)
-					{
-						debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
-						credAccID = subAccID;
-						entry.SetValue(correctionValue* (-1));
-					}
-					if (0 == debAccID || 0 == credAccID)
-						return false;
-					entry.SetDate(ormasDal.GetSystemDateTime());
-					entry.SetDebitingAccountID(debAccID);
-					entry.SetCreditingAccountID(credAccID);
-					std::string entrytext;
-					entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
-					entrytext += product.GetName();
-					entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
-					entry.SetDescription(entrytext);
-					EntryOperationRelation eoRelation;
-					if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
-					{
-						eoRelation.SetEntryID(entry.GetID());
-						eoRelation.SetOperationID(id);
-						if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
-						{
-							return false;
-						}
-					}
-					else
-					{
-						return false;
-					}
-				}
-			}
-		}
 		id = ormasDal.GenerateID();
 		orderRawID = oID;
 		productID = pID;
@@ -161,78 +100,499 @@ namespace BusinessLayer
 		sum = olSum;
 		statusID = sID;
 		currencyID = cID;
+		
+		
+		int subAccID = GetSubaccountIDForEmployee(globalVar, ormasDal, errorMessage);
+		if (0 == subAccID)
+			return false;
+		Product product;
+		if (!product.GetProductByID(globalVar, ormasDal, pID, errorMessage))
+			return false;
+		Currency currency;
+		CurrencyRate currencyRate;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
+		if (mainCurID == cID)
+		{
+			if (product.GetPrice()*olCount > olSum || product.GetPrice()*olCount < olSum)
+			{
+				double newPrice = 0;
+				newPrice = round(olSum / olCount * 1000) / 1000;
+				if (newPrice != product.GetPrice())
+				{
+					product.SetPrice(newPrice);
+					if (!product.UpdateProduct(globalVar, ormasDal, errorMessage))
+						return false;
+					double correctionValue = 0;
+					correctionValue = round((newPrice*olCount - olSum) * 1000) / 1000;
+					if (correctionValue != 0)
+					{
+						int companyID = product.GetCompanyID();
+						int debAccID = 0;
+						int credAccID = 0;
+						CompanyAccountRelation caRel;
+						Entry entry;
+						if (correctionValue > 0)
+						{
+							debAccID = subAccID;
+							credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							entry.SetValue(correctionValue);
+						}
+						if (correctionValue < 0)
+						{
+							debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							credAccID = subAccID;
+							entry.SetValue(correctionValue* (-1));
+						}
+						if (0 == debAccID || 0 == credAccID)
+							return false;
+						entry.SetDate(ormasDal.GetSystemDateTime());
+						entry.SetDebitingAccountID(debAccID);
+						entry.SetCreditingAccountID(credAccID);
+						std::string entrytext;
+						entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
+						entrytext += product.GetName();
+						entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
+						entry.SetDescription(entrytext);
+						EntryOperationRelation eoRelation;
+						if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+						{
+							eoRelation.SetEntryID(entry.GetID());
+							eoRelation.SetOperationID(orderRawID);
+							if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+							{
+								return false;
+							}
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
+				else if (fabs(product.GetPrice()*count - sum) > 0.01)
+				{
+					double correctionValue = 0;
+					correctionValue = round((product.GetPrice()*count - sum) * 1000) / 1000;
+					if (correctionValue != 0)
+					{
+						int companyID = product.GetCompanyID();
+						int debAccID = 0;
+						int credAccID = 0;
+						CompanyAccountRelation caRel;
+						Entry entry;
+						if (correctionValue > 0)
+						{
+							debAccID = subAccID;
+							credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							entry.SetValue(correctionValue);
+						}
+						if (correctionValue < 0)
+						{
+							debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							credAccID = subAccID;
+							entry.SetValue(correctionValue* (-1));
+						}
+						if (0 == debAccID || 0 == credAccID)
+							return false;
+						entry.SetDate(ormasDal.GetSystemDateTime());
+						entry.SetDebitingAccountID(debAccID);
+						entry.SetCreditingAccountID(credAccID);
+						std::string entrytext;
+						entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
+						entrytext += product.GetName();
+						entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
+						entry.SetDescription(entrytext);
+						EntryOperationRelation eoRelation;
+						if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+						{
+							eoRelation.SetEntryID(entry.GetID());
+							eoRelation.SetOperationID(orderRawID);
+							if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+							{
+								return false;
+							}
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			currency.Clear();
+			if (!currency.GetCurrencyByID(globalVar, ormasDal, cID, errorMessage))
+				return false;
+			if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currency.GetID(), errorMessage))
+				return false;
+			if (product.GetPrice()*olCount > olSum*currencyRate.GetToValue() / currencyRate.GetFromValue() || product.GetPrice()*olCount < olSum*currencyRate.GetToValue() / currencyRate.GetFromValue())
+			{
+				double newPrice = 0;
+				newPrice = round(olSum*currencyRate.GetToValue() / currencyRate.GetFromValue() / olCount * 1000) / 1000;
+				if (newPrice != product.GetPrice())
+				{
+					product.SetPrice(newPrice);
+					if (!product.UpdateProduct(globalVar, ormasDal, errorMessage))
+						return false;
+					double correctionValue = 0;
+					correctionValue = round((newPrice*olCount - olSum*currencyRate.GetToValue() / currencyRate.GetFromValue()) * 1000) / 1000;
+					if (correctionValue != 0)
+					{
+						int companyID = product.GetCompanyID();
+						int debAccID = 0;
+						int credAccID = 0;
+						CompanyAccountRelation caRel;
+						Entry entry;
+						if (correctionValue > 0)
+						{
+							debAccID = subAccID;
+							credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							entry.SetValue(correctionValue);
+						}
+						if (correctionValue < 0)
+						{
+							debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							credAccID = subAccID;
+							entry.SetValue(correctionValue* (-1));
+						}
+						if (0 == debAccID || 0 == credAccID)
+							return false;
+						entry.SetDate(ormasDal.GetSystemDateTime());
+						entry.SetDebitingAccountID(debAccID);
+						entry.SetCreditingAccountID(credAccID);
+						std::string entrytext;
+						entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
+						entrytext += product.GetName();
+						entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
+						entry.SetDescription(entrytext);
+						EntryOperationRelation eoRelation;
+						if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+						{
+							eoRelation.SetEntryID(entry.GetID());
+							eoRelation.SetOperationID(orderRawID);
+							if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+							{
+								return false;
+							}
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
+				else if (fabs(product.GetPrice()*count - sum*currencyRate.GetToValue() / currencyRate.GetFromValue()) > 0.01)
+				{
+					double correctionValue = 0;
+					correctionValue = round((product.GetPrice()*count - sum*currencyRate.GetToValue() / currencyRate.GetFromValue()) * 1000) / 1000;
+					if (correctionValue != 0)
+					{
+						int companyID = product.GetCompanyID();
+						int debAccID = 0;
+						int credAccID = 0;
+						CompanyAccountRelation caRel;
+						Entry entry;
+						if (correctionValue > 0)
+						{
+							debAccID = subAccID;
+							credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							entry.SetValue(correctionValue);
+						}
+						if (correctionValue < 0)
+						{
+							debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							credAccID = subAccID;
+							entry.SetValue(correctionValue* (-1));
+						}
+						if (0 == debAccID || 0 == credAccID)
+							return false;
+						entry.SetDate(ormasDal.GetSystemDateTime());
+						entry.SetDebitingAccountID(debAccID);
+						entry.SetCreditingAccountID(credAccID);
+						std::string entrytext;
+						entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
+						entrytext += product.GetName();
+						entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
+						entry.SetDescription(entrytext);
+						EntryOperationRelation eoRelation;
+						if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+						{
+							eoRelation.SetEntryID(entry.GetID());
+							eoRelation.SetOperationID(orderRawID);
+							if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+							{
+								return false;
+							}
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
+			}
+			if (!ormasDal.CreateOrderRawList(ormasDal.GenerateID(), orderRawID, productID, count, sum* currencyRate.GetToValue() / currencyRate.GetFromValue(), statusID, mainCurID, errorMessage))
+			{
+				return false;
+			}
+		}
+		
 		if (0 != id && ormasDal.CreateOrderRawList(id, orderRawID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
+	
 	bool OrderRawList::CreateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
+		id = ormasDal.GenerateID();
+
 		int subAccID = GetSubaccountIDForEmployee(globalVar, ormasDal, errorMessage);
 		if (0 == subAccID)
 			return false;
 		Product product;
 		if (!product.GetProductByID(globalVar, ormasDal, productID, errorMessage))
 			return false;
-		if (product.GetPrice()*count > sum || product.GetPrice()*count < sum)
+		Currency currency;
+		CurrencyRate currencyRate;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
+		if (mainCurID == currencyID)
 		{
-			double newPrice = 0;
-			newPrice = round(sum / count * 1000) / 1000;
-			if (newPrice != product.GetPrice())
+			if (product.GetPrice()*count > sum || product.GetPrice()*count < sum)
 			{
-				product.SetPrice(newPrice);
-				if (!product.UpdateProduct(globalVar, ormasDal, errorMessage))
-					return false;
-				double correctionValue = 0;
-				correctionValue = round((newPrice*count - sum) * 1000) / 1000;
-				if (correctionValue != 0)
+				double newPrice = 0;
+				newPrice = round(sum / count * 1000) / 1000;
+				if (newPrice != product.GetPrice())
 				{
-					int companyID = product.GetCompanyID();
-					int debAccID = 0;
-					int credAccID = 0;
-					CompanyAccountRelation caRel;
-					Entry entry;
-					if (correctionValue > 0)
-					{
-						debAccID = subAccID;
-						credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
-						entry.SetValue(correctionValue);
-					}
-					if (correctionValue < 0)
-					{
-						debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
-						credAccID = subAccID;
-						entry.SetValue(correctionValue* (-1));
-					}
-					if (0 == debAccID || 0 == credAccID)
+					product.SetPrice(newPrice);
+					if (!product.UpdateProduct(globalVar, ormasDal, errorMessage))
 						return false;
-					entry.SetDate(ormasDal.GetSystemDateTime());
-					entry.SetDebitingAccountID(debAccID);
-					entry.SetCreditingAccountID(credAccID);
-					std::string entrytext;
-					entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
-					entrytext += product.GetName();
-					entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
-					entry.SetDescription(entrytext);
-					EntryOperationRelation eoRelation;
-					if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+					double correctionValue = 0;
+					correctionValue = round((newPrice*count - sum) * 1000) / 1000;
+					if (correctionValue != 0)
 					{
-						eoRelation.SetEntryID(entry.GetID());
-						eoRelation.SetOperationID(id);
-						if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+						int companyID = product.GetCompanyID();
+						int debAccID = 0;
+						int credAccID = 0;
+						CompanyAccountRelation caRel;
+						Entry entry;
+						if (correctionValue > 0)
+						{
+							debAccID = subAccID;
+							credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							entry.SetValue(correctionValue);
+						}
+						if (correctionValue < 0)
+						{
+							debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							credAccID = subAccID;
+							entry.SetValue(correctionValue* (-1));
+						}
+						if (0 == debAccID || 0 == credAccID)
+							return false;
+						entry.SetDate(ormasDal.GetSystemDateTime());
+						entry.SetDebitingAccountID(debAccID);
+						entry.SetCreditingAccountID(credAccID);
+						std::string entrytext;
+						entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
+						entrytext += product.GetName();
+						entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
+						entry.SetDescription(entrytext);
+						EntryOperationRelation eoRelation;
+						if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+						{
+							eoRelation.SetEntryID(entry.GetID());
+							eoRelation.SetOperationID(orderRawID);
+							if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+							{
+								return false;
+							}
+						}
+						else
 						{
 							return false;
 						}
 					}
-					else
+				}
+				else if (fabs(product.GetPrice()*count - sum) > 0.01)
+				{
+					double correctionValue = 0;
+					correctionValue = round((product.GetPrice()*count - sum) * 1000) / 1000;
+					if (correctionValue != 0)
 					{
-						return false;
+						int companyID = product.GetCompanyID();
+						int debAccID = 0;
+						int credAccID = 0;
+						CompanyAccountRelation caRel;
+						Entry entry;
+						if (correctionValue > 0)
+						{
+							debAccID = subAccID;
+							credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							entry.SetValue(correctionValue);
+						}
+						if (correctionValue < 0)
+						{
+							debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							credAccID = subAccID;
+							entry.SetValue(correctionValue* (-1));
+						}
+						if (0 == debAccID || 0 == credAccID)
+							return false;
+						entry.SetDate(ormasDal.GetSystemDateTime());
+						entry.SetDebitingAccountID(debAccID);
+						entry.SetCreditingAccountID(credAccID);
+						std::string entrytext;
+						entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
+						entrytext += product.GetName();
+						entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
+						entry.SetDescription(entrytext);
+						EntryOperationRelation eoRelation;
+						if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+						{
+							eoRelation.SetEntryID(entry.GetID());
+							eoRelation.SetOperationID(orderRawID);
+							if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+							{
+								return false;
+							}
+						}
+						else
+						{
+							return false;
+						}
 					}
 				}
 			}
 		}
-		id = ormasDal.GenerateID();
+		else
+		{
+			currency.Clear();
+			if (!currency.GetCurrencyByID(globalVar, ormasDal, currencyID, errorMessage))
+				return false;
+			if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currency.GetID(), errorMessage))
+				return false;
+			if (product.GetPrice()*count > sum*currencyRate.GetToValue() / currencyRate.GetFromValue() || product.GetPrice()*count < sum*currencyRate.GetToValue() / currencyRate.GetFromValue())
+			{
+				double newPrice = 0;
+				newPrice = round(sum*currencyRate.GetToValue() / currencyRate.GetFromValue() / count * 1000) / 1000;
+				if (newPrice != product.GetPrice())
+				{
+					product.SetPrice(newPrice);
+					if (!product.UpdateProduct(globalVar, ormasDal, errorMessage))
+						return false;
+					double correctionValue = 0;
+					correctionValue = round((newPrice*count - sum*currencyRate.GetToValue() / currencyRate.GetFromValue()) * 1000) / 1000;
+					if (correctionValue != 0)
+					{
+						int companyID = product.GetCompanyID();
+						int debAccID = 0;
+						int credAccID = 0;
+						CompanyAccountRelation caRel;
+						Entry entry;
+						if (correctionValue > 0)
+						{
+							debAccID = subAccID;
+							credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							entry.SetValue(correctionValue);
+						}
+						if (correctionValue < 0)
+						{
+							debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							credAccID = subAccID;
+							entry.SetValue(correctionValue* (-1));
+						}
+						if (0 == debAccID || 0 == credAccID)
+							return false;
+						entry.SetDate(ormasDal.GetSystemDateTime());
+						entry.SetDebitingAccountID(debAccID);
+						entry.SetCreditingAccountID(credAccID);
+						std::string entrytext;
+						entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
+						entrytext += product.GetName();
+						entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
+						entry.SetDescription(entrytext);
+						EntryOperationRelation eoRelation;
+						if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+						{
+							eoRelation.SetEntryID(entry.GetID());
+							eoRelation.SetOperationID(orderRawID);
+							if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+							{
+								return false;
+							}
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
+				else if (fabs(product.GetPrice()*count - sum*currencyRate.GetToValue() / currencyRate.GetFromValue()) > 0.01)
+				{
+					double correctionValue = 0;
+					correctionValue = round((product.GetPrice()*count - sum*currencyRate.GetToValue() / currencyRate.GetFromValue()) * 1000) / 1000;
+					if (correctionValue != 0)
+					{
+						int companyID = product.GetCompanyID();
+						int debAccID = 0;
+						int credAccID = 0;
+						CompanyAccountRelation caRel;
+						Entry entry;
+						if (correctionValue > 0)
+						{
+							debAccID = subAccID;
+							credAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							entry.SetValue(correctionValue);
+						}
+						if (correctionValue < 0)
+						{
+							debAccID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "10730", errorMessage);
+							credAccID = subAccID;
+							entry.SetValue(correctionValue* (-1));
+						}
+						if (0 == debAccID || 0 == credAccID)
+							return false;
+						entry.SetDate(ormasDal.GetSystemDateTime());
+						entry.SetDebitingAccountID(debAccID);
+						entry.SetCreditingAccountID(credAccID);
+						std::string entrytext;
+						entrytext += wstring_to_utf8(L"Коррекция суммы продукта \"");
+						entrytext += product.GetName();
+						entrytext += wstring_to_utf8(L"\". Округление цены продукта для точности суммы на складе.");
+						entry.SetDescription(entrytext);
+						EntryOperationRelation eoRelation;
+						if (entry.CreateEntry(globalVar, ormasDal, errorMessage))
+						{
+							eoRelation.SetEntryID(entry.GetID());
+							eoRelation.SetOperationID(orderRawID);
+							if (!eoRelation.CreateEntryOperationRelation(globalVar, ormasDal, errorMessage))
+							{
+								return false;
+							}
+						}
+						else
+						{
+							return false;
+						}
+					}
+				}
+			}
+			if (!ormasDal.CreateOrderRawList(ormasDal.GenerateID(), orderRawID, productID, count, sum* currencyRate.GetToValue() / currencyRate.GetFromValue(), statusID, mainCurID, errorMessage))
+			{
+				return false;
+			}
+		}
+	
 		if (0 != id && ormasDal.CreateOrderRawList(id, orderRawID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
 			return true;
@@ -268,13 +628,119 @@ namespace BusinessLayer
 		sum = olSum;
 		statusID = sID;
 		currencyID = cID;
+
+		Currency currency;
+		CurrencyRate currencyRate;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
+
+		if (0 != id && ormasDal.UpdateOrderRawList(id, orderRawID, productID, count, sum, statusID, currencyID, errorMessage))
+		{
+			if (mainCurID = !currencyID)
+			{
+				currency.Clear();
+				if (!currency.GetCurrencyByID(globalVar, ormasDal, currencyID, errorMessage))
+					return false;
+				if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currency.GetID(), errorMessage))
+					return false;
+
+				OrderRawList oList;
+				oList.SetProductID(productID);
+				oList.SetOrderRawID(orderRawID);
+				oList.SetCurrencyID(mainCurID);
+				std::string filter = oList.GenerateFilter(ormasDal);
+				std::vector<DataLayer::orderRawListViewCollection> orderRawListVector = ormasDal.GetOrderRawList(errorMessage, filter);
+				if (0 != orderRawListVector.size())
+				{
+					int mID = std::get<0>(orderRawListVector.at(0));
+					int mOrderRawID = std::get<1>(orderRawListVector.at(0));
+					double mOount = std::get<7>(orderRawListVector.at(0));
+					double mSum = std::get<8>(orderRawListVector.at(0));
+					int mProductID = std::get<11>(orderRawListVector.at(0));
+					int mStatusID = std::get<12>(orderRawListVector.at(0));
+					int mCurrencyID = std::get<13>(orderRawListVector.at(0));
+					if (!ormasDal.UpdateOrderRawList(mID, mOrderRawID, mProductID, count, sum * currencyRate.GetToValue() / currencyRate.GetFromValue(), mStatusID, mCurrencyID, errorMessage))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	bool OrderRawList::UpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
+	{
+		Currency currency;
+		CurrencyRate currencyRate;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
+
+		if (0 != id && ormasDal.UpdateOrderRawList(id, orderRawID, productID, count, sum, statusID, currencyID, errorMessage))
+		{
+			if (mainCurID = !currencyID)
+			{
+				currency.Clear();
+				if (!currency.GetCurrencyByID(globalVar, ormasDal, currencyID, errorMessage))
+					return false;
+				if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currency.GetID(), errorMessage))
+					return false;
+
+				OrderRawList oList;
+				oList.SetProductID(productID);
+				oList.SetOrderRawID(orderRawID);
+				oList.SetCurrencyID(mainCurID);
+				std::string filter = oList.GenerateFilter(ormasDal);
+				std::vector<DataLayer::orderRawListViewCollection> orderRawListVector = ormasDal.GetOrderRawList(errorMessage, filter);
+				if (0 != orderRawListVector.size())
+				{
+					int mID = std::get<0>(orderRawListVector.at(0));
+					int mOrderRawID = std::get<1>(orderRawListVector.at(0));
+					double mOount = std::get<7>(orderRawListVector.at(0));
+					double mSum = std::get<8>(orderRawListVector.at(0));
+					int mProductID = std::get<11>(orderRawListVector.at(0));
+					int mStatusID = std::get<12>(orderRawListVector.at(0));
+					int mCurrencyID = std::get<13>(orderRawListVector.at(0));
+					if (!ormasDal.UpdateOrderRawList(mID, mOrderRawID, mProductID, count, sum * currencyRate.GetToValue() / currencyRate.GetFromValue(), mStatusID, mCurrencyID, errorMessage))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	bool OrderRawList::SimpleUpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
+		int sID, int cID, std::string& errorMessage)
+	{
+		orderRawID = oID;
+		productID = pID;
+		count = olCount;
+		sum = olSum;
+		statusID = sID;
+		currencyID = cID;
+
 		if (0 != id && ormasDal.UpdateOrderRawList(id, orderRawID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
 			return true;
 		}
 		return false;
 	}
-	bool OrderRawList::UpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
+	bool OrderRawList::SimpleUpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		if (0 != id && ormasDal.UpdateOrderRawList(id, orderRawID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
@@ -398,4 +864,6 @@ namespace BusinessLayer
 			return 0;
 		return warehouse.GetSubaccountID();
 	}
+
+	
 }

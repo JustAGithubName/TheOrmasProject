@@ -169,7 +169,7 @@ void GenerateProfRep::Generate()
 	BusinessLayer::Order order;
 	order.SetStatusID(status.GetID());
 	std::string filter = order.GenerateFilterForPeriod(dialogBL->globalVar, dialogBL->GetOrmasDal(), fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData());
-	std::vector<BusinessLayer::OrderView> vecOrder = dialogBL->GetAllDataForClass<BusinessLayer::OrderView>(errorMessage, filter);
+	std::vector<BusinessLayer::OrderView> vecOrder = dialogBL->GetAllDataForClass<BusinessLayer::OrderView>(0,0,errorMessage, filter);
 	if (vecOrder.size() == 0)
 	{
 		QMessageBox::information(NULL, QString(tr("Info")),

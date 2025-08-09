@@ -4,6 +4,53 @@
 #include "DocForm.h"
 #include "GenerateAccRepDlg.h"
 #include "GenerateWTBSDlg.h"
+#include <algorithm>
+
+class OneAccCardViewClass{
+public:
+	std::string date;
+	std::string description;
+	double startSaldo;
+	std::string debitAccNumber;
+	double debit;
+	double credit;
+	std::string creditAccNumber;
+	double endSaldo;
+	int operationID;
+	int accountID;
+	int entryID;
+	
+	friend bool operator<(const OneAccCardViewClass& lhObj, const OneAccCardViewClass& rhObj)
+	{
+		QDate lh, rh;
+		lh = QDate::fromString(lhObj.date.c_str(), "dd.MM.yyyy");
+		rh = QDate::fromString(rhObj.date.c_str(), "dd.MM.yyyy");
+		if (lh == rh)
+			return lhObj.entryID < rhObj.entryID;
+		return lh < rh;
+	};
+
+	bool Clear();
+	
+};
+
+
+
+bool OneAccCardViewClass::Clear()
+{
+	date ="";
+	description="";
+	startSaldo = 0.0;
+	debitAccNumber="";
+	debit = 0.0;
+	credit = 0.0;
+	creditAccNumber = "";
+	endSaldo = 0.0;
+	operationID = 0;
+	accountID = 0;
+	entryID = 0;
+	return true;
+};
 
 ReportForm::ReportForm(BusinessLayer::OrmasBL *ormasBL, QWidget *parent) :QWidget(parent)
 {
@@ -2039,6 +2086,10 @@ void ReportForm::FillSubaccCrdTable(std::string fDate, std::string tDate, std::v
 	itemModel->setHorizontalHeaderLabels(header);
 	tableView->setModel(itemModel);
 
+
+	header << QObject::tr("Subaccount ID") << QObject::tr("Subaccount number") << QObject::tr("Start saldo")
+		<< QObject::tr("Debit") << QObject::tr("Credit") << QObject::tr("End saldo");
+
 	for each (auto subaccIDItem in subAccIDVec)
 	{
 		subacc.Clear();
@@ -2141,10 +2192,8 @@ void ReportForm::FillSubaccCrdTable(std::string fDate, std::string tDate, std::v
 		}
 		
 		if (vecSubAccHistory.size() == 0 && vecSubAccLog.size() == 0)
-			return;
+			continue;
 
-		header << QObject::tr("Subaccount ID") << QObject::tr("Subaccount number") << QObject::tr("Start saldo")
-			<< QObject::tr("Debit") << QObject::tr("Credit") << QObject::tr("End saldo");
 
 		wtosItem << new QStandardItem(QString::number(subacc.GetID()))
 			<< new QStandardItem(subacc.GetNumber().c_str());
@@ -2282,7 +2331,7 @@ void ReportForm::FillAccCrdTable(std::string fDate, std::string tDate, int accID
 		}
 		else
 		{
-			if (acc.GetNumber().substr(3, 2) != "00")
+			if (acc.GetNumber().substr(3, 2) != "00" || acc.GetNumber().substr(0, 4) == "7000")
 			{
 				this->setObjectName("OneAccCrd");
 				accHistoryEnd.Clear();
@@ -2345,43 +2394,92 @@ void ReportForm::FillAccCrdTable(std::string fDate, std::string tDate, int accID
 
 				int count = 0;
 
+				std::vector<OneAccCardViewClass> vecOneCard;
+				OneAccCardViewClass oneAccCard;
 				for each (auto  debit in vecSubEntryDeb)
 				{
-					wtosItem << new QStandardItem(debit.GetDate().c_str())
-						<< new QStandardItem(debit.GetDescription().c_str())
-						<< new QStandardItem("")
-						<< new QStandardItem(debit.GetDebitingAccountNumber().c_str())
-						<< new QStandardItem(QString::number(debit.GetValue(), 'f', 3))
-						<< new QStandardItem("")
-						<< new QStandardItem(debit.GetCreditingAccountNumber().c_str())
-						<< new QStandardItem("")
-						<< new QStandardItem(QString::number(debit.GetOperationID()))
-						<< new QStandardItem("");
-					itemModel = (QStandardItemModel *)this->tableView->model();
-					itemModel->appendRow(wtosItem);
-					wtosItem.clear();
+					oneAccCard.Clear();
+					oneAccCard.date = debit.GetDate().c_str();
+					oneAccCard.description = debit.GetDescription().c_str();
+					oneAccCard.startSaldo = 0.0;
+					oneAccCard.debitAccNumber = debit.GetDebitingAccountNumber().c_str();
+					oneAccCard.debit =debit.GetValue();
+					oneAccCard.credit = 0.0;
+					oneAccCard.creditAccNumber = debit.GetCreditingAccountNumber().c_str();
+					oneAccCard.endSaldo = 0.0;
+					oneAccCard.operationID = debit.GetOperationID();
+					oneAccCard.accountID = 0;
+					oneAccCard.entryID = debit.GetID();
+
+					vecOneCard.push_back(oneAccCard);
+
 					debSum += debit.GetValue();
 					count++;
 				}
 
 				for each (auto  credit in vecSubEntryCred)
 				{
-					wtosItem << new QStandardItem(credit.GetDate().c_str())
-						<< new QStandardItem(credit.GetDescription().c_str())
-						<< new QStandardItem("")
-						<< new QStandardItem(credit.GetDebitingAccountNumber().c_str())
-						<< new QStandardItem("")
-						<< new QStandardItem(QString::number(credit.GetValue(), 'f', 3))
-						<< new QStandardItem(credit.GetCreditingAccountNumber().c_str())
-						<< new QStandardItem("")
-						<< new QStandardItem(QString::number(credit.GetOperationID()));
-					itemModel = (QStandardItemModel *)this->tableView->model();
-					itemModel->appendRow(wtosItem);
-					wtosItem.clear();
+					oneAccCard.Clear();
+					oneAccCard.date = credit.GetDate().c_str();
+					oneAccCard.description = credit.GetDescription().c_str();
+					oneAccCard.startSaldo = 0.0;
+					oneAccCard.debitAccNumber = credit.GetDebitingAccountNumber().c_str();
+					oneAccCard.debit = 0.0;
+					oneAccCard.credit = credit.GetValue();
+					oneAccCard.creditAccNumber = credit.GetCreditingAccountNumber().c_str();
+					oneAccCard.endSaldo = 0.0;
+					oneAccCard.operationID = credit.GetOperationID();
+					oneAccCard.accountID = 0;
+					oneAccCard.entryID = credit.GetID();
+
+					vecOneCard.push_back(oneAccCard);
+
 					credSum += credit.GetValue();
 					count++;
 				}
-				this->tableView->model()->sort(0);
+
+				std::sort(vecOneCard.begin(), vecOneCard.end(), [&](const OneAccCardViewClass& lh, const OneAccCardViewClass& rh)
+				{
+					return lh < rh;
+				});
+
+				for each (auto  item in vecOneCard)
+				{
+					if (item.debit>0)
+					{
+						wtosItem << new QStandardItem(QString(item.date.c_str()))
+							<< new QStandardItem(QString(item.description.c_str()))
+							<< new QStandardItem("")
+							<< new QStandardItem(QString(item.debitAccNumber.c_str()))
+							<< new QStandardItem(QString::number(item.debit, 'f', 3))
+							<< new QStandardItem("")
+							<< new QStandardItem(QString(item.creditAccNumber.c_str()))
+							<< new QStandardItem("")
+							<< new QStandardItem(QString::number(item.operationID))
+							<< new QStandardItem("");
+						itemModel = (QStandardItemModel *)this->tableView->model();
+						itemModel->appendRow(wtosItem);
+						wtosItem.clear();
+					}
+					if (item.credit > 0)
+					{
+						wtosItem << new QStandardItem(QString(item.date.c_str()))
+							<< new QStandardItem(QString(item.description.c_str()))
+							<< new QStandardItem("")
+							<< new QStandardItem(QString(item.debitAccNumber.c_str()))
+							<< new QStandardItem("")
+							<< new QStandardItem(QString::number(item.credit, 'f', 3))
+							<< new QStandardItem(QString(item.creditAccNumber.c_str()))
+							<< new QStandardItem("")
+							<< new QStandardItem(QString::number(item.operationID))
+							<< new QStandardItem("");
+						itemModel = (QStandardItemModel *)this->tableView->model();
+						itemModel->appendRow(wtosItem);
+						wtosItem.clear();
+					}
+				}
+
+				//this->tableView->model()->sort(0);
 				wtosItem << new QStandardItem("")
 					<< new QStandardItem("")
 					<< new QStandardItem("")
@@ -2509,6 +2607,10 @@ void ReportForm::FillAccCrdTable(std::string fDate, std::string tDate, int accID
 		BusinessLayer::EntrySubaccountRelation esRel;
 		std::vector<BusinessLayer::EntrySubaccountRelation> vecESRel;
 		std::string esFilter;
+
+		std::vector<OneAccCardViewClass> vecOneCard;
+		OneAccCardViewClass oneAccCard;
+
 		for each (auto  debit in vecSubEntryDeb)
 		{
 			esRel.Clear();
@@ -2523,37 +2625,41 @@ void ReportForm::FillAccCrdTable(std::string fDate, std::string tDate, int accID
 				{
 					if (vecESRel.size() == 1)
 					{
-						wtosItem << new QStandardItem(debit.GetDate().c_str())
-							<< new QStandardItem(debit.GetDescription().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(debit.GetDebitingAccountNumber().c_str())
-							<< new QStandardItem(QString::number(debit.GetValue(), 'f', 3))
-							<< new QStandardItem("")
-							<< new QStandardItem(debit.GetCreditingAccountNumber().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(QString::number(debit.GetOperationID()))
-							<< new QStandardItem("");
-						itemModel = (QStandardItemModel *)this->tableView->model();
-						itemModel->appendRow(wtosItem);
-						wtosItem.clear();
+						oneAccCard.Clear();
+						oneAccCard.date = debit.GetDate().c_str();
+						oneAccCard.description = debit.GetDescription().c_str();
+						oneAccCard.startSaldo = 0.0;
+						oneAccCard.debitAccNumber = debit.GetDebitingAccountNumber().c_str();
+						oneAccCard.debit = debit.GetValue();
+						oneAccCard.credit = 0.0;
+						oneAccCard.creditAccNumber = debit.GetCreditingAccountNumber().c_str();
+						oneAccCard.endSaldo = 0.0;
+						oneAccCard.operationID = debit.GetOperationID();
+						oneAccCard.accountID = 0;
+						oneAccCard.entryID = debit.GetID();
+
+						vecOneCard.push_back(oneAccCard);
+					
 						debSum += debit.GetValue();
 						count++;
 					}
 					else if (vecESRel.size() == 2 && vecESRel.at(0).GetSubaccountID() == subacc.GetID())
 					{
-						wtosItem << new QStandardItem(debit.GetDate().c_str())
-							<< new QStandardItem(debit.GetDescription().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(debit.GetDebitingAccountNumber().c_str())
-							<< new QStandardItem(QString::number(debit.GetValue(), 'f', 3))
-							<< new QStandardItem("")
-							<< new QStandardItem(debit.GetCreditingAccountNumber().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(QString::number(debit.GetOperationID()))
-							<< new QStandardItem("");
-						itemModel = (QStandardItemModel *)this->tableView->model();
-						itemModel->appendRow(wtosItem);
-						wtosItem.clear();
+						oneAccCard.Clear();
+						oneAccCard.date = debit.GetDate().c_str();
+						oneAccCard.description = debit.GetDescription().c_str();
+						oneAccCard.startSaldo = 0.0;
+						oneAccCard.debitAccNumber = debit.GetDebitingAccountNumber().c_str();
+						oneAccCard.debit = debit.GetValue();
+						oneAccCard.credit = 0.0;
+						oneAccCard.creditAccNumber = debit.GetCreditingAccountNumber().c_str();
+						oneAccCard.endSaldo = 0.0;
+						oneAccCard.operationID = debit.GetOperationID();
+						oneAccCard.accountID = 0;
+						oneAccCard.entryID = debit.GetID();
+
+						vecOneCard.push_back(oneAccCard);
+
 						debSum += debit.GetValue();
 						count++;
 					}
@@ -2575,44 +2681,92 @@ void ReportForm::FillAccCrdTable(std::string fDate, std::string tDate, int accID
 				{
 					if (vecESRel.size() == 1)
 					{
-						wtosItem << new QStandardItem(credit.GetDate().c_str())
-							<< new QStandardItem(credit.GetDescription().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(credit.GetDebitingAccountNumber().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(QString::number(credit.GetValue(), 'f', 3))
-							<< new QStandardItem(credit.GetCreditingAccountNumber().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(QString::number(credit.GetOperationID()))
-							<< new QStandardItem("");
-						itemModel = (QStandardItemModel *)this->tableView->model();
-						itemModel->appendRow(wtosItem);
-						wtosItem.clear();
+						oneAccCard.Clear();
+						oneAccCard.date = credit.GetDate().c_str();
+						oneAccCard.description = credit.GetDescription().c_str();
+						oneAccCard.startSaldo = 0.0;
+						oneAccCard.debitAccNumber = credit.GetDebitingAccountNumber().c_str();
+						oneAccCard.debit = 0.0;
+						oneAccCard.credit = credit.GetValue();
+						oneAccCard.creditAccNumber = credit.GetCreditingAccountNumber().c_str();
+						oneAccCard.endSaldo = 0.0;
+						oneAccCard.operationID = credit.GetOperationID();
+						oneAccCard.accountID = 0;
+						oneAccCard.entryID = credit.GetID();
+
+						vecOneCard.push_back(oneAccCard);
+
+					
 						credSum += credit.GetValue();
 						count++;
 					}
 					else if (vecESRel.size() == 2 && vecESRel.at(1).GetSubaccountID() == subacc.GetID())
 					{
-						wtosItem << new QStandardItem(credit.GetDate().c_str())
-							<< new QStandardItem(credit.GetDescription().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(credit.GetDebitingAccountNumber().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(QString::number(credit.GetValue(), 'f', 3))
-							<< new QStandardItem(credit.GetCreditingAccountNumber().c_str())
-							<< new QStandardItem("")
-							<< new QStandardItem(QString::number(credit.GetOperationID()))
-							<< new QStandardItem("");
-						itemModel = (QStandardItemModel *)this->tableView->model();
-						itemModel->appendRow(wtosItem);
-						wtosItem.clear();
+						oneAccCard.Clear();
+						oneAccCard.date = credit.GetDate().c_str();
+						oneAccCard.description = credit.GetDescription().c_str();
+						oneAccCard.startSaldo = 0.0;
+						oneAccCard.debitAccNumber = credit.GetDebitingAccountNumber().c_str();
+						oneAccCard.debit = 0.0;
+						oneAccCard.credit = credit.GetValue();
+						oneAccCard.creditAccNumber = credit.GetCreditingAccountNumber().c_str();
+						oneAccCard.endSaldo = 0.0;
+						oneAccCard.operationID = credit.GetOperationID();
+						oneAccCard.accountID = 0;
+						oneAccCard.entryID = credit.GetID();
+
+						vecOneCard.push_back(oneAccCard);
+
+
 						credSum += credit.GetValue();
 						count++;
 					}
 				}
 			}
 		}
-		this->tableView->model()->sort(0);
+
+		std::sort(vecOneCard.begin(), vecOneCard.end(), [&](const OneAccCardViewClass& lh, const OneAccCardViewClass& rh)
+		{
+			return lh < rh;
+		});
+
+		for each (auto  item in vecOneCard)
+		{
+			if (item.debit>0)
+			{
+				wtosItem << new QStandardItem(QString(item.date.c_str()))
+					<< new QStandardItem(QString(item.description.c_str()))
+					<< new QStandardItem("")
+					<< new QStandardItem(QString(item.debitAccNumber.c_str()))
+					<< new QStandardItem(QString::number(item.debit, 'f', 3))
+					<< new QStandardItem("")
+					<< new QStandardItem(QString(item.creditAccNumber.c_str()))
+					<< new QStandardItem("")
+					<< new QStandardItem(QString::number(item.operationID))
+					<< new QStandardItem("");
+				itemModel = (QStandardItemModel *)this->tableView->model();
+				itemModel->appendRow(wtosItem);
+				wtosItem.clear();
+			}
+			if (item.credit > 0)
+			{
+				wtosItem << new QStandardItem(QString(item.date.c_str()))
+					<< new QStandardItem(QString(item.description.c_str()))
+					<< new QStandardItem("")
+					<< new QStandardItem(QString(item.debitAccNumber.c_str()))
+					<< new QStandardItem("")
+					<< new QStandardItem(QString::number(item.credit, 'f', 3))
+					<< new QStandardItem(QString(item.creditAccNumber.c_str()))
+					<< new QStandardItem("")
+					<< new QStandardItem(QString::number(item.operationID))
+					<< new QStandardItem("");
+				itemModel = (QStandardItemModel *)this->tableView->model();
+				itemModel->appendRow(wtosItem);
+				wtosItem.clear();
+			}
+		}
+
+		//this->tableView->model()->sort(0);
 		wtosItem << new QStandardItem("")
 			<< new QStandardItem("")
 			<< new QStandardItem("")
@@ -4000,7 +4154,7 @@ void ReportForm::ViewSubacc()
 		}
 		
 		startSaldo += debSaldo - credSaldo;
-		endSaldo += debSaldo - credSaldo;
+		endSaldo = startSaldo;
 		tableBody += "<td style = 'width:10%; border: 1px solid black; text-align: center; '>" + QString(model->data(model->index(i, 3)).toString()) + "</td>";
 		tableBody += "<td style = 'width:10%; border: 1px solid black; text-align: center; '>" + QString::number(debSaldo, 'f', 3) + "</td>";
 		tableBody += "<td style = 'width:10%; border: 1px solid black; text-align: center; '>" + QString::number(credSaldo, 'f', 3) + "</td>";

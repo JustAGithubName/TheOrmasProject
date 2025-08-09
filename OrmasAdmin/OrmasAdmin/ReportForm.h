@@ -7,6 +7,7 @@
 #include <QStringList>
 #include <QDialog>
 
+class OneAccCardViewClass;
 
 class ReportForm : public QWidget, public Ui::ReportForm
 {
@@ -23,7 +24,7 @@ public:
 	void FillSubaccCrdTable(std::string, std::string, std::vector<int>, std::string);
 	void FillAccCrdTable(std::string, std::string, std::string);
 	std::string warehouseName = "";
-
+private:
 	private slots:
 	void View();
 	void ViewWTBSRaw();

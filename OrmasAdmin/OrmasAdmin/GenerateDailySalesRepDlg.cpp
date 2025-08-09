@@ -221,7 +221,14 @@ void GenerateDailySalesRep::Generate()
 							productCount.find(listItem.GetProductID())->second = productCount.find(listItem.GetProductID())->second + listItem.GetCount();
 							productSum.find(listItem.GetProductID())->second = productSum.find(listItem.GetProductID())->second + listItem.GetSum();
 							sum += listItem.GetSum();
-							productClient.insert(std::make_pair(std::make_pair(item.GetClientID(), listItem.GetProductID()), listItem.GetCount()));
+							if (productClient.find(std::make_pair(item.GetClientID(), listItem.GetProductID())) != productClient.end())
+							{
+								productClient.find(std::make_pair(item.GetClientID(), listItem.GetProductID()))->second = productClient.find(std::make_pair(item.GetClientID(), listItem.GetProductID()))->second + listItem.GetCount();
+							}
+							else
+							{
+								productClient.insert(std::make_pair(std::make_pair(item.GetClientID(), listItem.GetProductID()), listItem.GetCount()));
+							}
 						}
 						else
 						{
@@ -441,6 +448,7 @@ void GenerateDailySalesRep::Generate()
 
 		// market hash
 		BusinessLayer::Client client;
+		BusinessLayer::PriceExtension priceExtension;
 		tableBody += "<table width='100 % ' border = 1px  cellpadding=5 style='border-spacing:0px; '>";
 		int mapCount = 0;
 		tableBody += "<th><b><div style='transform: rotate(-90deg);'>" + QString::fromWCharArray(L"Клиент") + "</div></b></th>";
@@ -455,6 +463,7 @@ void GenerateDailySalesRep::Generate()
 		
 		int productCounter = 1;
 		double clientSum = 0;
+		double extensionValue = 0;
 		for (std::map<int, std::string>::iterator clientIt = clientMap.begin(); clientIt != clientMap.end(); clientIt++)
 		{
 			clientSum = 0;
@@ -464,12 +473,16 @@ void GenerateDailySalesRep::Generate()
 			for (std::map<int, double>::iterator tranIt = totalTransportLogCount.begin(); tranIt != totalTransportLogCount.end(); tranIt++)
 			{
 				product.Clear();
+				priceExtension.Clear();
+				extensionValue = 0;
 				if (!product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), tranIt->first, errorMessage))
 					continue;
+				if (priceExtension.GetPriceExtensionByProductIDAndExpeditorID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetID(), employeeEdit->text().toInt(), errorMessage))
+					extensionValue = priceExtension.GetValue();
 				if (productClient.find(std::pair<int, int>(clientIt->first, tranIt->first)) != productClient.end())
 				{
 					tableBody += "<td>" + QString::number(productClient.find(std::pair<int, int>(clientIt->first, tranIt->first))->second) + "</td>";
-					clientSum += productClient.find(std::pair<int, int>(clientIt->first, tranIt->first))->second*product.GetPrice();
+					clientSum += productClient.find(std::pair<int, int>(clientIt->first, tranIt->first))->second*(product.GetPrice() + extensionValue);
 				}
 				else
 				{

@@ -29,25 +29,35 @@ class Ui_GenerateCommonReport
 {
 public:
     QGridLayout *gridLayout;
+    QLabel *fromLb;
+    QDateEdit *fromDateEdit;
     QDateEdit *tillDateEdit;
     QHBoxLayout *horizontalLayout;
     QSpacerItem *horizontalSpacer;
     QPushButton *okBtn;
     QPushButton *cancelBtn;
     QLabel *label_2;
-    QDateEdit *fromDateEdit;
-    QLabel *fromLb;
 
     void setupUi(QDialog *GenerateCommonReport)
     {
         if (GenerateCommonReport->objectName().isEmpty())
             GenerateCommonReport->setObjectName(QStringLiteral("GenerateCommonReport"));
-        GenerateCommonReport->resize(501, 81);
+        GenerateCommonReport->resize(529, 81);
         GenerateCommonReport->setLocale(QLocale(QLocale::English, QLocale::UnitedStates));
         GenerateCommonReport->setModal(false);
         gridLayout = new QGridLayout(GenerateCommonReport);
         gridLayout->setObjectName(QStringLiteral("gridLayout"));
         gridLayout->setContentsMargins(11, 11, 11, 11);
+        fromLb = new QLabel(GenerateCommonReport);
+        fromLb->setObjectName(QStringLiteral("fromLb"));
+
+        gridLayout->addWidget(fromLb, 0, 1, 1, 1);
+
+        fromDateEdit = new QDateEdit(GenerateCommonReport);
+        fromDateEdit->setObjectName(QStringLiteral("fromDateEdit"));
+
+        gridLayout->addWidget(fromDateEdit, 0, 2, 1, 1);
+
         tillDateEdit = new QDateEdit(GenerateCommonReport);
         tillDateEdit->setObjectName(QStringLiteral("tillDateEdit"));
 
@@ -77,16 +87,6 @@ public:
 
         gridLayout->addWidget(label_2, 0, 3, 1, 1);
 
-        fromDateEdit = new QDateEdit(GenerateCommonReport);
-        fromDateEdit->setObjectName(QStringLiteral("fromDateEdit"));
-
-        gridLayout->addWidget(fromDateEdit, 0, 2, 1, 1);
-
-        fromLb = new QLabel(GenerateCommonReport);
-        fromLb->setObjectName(QStringLiteral("fromLb"));
-
-        gridLayout->addWidget(fromLb, 0, 1, 1, 1);
-
         QWidget::setTabOrder(fromDateEdit, tillDateEdit);
         QWidget::setTabOrder(tillDateEdit, okBtn);
         QWidget::setTabOrder(okBtn, cancelBtn);
@@ -99,10 +99,10 @@ public:
     void retranslateUi(QDialog *GenerateCommonReport)
     {
         GenerateCommonReport->setWindowTitle(QApplication::translate("GenerateCommonReport", "Generate common report", 0));
+        fromLb->setText(QApplication::translate("GenerateCommonReport", "From date:", 0));
         okBtn->setText(QApplication::translate("GenerateCommonReport", "OK", 0));
         cancelBtn->setText(QApplication::translate("GenerateCommonReport", "Cancel", 0));
         label_2->setText(QApplication::translate("GenerateCommonReport", "Till date:", 0));
-        fromLb->setText(QApplication::translate("GenerateCommonReport", "From date:", 0));
     } // retranslateUi
 
 };

@@ -8,8 +8,10 @@
 CreateConOthStDlg::CreateConOthStDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWidget *parent) :QDialog(parent)
 {
 	setupUi(this);
+	
 	//setModal(true);
 	dialogBL = ormasBL;
+	
 	parentForm = parent;
 	DataForm *dataFormParent = (DataForm *)this->parentForm;
 	mainForm = (MainForm *)dataFormParent->GetParent();
@@ -69,6 +71,7 @@ CreateConOthStDlg::CreateConOthStDlg(BusinessLayer::OrmasBL *ormasBL, bool updat
 	QObject::connect(sumEdit, &QLineEdit::textChanged, this, &CreateConOthStDlg::TextEditChanged);
 	QObject::connect(this, SIGNAL(CloseCreatedForms()), ((MainForm*)((DataForm*)parent)->GetParent()), SLOT(CloseChildsByName()));
 	InitComboBox();
+	
 }
 
 CreateConOthStDlg::~CreateConOthStDlg()
@@ -413,6 +416,7 @@ void CreateConOthStDlg::CreateConsumeOtherStocks()
 
 void CreateConOthStDlg::EditConsumeOtherStocks()
 {
+
 	errorMessage.clear();
 	if (0 != stockEmployeeEdit->text().toInt()
 		&& 0 != othStCountEdit->text().toDouble() && 0 != sumEdit->text().toDouble()
@@ -436,6 +440,8 @@ void CreateConOthStDlg::EditConsumeOtherStocks()
 					sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), consumeOtherStocks->GetID());
 			}
 
+			//if (!dialogBL->UpdateConsumeOtherStocksState(consumeOtherStocks, errorMessage))
+			//	return;
 			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateConsumeOtherStocks(consumeOtherStocks, errorMessage))
 			{
@@ -884,7 +890,8 @@ void CreateConOthStDlg::InitComboBox()
 	{
 		for (unsigned int i = 0; i < curVector.size(); i++)
 		{
-			currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
+			if (curVector[i].GetMainTrade() == true)
+				currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
 		}
 	}
 }

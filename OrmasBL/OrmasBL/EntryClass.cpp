@@ -5,6 +5,9 @@
 #include "SubaccountClass.h"
 #include "AccountTypeClass.h"
 #include "EntrySubaccountRelationClass.h"
+#include "MulticurrencyClass.h"
+#include "CurrencyRateClass.h"
+#include "CurrencyClass.h"
 
 namespace BusinessLayer{
 	Entry::Entry(DataLayer::entriesCollection eCollection)
@@ -140,7 +143,7 @@ namespace BusinessLayer{
 		}
 		if (0 != id && ormasDal.CreateEntry(id, date, dSAccParentID, value, cSAccParentID, eDescription, errorMessage))
 		{
-			if (DebitAccount(globalVar, ormasDal, debitingAccountID, value) && CreditAccount(globalVar, ormasDal, creditingAccountID, value))
+			if (DebitAccount(globalVar, ormasDal, debitingAccountID, value, creditingAccountID) && CreditAccount(globalVar, ormasDal, creditingAccountID, value, debitingAccountID))
 			{
 				if (!ReCalculateParentAccount(globalVar, ormasDal, debitingAccountID, creditingAccountID,  value, errorMessage))
 					return false;
@@ -226,7 +229,7 @@ namespace BusinessLayer{
 		}
 		if (0 != id && ormasDal.CreateEntry(id, date, dSAccParentID, value, cSAccParentID, description, errorMessage))
 		{
-			if (DebitAccount(globalVar, ormasDal, debitingAccountID, value) && CreditAccount(globalVar, ormasDal, creditingAccountID, value))
+			if (DebitAccount(globalVar, ormasDal, debitingAccountID, value, creditingAccountID) && CreditAccount(globalVar, ormasDal, creditingAccountID, value, debitingAccountID))
 			{
 				if (!ReCalculateParentAccount(globalVar, ormasDal, debitingAccountID, creditingAccountID, value, errorMessage))
 					return false;
@@ -413,12 +416,12 @@ namespace BusinessLayer{
 		return true;
 	}
 
-	bool Entry::DebitAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, double value)
+	bool Entry::DebitAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debaccountID, double value, int credaccountID)
 	{
 		Subaccount subAcc;
 		Account dAcc;
 		AccountType atype;
-		if (dAcc.GetAccountByID(globalVar, ormasDal, accountID, errorMessage))
+		if (dAcc.GetAccountByID(globalVar, ormasDal, debaccountID, errorMessage))
 		{
 			/*if (atype.GetAccountTypeByNumber(globalVar, ormasDal, dAcc.GetAccountTypeNumber(ormasDal), errorMessage))
 			{
@@ -438,7 +441,7 @@ namespace BusinessLayer{
 					return true;
 			}
 		}
-		else if(subAcc.GetSubaccountByID(globalVar, ormasDal, accountID, errorMessage))
+		else if (subAcc.GetSubaccountByID(globalVar, ormasDal, debaccountID, errorMessage))
 		{
 			/*if (atype.GetAccountTypeByNumber(globalVar, ormasDal, dAcc.GetAccountTypeNumber(ormasDal), errorMessage))
 			{
@@ -451,6 +454,53 @@ namespace BusinessLayer{
 			dAcc.SetCurrentBalance(dAcc.GetCurrentBalance() - value);
 			}
 			}*/
+			Multicurrency multicurrency;
+			if (multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, subAcc.GetID(), errorMessage))
+			{
+				Account acc66040;
+				Account acc66140;
+				if (!acc66040.GetAccountByNumber(globalVar, ormasDal, "66040", errorMessage))
+					return false;
+				if (!acc66140.GetAccountByNumber(globalVar, ormasDal, "66140", errorMessage))
+					return false;
+				if (acc66040.GetID() != credaccountID && acc66140.GetID() != credaccountID)
+				{
+					Subaccount subMulticurrency;
+					if (!subMulticurrency.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+						return false;
+					CurrencyRate rate;
+					if (!rate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, subMulticurrency.GetCurrencyID(), errorMessage))
+						return false;
+					subMulticurrency.SetCurrentBalance(subMulticurrency.GetCurrentBalance() + value / (rate.GetToValue() / rate.GetFromValue()));
+					if (!subMulticurrency.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;
+				}
+			}
+			multicurrency.Clear();
+			errorMessage.clear();
+			if (multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, subAcc.GetID(), errorMessage))
+			{
+				Subaccount subMulticurrency;
+				if (!subMulticurrency.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+					return false;
+				Account acc66040;
+				Account acc66140;
+				if (!acc66040.GetAccountByNumber(globalVar, ormasDal, "66040", errorMessage))
+					return false;
+				if (!acc66140.GetAccountByNumber(globalVar, ormasDal, "66140", errorMessage))
+					return false;
+				if (acc66040.GetID() != credaccountID && acc66140.GetID() != credaccountID)
+				{
+					CurrencyRate rate;
+					if (!rate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, subAcc.GetCurrencyID(), errorMessage))
+						return false;
+					subAcc.SetCurrentBalance(subAcc.GetCurrentBalance() + value / (rate.GetToValue() / rate.GetFromValue()));
+					if (!subAcc.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;
+				}
+				subAcc.Clear();
+				subAcc = subMulticurrency;
+			}
 			if (dAcc.GetAccountByID(globalVar, ormasDal, subAcc.GetParentAccountID(), errorMessage))
 			{
 				if (dAcc.AccountOperationValidation(globalVar, ormasDal, dAcc.GetCurrentBalance() + value))
@@ -465,13 +515,13 @@ namespace BusinessLayer{
 		return false;
 	}
 
-	bool Entry::CreditAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, double value)
+	bool Entry::CreditAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int credaccountID, double value, int debaccountID)
 	{
 		Subaccount subAcc;
 		Account cAcc;
 		AccountType atype;
 		std::string parentNumber = "";
-		if (cAcc.GetAccountByID(globalVar, ormasDal, accountID, errorMessage))
+		if (cAcc.GetAccountByID(globalVar, ormasDal, credaccountID, errorMessage))
 		{
 			/*if (atype.GetAccountTypeByNumber(globalVar, ormasDal, cAcc.GetAccountTypeNumber(ormasDal), errorMessage))
 			{
@@ -488,7 +538,7 @@ namespace BusinessLayer{
 			if (cAcc.UpdateAccount(globalVar, ormasDal, errorMessage))
 				return true;
 		}
-		else if (subAcc.GetSubaccountByID(globalVar, ormasDal, accountID, errorMessage))
+		else if (subAcc.GetSubaccountByID(globalVar, ormasDal, credaccountID, errorMessage))
 		{
 			/*if (atype.GetAccountTypeByNumber(globalVar, ormasDal, cAcc.GetAccountTypeNumber(ormasDal), errorMessage))
 			{
@@ -501,6 +551,53 @@ namespace BusinessLayer{
 			cAcc.SetCurrentBalance(cAcc.GetCurrentBalance() + value);
 			}
 			}*/
+			Multicurrency multicurrency;
+			if (multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, subAcc.GetID(), errorMessage))
+			{
+				Account acc66040;
+				Account acc66140;
+				if (!acc66040.GetAccountByNumber(globalVar, ormasDal, "66040", errorMessage))
+					return false;
+				if (!acc66140.GetAccountByNumber(globalVar, ormasDal, "66140", errorMessage))
+					return false;
+				if (acc66040.GetID() != debaccountID && acc66140.GetID() != debaccountID)
+				{
+					Subaccount subMulticurrency;
+					if (!subMulticurrency.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+						return false;
+					CurrencyRate rate;
+					if (!rate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, subMulticurrency.GetCurrencyID(), errorMessage))
+						return false;
+					subMulticurrency.SetCurrentBalance(subMulticurrency.GetCurrentBalance() - value / (rate.GetToValue() / rate.GetFromValue()));
+					if (!subMulticurrency.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;
+				}
+			}
+			multicurrency.Clear();
+			errorMessage.clear();
+			if (multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, subAcc.GetID(), errorMessage))
+			{
+				Subaccount subMulticurrency;
+				if (!subMulticurrency.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+					return false;
+				Account acc66040;
+				Account acc66140;
+				if (!acc66040.GetAccountByNumber(globalVar, ormasDal, "66040", errorMessage))
+					return false;
+				if (!acc66140.GetAccountByNumber(globalVar, ormasDal, "66140", errorMessage))
+					return false;
+				if (acc66040.GetID() != credaccountID && acc66140.GetID() != credaccountID)
+				{
+					CurrencyRate rate;
+					if (!rate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, subAcc.GetCurrencyID(), errorMessage))
+						return false;
+					subAcc.SetCurrentBalance(subAcc.GetCurrentBalance() - value / (rate.GetToValue() / rate.GetFromValue()));
+					if (!subAcc.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;
+				}
+				subAcc.Clear();
+				subAcc = subMulticurrency;
+			}
 			if (cAcc.GetAccountByID(globalVar, ormasDal, subAcc.GetParentAccountID(), errorMessage))
 			{
 				if (cAcc.AccountOperationValidation(globalVar, ormasDal, cAcc.GetCurrentBalance() + value))
@@ -564,6 +661,8 @@ namespace BusinessLayer{
 					return false;
 			}
 		}
+		if (cAcc.GetID() == dAcc.GetID())
+			return true;
 		if (dAcc.GetNumber().substr(0, 3) != cAcc.GetNumber().substr(0, 3))
 		{
 			dParentNumber += dAcc.GetNumber().substr(0, 3);

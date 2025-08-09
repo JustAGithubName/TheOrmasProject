@@ -6,8 +6,10 @@
 CreateRtrnDlg::CreateRtrnDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWidget *parent) :QDialog(parent)
 {
 	setupUi(this);
+	
 	//setModal(true);
 	dialogBL = ormasBL;
+	
 	parentForm = parent;
 	DataForm *dataFormParent = (DataForm *)this->parentForm;
 	mainForm = (MainForm *)dataFormParent->GetParent();
@@ -59,6 +61,9 @@ CreateRtrnDlg::CreateRtrnDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, Q
 
 		QObject::connect(okBtn, &QPushButton::released, this, &CreateRtrnDlg::CreateReturn);
 	}
+
+	
+
 	QObject::connect(cancelBtn, &QPushButton::released, this, &CreateRtrnDlg::Close);
 	QObject::connect(clientBtn, &QPushButton::released, this, &CreateRtrnDlg::OpenCltDlg);
 	QObject::connect(statusBtn, &QPushButton::released, this, &CreateRtrnDlg::OpenStsDlg);
@@ -497,6 +502,15 @@ void CreateRtrnDlg::Close()
 
 void CreateRtrnDlg::OpenCltDlg()
 {
+	if (employeeEdit->text().toInt() == 0 || employeeEdit->text().toInt() < 0)
+	{
+		QString message = tr("Enter employee before!");
+		mainForm->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Enter employee before!")),
+			QString(tr("Ok")));
+		return;
+	}
 	this->hide();
 	this->setModal(false);
 	this->show();
@@ -706,10 +720,19 @@ void CreateRtrnDlg::OpenRtrnListDlg()
 {
 	if (employeeEdit->text().toInt() == 0 || employeeEdit->text().toInt() < 0)
 	{
-		QString message = tr("Enter stock employee before!");
+		QString message = tr("Enter employee before!");
 		mainForm->statusBar()->showMessage(message);
 		QMessageBox::information(NULL, QString(tr("Warning")),
-			QString(tr("Enter stock stock before!")),
+			QString(tr("Enter employee before!")),
+			QString(tr("Ok")));
+		return;
+	}
+	if (clientEdit->text().toInt() == 0 || clientEdit->text().toInt() < 0)
+	{
+		QString message = tr("Enter client before!");
+		mainForm->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Enter client before!")),
 			QString(tr("Ok")));
 		return;
 	}
@@ -723,6 +746,8 @@ void CreateRtrnDlg::OpenRtrnListDlg()
 	dForm->hide();
 	dForm->setWindowModality(Qt::WindowModal);
 	dForm->returnID = ret->GetID();
+	dForm->employeeID = employeeEdit->text().toInt();
+	dForm->clientID = clientEdit->text().toInt();
 	BusinessLayer::ReturnList returnList;
 	returnList.SetReturnID(ret->GetID());
 	std::string returnListFilter = returnList.GenerateFilter(dialogBL->GetOrmasDal());
@@ -784,22 +809,43 @@ void CreateRtrnDlg::InitComboBox()
 	{
 		for (unsigned int i = 0; i < curVector.size(); i++)
 		{
-			currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
+			if (curVector[i].GetMainTrade() == true)
+				currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
 		}
 	}
 
-	BusinessLayer::Warehouse warehouse;
-	BusinessLayer::WarehouseType warehouseType;
-	if (!warehouseType.GetWarehouseTypeByCode(dialogBL->globalVar, dialogBL->GetOrmasDal(), "PRODUCT", errorMessage))
-		return;
-	warehouse.SetWarehouseTypeID(warehouseType.GetID());
-	std::string filter = warehouse.GenerateFilter(dialogBL->GetOrmasDal());
-	std::vector<BusinessLayer::WarehouseView> werVector = dialogBL->GetAllDataForClass<BusinessLayer::WarehouseView>(errorMessage, filter);
-	if (!werVector.empty())
+
+	//Auto select a warehouse
+	int warehouseID = 0;
+	BusinessLayer::WarehouseEmployeeRelation wReleation;
+	if (wReleation.GetWarehouseEmployeeByEmployeeID(dialogBL->globalVar, dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage))
 	{
-		for (unsigned int i = 0; i < werVector.size(); i++)
+		warehouseID = wReleation.GetWarehouseID();
+	}
+
+	if (warehouseID > 0)
+	{
+		BusinessLayer::Warehouse warehouse;
+		if (!warehouse.GetWarehouseByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), warehouseID, errorMessage))
+			return;
+		warehouseCmb->addItem(warehouse.GetName().c_str(), warehouseID);
+	}
+	else
+	{
+
+		BusinessLayer::Warehouse warehouse;
+		BusinessLayer::WarehouseType warehouseType;
+		if (!warehouseType.GetWarehouseTypeByCode(dialogBL->globalVar, dialogBL->GetOrmasDal(), "PRODUCT", errorMessage))
+			return;
+		warehouse.SetWarehouseTypeID(warehouseType.GetID());
+		std::string filter = warehouse.GenerateFilter(dialogBL->GetOrmasDal());
+		std::vector<BusinessLayer::WarehouseView> werVector = dialogBL->GetAllDataForClass<BusinessLayer::WarehouseView>(errorMessage, filter);
+		if (!werVector.empty())
 		{
-			warehouseCmb->addItem(werVector[i].GetName().c_str(), QVariant(werVector[i].GetID()));
+			for (unsigned int i = 0; i < werVector.size(); i++)
+			{
+				warehouseCmb->addItem(werVector[i].GetName().c_str(), QVariant(werVector[i].GetID()));
+			}
 		}
 	}
 }

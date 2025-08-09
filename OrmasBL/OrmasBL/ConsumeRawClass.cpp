@@ -5,6 +5,7 @@
 #include "StatusClass.h"
 #include "StockClass.h"
 #include "ProductionStockClass.h"
+#include "ProductClass.h"
 
 namespace BusinessLayer
 {
@@ -129,13 +130,14 @@ namespace BusinessLayer
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
+				if (!CheckDocumentCorrectness(ormasDal))
+				{
+					errorMessage = "Document isn't correct. Check sum and count in list!";
+					return false;
+				}
 				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 				{
-					if (!CheckDocumentCorrectness(ormasDal))
-					{
-						errorMessage = "Document isn't correct. Check sum and count in list!";
-						return false;
-					}
+					
 					return true;
 				}
 				else
@@ -146,13 +148,14 @@ namespace BusinessLayer
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
+				if (!CheckDocumentCorrectness(ormasDal))
+				{
+					errorMessage = "Document isn't correct. Check sum and count in list!";
+					return false;
+				}
 				if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 				{
-					if (!CheckDocumentCorrectness(ormasDal))
-					{
-						errorMessage = "Document isn't correct. Check sum and count in list!";
-						return false;
-					}
+				
 					return true;
 				}
 				else
@@ -185,13 +188,14 @@ namespace BusinessLayer
 		{
 			if (statusID == statusMap.find("EXECUTED")->second)
 			{
+				if (!CheckDocumentCorrectness(ormasDal))
+				{
+					errorMessage = "Document isn't correct. Check sum and count in list!";
+					return false;
+				}
 				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 				{
-					if (!CheckDocumentCorrectness(ormasDal))
-					{
-						errorMessage = "Document isn't correct. Check sum and count in list!";
-						return false;
-					}
+					
 						return true;
 				}
 				else
@@ -202,13 +206,14 @@ namespace BusinessLayer
 			}
 			if (statusID == statusMap.find("RETURN")->second)
 			{
+				if (!CheckDocumentCorrectness(ormasDal))
+				{
+					errorMessage = "Document isn't correct. Check sum and count in list!";
+					return false;
+				}
 				if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 				{
-					if (!CheckDocumentCorrectness(ormasDal))
-					{
-						errorMessage = "Document isn't correct. Check sum and count in list!";
-						return false;
-					}
+					
 					return true;
 				}
 				else
@@ -301,19 +306,22 @@ namespace BusinessLayer
 		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateConsumeRaw(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
 		{
+			
 			if (statusID != statusMap.find("ERROR")->second &&
 				previousStatusID != statusMap.find("EXECUTED")->second &&
 				previousStatusID != statusMap.find("RETURN")->second)
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
+					if (!UpdatePriceToLastState(globalVar, ormasDal))
+						return false;
+					if (!CheckDocumentCorrectness(ormasDal))
+					{
+						errorMessage = "Document isn't correct. Check sum and count in list!";
+						return false;
+					}
 					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
-						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
-							return false;
-						}
 						//ormasDal.CommitTransaction(errorMessage);
 							return true;
 					}
@@ -325,13 +333,16 @@ namespace BusinessLayer
 				}
 				if (statusID == statusMap.find("RETURN")->second)
 				{
+					if (!UpdatePriceToLastState(globalVar, ormasDal))
+						return false;
+					if (!CheckDocumentCorrectness(ormasDal))
+					{
+						errorMessage = "Document isn't correct. Check sum and count in list!";
+						return false;
+					}
 					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
-						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
-							return false;
-						}
+						
 						//ormasDal.CommitTransaction(errorMessage);
 						return true;
 					}
@@ -352,13 +363,14 @@ namespace BusinessLayer
 				{
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
+						if (!CheckDocumentCorrectness(ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
 						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 						{
-							if (!CheckDocumentCorrectness(ormasDal))
-							{
-								errorMessage = "Document isn't correct. Check sum and count in list!";
-								return false;
-							}
+							
 							//ormasDal.CommitTransaction(errorMessage);
 							return true;
 						}
@@ -370,13 +382,14 @@ namespace BusinessLayer
 					}
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
+						if (!CheckDocumentCorrectness(ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
 						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 						{
-							if (!CheckDocumentCorrectness(ormasDal))
-							{
-								errorMessage = "Document isn't correct. Check sum and count in list!";
-								return false;
-							}
+							
 							//ormasDal.CommitTransaction(errorMessage);
 							return true;
 						}
@@ -394,41 +407,7 @@ namespace BusinessLayer
 					return false;
 				}
 			}
-			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
-			{
-				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
-				{					
-						return true;
-				}
-				else
-				{
-					//ormasDal.CancelTransaction(errorMessage);
-					return false;
-				}
-			}
-			if (statusID == statusMap.find("EXECUTED")->second && previousStatusID == statusMap.find("EXECUTED")->second)
-			{
-				if (count != prevCount || sum != prevSum)
-				{
-					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, prodCountMap, prevSum, errorMessage))
-					{
-							return true;
-					}
-					else
-					{
-						//ormasDal.CancelTransaction(errorMessage);
-						return false;
-					}
-				}
-				else
-				{
-					//ormasDal.CommitTransaction(errorMessage);
-					return true;
-				}
-			}
-			//ormasDal.CommitTransaction(errorMessage);
 			return true;
-			*/
 		}
 		if (errorMessage.empty())
 		{
@@ -458,36 +437,37 @@ namespace BusinessLayer
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
+					if (!UpdatePriceToLastState(globalVar, ormasDal))
+						return false;
+					if (!CheckDocumentCorrectness(ormasDal))
+					{
+						errorMessage = "Document isn't correct. Check sum and count in list!";
+						return false;
+					}
 					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
-						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
-							return false;
-						}
+						
 						//ormasDal.CommitTransaction(errorMessage);
 						return true;
 					}
 					else
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
-						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
-							return false;
-						}
 						//ormasDal.CommitTransaction(errorMessage);
 						return false;
 					}
 				}
 				else if (statusID == statusMap.find("RETURN")->second)
 				{
+					if (!UpdatePriceToLastState(globalVar, ormasDal))
+						return false;
+					if (!CheckDocumentCorrectness(ormasDal))
+					{
+						errorMessage = "Document isn't correct. Check sum and count in list!";
+						return false;
+					}
 					if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 					{
-						if (!CheckDocumentCorrectness(ormasDal))
-						{
-							errorMessage = "Document isn't correct. Check sum and count in list!";
-							return false;
-						}
+						
 						//ormasDal.CommitTransaction(errorMessage);
 						return true;
 					}
@@ -508,13 +488,14 @@ namespace BusinessLayer
 				{
 					if (previousStatusID == statusMap.find("EXECUTED")->second)
 					{
+						if (!CheckDocumentCorrectness(ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
 						if (ChangesAtStockReverse(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 						{
-							if (!CheckDocumentCorrectness(ormasDal))
-							{
-								errorMessage = "Document isn't correct. Check sum and count in list!";
-								return false;
-							}
+							
 							//ormasDal.CommitTransaction(errorMessage);
 							return true;
 						}
@@ -526,13 +507,14 @@ namespace BusinessLayer
 					}
 					if (previousStatusID == statusMap.find("RETURN")->second)
 					{
+						if (!CheckDocumentCorrectness(ormasDal))
+						{
+							errorMessage = "Document isn't correct. Check sum and count in list!";
+							return false;
+						}
 						if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
 						{
-							if (!CheckDocumentCorrectness(ormasDal))
-							{
-								errorMessage = "Document isn't correct. Check sum and count in list!";
-								return false;
-							}
+						
 							//ormasDal.CommitTransaction(errorMessage);
 							return true;
 						}
@@ -549,39 +531,44 @@ namespace BusinessLayer
 					return false;
 				}
 			}
-			/*if (statusID == statusMap.find("EXECUTED")->second && previousStatusID != statusMap.find("EXECUTED")->second)
-			{
-				if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, errorMessage))
-				{					
-						return true;
-				}
-				else
-				{
-					//ormasDal.CancelTransaction(errorMessage);
-					return false;
-				}
-			}
-			if (statusID == statusMap.find("EXECUTED")->second && previousStatusID == statusMap.find("EXECUTED")->second)
-			{
-				if (count != prevCount || sum != prevSum)
-				{
-					if (ChangesAtStock(globalVar, ormasDal, id, employeeID, stockEmployeeID, prodCountMap, prevSum, errorMessage))
-					{
-							return true;
-					}
-					else
-					{
-						//ormasDal.CancelTransaction(errorMessage);
-						return false;
-					}
-				}
-				else
-				{
-					//ormasDal.CommitTransaction(errorMessage);
-					return true;
-				}
-			}*/
-			//ormasDal.CommitTransaction(errorMessage);
+			
+			return true;
+		}
+		if (errorMessage.empty())
+		{
+			errorMessage = "Warning! ID is 0, or some unexpected error. Please contact with provider.";
+		}
+		//ormasDal.CancelTransaction(errorMessage);
+		return false;
+	}
+
+	bool ConsumeRaw::SimpleUpdateConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, std::string cpDate, std::string cpExecnDate,
+		int eID, double cpCount, double cpSum, int sID, int cID, std::string& errorMessage)
+	{
+		employeeID = uID;
+		date = cpDate;
+		executionDate = cpExecnDate;
+		stockEmployeeID = eID;
+		count = cpCount;
+		sum = cpSum;
+		statusID = sID;
+		currencyID = cID;
+		if (0 != id && ormasDal.UpdateConsumeRaw(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
+		{
+			return true;
+		}
+		if (errorMessage.empty())
+		{
+			errorMessage = "Warning! ID is 0, or some unexpected error. Please contact with provider.";
+		}
+		//ormasDal.CancelTransaction(errorMessage);
+		return false;
+	}
+	bool ConsumeRaw::SimpleUpdateConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
+	{
+
+		if (0 != id && ormasDal.UpdateConsumeRaw(id, employeeID, date, executionDate, stockEmployeeID, count, sum, statusID, currencyID, errorMessage))
+		{
 			return true;
 		}
 		if (errorMessage.empty())
@@ -777,24 +764,107 @@ namespace BusinessLayer
 	{
 		std::string errorMessage;
 		ConsumeRawList rPList;
+		ConsumeRaw consume;
+		GlobalVariable gVar;
 		double checkCount = 0;
 		double checkSum = 0;
+		double checkPriceSum = 0;
 		rPList.SetConsumeRawID(id);
 		std::string filter = rPList.GenerateFilter(ormasDal);
 		std::vector<DataLayer::consumeRawListViewCollection> productListVector = ormasDal.GetConsumeRawList(errorMessage, filter);
 
 		if (productListVector.size() > 0)
 		{
+			Product product;
 			for each (auto item in productListVector)
 			{
+				product.Clear();
+				if (!product.GetProductByID(&gVar, ormasDal, std::get<11>(item), errorMessage))
+					return false;
+				checkPriceSum += product.GetPrice()*std::get<7>(item);
 				checkCount += std::get<7>(item);
 				checkSum += std::get<8>(item);
 			}
 		}
 
-		if (std::round(sum * 10) / 10 != std::round(checkSum * 10) / 10
-			|| std::round(count * 10) / 10 != std::round(checkCount * 10) / 10)
+		if (fabs(checkPriceSum - checkSum) > 0.01)
+		{
+			UpdatePriceToLastState(&gVar, ormasDal);
+
+			checkCount = 0;
+			checkSum = 0;
+			checkPriceSum = 0;
+			rPList.Clear();
+			filter.clear();
+			productListVector.clear();
+			rPList.SetConsumeRawID(id);
+			std::string filter = rPList.GenerateFilter(ormasDal);
+			std::vector<DataLayer::consumeRawListViewCollection> productListVector = ormasDal.GetConsumeRawList(errorMessage, filter);
+
+			if (productListVector.size() > 0)
+			{
+				Product product;
+				for each (auto item in productListVector)
+				{
+					product.Clear();
+					if (!product.GetProductByID(&gVar, ormasDal, std::get<11>(item), errorMessage))
+						return false;
+					checkPriceSum += product.GetPrice()*std::get<7>(item);
+					checkCount += std::get<7>(item);
+					checkSum += std::get<8>(item);
+				}
+			}
+		}
+			
+		if (!consume.GetConsumeRawByID(&gVar, ormasDal, id, errorMessage))
 			return false;
+		if (fabs(consume.GetSum() - checkSum) > 0.1 || fabs(consume.GetCount() - checkCount) > 0.1)
+			return false;
+		return true;
+	}
+
+	bool ConsumeRaw::UpdatePriceToLastState(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal)
+	{
+		ConsumeRaw consume;
+		std::string errorMessage;
+		ConsumeRawList rPList;
+		ConsumeRawList rUpdatePList;
+		double totalSum = 0;
+		rPList.SetConsumeRawID(id);
+		std::string filter = rPList.GenerateFilter(ormasDal);
+		std::vector<DataLayer::consumeRawListViewCollection> productListVector = ormasDal.GetConsumeRawList(errorMessage, filter);
+
+		if (productListVector.size() > 0)
+		{
+			Product product;
+			
+			for each (auto item in productListVector)
+			{
+				product.Clear();
+				if (!product.GetProductByID(globalVar, ormasDal, std::get<11>(item), errorMessage))
+					return false;
+				if (fabs(product.GetPrice()*std::get<7>(item) -std::get<8>(item)) > 0.01)
+				{
+					totalSum += product.GetPrice()*std::get<7>(item) -std::get<8>(item);
+					rUpdatePList.Clear();
+					if (!rUpdatePList.GetConsumeRawListByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
+						return false;
+					rUpdatePList.SetSum(product.GetPrice()*std::get<7>(item));
+					if (!rUpdatePList.UpdateConsumeRawList(globalVar, ormasDal, errorMessage))
+						return false;
+				}
+			}
+		}
+		if (totalSum != 0)
+		{
+			if (!consume.GetConsumeRawByID(globalVar, ormasDal, id, errorMessage))
+				return false;
+			double newSum = consume.GetSum() + totalSum;
+			consume.SetSum(newSum);
+			if (!consume.SimpleUpdateConsumeRaw(globalVar, ormasDal, errorMessage))
+				return false;
+		}
+		
 		return true;
 	}
 }

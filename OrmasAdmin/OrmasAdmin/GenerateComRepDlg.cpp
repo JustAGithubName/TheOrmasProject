@@ -234,6 +234,7 @@ void GenerateComRep::Generate()
 		//generating report
 		std::map<int, double> prodnProductCount;
 		std::map<int, double> orderProductCount;
+		std::map<int, double> orderProductSum;
 		std::map<int, double> stockProductCount;
 		std::map<int, double> stockHistoryCount;
 		std::map<int, double> transportProductCount;
@@ -316,25 +317,39 @@ void GenerateComRep::Generate()
 
 			BusinessLayer::Product product;
 			BusinessLayer::Measure measure;
-
+			std::vector<BusinessLayer::PriceView> vecPrice;
+			std::string priceFilter="";
+			BusinessLayer::Price price;
+			
+			
 			reportText.replace(QString("fromDatePh"), fromDateEdit->text(), Qt::CaseInsensitive);
 			reportText.replace(QString("tillDatePh"), tillDateEdit->text(), Qt::CaseInsensitive);
 			double sum = 0;
 			double difSum = 0;
 			double prodSum = 0;
 			QString producedTableBody;
+			double productPrice = 0;
 			for each (auto producedProduct in prodnProductCount)
 			{
+				vecPrice.clear();
+				priceFilter.clear();
+				price.Clear();
+				price.SetProductID(producedProduct.first);
+				price.SetDate(tillDateEdit->text().toUtf8().constData());
+				priceFilter = price.GenerateFilterLessDate(dialogBL->GetOrmasDal());
+				vecPrice = dialogBL->GetAllDataForClass<BusinessLayer::PriceView>(errorMessage, priceFilter);
+				productPrice = 0;
+				productPrice = vecPrice.size() > 0 ? vecPrice.at(0).GetValue() : product.GetPrice();
 				product.Clear();
 				product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), producedProduct.first, errorMessage);
 				producedTableBody += "<tr>";
 				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(producedProduct.first) + "</td>";
 				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(product.GetName().c_str()) + "</td>";
 				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(producedProduct.second) + "</td>";
-				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(product.GetPrice()) + "</td>";
-				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(producedProduct.second * product.GetPrice()) + "</td>";
+				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(productPrice) + "</td>";
+				producedTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(producedProduct.second * productPrice) + "</td>";
 				producedTableBody += "</tr>";
-				prodSum += producedProduct.second * product.GetPrice();
+				prodSum += producedProduct.second * productPrice;
 			}
 			reportText.replace(QString("ProductTableBodyPh"), producedTableBody, Qt::CaseInsensitive);
 
@@ -367,6 +382,8 @@ void GenerateComRep::Generate()
 				empIDVec.clear();
 				inFilter.clear();
 				filterprOrder.clear();
+				orderProductCount.clear();
+				orderProductSum.clear();
 
 				crel.Clear();
 				empIDVec = crel.GetAllEmployeeIDByBranchID(dialogBL->globalVar, dialogBL->GetOrmasDal(), branch.GetID(), errorMessage);
@@ -381,7 +398,7 @@ void GenerateComRep::Generate()
 				listFilter.push_back(inFilter);
 				listFilter.push_back(filterprOrder);
 				filterprOrder = dialogBL->GetOrmasDal().ConcatenateFilters(listFilter);
-				vecOrder = dialogBL->GetAllDataForClass<BusinessLayer::OrderView>(errorMessage, filterprOrder);
+				vecOrder = dialogBL->GetAllDataForClass<BusinessLayer::OrderView>(0,0,errorMessage, filterprOrder);
 				
 				if (vecOrder.size() > 0)
 				{
@@ -404,10 +421,12 @@ void GenerateComRep::Generate()
 								if (orderProductCount.find(listItem.GetProductID()) != orderProductCount.end())
 								{
 									orderProductCount.find(listItem.GetProductID())->second = orderProductCount.find(listItem.GetProductID())->second + listItem.GetCount();
+									orderProductSum.find(listItem.GetProductID())->second = orderProductSum.find(listItem.GetProductID())->second + listItem.GetSum();
 								}
 								else
 								{
 									orderProductCount.insert(std::make_pair(listItem.GetProductID(), listItem.GetCount()));
+									orderProductSum.insert(std::make_pair(listItem.GetProductID(), listItem.GetSum()));
 								}
 							}
 						}
@@ -435,10 +454,10 @@ void GenerateComRep::Generate()
 						orderTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(orderProduct.first) + "</td>";
 						orderTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(product.GetName().c_str()) + "</td>";
 						orderTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(orderProduct.second) + "</td>";
-						orderTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(product.GetPrice()) + "</td>";
-						orderTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(orderProduct.second * product.GetPrice()) + "</td>";
+						orderTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(orderProductSum.find(orderProduct.first)->second / orderProduct.second) + "</td>";
+						orderTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(orderProductSum.find(orderProduct.first)->second) + "</td>";
 						orderTableBody += "</tr>";
-						oprodSum += orderProduct.second * product.GetPrice();
+						oprodSum += orderProductSum.find(orderProduct.first)->second;
 					}
 					orderTableBody += "<tr>";
 					orderTableBody += "<td style = 'border: 1px solid black; text-align: center;'></td> ";

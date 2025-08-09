@@ -49,6 +49,9 @@ namespace BusinessLayer
 			int sID, int cID, std::string& errorMessage);
 		bool UpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 			int sID, int cID, std::string& errorMessage);
+		bool SimpleUpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool SimpleUpdateOrderRawList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
+			int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
 		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
@@ -61,6 +64,7 @@ namespace BusinessLayer
 		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 		int GetSubaccountIDForEmployee(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		bool ActualizeOrderList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif

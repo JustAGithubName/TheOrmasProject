@@ -79,6 +79,7 @@ namespace DataLayer{
 		std::vector<consumeOtherStocksViewCollection> GetConsumeOtherStocks(std::string& errorMessage, std::string filter = std::string());
 		std::vector<creditorsCollection> GetCreditors(std::string& errorMessage, std::string filter = std::string());
 		std::vector<currenciesCollection> GetCurrencies(std::string& errorMessage, std::string filter = std::string());
+		std::vector<currenciesRateViewCollection> GetCurrenciesRate(std::string& errorMessage, std::string filter = std::string());
 		std::vector<divisionAccountViewCollection> GetDivisionAccount(std::string& errorMessage, std::string filter = std::string());
 		std::vector<divisionEmployeeCollection> GetDivisionEmployee(std::string& errorMessage, std::string filter = std::string());
 		std::vector<divisionsCollection> GetDivisions(std::string& errorMessage, std::string filter = std::string());
@@ -110,9 +111,13 @@ namespace DataLayer{
 		std::vector<lowValueStockHistoryViewCollection> GetLowValueStockHistory(std::string& errorMessage, std::string filter = std::string());
 		std::vector<lowValueStockChangeLogCollection> GetLowValueStockChangeLog(std::string& errorMessage, std::string filter = std::string());
 		std::vector<measuresCollection> GetMeasures(std::string& errorMessage, std::string filter = std::string());
+		std::vector<multicurrencyViewCollection> GetMulticurrency(std::string& errorMessage, std::string filter = std::string());
 		std::vector<netCostViewCollection> GetNetCost(std::string& errorMessage, std::string filter = std::string());
+		std::vector<netCostHistoryCollection> GetNetCostHistory(std::string& errorMessage, std::string filter = std::string());
+		std::vector<netCostCoefficientViewCollection> GetNetCostCoefficient(std::string& errorMessage, std::string filter = std::string());
 		std::vector<orderListViewCollection> GetOrderList(std::string& errorMessage, std::string filter = std::string());
 		std::vector<ordersViewCollection> GetOrders(std::string& errorMessage, std::string filter = std::string());
+		std::vector<orderPriceCorrectionCollection> GetOrderPriceCorrection(std::string& errorMessage, std::string filter = std::string());
 		std::vector<orderRawListViewCollection> GetOrderRawList(std::string& errorMessage, std::string filter = std::string());
 		std::vector<orderRawsViewCollection> GetOrderRaws(std::string& errorMessage, std::string filter = std::string());
 		std::vector<otherStocksViewCollection> GetOtherStocks(std::string& errorMessage, std::string filter = std::string());
@@ -127,6 +132,7 @@ namespace DataLayer{
 		std::vector<positionsCollection> GetPositions(std::string& errorMessage, std::string filter = std::string());
 		std::vector<productBranchViewCollection> GetProductBranch(std::string& errorMessage, std::string filter = std::string());
 		std::vector<pricesViewCollection> GetPrices(std::string& errorMessage, std::string filter = std::string());
+		std::vector<priceExtensionViewCollection> GetPriceExtension(std::string& errorMessage, std::string filter = std::string());
 		std::vector<productTypeCollection> GetProductTypes(std::string& errorMessage, std::string filter = std::string());
 		std::vector<productionCollection> GetProduction(std::string& errorMessage, std::string filter = std::string());
 		std::vector<productionListViewCollection> GetProductionList(std::string& errorMessage, std::string filter = std::string());
@@ -136,6 +142,7 @@ namespace DataLayer{
 		std::vector<productionPlanListViewCollection> GetProductionPlanList(std::string& errorMessage, std::string filter = std::string());
 		std::vector<productionStockViewCollection> GetProductionStock(std::string& errorMessage, std::string filter = std::string());
 		std::vector<productsViewCollection> GetProducts(std::string& errorMessage, std::string filter = std::string());
+		std::vector<productRepriceInStockCollection> GetProductRepriceInStock(std::string& errorMessage, std::string filter = std::string());
 		std::vector<purveyorsViewCollection> GetPurveyors(std::string& errorMessage, std::string filter = std::string());
 		std::vector<receiptProductListViewCollection> GetReceiptProductList(std::string& errorMessage, std::string filter = std::string());
 		std::vector<receiptProductsViewCollection> GetReceiptProducts(std::string& errorMessage, std::string filter = std::string());
@@ -148,6 +155,7 @@ namespace DataLayer{
 		std::vector<relationsViewCollection> GetRelations(std::string& errorMessage, std::string filter = std::string());
 		std::vector<returnListViewCollection> GetReturnList(std::string& errorMessage, std::string filter = std::string());
 		std::vector<returnsViewCollection> GetReturns(std::string& errorMessage, std::string filter = std::string());
+		std::vector<returnPriceCorrectionCollection> GetReturnPriceCorrection(std::string& errorMessage, std::string filter = std::string());
 		std::vector<rolesCollection> GetRoles(std::string& errorMessage, std::string filter = std::string());
 		std::vector<salariesViewCollection> GetSalaries(std::string& errorMessage, std::string filter = std::string());
 		std::vector<salaryTypeCollection> GetSalaryType(std::string& errorMessage, std::string filter = std::string());
@@ -187,152 +195,160 @@ namespace DataLayer{
 		std::vector<writeOffRawListViewCollection> GetWriteOffRawList(std::string& errorMessage, std::string filter = std::string());
 
 		//overload view methods
-		std::vector<accessItemsCollection> GetAccessItems(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accessesViewCollection> GetAccesses(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountTypeCollection> GetAccountType(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountHistoryCollection> GetAccountHistory(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountChangeLogCollection> GetAccountChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountsCollection> GetAccounts(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountableViewCollection> GetAccountable(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountableApprovementCollection> GetAccountableApprovement(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountableDocumentListCollection> GetAccountableDocumentList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountableDocumentCollection> GetAccountableDocument(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountableEntryCollection> GetAccountableEntry(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountablePaymentCollection> GetAccountablePayment(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountableWithdrawalCollection> GetAccountableWithdrawal(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<accountableTransactionCollection> GetAccountableTransaction(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<amortizeGroupCollection> GetAmortizeGroup(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<amortizeTypeCollection> GetAmortizeType(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<balancePaymentCollection> GetBalancePayment(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<balancePayslipCollection> GetBalancePayslip(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<balanceRefundCollection> GetBalanceRefund(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<balanceWithdrawalCollection> GetBalanceWithdrawal(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<balancesViewCollection> GetBalances(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<branchesCollection> GetBranches(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<branchSubaccountViewCollection> GetBranchSubaccount(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<borrowersViewCollection> GetBorrowers(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<cashboxViewCollection> GetCashbox(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<cashboxEmployeeViewCollection> GetCashboxEmployee(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<cashboxTransactionCollection> GetCashboxTransaction(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<chartOfAccountsViewCollection> GetChartOfAccounts(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<clientsViewCollection> GetClients(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<companiesCollection> GetCompanies(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<companyEmployeeViewCollection> GetCompanyEmployee(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<companyAccountViewCollection> GetCompanyAccount(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<consumeProductListViewCollection> GetConsumeProductList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<consumeProductsViewCollection> GetConsumeProducts(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<consumeRawListViewCollection> GetConsumeRawList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<consumeRawsViewCollection> GetConsumeRaws(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<consumeOtherStocksListViewCollection> GetConsumeOtherStocksList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<consumeOtherStocksViewCollection> GetConsumeOtherStocks(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<creditorsCollection> GetCreditors(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<currenciesCollection> GetCurrencies(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<divisionAccountViewCollection> GetDivisionAccount(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<divisionEmployeeCollection> GetDivisionEmployee(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<divisionsCollection> GetDivisions(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<employeesViewCollection> GetEmployees(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<entriesViewCollection> GetEntries(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<entriesFullViewCollection> GetExtendedEntries(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<entriesFullJoinViewCollection> GetFullExtendedEntries(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<entrySubaccountCollection> GetEntrySubaccount(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<employeeProductViewCollection> GetEmployeeProduct(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<entryRoutingCollection> GetEntryRouting(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<entryOperationCollection> GetEntryOperation(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<expenseDocumentCollection> GetExpenseDocument(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<financialReportCollection> GetFinancialReport(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<fixedAssetsViewCollection> GetFixedAssets(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<fixedAssetsUnionCollection> GetFixedAssetsUnion(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<fixedAssetsDetailsViewCollection> GetFixedAssetsDetails(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<fixedAssetsSpecificationCollection> GetFixedAssetsSpecification(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<fixedAssetsOperationsCollection> GetFixedAssetsOperation(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<groupsCollection> GetGroups(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<inventorizationListViewCollection> GetInventorizationList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<inventorizationsViewCollection> GetInventorizations(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<inventoryViewCollection> GetInventory(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<inventoryUnionViewCollection> GetInventoryUnion(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<inventoryHistoryCollection> GetInventoryHistory(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<jobpriceViewCollection> GetJobprice(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<jobsheetViewCollection> GetJobsheet(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<locationsCollection> GetLocations(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<lowValueStockViewCollection> GetLowValueStock(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<lowValueStockHistoryViewCollection> GetLowValueStockHistory(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<lowValueStockChangeLogCollection> GetLowValueStockChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<measuresCollection> GetMeasures(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<netCostViewCollection> GetNetCost(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<orderListViewCollection> GetOrderList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<ordersViewCollection> GetOrders(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<orderRawListViewCollection> GetOrderRawList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<orderRawsViewCollection> GetOrderRaws(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<otherStocksViewCollection> GetOtherStocks(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<otherStocksTypeCollection> GetOtherStocksType(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<paymentsViewCollection> GetPayments(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<paymentEmployeeCollection> GetPaymentEmployee(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<payslipsViewCollection> GetPayslips(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<payslipOrderCollection> GetPayslipOrder(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<percentRateCollection> GetPercentRate(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<photosCollection> GetPhotos(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<postingFixedAssetsViewCollection> GetPostingFixedAssets(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<positionsCollection> GetPositions(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productBranchViewCollection> GetProductBranch(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<pricesViewCollection> GetPrices(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productTypeCollection> GetProductTypes(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productionCollection> GetProduction(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productionListViewCollection> GetProductionList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productionConsumeRawListViewCollection> GetProductionConsumeRawList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productionConsumeRawsViewCollection> GetProductionConsumeRaws(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productionPlanViewCollection> GetProductionPlan(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productionPlanListViewCollection> GetProductionPlanList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productionStockViewCollection> GetProductionStock(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<productsViewCollection> GetProducts(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<purveyorsViewCollection> GetPurveyors(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<receiptProductListViewCollection> GetReceiptProductList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<receiptProductsViewCollection> GetReceiptProducts(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<receiptOtherStocksListViewCollection> GetReceiptOtherStocksList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<receiptOtherStocksViewCollection> GetReceiptOtherStocks(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<stockTransferListViewCollection> GetStockTransferList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<stockTransferViewCollection> GetStockTransfer(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<refundsViewCollection> GetRefunds(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<relationTypeCollection> GetRelationType(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<relationsViewCollection> GetRelations(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<returnListViewCollection> GetReturnList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<returnsViewCollection> GetReturns(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<rolesCollection> GetRoles(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<salariesViewCollection> GetSalaries(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<salaryTypeCollection> GetSalaryType(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<shareholdersViewCollection> GetShareholders(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<specificationListViewCollection> GetSpecificationList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<specificationsViewCollection> GetSpecifications(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<specificationChangeLogCollection> GetSpecificationChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<spoilageListViewCollection> GetSpoilageList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<spoilageViewCollection> GetSpoilage(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<stateCollection> GetState(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<statusCollection> GetStatus(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<statusRuleViewCollection> GetStatusRule(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<stockViewCollection> GetStock(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<stockLimitViewCollection> GetStockLimit(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<stockHistoryViewCollection> GetStockHistory(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<stockChangeLogCollection> GetStockChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<subaccountsViewCollection> GetSubaccounts(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<subaccountLimitViewCollection> GetSubaccountLimit(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<subaccountHistoryCollection> GetSubaccountHistory(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<subaccountChangeLogCollection> GetSubaccountChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<taxesCollection> GetTaxes(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<timesheetViewCollection> GetTimesheet(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<transportListViewCollection> GetTransportList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<transportsViewCollection> GetTransports(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<transportHistoryCollection> GetTransportHistory(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<transportChangeLogCollection> GetTransportChangeLog(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<usersViewCollection> GetUsers(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<userExtendedViewCollection> GetUserExtended(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<userGroupViewCollection> GetUserGroup(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<warehouseViewCollection> GetWarehouse(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<warehouseTypeCollection> GetWarehouseType(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<warehouseEmployeeViewCollection> GetWarehouseEmployee(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<withdrawalsViewCollection> GetWithdrawals(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<writeOffsViewCollection> GetWriteOffs(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<writeOffListViewCollection> GetWriteOffList(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<writeOffRawsViewCollection> GetWriteOffRaws(int offset, std::string& errorMessage, std::string filter = std::string());
-		std::vector<writeOffRawListViewCollection> GetWriteOffRawList(int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accessItemsCollection> GetAccessItems(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accessesViewCollection> GetAccesses(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountTypeCollection> GetAccountType(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountHistoryCollection> GetAccountHistory(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountChangeLogCollection> GetAccountChangeLog(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountsCollection> GetAccounts(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableViewCollection> GetAccountable(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableApprovementCollection> GetAccountableApprovement(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableDocumentListCollection> GetAccountableDocumentList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableDocumentCollection> GetAccountableDocument(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableEntryCollection> GetAccountableEntry(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountablePaymentCollection> GetAccountablePayment(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableWithdrawalCollection> GetAccountableWithdrawal(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<accountableTransactionCollection> GetAccountableTransaction(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<amortizeGroupCollection> GetAmortizeGroup(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<amortizeTypeCollection> GetAmortizeType(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<balancePaymentCollection> GetBalancePayment(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<balancePayslipCollection> GetBalancePayslip(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<balanceRefundCollection> GetBalanceRefund(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<balanceWithdrawalCollection> GetBalanceWithdrawal(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<balancesViewCollection> GetBalances(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<branchesCollection> GetBranches(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<branchSubaccountViewCollection> GetBranchSubaccount(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<borrowersViewCollection> GetBorrowers(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<cashboxViewCollection> GetCashbox(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<cashboxEmployeeViewCollection> GetCashboxEmployee(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<cashboxTransactionCollection> GetCashboxTransaction(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<chartOfAccountsViewCollection> GetChartOfAccounts(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<clientsViewCollection> GetClients(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<companiesCollection> GetCompanies(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<companyEmployeeViewCollection> GetCompanyEmployee(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<companyAccountViewCollection> GetCompanyAccount(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<consumeProductListViewCollection> GetConsumeProductList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<consumeProductsViewCollection> GetConsumeProducts(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<consumeRawListViewCollection> GetConsumeRawList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<consumeRawsViewCollection> GetConsumeRaws(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<consumeOtherStocksListViewCollection> GetConsumeOtherStocksList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<consumeOtherStocksViewCollection> GetConsumeOtherStocks(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<creditorsCollection> GetCreditors(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<currenciesCollection> GetCurrencies(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<currenciesRateViewCollection> GetCurrenciesRate(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<divisionAccountViewCollection> GetDivisionAccount(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<divisionEmployeeCollection> GetDivisionEmployee(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<divisionsCollection> GetDivisions(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<employeesViewCollection> GetEmployees(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<entriesViewCollection> GetEntries(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<entriesFullViewCollection> GetExtendedEntries(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<entriesFullJoinViewCollection> GetFullExtendedEntries(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<entrySubaccountCollection> GetEntrySubaccount(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<employeeProductViewCollection> GetEmployeeProduct(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<entryRoutingCollection> GetEntryRouting(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<entryOperationCollection> GetEntryOperation(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<expenseDocumentCollection> GetExpenseDocument(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<financialReportCollection> GetFinancialReport(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<fixedAssetsViewCollection> GetFixedAssets(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<fixedAssetsUnionCollection> GetFixedAssetsUnion(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<fixedAssetsDetailsViewCollection> GetFixedAssetsDetails(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<fixedAssetsSpecificationCollection> GetFixedAssetsSpecification(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<fixedAssetsOperationsCollection> GetFixedAssetsOperation(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<groupsCollection> GetGroups(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<inventorizationListViewCollection> GetInventorizationList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<inventorizationsViewCollection> GetInventorizations(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<inventoryViewCollection> GetInventory(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<inventoryUnionViewCollection> GetInventoryUnion(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<inventoryHistoryCollection> GetInventoryHistory(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<jobpriceViewCollection> GetJobprice(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<jobsheetViewCollection> GetJobsheet(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<locationsCollection> GetLocations(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<lowValueStockViewCollection> GetLowValueStock(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<lowValueStockHistoryViewCollection> GetLowValueStockHistory(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<lowValueStockChangeLogCollection> GetLowValueStockChangeLog(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<measuresCollection> GetMeasures(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<multicurrencyViewCollection> GetMulticurrency(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<netCostViewCollection> GetNetCost(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<netCostHistoryCollection> GetNetCostHistory(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<netCostCoefficientViewCollection> GetNetCostCoefficient(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<orderListViewCollection> GetOrderList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<ordersViewCollection> GetOrders(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<orderPriceCorrectionCollection> GetOrderPriceCorrection(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<orderRawListViewCollection> GetOrderRawList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<orderRawsViewCollection> GetOrderRaws(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<otherStocksViewCollection> GetOtherStocks(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<otherStocksTypeCollection> GetOtherStocksType(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<paymentsViewCollection> GetPayments(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<paymentEmployeeCollection> GetPaymentEmployee(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<payslipsViewCollection> GetPayslips(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<payslipOrderCollection> GetPayslipOrder(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<percentRateCollection> GetPercentRate(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<photosCollection> GetPhotos(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<postingFixedAssetsViewCollection> GetPostingFixedAssets(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<positionsCollection> GetPositions(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productBranchViewCollection> GetProductBranch(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<pricesViewCollection> GetPrices(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<priceExtensionViewCollection> GetPriceExtension(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productTypeCollection> GetProductTypes(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productionCollection> GetProduction(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productionListViewCollection> GetProductionList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productionConsumeRawListViewCollection> GetProductionConsumeRawList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productionConsumeRawsViewCollection> GetProductionConsumeRaws(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productionPlanViewCollection> GetProductionPlan(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productionPlanListViewCollection> GetProductionPlanList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productionStockViewCollection> GetProductionStock(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productsViewCollection> GetProducts(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<productRepriceInStockCollection> GetProductRepriceInStock(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<purveyorsViewCollection> GetPurveyors(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<receiptProductListViewCollection> GetReceiptProductList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<receiptProductsViewCollection> GetReceiptProducts(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<receiptOtherStocksListViewCollection> GetReceiptOtherStocksList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<receiptOtherStocksViewCollection> GetReceiptOtherStocks(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockTransferListViewCollection> GetStockTransferList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockTransferViewCollection> GetStockTransfer(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<refundsViewCollection> GetRefunds(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<relationTypeCollection> GetRelationType(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<relationsViewCollection> GetRelations(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<returnListViewCollection> GetReturnList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<returnsViewCollection> GetReturns(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<returnPriceCorrectionCollection> GetReturnPriceCorrection(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<rolesCollection> GetRoles(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<salariesViewCollection> GetSalaries(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<salaryTypeCollection> GetSalaryType(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<shareholdersViewCollection> GetShareholders(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<specificationListViewCollection> GetSpecificationList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<specificationsViewCollection> GetSpecifications(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<specificationChangeLogCollection> GetSpecificationChangeLog(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<spoilageListViewCollection> GetSpoilageList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<spoilageViewCollection> GetSpoilage(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stateCollection> GetState(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<statusCollection> GetStatus(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<statusRuleViewCollection> GetStatusRule(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockViewCollection> GetStock(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockLimitViewCollection> GetStockLimit(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockHistoryViewCollection> GetStockHistory(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<stockChangeLogCollection> GetStockChangeLog(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<subaccountsViewCollection> GetSubaccounts(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<subaccountLimitViewCollection> GetSubaccountLimit(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<subaccountHistoryCollection> GetSubaccountHistory(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<subaccountChangeLogCollection> GetSubaccountChangeLog(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<taxesCollection> GetTaxes(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<timesheetViewCollection> GetTimesheet(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<transportListViewCollection> GetTransportList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<transportsViewCollection> GetTransports(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<transportHistoryCollection> GetTransportHistory(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<transportChangeLogCollection> GetTransportChangeLog(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<usersViewCollection> GetUsers(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<userExtendedViewCollection> GetUserExtended(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<userGroupViewCollection> GetUserGroup(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<warehouseViewCollection> GetWarehouse(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<warehouseTypeCollection> GetWarehouseType(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<warehouseEmployeeViewCollection> GetWarehouseEmployee(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<withdrawalsViewCollection> GetWithdrawals(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<writeOffsViewCollection> GetWriteOffs(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<writeOffListViewCollection> GetWriteOffList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<writeOffRawsViewCollection> GetWriteOffRaws(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
+		std::vector<writeOffRawListViewCollection> GetWriteOffRawList(int limit, int offset, std::string& errorMessage, std::string filter = std::string());
 
 		//create methods
 		bool CreateAccessItem(int accessItemID, std::string accessItemEng, std::string accessItemRu,std::string accessItemDivision, std::string& errorMessage);
@@ -384,6 +400,7 @@ namespace DataLayer{
 			int stockEmployeeID, double cOtherStocksCount, double cOtherStocksSum, int statusID, int currencyID, std::string& errorMessage);
 		bool CreateCreditor(int creditorID, std::string creditorName, std::string creditorAddress, std::string creditorPhone, int companyID, int userID, std::string& errorMessage);
 		bool CreateCurrency(int currenycID, int currencyCode, std::string currencyShortName, std::string currencyName, int currencyUnit, bool cMainTrade, std::string& errorMessage);
+		bool CreateCurrencyRate(int currenycRateID, int currencyFromID, double fromValue, int currencyToID, double toValue, std::string changeDate, std::string& errorMessage);
 		bool CreateDivisionAccount(int divisionAccountID, int disvisionID, int accountID, std::string accountCode, std::string& errorMessage);
 		bool CreateDivisionEmployee(int divisionEmployeeID, int disvisionID, int employeeID, bool isContract, std::string& errorMessage);
 		bool CreateDivision(int divisionID, std::string divisionName, std::string divisionCode, std::string& errorMessage);
@@ -406,7 +423,7 @@ namespace DataLayer{
 		bool CreateFixedAssetsDetails(int fixedAssetsDeID, int amGroupID, int amTypeID, int departmentID, std::string fixedAssetsLocation, 
 			int primaryAccID, int amortizeAccID, std::string barcodeNumber, double amValue, std::string& errorMessage);
 		bool CreateFixedAssetsOperations(int fixedAssetsOperID, std::string operationDate, std::string operationName,
-			double operationValue, bool increment, bool decrement, int fixedAssetsID, std::string& errorMessage);
+			double operationValue, bool increment, bool decrement, int fixedAssetsID, bool revaluation, std::string& errorMessage);
 		bool CreateGroups(int groupID, std::string groupName, std::string groupDefinition, std::string& errorMessage);
 		bool CreateInventorizationList(int inventorizationListID, int inventorizationID, int productID, double inventorizationListCount, 
 			double inventorizationListSum, int statusID, int currencyID, std::string& errorMessage);
@@ -426,10 +443,14 @@ namespace DataLayer{
 		bool CreateLowValueStockChangeLog(int lwStockChangeLogID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string logDate, int userId, int operationID, std::string& errorMessage);
 		bool CreateMeasure(int measureID, std::string measureName, std::string measureShortName, int measureUnit, std::string& errorMessage);
+		bool CreateMulticurrency(int multicurrencyID, int subaccountID, int mainSubaccountID, std::string comment, std::string& errorMessage);
 		bool CreateNetCost(int netCostID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated, std::string& errorMessage);
+		bool CreateNetCostHistory(int netCostHistoryID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated, std::string historyDate, std::string& errorMessage);
+		bool CreateNetCostCoefficient(int netCostCoefficientID, int productID, double coefficientValue, std::string comment, std::string& errorMessage);
 		bool CreateOrderList(int orderListID, int orderID, int productID, double orderListCount, double orderListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool CreateOrder(int orderID, int clientID, std::string orderDate, std::string orderExecutionDate, int employeeID,
 			double orderCount, double orderSum, int statusID, int currencyID, std::string& errorMessage);
+		bool CreateOrderPriceCorrection(int orderPriceCorrectionID, int orderID, int priceExtensionID, int orderListID, double commonValue, double newValue, std::string& errorMessage);
 		bool CreateOrderRawList(int orderRawListID, int orderRawID, int productID, double orderRawListCount, double orderRawSum, int statusID, int currencyID, std::string& errorMessage);
 		bool CreateOrderRaw(int orderRawID, int productID, std::string orderRawDate, std::string orderRawExecutionDate, 
 			int employeeID, double orderRawCount, double orderRawSum, int statusID, int currencyID, std::string& errorMessage);
@@ -447,6 +468,7 @@ namespace DataLayer{
 		bool CreatePostingFixedAssets(int posFxdAstID, int userID, int subaccID, int accID, int fixedAssetsID, int inventoryID, std::string& errorMessage);
 		bool CreatePosition(int positionID, std::string positionName, std::string& errorMessage);
 		bool CreatePrice(int priceID, std::string priceDate, double priceValue, int currencyID, int productID, bool priceIsOutdated, std::string& errorMessage);
+		bool CreatePriceExtension(int priceExtensionID, int productID, double value, std::string extensionDate, int dateCount, int locationID, int expeditorID, int branchID, int clientID, std::string& errorMessage);
 		bool CreateProductType(int productTypeID, std::string productTypeName, std::string productTypeShortName, std::string productTypeCode, std::string& errorMessage);
 		bool CreateProductBranch(int pbID, int productID, int branchID, std::string& errorMessage);
 		bool CreateProduction(int productionID, std::string productionDate, std::string productionExpiryDate, std::string productionSessionStart, 
@@ -462,6 +484,7 @@ namespace DataLayer{
 			int warehouseID, std::string& errorMessage);
 		bool CreateProduct(int productID, int companyID, std::string productName, double productVolume, int measureID, double productPrice, int productTypeID, int productShelfLife, 
 			int currencyID, std::string& errorMessage);
+		bool CreateProductRepriceInStock(int productRepriceInStockID, int stockID, double oldPrice, double newPrice, std::string replaceDate, int userID, std::string& errorMessage);
 		bool CreatePurveyor(int userID, std::string purveyorCompanyName, int locationID, std::string& errorMessage);
 		bool CreateReceiptProductList(int receiptProductListID, int receiptProductID, int productID, double receiptProductCount,
 			double receiptProductSum, int statusID, int currencyID, std::string& errorMessage);
@@ -480,6 +503,7 @@ namespace DataLayer{
 		bool CreateRelation(int relationID, int user1ID, int user2ID, int relationTypeID, std::string& errorMessage);
 		bool CreateReturnList(int returnListID, int returnID, int productID, double returnListCount, double returnListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool CreateReturn(int returnID, int clientID, std::string returnDate, std::string returnExecutionDate, int employeeID, double returnCount, double returnSum, int statusID, int currencyID, std::string& errorMessage);
+		bool CreateReturnPriceCorrection(int returnPriceCorrectionID, int returnID, int priceExtensionID, int returnListID, double commonValue, double newValue, std::string& errorMessage);
 		bool CreateRole(int roleID, std::string roleCode, std::string roleName, std::string comment, std::string& errorMessage);
 		bool CreateSalary(int salaryID, int userID, double salaryValue, int currencyID, int salaryTypeID, std::string salaryDate, bool salaryBonus, std::string& errorMessage);
 		bool CreateSalaryType(int salaryTypeID, std::string salaryTypeCode, std::string salaryTypeName, std::string& errorMessage);
@@ -570,6 +594,7 @@ namespace DataLayer{
 		bool DeleteCompanyAccount(int cID, int aID, std::string& errorMessage);
 		bool DeleteCompanyEmployee(int cID, int eID, std::string& errorMessage);
 		bool DeleteCurrency(int id, std::string& errorMessage);
+		bool DeleteCurrencyRate(int id, std::string& errorMessage);
 		bool DeleteCreditor(int id, std::string& errorMessage);
 		bool DeleteConsumeProduct(int id, std::string& errorMessage);
 		bool DeleteItemInConsumeProductList(int id, std::string& errorMessage);
@@ -608,10 +633,14 @@ namespace DataLayer{
 		bool DeleteLowValueStockChangeLog(int id, std::string& errorMessage);
 		bool DeleteLocation(int id, std::string& errorMessage);
 		bool DeleteMeasure(int id, std::string& errorMessage);
+		bool DeleteMulticurrency(int id, std::string& errorMessage);
 		bool DeleteNetCost(int id, std::string& errorMessage);
+		bool DeleteNetCostHistory(int id, std::string& errorMessage);
+		bool DeleteNetCostCoefficient(int id, std::string& errorMessage);
 		bool DeleteItemInOrderList(int id, std::string& errorMessage);
 		bool DeleteListByOrderID(int id, std::string& errorMessage);
 		bool DeleteOrder(int id, std::string& errorMessage);
+		bool DeleteOrderPriceCorrection(int id, std::string& errorMessage);
 		bool DeleteItemInOrderRawList(int id, std::string& errorMessage);
 		bool DeleteListByOrderRawID(int id, std::string& errorMessage);
 		bool DeleteOrderRaw(int id, std::string& errorMessage);
@@ -626,7 +655,8 @@ namespace DataLayer{
 		bool DeletePostingFixedAssets(int id, std::string& errorMessage);
 		bool DeletePosition(int id, std::string& errorMessage);
 		bool DeleteProductBranch(int pID, int bID, std::string& errorMessage);
-		bool DeletePrice(int id, std::string& errorMessage);
+		bool DeletePrice(int id, std::string& errorMessage); 
+		bool DeletePriceExtension(int id, std::string& errorMessage);
 		bool DeleteProductType(int id, std::string& errorMessage);
 		bool DeleteProduction(int id, std::string& errorMessage);
 		bool DeleteItemInProductionList(int id, std::string& errorMessage);
@@ -639,6 +669,7 @@ namespace DataLayer{
 		bool DeleteListByProductionPlanID(int id, std::string& errorMessage);
 		bool DeleteProductionStock(int id, std::string& errorMessage);
 		bool DeleteProduct(int id, std::string& errorMessage);
+		bool DeleteProductRepriceInStock(int id, std::string& errorMessage);
 		bool DeletePurveyor(int id, std::string& errorMessage);
 		bool DeleteReceiptProduct(int id, std::string& errorMessage);
 		bool DeleteItemInReceiptProductList(int id, std::string& errorMessage);
@@ -655,6 +686,7 @@ namespace DataLayer{
 		bool DeleteItemInReturnList(int id, std::string& errorMessage);
 		bool DeleteListByReturnID(int id, std::string& errorMessage);
 		bool DeleteReturn(int id, std::string& errorMessage);
+		bool DeleteReturnPriceCorrection(int id, std::string& errorMessage);
 		bool DeleteRole(int id, std::string& errorMessage);
 		bool DeleteSalary(int id, std::string& errorMessage);
 		bool DeleteSalaryType(int id, std::string& errorMessage);
@@ -746,6 +778,7 @@ namespace DataLayer{
 		bool UpdateConsumeOtherStocks(int cOtherStocksID, int userID, std::string cOtherStocksDate, std::string cOtherStocksExecutionDate,
 			int stockEmployeeID, double cOtherStocksCount, double cOtherStocksSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateCurrency(int currenycID, int currencyCode, std::string currencyShortName, std::string currencyName, int currencyUnit, bool cMainTrade, std::string& errorMessage);
+		bool UpdateCurrencyRate(int currenycRateID, int currencyFromID, double fromValue, int currencyToID, double toValue, std::string changeDate, std::string& errorMessage);
 		bool UpdateCreditor(int creditorID, std::string creditorName, std::string creditorAddress, std::string creditorPhone, int companyID, int userID, std::string& errorMessage);
 		bool UpdateDivisionAccount(int divisionAccountID, int divisionID, int accountID, std::string accountCode, std::string& errorMessage);
 		bool UpdateDivisionEmployee(int divisionEmployeeID, int divisionID, int employeeID, bool isContract, std::string& errorMessage);
@@ -769,7 +802,7 @@ namespace DataLayer{
 		bool UpdateFixedAssetsDetails(int fixedAssetsDeID, int amGroupID, int amTypeID, int departmentID, std::string fixedAssetsLocation,
 			int primaryAccID, int amortizeAccID, std::string barcodeNumber, double amVlaue, std::string& errorMessage);
 		bool UpdateFixedAssetsOperations(int fixedAssetsOperID, std::string operationDate, std::string operationName,
-			double operationValue, bool increment, bool decrement, int fixedAssetsID, std::string& errorMessage);
+			double operationValue, bool increment, bool decrement, int fixedAssetsID, bool revaluation, std::string& errorMessage);
 		bool UpdateGroups(int groupID, std::string groupName, std::string groupDefinition, std::string& errorMessage);
 		bool UpdateInventorizationList(int inventorizationListID, int inventorizationID, int productID, double inventorizationListCount,
 			double inventorizationListSum, int statusID, int currencyID, std::string& errorMessage);
@@ -789,10 +822,14 @@ namespace DataLayer{
 		bool UpdateLowValueStockChangeLog(int lwStockChangeLogID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string logDate, int userID, int operationID, std::string& errorMessage);
 		bool UpdateMeasure(int measureID, std::string measureName, std::string measureShortName, int measureUnit, std::string& errorMessage);
+		bool UpdateMulticurrency(int multicurrencyID, int subaccountID, int mainSubaccountID, std::string comment, std::string& errorMessage);
 		bool UpdateNetCost(int netCostID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated, std::string& errorMessage);
+		bool UpdateNetCostHistory(int netCostHistoryID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated, std::string historyDate, std::string& errorMessage);
+		bool UpdateNetCostCoefficient(int netCostCoefficientID, int productID, double coefficientValue, std::string comment, std::string& errorMessage);
 		bool UpdateOrderList(int orderListID, int orderID, int productID, double orderListCount, double orderListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateOrder(int orderID, int clientID, std::string orderDate, std::string orderExecutionDate, int employeeID,
 			double orderCount, double orderSum, int statusID, int currencyID, std::string& errorMessage);
+		bool UpdateOrderPriceCorrection(int orderPriceCorrectionID, int orderID, int priceExtensionID, int orderListID, double commonValue, double newValue, std::string& errorMessage);
 		bool UpdateOrderRawList(int orderRawListID, int orderRawID, int productID, double orderRawListCount, double orderRawSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateOrderRaw(int orderRawID, int productID, std::string orderRawDate, std::string orderRawExecutionDate,
 			int employeeID, double orderRawCount, double orderRawSum, int statusID, int currencyID, std::string& errorMessage);
@@ -809,6 +846,7 @@ namespace DataLayer{
 		bool UpdatePostingFixedAssets(int posFxdAstID, int userID, int subaccID, int accID, int fixedAssetsID, int inventoryID, std::string& errorMessage);
 		bool UpdatePosition(int positionID, std::string positionName, std::string& errorMessage);
 		bool UpdatePrice(int priceID, std::string priceDate, double priceValue, int currencyID, int productID, bool priceIsOutdated, std::string& errorMessage);
+		bool UpdatePriceExtension(int priceExtensionID, int productID, double value, std::string extensionDate, int dateCount, int locationID, int expeditorID, int branchID, int clientID, std::string& errorMessage);
 		bool UpdateProductType(int productTypeID, std::string productTypeName, std::string productTypeShortName, std::string productTypeCode, std::string& errorMessage);
 		bool UpdateProductBranch(int pbID, int productID, int branchID, std::string& errorMessage);
 		bool UpdateProduction(int productionID, std::string productionDate, std::string productionExpiryDate, std::string productionSessionStart,
@@ -824,6 +862,7 @@ namespace DataLayer{
 			int statusID, int currencyID, int warehouseID, std::string& errorMessage);
 		bool UpdateProduct(int productID, int companyID, std::string productName, double productVolume, int measureID, double productPrice, int productTypeID, int productShelfLife,
 			int currencyID, std::string& errorMessage);
+		bool UpdateProductRepriceInStock(int productRepriceInStockID, int stockID, double oldPrice, double newPrice, std::string replaceDate, int userID, std::string& errorMessage);
 		bool UpdatePurveyor(int userID, std::string purveyorCompanyName, int locationID, std::string& errorMessage);
 		bool UpdateReceiptProductList(int receiptProductListID, int receiptProductID, int productID, double receiptProductCount, double receiptProductSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateReceiptProduct(int receiptProductID, int employeeID, std::string receiptProductDate,
@@ -841,6 +880,7 @@ namespace DataLayer{
 		bool UpdateRelation(int relationID, int user1ID, int user2ID, int relationTypeID, std::string& errorMessage);
 		bool UpdateReturnList(int returnListID, int returnID, int productID, double returnListCount, double returnListSum, int statusID, int currencyID, std::string& errorMessage);
 		bool UpdateReturn(int returnID, int clientID, std::string returnDate, std::string returnExecutionDate, int employeeID, double returnCount, double returnSum, int statusID, int currencyID, std::string& errorMessage);
+		bool UpdateReturnPriceCorrection(int returnPriceCorrectionID, int returnID, int priceExtensionID, int returnListID, double commonValue, double newValue, std::string& errorMessage);
 		bool UpdateRole(int roleID, std::string roleCode, std::string roleName, std::string comment, std::string& errorMessage);
 		bool UpdateSalary(int salaryID, int userID, double salaryValue, int currencyID, int salaryTypeID, std::string salaryDate, bool salaryBonus, std::string& errorMessage);
 		bool UpdateSalaryType(int salaryTypeID, std::string salaryTypeCode, std::string salaryTypeName, std::string& errorMessage);
@@ -956,6 +996,7 @@ namespace DataLayer{
 		std::string GetFilterForConsumeOtherStocksForPeriod(int cOtherStocksID, int userID, std::string cOtherStocksDate, std::string cOtherStocksExecutionDate,
 			int stockEmployeeID, double cOtherStocksCount, double cOtherStocksSum, int statusID, int currencyID, std::string fromDate, std::string toDate);
 		std::string GetFilterForCurrency(int currenycID, int currencyCode, std::string currencyShortName, std::string currencyName, int currencyUnit, bool cMainTrade);
+		std::string GetFilterForCurrencyRate(int currenycRateID, int currencyFromID, double fromValue, int currencyToID, double toValue, std::string changeDate);
 		std::string GetFilterForCreditor(int creditorID, std::string creditorName, std::string creditorAddress, std::string creditorPhone, int companyID, int userID);
 		std::string GetINFilterForCreditorID(std::vector<int> creditorIDList);
 		std::string GetFilterForDivisionAccount(int divisionAccountID, int disvisionID, int accountID, std::string accountCode);
@@ -997,7 +1038,7 @@ namespace DataLayer{
 		std::string GetFilterForFixedAssetsDetails(int fixedAssetsDeID, int amGroupID, int amTypeID, int departmentID, std::string fixedAssetsLocation,
 			int primaryAccID, int amortizeAccID, std::string barcodeNumber, double amValue);
 		std::string GetFilterForFixedAssetsOperations(int fixedAssetsOperID, std::string operationDate, std::string operationName,
-			double operationValue, bool increment, bool decrement, int fixedAssetsID);
+			double operationValue, bool increment, bool decrement, int fixedAssetsID, bool revaluation);
 		std::string GetFilterForInventorizationList(int inventorizationListID, int inventorizationID, int productID, double inventorizationListCount,
 			double inventorizationListSum, int statusID, int currencyID);
 		std::string GetFilterForGroups(int groupID, std::string groupName, std::string groupDefinition);
@@ -1020,12 +1061,18 @@ namespace DataLayer{
 		std::string GetFilterForLowValueStockChangeLogForPeriod(int lvStockChangeLogID, int lwStockID, int otherStocksID, double stockCount, double stockSum, int statusID, int currencyID,
 			int warehouseID, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate);
 		std::string GetFilterForMeasure(int measureID, std::string measureName, std::string measureShortName, int measureUnit);
+		std::string GetFilterForMulticurrency(int multicurrencyID, int subaccountID, int mainSubaccountID, std::string comment);
+		std::string GetINFilterForExchangeSubaccount(std::vector<int> subaccountIDList);
+		std::string GetINFilterForMainSubaccount(std::vector<int> subaccountIDList);
 		std::string GetFilterForNetCost(int netCostID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated);
+		std::string GetFilterForNetCostHistory(int netCostHistoryID, std::string netCostDate, double netCostValue, int currencyID, int productID, bool netCostIsOutdated, std::string historyDate);
+		std::string GetFilterForNetCostCoefficient(int netCostCoefficientID, int productID, double coefficientValue, std::string comment);
 		std::string GetFilterForOrderList(int orderListID, int orderID, int productID, double orderListCount, double orderListSum, int statusID, int currencyID);
 		std::string GetFilterForOrder(int orderID, int clientID, std::string orderDate, std::string orderExecutionDate, int employeeID,
 			double orderCount, double orderSum, int statusID, int currencyID);
 		std::string GetFilterForOrderForPeriod(int orderID, int clientID, std::string orderDate, std::string orderExecutionDate, int employeeID,
 			double orderCount, double orderSum, int statusID, int currencyID, std::string fromDate, std::string toDate);
+		std::string GetFilterForOrderPriceCorrection(int orderPriceCorrectionID, int orderID, int priceExtensionID, int orderListID, double commonValue, double newValue);
 		std::string GetFilterForOrderRawList(int orderRawListID, int orderRawID, int productID, double orderRawListCount, double orderRawSum, int statusID, int currencyID);
 		std::string GetFilterForOrderRaw(int orderRawID, int productID, std::string orderRawDate, std::string orderRawExecutionDate,
 			int employeeID, double orderRawCount, double orderRawSum, int statusID, int currencyID);
@@ -1051,6 +1098,10 @@ namespace DataLayer{
 		std::string GetFilterForPostingFixedAssets(int posFxdAstID, int userID, int subaccID, int accID, int fixedAssetsID, int inventoryID);
 		std::string GetFilterForPosition(int positionID, std::string positionName);
 		std::string GetFilterForPrice(int priceID, std::string priceDate, double priceValue, int currencyID, int productID, bool priceIsOutdated);
+		std::string GetFilterForPriceLessDate(int priceID, std::string priceDate, double priceValue, int currencyID, int productID, bool priceIsOutdated);
+		std::string GetFilterForPriceForPeriod(int priceID, std::string priceDate, double priceValue, int currencyID, int productID, bool priceIsOutdated, std::string fromDate, std::string toDate);
+		std::string GetFilterForPriceExtension(int priceExtensionID, int productID, double value, std::string extensionDate, int dateCount, int locationID, int expeditorID, int branchID, int clientID);
+		std::string GetINFilterForPriceID(std::vector<int> priceIDList);
 		std::string GetFilterForProductBranch(int pbID, int productID, int branchID);
 		std::string GetFilterForProductType(int productTypeID, std::string productTypeName, std::string productTypeShortName, std::string productTypeCode);
 		std::string GetFilterForProduction(int productionID, std::string productionDate, std::string productionExpiryDate, std::string productionSessionStart,
@@ -1072,6 +1123,7 @@ namespace DataLayer{
 			int statusID, int currencyID, int warehouseID);
 		std::string GetFilterForProduct(int productID, int companyID, std::string productName, double productVolume, int measureID, double productPrice, int productTypeID, int productShelfLife,
 			int currencyID);
+		std::string GetFilterForProductRepriceInStock(int productRepriceInStockID, int stockID, double oldPrice, double newPrice, std::string replaceDate, int userID);
 		std::string GetINFilterForProductID(std::vector<int> productIDList);
 		std::string GetLikeFilterForProductName(std::string searchKey);
 		std::string GetFilterForPurveyor(int purveyorID, std::string name, std::string surname, std::string phone,
@@ -1104,6 +1156,9 @@ namespace DataLayer{
 		std::string GetFilterForReturn(int returnID, int clientID, std::string returnDate, std::string returnExecutionDate, int employeeID, double returnCount, double returnSum, int statusID, int currencyID);
 		std::string GetFilterForReturnForPeriod(int orderID, int clientID, std::string orderDate, std::string orderExecutionDate, int employeeID,
 			double orderCount, double orderSum, int statusID, int currencyID, std::string fromDate, std::string toDate);
+		std::string GetFilterForReturnForRawPeriod(int orderID, int clientID, std::string orderDate, std::string orderExecutionDate, int employeeID,
+			double orderCount, double orderSum, int statusID, int currencyID, std::string fromDate, std::string toDate);
+		std::string GetFilterForReturnPriceCorrection(int retunPriceCorrectionID, int returnID, int priceExtensionID, int returnListID, double commonValue, double newValue);
 		std::string GetFilterForRole(int roleID, std::string roleCode, std::string roleName, std::string comment);
 		std::string GetFilterForSalary(int salaryID, int userID, double salaryValue, int currencyID, int salaryTypeID, std::string salaryDate, bool salaryBonus);
 		std::string GetFilterForSalaryType(int salaryTypeID, std::string salaryTypeCode, std::string salaryTypeName);
@@ -1135,6 +1190,7 @@ namespace DataLayer{
 		std::string GetFilterForSubaccountChangeLogForPeriod(int subaccountChangeLogID, int subaccountID, double subaccountStartBalance, double subaccountCurrentBalance,
 			std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate);
 		std::string GetINFilterForSubaccountID(std::vector<int> subaccountIDList);
+		std::string GetNotINFilterForSubaccountID(std::vector<int> subaccountIDList);
 		std::string GetFilterForTax(int taxID, std::string taxName, std::string taxCode, double fixedValue, int percentValue,
 			std::string formulaValue);
 		std::string GetFilterForTimesheet(int timesheetID, int salaryID, double workedTime, std::string timesheetDate);
@@ -1148,6 +1204,7 @@ namespace DataLayer{
 			int statusID, int currencyID, std::string logDate, int userID, int operationID);
 		std::string GetFilterForTransportChangeLogForDateLess(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
 			int statusID, int currencyID, std::string logDate, int userID, int operationID);
+		std::string GetFilterForTransportChangeLogForProducts(int transportID, std::vector<int> productIDs, std::string logDate);
 		std::string GetFilterForTransportChangeLogForPeriod(int transportChangeLogID, int transportID, int productID, double transportCount, double transportSum,
 			int statusID, int currencyID, std::string logDate, int userID, int operationID, std::string fromDate, std::string tillDate);
 		std::string GetFilterForUser(int userID, std::string userEmail, std::string userName, std::string userSurname, std::string userPhone, std::string userAddress,
@@ -1175,6 +1232,9 @@ namespace DataLayer{
 		std::string GetFilterForWriteOffRawForPeriod(int writeOffRawID, int employeeID, std::string writeOffRawDate, std::string executionDate, int stockEmployeeID, double writeOffRawListCount, double writeOffRawListSum, 
 			int statusID, int currencyID, std::string fromDate, std::string toDate);
 
+		
+		
+		
 		//Generate filter for view
 		std::string GetFilterForAccessView(int aID, std::string roleName, std::string aItemEng, std::string aRusEng, std::string division, int roleID, int accItemID);
 		std::string GetFilterForAccountableView(int aID, int eID, std::string eName, std::string eSurname, std::string info, std::string ePhone, std::string eAddress, std::string roleName);
@@ -1205,6 +1265,7 @@ namespace DataLayer{
 		std::string GetFilterForConOthStView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
 			std::string eSurname, std::string ePhone, std::string ePositionName, std::string seName, std::string seSurname, std::string sePhone, std::string sePositionName,
 			double count, double sum, std::string curName, int employeeID, int userID, int statusID, int currnecyID);
+		std::string GetFilterForCurrencyRateView(int currenycRateID, std::string fromCurrencyName, double fromValue, std::string toCurrencyName, double toValue, int currencyFromID, int currencyToID, std::string changeDate);
 		std::string GetFilterForDivisionAccountView(int daID, std::string divisionName, std::string accountNumber, std::string accountName, std::string accountCode, int dID, int aID);
 		std::string GetFilterForEmployeeView(int eID, std::string uName, std::string uSurname, std::string uPosition, std::string uPhone, std::string uAddress, 
 			std::string birthdate, std::string roleName, std::string hireDate, std::string password, std::string uEmail, int roleID, int empPositionID, int divitionID);
@@ -1246,7 +1307,9 @@ namespace DataLayer{
 		std::string GetFilterForLowValStockHisView(int sID, std::string otherStockName, double price, std::string currencyName, double volume, std::string measureName, double count,
 			double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int otherStockID, int statusID,
 			int currencyID, int warehouseID, std::string histiryDate);
+		std::string GetFilterForMulticurrencyView(int multicurrencyID, std::string exchangeSubNumber, double exchangeSubValue, std::string exchangeSubShortName, std::string mainSubCurrencyNumber, double mainSubCurrencyValue, std::string mainSubShortName,  int subaccountID, int mainSubaccountID, std::string comment);
 		std::string GetFilterForNetCostView(int nID, std::string netCostDate, std::string poroductName, double volume, std::string measureName, double netCostValue, std::string curName, int curID, int productID);
+		std::string GetFilterForNetCostCoefficientView(int netCostCoefficientID, std::string productName, double coefficientValue, int productID, std::string comment);
 		std::string GetFilterForOrderListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
 			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
 		std::string GetFilterForOrderView(int cpID, std::string conDate, std::string execDate, std::string statusCode, std::string statusName, std::string eName,
@@ -1266,6 +1329,8 @@ namespace DataLayer{
 		std::string GetFilterForPostingFixAssetView(int pfID, std::string userSurname, std::string accountName, int userID, int subaccountID, int accountID, int fixedAssID, int inventoryID);
 		std::string GetFilterForPriceView(int pID, std::string priceDate, std::string productName, double volume, std::string measureName, double price,
 			std::string curName, int curID, int productID);
+		std::string GetFilterForPriceExtensionView(int priceExtensionID, int productID, std::string productName,  double value, std::string extensionDate, int dateCount, std::string locationName, 
+			std::string branchName, std::string expeditorName, std::string  clientName, int locationID, int expeditorID, int branchID, int clientID);
 		std::string GetFilterForProdnListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
 			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
 		std::string GetFilterForConProdnListView(int cpListID, int cpID, std::string productName, double price, std::string curName, double value, std::string measureName,
@@ -1277,9 +1342,6 @@ namespace DataLayer{
 			double count, double sum, std::string sumCurName, std::string statusName, int productID, int statusID, int currencyID);
 		std::string GetFilterForProdnPlanView(int cpID, std::string conDate, double count, double sum, std::string curName, std::string satName, std::string eName,
 			std::string eSurname, std::string ePhone, std::string ePositionName, int employeeID,  int statusID, int currnecyID);
-		/*std::string GetFilterForProdnStockView(int sID, std::string productName, double price, std::string currencyName, double volume, std::string measureName, double count,
-			double sum, std::string sumCurrencyName, std::string warehouseName, std::string subaccNumber, std::string statusName, int productID, int statusID,
-			int currencyID, int warehouseID);*/
 		std::string GetFilterForProductBranchView(int pbID, std::string branchName, std::string branchAddress, std::string productName, double productPrice,  int productID, int branchID);
 		std::string GetFilterForProductsView(int pID, std::string productName, double price, std::string currencyName, double volume, std::string measureName,
 			std::string typeName, int shelfLife, std::string companyName, int companyID, int measureID, int typeID, int currencyID);

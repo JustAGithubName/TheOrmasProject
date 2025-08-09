@@ -44,6 +44,9 @@
 #include "ProductionListClass.h"
 #include "ProductionListViewClass.h"
 #include "StockChangeLogClass.h"
+#include "CurrencyClass.h"
+#include "MulticurrencyClass.h"
+#include "CurrencyRateClass.h"
 #include <codecvt>
 
 namespace BusinessLayer
@@ -896,7 +899,16 @@ namespace BusinessLayer
 						correctingConRawTotalSum += correctingConRawSum;
 						if (0 == correctingConRawSum)
 						{
-							stock.SetSum((stock.GetSum() - item.GetSum()));
+							if (stock.GetCount() == 0)
+							{
+								// must add correcting entry, to datele tails from table(like 0.0011)
+								stock.SetSum(0);
+							}
+							else
+							{
+								stock.SetSum(((stock.GetSum() - item.GetSum())) *1000 / 1000);
+							}
+							
 						}
 						else if (correctingConRawSum > 0)
 						{
@@ -2099,6 +2111,593 @@ namespace BusinessLayer
 			//ormasDal.CancelTransaction(errorMessage);
 			return false;
 		}
+		return true;
+	}
+
+	bool Stock::ChangingByOrderRawForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage)
+	{
+		OrderRaw oRaw;
+		OrderRawList oRList;
+		std::vector<OrderRawListView> oRListVec;
+		std::vector<OrderRawListView> oRExtListVec;
+		double totalSum = 0.0;
+		int companyID = 0;
+		int currencyID = 0;
+		int subAccID = 0;
+		int warehouseID = 0;
+
+		Currency currency;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
+
+		oRList.SetOrderRawID(orID);
+		std::string filter = oRList.GenerateFilter(ormasDal);
+		std::vector<DataLayer::orderRawListViewCollection> productListVector = ormasDal.GetOrderRawList(errorMessage, filter);
+		if (productListVector.size() > 0)
+		{
+			for each (auto item in productListVector)
+			{
+				if (mainCurID == std::get<13>(item))
+				{
+					oRListVec.push_back(OrderRawListView(item));
+				}
+				else
+				{
+					currencyID = std::get<13>(item);
+					oRExtListVec.push_back(OrderRawListView(item));
+				}
+				
+			}
+		}
+		else
+		{
+			errorMessage = "ERROR! Order raw list is empty!";
+			return false;
+		}
+	
+		double totalOldCount = 0;
+		double totalNewCount = 0;
+		double totalChangingCount = 0;
+
+		if (oRExtListVec.size() > 0)
+		{
+			oRListVec.clear();
+			oRListVec = oRExtListVec;
+		}
+
+		if (oRListVec.size() > 0)
+		{
+			if (!GetSubIDAndWerhIDFromOrderRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
+				return false;
+			Stock stock;
+			Product product;
+			Status status;
+			double oldCount = 0;
+			double oldSum = 0;
+			//ormasDal.StartTransaction(errorMessage);
+			for each (auto item in oRListVec)
+			{
+				stock.Clear();
+				product.Clear();
+				status.Clear();
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				{
+					oldCount = stock.GetCount();
+					oldSum = stock.GetSum();
+					totalOldCount += stock.GetCount();
+					totalChangingCount += item.GetCount();
+					errorMessage.clear();
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
+					{
+						errorMessage = "ERROR! Cannot order this product, status is not valied!";
+						//ormasDal.CancelTransaction(errorMessage);
+						return false;
+					}
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
+						return false;
+					companyID = product.GetCompanyID();
+					totalSum = totalSum + (item.GetSum());
+					stock.SetProductID(item.GetProductID());
+					stock.SetCount(item.GetCount());
+					stock.SetSum(item.GetCount()*product.GetPrice());
+					stock.SetCurrencyID(item.GetCurrencyID());
+					stock.SetStatusID(status.GetID());
+					stock.SetWarehouseID(warehouseID);
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
+					{
+						//ormasDal.CancelTransaction(errorMessage);
+						return false;
+					}
+					totalNewCount += stock.GetCount();
+				}
+				else
+				{
+					oldCount = stock.GetCount();
+					oldSum = stock.GetSum();
+					totalOldCount += stock.GetCount();
+					totalChangingCount += item.GetCount();
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
+						return false;
+					companyID = product.GetCompanyID();
+					totalSum = totalSum + item.GetSum();
+					stock.SetCount(stock.GetCount() + item.GetCount());
+					stock.SetSum(stock.GetSum() + (item.GetCount()*product.GetPrice()));
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
+					{
+						//ormasDal.CancelTransaction(errorMessage);
+						return false;
+					}
+					if (std::round((oldCount + item.GetCount()) * 1000) / 1000 != std::round(stock.GetCount() * 1000) / 1000)
+						return false;
+					if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
+					{
+						stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
+						{
+							//ormasDal.CancelTransaction(errorMessage);
+							return false;
+						}
+					}
+					totalNewCount += stock.GetCount();
+				}
+			}
+		}
+		else
+		{
+			errorMessage = "ERROR! Order raw list is empty!";
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (std::round((totalOldCount + totalChangingCount) * 1000) / 1000 != std::round(totalNewCount * 1000) / 1000)
+		{
+			errorMessage = "Document is wrong! Sum and count does not the same in list and document.";
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, orID, errorMessage))
+			return false;
+		Balance balance;
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, oRaw.GetPurveyorID(), errorMessage))
+			return false;
+		CompanyAccountRelation caRel;
+		int debAccID = subAccID;
+		
+		Multicurrency multicurrency;
+		if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
+			return false;
+		Subaccount subExch;
+		if (!subExch.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+			return false;
+		if (subExch.GetCurrencyID() != currencyID)
+		{
+			errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+			return false;
+		}
+		CurrencyRate currencyRate;
+		if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currencyID, errorMessage))
+			return false;
+
+		int credAccID = balance.GetSubaccountID();
+		if (0 == debAccID || 0 == credAccID)
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (!this->CreateEntry(globalVar, ormasDal, orID, debAccID, totalSum * currencyRate.GetToValue() / currencyRate.GetFromValue(), credAccID, errorMessage))
+		{
+			return false;
+		}
+
+		
+		//subExch.SetCurrentBalance(subExch.GetCurrentBalance() - totalSum);
+		//ormasDal.CancelTransaction(errorMessage);
+		//if (!subExch.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+		//	return false;
+
+		return true;
+	}
+
+	bool Stock::ChangingByOrderRawReverseForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage)
+	{
+		OrderRaw oRaw;
+		OrderRawList oRList;
+		std::vector<OrderRawListView> oRListVec;
+		std::vector<OrderRawListView> oRExtListVec;
+		double totalSum = 0.0;
+		double newSum = 0.0;
+		int companyID = 0;
+		int subAccID = 0;
+		int warehouseID = 0;
+		int currencyID = 0;
+
+		Currency currency;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
+
+		oRList.SetOrderRawID(orID);
+		std::string filter = oRList.GenerateFilter(ormasDal);
+		std::vector<DataLayer::orderRawListViewCollection> productListVector = ormasDal.GetOrderRawList(errorMessage, filter);
+		if (productListVector.size() > 0)
+		{
+			for each (auto item in productListVector)
+			{
+				if (mainCurID == std::get<13>(item))
+				{
+					oRListVec.push_back(OrderRawListView(item));
+				}
+				else
+				{
+					currencyID = std::get<13>(item);
+					oRExtListVec.push_back(OrderRawListView(item));
+				}
+			}
+		}
+		else
+		{
+			errorMessage = "ERROR! Order raw list is empty!";
+			return false;
+		}
+		double totalOldCount = 0;
+		double totalNewCount = 0;
+		double totalChangingCount = 0;
+
+
+		if (oRExtListVec.size() > 0)
+		{
+			oRListVec.clear();
+			oRListVec = oRExtListVec;
+		}
+
+		if (oRListVec.size() > 0)
+		{
+			if (!GetSubIDAndWerhIDFromOrderRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
+				return false;
+			Stock stock;
+			Product product;
+			Status status;
+			double oldCount = 0;
+			double oldSum = 0;
+			//ormasDal.StartTransaction(errorMessage);
+			for each (auto item in oRListVec)
+			{
+				stock.Clear();
+				product.Clear();
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				{
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
+						return false;
+					errorMessage = "ERROR! This product is out of stock:";
+					errorMessage += product.GetName();
+					//ormasDal.CancelTransaction(errorMessage);
+					return false;
+				}
+				else
+				{
+					if (stock.GetCount() < item.GetCount())
+					{
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
+							return false;
+						errorMessage = "ERROR! There is not enough product in the stock!";
+						errorMessage += " Product name:";
+						errorMessage += product.GetName();
+						errorMessage += ", Product count:";
+						errorMessage += std::to_string(stock.GetCount());
+						//ormasDal.CancelTransaction(errorMessage);
+						return false;
+					}
+					else
+					{
+						oldCount = stock.GetCount();
+						oldSum = stock.GetSum();
+						totalOldCount += stock.GetCount();
+						totalChangingCount += item.GetCount();
+						if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
+							return false;
+						companyID = product.GetCompanyID();
+						totalSum = totalSum + item.GetSum();
+						newSum = newSum + std::round(item.GetCount()* product.GetPrice() * 1000) / 1000;
+						stock.SetCount(stock.GetCount() - item.GetCount());
+						if (0 == stock.GetCount())
+						{
+							stock.SetSum(0);
+						}
+						else
+						{
+							stock.SetSum((stock.GetSum() - std::round(item.GetCount()* product.GetPrice() * 1000) / 1000));
+						}
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
+						{
+							//ormasDal.CancelTransaction(errorMessage);
+							return false;
+						}
+						if (std::round((oldCount - item.GetCount()) * 1000) / 1000 != std::round(stock.GetCount() * 1000) / 1000)
+							return false;
+						if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
+						{
+							stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
+							if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
+						}
+						totalNewCount += stock.GetCount();
+					}
+				}
+			}
+		}
+		else
+		{
+			errorMessage = "ERROR! Order raw list is empty!";
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (std::round((totalOldCount - totalChangingCount) * 1000) / 1000 != std::round(totalNewCount * 1000) / 1000)
+		{
+			errorMessage = "Document is wrong! Sum and count does not the same in list and document.";
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, orID, errorMessage))
+			return false;
+		Balance balance;
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, oRaw.GetPurveyorID(), errorMessage))
+			return false;
+		CompanyAccountRelation caRel;
+
+		int debAccID = subAccID;
+
+		Multicurrency multicurrency;
+		if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
+			return false;
+		Subaccount subExch;
+		if (!subExch.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+			return false;
+		if (subExch.GetCurrencyID() != currencyID)
+		{
+			errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+			return false;
+		}
+
+		CurrencyRate currencyRate;
+		if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currencyID, errorMessage))
+			return false;
+
+		int credAccID = multicurrency.GetSubaccountMainCurrencyID();
+		if (0 == debAccID || 0 == credAccID)
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		
+		
+		int acc55020ID = caRel.GetAccountIDByCompanyID(globalVar, ormasDal, companyID, "55020", errorMessage);
+		if (0 == debAccID || 0 == credAccID)
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+
+		if (!this->CreateEntry(globalVar, ormasDal, orID, credAccID, totalSum * currencyRate.GetToValue() / currencyRate.GetFromValue(), debAccID, errorMessage))
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+
+		double checkSum  = totalSum - newSum / currencyRate.GetToValue() / currencyRate.GetFromValue();
+		checkSum *= currencyRate.GetToValue() / currencyRate.GetFromValue();
+		if (checkSum > 0)
+		{
+			if (!this->CreateEntry(globalVar, ormasDal, orID, acc55020ID, checkSum, debAccID, errorMessage))
+			{
+				//ormasDal.CancelTransaction(errorMessage);
+				return false;
+			}
+		}
+		else if (checkSum < 0)
+		{
+			if (!this->CreateEntry(globalVar, ormasDal, orID, debAccID, checkSum *(-1), acc55020ID, errorMessage))
+			{
+				//ormasDal.CancelTransaction(errorMessage);
+				return false;
+			}
+		}
+
+		
+		//subExch.SetCurrentBalance(subExch.GetCurrentBalance() + totalSum );
+		//ormasDal.CancelTransaction(errorMessage);
+		//if (!subExch.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+		//	return false;
+
+		return true;
+	}
+
+
+
+	bool Stock::ChangingByOrderRawForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage)
+	{
+		OrderRaw oRaw;
+		OrderRawList oRList;
+		std::vector<OrderRawListView> oRListVec;
+		std::vector<OrderRawListView> oRExtListVec;
+		double totalSum = 0.0;
+		int companyID = 0;
+		int subAccID = 0;
+		int warehouseID = 0;
+		int currencyID = 0;
+
+		Currency currency;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
+
+		oRList.SetOrderRawID(orID);
+		std::string filter = oRList.GenerateFilter(ormasDal);
+		std::vector<DataLayer::orderRawListViewCollection> productListVector = ormasDal.GetOrderRawList(errorMessage, filter);
+		if (productListVector.size() > 0)
+		{
+			for each (auto item in productListVector)
+			{
+				if (mainCurID == std::get<13>(item))
+				{
+					oRListVec.push_back(OrderRawListView(item));
+				}
+				else
+				{
+					currencyID = std::get<13>(item);
+					oRExtListVec.push_back(OrderRawListView(item));
+				}
+			}
+		}
+		else
+		{
+			errorMessage = "ERROR! Order raw list is empty!";
+			return false;
+		}
+		double totalOldCount = 0;
+		double totalNewCount = 0;
+		double totalChangingCount = 0;
+
+		if (oRExtListVec.size() > 0)
+		{
+			oRListVec.clear();
+			oRListVec = oRExtListVec;
+		}
+
+		if (oRListVec.size() > 0)
+		{
+			if (!GetSubIDAndWerhIDFromOrderRaw(globalVar, ormasDal, empID, warehouseID, subAccID, errorMessage))
+				return false;
+			Stock stock;
+			Product product;
+			Status status;
+			double oldCount = 0;
+			double oldSum = 0;
+			for each (auto item in oRListVec)
+			{
+				stock.Clear();
+				product.Clear();
+				status.Clear();
+				if (!stock.GetStockByProductAndWarehouseID(globalVar, ormasDal, item.GetProductID(), warehouseID, errorMessage))
+				{
+					oldCount = stock.GetCount();
+					oldSum = stock.GetSum();
+					totalOldCount += stock.GetCount();
+					totalChangingCount += item.GetCount();
+					errorMessage.clear();
+					if (!status.GetStatusByName(globalVar, ormasDal, "IN STOCK", errorMessage))
+					{
+						errorMessage = "ERROR! Cannot order this product, status is not valied!";
+						//ormasDal.CancelTransaction(errorMessage);
+						return false;
+					}
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
+						return false;
+					companyID = product.GetCompanyID();
+					totalSum = totalSum + item.GetSum();
+					stock.SetProductID(item.GetProductID());
+					stock.SetCount(item.GetCount());
+					stock.SetSum(item.GetSum());
+					stock.SetCurrencyID(item.GetCurrencyID());
+					stock.SetStatusID(status.GetID());
+					stock.SetWarehouseID(warehouseID);
+					if (!stock.CreateStock(globalVar, ormasDal, errorMessage))
+					{
+						return false;
+					}
+					totalNewCount += stock.GetCount();
+				}
+				else
+				{
+					oldCount = stock.GetCount();
+					oldSum = stock.GetSum();
+					totalOldCount += stock.GetCount();
+					totalChangingCount += item.GetCount();
+					if (!product.GetProductByID(globalVar, ormasDal, item.GetProductID(), errorMessage))
+						return false;
+					companyID = product.GetCompanyID();
+					totalSum = totalSum + item.GetSum();
+					stock.SetCount(stock.GetCount() + (item.GetCount() - pProdCountMap.find(product.GetID())->second));
+					stock.SetSum(stock.GetSum() + (item.GetSum() - (pProdCountMap.find(product.GetID())->second * product.GetPrice())));
+					if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
+					{
+						//ormasDal.CancelTransaction(errorMessage);
+						return false;
+					}
+					if (std::round((oldCount + item.GetCount()) * 1000) / 1000 != std::round(stock.GetCount() * 1000) / 1000)
+						return false;
+					if (std::round(product.GetPrice()*stock.GetCount() * 10) / 10 != std::round(stock.GetSum() * 10) / 10)
+					{
+						stock.SetSum(std::round(product.GetPrice()*stock.GetCount() * 1000) / 1000);
+						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
+						{
+							//ormasDal.CancelTransaction(errorMessage);
+							return false;
+						}
+					}
+					totalNewCount += stock.GetCount();
+				}
+			}
+		}
+		else
+		{
+			errorMessage = "ERROR! Order raw list is empty!";
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (std::round((totalOldCount + totalChangingCount) * 1000) / 1000 != std::round(totalNewCount * 1000) / 1000)
+		{
+			errorMessage = "Document is wrong! Sum and count does not the same in list and document.";
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+		if (!oRaw.GetOrderRawByID(globalVar, ormasDal, orID, errorMessage))
+			return false;
+		Balance balance;
+		if (!balance.GetBalanceByUserID(globalVar, ormasDal, oRaw.GetPurveyorID(), errorMessage))
+			return false;
+		CompanyAccountRelation caRel;
+		int debAccID = subAccID;
+
+		Multicurrency multicurrency;
+		if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
+			return false;
+		Subaccount subExch;
+		if (!subExch.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+			return false;
+		if (subExch.GetCurrencyID() != currencyID)
+		{
+			errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+			return false;
+		}
+
+		CurrencyRate currencyRate;
+		if (!currencyRate.GetCurrencyRateByFromCurrencyID(globalVar, ormasDal, currencyID, errorMessage))
+			return false;
+
+		int credAccID = multicurrency.GetSubaccountMainCurrencyID();
+		if (0 == debAccID || 0 == credAccID)
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+
+		if (!this->CreateEntry(globalVar, ormasDal, orID, debAccID, totalSum * currencyRate.GetToValue() / currencyRate.GetFromValue(), credAccID, pSum* currencyRate.GetToValue() / currencyRate.GetFromValue(), errorMessage))
+		{
+			//ormasDal.CancelTransaction(errorMessage);
+			return false;
+		}
+
+		//subExch.SetCurrentBalance(subExch.GetCurrentBalance() - totalSum );
+		//ormasDal.CancelTransaction(errorMessage);
+		//if (!subExch.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+		//	return false;
+
 		return true;
 	}
 
@@ -3919,7 +4518,7 @@ namespace BusinessLayer
 						}
 						else
 						{
-							stock.SetSum(stock.GetSum() - round(item.GetCount()*nCost.GetValue()*nCost.GetValue() * 1000) / 1000);
+							stock.SetSum(stock.GetSum() - round(item.GetCount()*nCost.GetValue() * 1000) / 1000);
 						}
 						if (!stock.UpdateStock(globalVar, ormasDal, errorMessage))
 						{
@@ -6009,5 +6608,10 @@ namespace BusinessLayer
 		if (scLog.CreateStockChangeLog(globalVar, ormasDal, errorMessage))
 			return true;
 		return false;
+	}
+
+	bool Stock::IsStockValid(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage)
+	{
+		return true;
 	}
 }

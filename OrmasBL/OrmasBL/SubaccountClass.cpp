@@ -250,6 +250,15 @@ namespace BusinessLayer{
 		return "";
 	}
 
+	std::string Subaccount::GenerateNotINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> subaccountIDList)
+	{
+		if (subaccountIDList.size()>0)
+		{
+			return ormasDal.GetNotINFilterForSubaccountID(subaccountIDList);
+		}
+		return "";
+	}
+
 	bool Subaccount::GetSubaccountByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage)
 	{
 		if (aID <= 0)

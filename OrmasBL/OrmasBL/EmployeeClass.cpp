@@ -312,6 +312,7 @@ namespace BusinessLayer{
 	{
 		id = 0;
 		name.clear();
+		surname.clear();
 		address.clear();
 		phone.clear();
 		birthDate.clear();

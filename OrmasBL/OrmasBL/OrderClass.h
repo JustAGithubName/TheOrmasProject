@@ -84,6 +84,7 @@ namespace BusinessLayer
 		bool ChangesAtTransport(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
 		bool CheckDocumentCorrectness(DataLayer::OrmasDal& ormasDal);
+		bool CheckDataWriteCorrectness(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int employeeID, std::string& errorMessage);
 	};
 }
 #endif //ORDERCLASS_H

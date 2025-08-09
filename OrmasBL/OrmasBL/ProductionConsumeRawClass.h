@@ -57,6 +57,8 @@ namespace BusinessLayer
 			double crCount, double crSum, int sID, int cID, std::string& errorMessage);
 		bool UpdateProductionConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string crDate, std::string crExecDate, int seID, 
 			double crCount, double crSum, int sID, int cID, std::string& errorMessage);
+		bool SimpleUpdateProductionConsumeRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int eID, std::string crDate, std::string crExecDate, int seID,
+			double crCount, double crSum, int sID, int cID, std::string& errorMessage);
 
 		//Generate filter string for class
 		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
@@ -79,6 +81,7 @@ namespace BusinessLayer
 		int GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, std::string& errorMessage);
 		std::map<int, double> GetProductCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
 		bool CheckDocumentCorrectness(DataLayer::OrmasDal& ormasDal);
+		bool UpdatePriceToLastState(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal);
 	};
 }
 #endif //ProductionConsumeRawCLASS_H

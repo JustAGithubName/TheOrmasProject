@@ -28,5 +28,7 @@ private:
 	std::string prevTillMonth;
 	QIntValidator *vInt = nullptr;
 	void CalculatePrevMonth(std::string, std::string, std::string&, std::string&);
+
+	 
 };
 #endif

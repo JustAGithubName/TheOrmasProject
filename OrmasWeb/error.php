@@ -19,12 +19,12 @@
 		</script>
 	</head>
 	<body>
-		<div id="action-bar">
-			<div id="logo">
+		<div class="action-bar">
+			<div class="logo">
 				<a href="index.php">ORMAS</a>
 			</div>
 		</div>
-		<div id = "content">
+		<div class = "content">
 			<div>
 				 <span>У Вас нет прав для просмотра этой страницы. <a href="index.php">Главная</a></span>
 			</div>

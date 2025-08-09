@@ -557,7 +557,7 @@ namespace BusinessLayer
 		Subaccount subAcc;
 		if (!subAcc.GetSubaccountByID(globalVar, ormasDal, inv.GetSubaccountID(), errorMessage))
 			return false;
-		if (!daRel.GetDARelationByDivisionIDAndCode(globalVar, ormasDal, inv.GetDepartmentID(), "TO WRITE-OFF", errorMessage))
+		if (!daRel.GetDARelationByDivisionIDAndCode(globalVar, ormasDal, inv.GetDepartmentID(), "FIXED ASSETS WRITE-OFF", errorMessage))
 			return false;
 		int debAccID = daRel.GetAccountID();
 		int credAccID = inv.GetSubaccountID();

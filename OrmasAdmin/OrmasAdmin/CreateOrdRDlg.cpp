@@ -8,8 +8,10 @@
 CreateOrdRDlg::CreateOrdRDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWidget *parent) :QDialog(parent)
 {
 	setupUi(this);
+	
 	//setModal(true);
 	dialogBL = ormasBL;
+	dialogBL->StartIsolatedTransaction(errorMessage);
 	parentForm = parent;
 	DataForm *dataFormParent = (DataForm *)this->parentForm;
 	mainForm = (MainForm *)dataFormParent->GetParent();
@@ -28,6 +30,7 @@ CreateOrdRDlg::CreateOrdRDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, Q
 		itemModel = (QStandardItemModel *)parentDataForm->tableView->model();
 		mIndex = parentDataForm->tableView->selectionModel()->currentIndex();
 		QObject::connect(okBtn, &QPushButton::released, this, &CreateOrdRDlg::EditOrderRaw);
+		currencyCmb->setEnabled(false);
 	}
 	else
 	{
@@ -69,6 +72,7 @@ CreateOrdRDlg::CreateOrdRDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, Q
 	QObject::connect(sumEdit, &QLineEdit::textChanged, this, &CreateOrdRDlg::TextEditChanged);
 	QObject::connect(this, SIGNAL(CloseCreatedForms()), ((MainForm*)((DataForm*)parent)->GetParent()), SLOT(CloseChildsByName()));
 	InitComboBox();
+
 }
 
 CreateOrdRDlg::~CreateOrdRDlg()
@@ -143,14 +147,63 @@ void CreateOrdRDlg::SetID(int ID, QString childName)
 
 			if (childName == QString("purveyorForm"))
 			{
-				purveyorEdit->setText(QString::number(ID));
-				BusinessLayer::User user;
-				if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
+				BusinessLayer::Currency currency;
+				int mainCurID = 0;
+				mainCurID = currency.GetMainTradeCurrencyID(dialogBL->globalVar, dialogBL->GetOrmasDal(), errorMessage);
+				if (mainCurID > 0)
 				{
-					prNamePh->setText(user.GetName().c_str());
-					prSurnamePh->setText(user.GetSurname().c_str());
-					prPhonePh->setText(user.GetPhone().c_str());
+					if (mainCurID == currencyCmb->currentData().toInt())
+					{
+						BusinessLayer::Multicurrency multicurrncy;
+						if (multicurrncy.IsUserHaveMulticurrencySubaccount(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
+						{
+							QMessageBox::information(NULL, QString(tr("Warning")),
+								QString(tr("This user have multicurrency subaccount, cannot set currency to main trade currency!")),
+								QString(tr("Ok")));
+							errorMessage.clear();
+							return;
+						}
+						else
+						{
+							errorMessage.clear();
+							purveyorEdit->setText(QString::number(ID));
+							BusinessLayer::User user;
+							if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
+							{
+								prNamePh->setText(user.GetName().c_str());
+								prSurnamePh->setText(user.GetSurname().c_str());
+								prPhonePh->setText(user.GetPhone().c_str());
+							}
+							currencyCmb->setEnabled(false);
+						}
+						
+					}
+					else
+					{
+						BusinessLayer::Multicurrency multicurrncy;
+						if (multicurrncy.IsUserHaveMulticurrencySubaccount(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
+						{
+							purveyorEdit->setText(QString::number(ID));
+							BusinessLayer::User user;
+							if (user.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
+							{
+								prNamePh->setText(user.GetName().c_str());
+								prSurnamePh->setText(user.GetSurname().c_str());
+								prPhonePh->setText(user.GetPhone().c_str());
+							}
+							currencyCmb->setEnabled(false);
+						}
+						else
+						{
+							QMessageBox::information(NULL, QString(tr("Warning")),
+								QString(tr("This user have only main trade currency subaccount!")),
+								QString(tr("Ok")));
+							errorMessage.clear();
+							return;
+						}
+					}
 				}
+
 			}
 			if (childName == QString("statusForm"))
 			{
@@ -261,7 +314,7 @@ void CreateOrdRDlg::CreateOrderRaw()
 				sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), orderRaw->GetID());
 		}
 		
-		dialogBL->StartIsolatedTransaction(errorMessage);
+		
 		if (dialogBL->CreateOrderRaw(orderRaw, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -417,7 +470,7 @@ void CreateOrdRDlg::EditOrderRaw()
 				SetOrderRawParams(purveyorEdit->text().toInt(), dateEdit->text(), execDateEdit->text(), employeeEdit->text().toInt(), prodCountEdit->text().toDouble(),
 					sumEdit->text().toDouble(), statusEdit->text().toInt(), currencyCmb->currentData().toInt(), orderRaw->GetID());
 			}
-			dialogBL->StartIsolatedTransaction(errorMessage);
+			
 			if (dialogBL->UpdateOrderRaw(orderRaw, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -551,6 +604,7 @@ void CreateOrdRDlg::Close()
 
 void CreateOrdRDlg::OpenPurDlg()
 {
+	errorMessage = "";
 	this->hide();
 	this->setModal(false);
 	this->show();
@@ -764,6 +818,7 @@ void CreateOrdRDlg::OpenOrdRListDlg()
 	dForm->hide();
 	dForm->setWindowModality(Qt::WindowModal);
 	dForm->orderRawID = orderRaw->GetID();
+	dForm->currencyID = currencyCmb->currentData().toInt();
 	dForm->employeeID = employeeEdit->text().toInt();
 	BusinessLayer::OrderRawList orderRawList;
 	orderRawList.SetOrderRawID(orderRaw->GetID());

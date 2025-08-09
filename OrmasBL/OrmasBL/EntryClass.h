@@ -54,8 +54,8 @@ namespace BusinessLayer{
 		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string eDate, int daID, double eValue, int caID, std::string& errorMessage);
 		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 		bool EntryRoutingValidation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int daID, int caID, std::string& errorMessage);
-		bool DebitAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, double value);
-		bool CreditAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int accountID, double value);
+		bool DebitAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debaccountID, double value, int credaccountID);
+		bool CreditAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int credaccountID, double value, int debaccountID);
 		bool ReCalculateParentAccount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int dAccID, int cAccID, double value, std::string& errorMessage);
 	};
 }

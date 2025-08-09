@@ -15,6 +15,7 @@ public:
 	std::string errorMessage;
 	int orderRawID = 0;
 	int employeeID = 0;
+	int currencyID = 0;
 	private slots:
 	void AddProductToList();
 	void EditProductInList();

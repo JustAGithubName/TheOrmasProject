@@ -25,8 +25,8 @@ public:
 	void SetID(int ID, QString childName);
 private:
 	BusinessLayer::FixedAssetsOperations *fixedAssetsOperations = new BusinessLayer::FixedAssetsOperations();
-	void SetFixedAssetsOperationParams(QString, QString, double, QString, QString, int, int = 0);
-	void FillEditElements(QString, QString, double, QString, QString, int);
+	void SetFixedAssetsOperationParams(QString, QString, double, QString, QString, int, QString, int = 0);
+	void FillEditElements(QString, QString, double, QString, QString, int, QString);
 	QDoubleValidator *vDouble = nullptr;
 	QIntValidator *vInt = nullptr;
 	QWidget* parentForm;

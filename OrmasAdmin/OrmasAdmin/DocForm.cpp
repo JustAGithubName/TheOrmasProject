@@ -42,6 +42,7 @@ void DocForm::Save()
 			return;
 		}
 		QTextStream out(&file);
+		out.setCodec("UTF-8");
 		out << content;
 	}
 	Close();

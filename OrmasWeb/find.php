@@ -1,12 +1,12 @@
 <?php
 $form_string= "
-<div id='form-body'>
+<div class='form-body'>
 	<form method='post'>
-		<div id='form-title'>
+		<div class='form-title'>
 			<label>Найти по ID</label>
 		</div>
 		<input type='hidden' name='form_type' value='order'/>
-		<div id='form-content'>
+		<div class='form-content'>
 			<div class='addable'>
 				<div class='close-bar'>
 					<!--<div class='close-img'>
@@ -20,7 +20,7 @@ $form_string= "
 				</div>
 			</div>
 		</div>
-		<div id='from-submit'>
+		<div class='from-submit'>
 			<input class='form-submit' type='submit' value='Найти'/>
 		<div>
 	</form>

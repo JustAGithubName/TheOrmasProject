@@ -77,6 +77,9 @@ namespace BusinessLayer
 		bool ChangingByOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage);
 		bool ChangingByOrderRawReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage);
 		bool ChangingByOrderRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		bool ChangingByOrderRawForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage);
+		bool ChangingByOrderRawReverseForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::string& errorMessage);
+		bool ChangingByOrderRawForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int orID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
 		bool ChangingByReceiptProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int empID, int stockEmpID, std::string& errorMessage);
 		bool ChangingByReceiptProductReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int empID, int stockEmpID, std::string& errorMessage);
 		bool ChangingByReceiptProduct(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rpID, int empID, int stockEmpID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
@@ -119,7 +122,7 @@ namespace BusinessLayer
 		bool GetSubIDAndWerhIDFromWOffProd(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage);
 		bool GetSubIDAndWerhIDFromWOffRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int empID, int& warehouseID, int& subAccID, std::string& errorMessage);
 		bool GetSubIDAndWerhIDFromProdnConRaw(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int stockEmpID, int& warehouseID, int& subAccID, std::string& errorMessage);
-
+		bool IsStockValid(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int wID, std::string& errorMessage);
 	};
 }
 #endif

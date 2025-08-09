@@ -21,6 +21,8 @@ namespace BusinessLayer
 		OrderList(){};
 		~OrderList(){};
 
+		unsigned int employeeID = 0;
+		unsigned int clientID = 0;
 		//OrderList class Accessors
 		int GetID();
 		int GetOrderID();
@@ -58,6 +60,7 @@ namespace BusinessLayer
 		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int oID, int pID, double olCount, double olSum,
 			 int cID, std::string& errorMessage);
 		bool IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
+		double GetExtendedPrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prodID, int& prExt, std::string& errorMessage);
 	};
 }
 #endif

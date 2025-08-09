@@ -75,9 +75,19 @@ namespace BusinessLayer
 		bool ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, std::string& errorMessage);
 		bool ChangesAtStockReverse(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, std::string& errorMessage);
 		bool ChangesAtStock(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int empID, std::map<int, double> pProdCountMap, double pSum, std::string& errorMessage);
+		bool ChangesAtStockForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, double sumInMainCurr, std::string& errorMessage);
+		bool ChangesAtStockReverseForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, int empID, double sumInMainCurr, std::string& errorMessage);
+		bool ChangesAtStockForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, int empID, std::map<int, double> pProdCountMap, double pSum, double sumInMainCurr, std::string& errorMessage);
 		double GetCurrentCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rrID, std::string& errorMessage);
 		std::map<int, double> GetProductCount(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int cpID, std::string& errorMessage);
-		bool CheckDocumentCorrectness(DataLayer::OrmasDal& ormasDal);
+		bool CheckDocumentCorrectness(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal);
+		bool CheckDataWriteCorrectness(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, int employeeID, int statusID, std::string& errorMessage);
+		bool CheckDataWriteCorrectness(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, int employeeID, int statusID, int prevStatusID, std::string& errorMessage);
+		bool GeneratedValueForCorrecting(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, double& sum, int statusID,  std::string& errorMessage);
+		bool GeneratedValueForCorrecting(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, double& sum, int statusID, int prevStatusID, std::string& errorMessage);
+		bool ReverceCorrectionEntries(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID,  std::string& errorMessage);
+		bool ReverceErrorCorrectionEntries(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int oRawID, std::string& errorMessage);
+		bool ActualizeOrderList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);
 	};
 }
 #endif //OrderRawCLASS_H

@@ -11,6 +11,10 @@
 #include "EntryOperationRelationClass.h"
 #include "AccountableTransactionClass.h"
 #include "AccountablePaymentRelationClass.h"
+#include "CurrencyClass.h"
+#include "MulticurrencyClass.h"
+#include "MulticurrencyViewClass.h"
+#include "CurrencyRateClass.h"
 #include <codecvt>
 
 namespace BusinessLayer{
@@ -153,6 +157,11 @@ namespace BusinessLayer{
 		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
+		Currency currency;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
 		id = ormasDal.GenerateID();
 		date = wDate;
 		value = wValue;
@@ -182,26 +191,56 @@ namespace BusinessLayer{
 			{
 				if (subaccountID > 0 && userID <= 0)
 				{
-					if (Payout(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+					if (mainCurID == currencyID)
 					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return true;
+						if (Payout(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return true;
+						}
+						else
+						{
+							return false;
+						}
 					}
 					else
 					{
-						return false;
+						if (PayoutForMulticurrency(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return true;
+						}
+						else
+						{
+							return false;
+						}
 					}
 				}
 				else if (userID > 0 || accountID > 0)
 				{
-					if (Payout(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+					if (mainCurID == currencyID)
 					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return true;
+						if (Payout(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return true;
+						}
+						else
+						{
+							return false;
+						}
 					}
 					else
 					{
-						return false;
+						if (PayoutForMulticurrency(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return true;
+						}
+						else
+						{
+							return false;
+						}
 					}
 				}
 				else
@@ -226,6 +265,11 @@ namespace BusinessLayer{
 		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
+		Currency currency;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
 		id = ormasDal.GenerateID();
 		//ormasDal.StartTransaction(errorMessage);
 		globalVar->currentOperationID = id;
@@ -245,26 +289,56 @@ namespace BusinessLayer{
 			{
 				if (subaccountID > 0 && userID <= 0)
 				{
-					if (Payout(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+					if (mainCurID == currencyID)
 					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return true;
+						if (Payout(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return true;
+						}
+						else
+						{
+							return false;
+						}
 					}
 					else
 					{
-						return false;
+						if (PayoutForMulticurrency(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return true;
+						}
+						else
+						{
+							return false;
+						}
 					}
 				}
 				else if (userID > 0 || accountID > 0)
 				{
-					if (Payout(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+					if (mainCurID == currencyID)
 					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return true;
+						if (Payout(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return true;
+						}
+						else
+						{
+							return false;
+						}
 					}
 					else
 					{
-						return false;
+						if (PayoutForMulticurrency(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+						{
+							//ormasDal.CommitTransaction(errorMessage);
+							return true;
+						}
+						else
+						{
+							return false;
+						}
 					}
 				}
 				else
@@ -317,6 +391,11 @@ namespace BusinessLayer{
 		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
 			return false;
+		Currency currency;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
+			return false;
 		date = wDate;
 		value = wValue;
 		userID = uID;
@@ -347,32 +426,71 @@ namespace BusinessLayer{
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
+					if (currentValue != value)
+					{
+						errorMessage = "Please after change save document before execute!";
+						return false;
+					}
 					if (subaccountID > 0 && userID <= 0)
 					{
-						if (Payout(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+						if (mainCurID == currencyID)
 						{
-							currentValue = 0.0;
-							//ormasDal.CommitTransaction(errorMessage);
-							return true;
+							if (Payout(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 						else
 						{
-							//ormasDal.CancelTransaction(errorMessage);
-							return false;
+							if (PayoutForMulticurrency(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 					else if (userID > 0 || accountID > 0)
 					{
-						if (Payout(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+						if (mainCurID == currencyID)
 						{
-							currentValue = 0.0;
-							//ormasDal.CommitTransaction(errorMessage);
-							return true;
+							if (Payout(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 						else
 						{
-							//ormasDal.CancelTransaction(errorMessage);
-							return false;
+							if (PayoutForMulticurrency(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 					else
@@ -389,6 +507,11 @@ namespace BusinessLayer{
 			{
 				if (statusID == statusMap.find("ERROR")->second)
 				{
+					if (currentValue != value)
+					{
+						errorMessage = "Please after change save document before execute!";
+						return false;
+					}
 					AccountableTransaction aTranaction;
 					AccountablePaymentRelation aPayment;
 					aPayment.SetPaymentID(id);
@@ -403,31 +526,64 @@ namespace BusinessLayer{
 					}
 					if (subaccountID > 0 && userID <= 0)
 					{
-						if (CancelWithdrawal(globalVar, ormasDal, subaccountID,cashboxAccountID, errorMessage))
+						if (mainCurID == currencyID)
 						{
-							currentValue = 0.0;
-							//ormasDal.CommitTransaction(errorMessage);
-							return true;
+							if (CancelWithdrawal(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 						else
 						{
-							//ormasDal.CancelTransaction(errorMessage);
-							return false;
+							if (CancelWithdrawalForMulticurrency(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 					else
 					{
-
-						if (CancelWithdrawal(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+						if (mainCurID == currencyID)
 						{
-							currentValue = 0.0;
-							//ormasDal.CommitTransaction(errorMessage);
-							return true;
+							if (CancelWithdrawal(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 						else
 						{
-							//ormasDal.CancelTransaction(errorMessage);
-							return false;
+							if (CancelWithdrawalForMulticurrency(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 				}
@@ -437,33 +593,7 @@ namespace BusinessLayer{
 					return false;
 				}
 			}
-			/*if (statusID == statusMap.find("EXECUTED")->second)
-			{
-				if (0 != subaccountID)
-				{
-					if (Payout(globalVar, ormasDal, subaccountID, errorMessage))
-					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else
-				{
-					if (Payout(globalVar, ormasDal, userID, currencyID, accountID, errorMessage))
-					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}
-			}*/
+			
 			//ormasDal.CommitTransaction(errorMessage);
 			return true;
 		}
@@ -478,6 +608,11 @@ namespace BusinessLayer{
 	{
 		std::map<std::string, int> statusMap = BusinessLayer::Status::GetStatusesAsMap(globalVar, ormasDal, errorMessage);
 		if (0 == statusMap.size())
+			return false;
+		Currency currency;
+		int mainCurID = 0;
+		mainCurID = currency.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+		if (0 == mainCurID)
 			return false;
 		currentValue = GetCurrentValue(globalVar, ormasDal, id, errorMessage);
 		previousStatusID = GetCurrentStatusID(globalVar, ormasDal, id, errorMessage);
@@ -499,32 +634,71 @@ namespace BusinessLayer{
 			{
 				if (statusID == statusMap.find("EXECUTED")->second)
 				{
+					if (currentValue != value)
+					{
+						errorMessage = "Please after change save document before execute!";
+						return false;
+					}
 					if (subaccountID > 0 && userID <= 0)
 					{
-						if (Payout(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+						if (mainCurID == currencyID)
 						{
-							currentValue = 0.0;
-							//ormasDal.CommitTransaction(errorMessage);
-							return true;
+							if (Payout(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 						else
 						{
-							//ormasDal.CancelTransaction(errorMessage);
-							return false;
+							if (PayoutForMulticurrency(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 					else if (userID > 0 || accountID > 0)
 					{
-						if (Payout(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+						if (mainCurID == currencyID)
 						{
-							currentValue = 0.0;
-							//ormasDal.CommitTransaction(errorMessage);
-							return true;
+							if (Payout(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 						else
 						{
-							//ormasDal.CancelTransaction(errorMessage);
-							return false;
+							if (PayoutForMulticurrency(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 					else
@@ -541,6 +715,11 @@ namespace BusinessLayer{
 			{
 				if (statusID == statusMap.find("ERROR")->second)
 				{
+					if (currentValue != value)
+					{
+						errorMessage = "Please after change save document before execute!";
+						return false;
+					}
 					AccountableTransaction aTranaction;
 					AccountablePaymentRelation aPayment;
 					aPayment.SetPaymentID(id);
@@ -555,31 +734,64 @@ namespace BusinessLayer{
 					}
 					if (subaccountID > 0 && userID <= 0)
 					{
-						if (CancelWithdrawal(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+						if (mainCurID == currencyID)
 						{
-							currentValue = 0.0;
-							//ormasDal.CommitTransaction(errorMessage);
-							return true;
+							if (CancelWithdrawal(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 						else
 						{
-							//ormasDal.CancelTransaction(errorMessage);
-							return false;
+							if (CancelWithdrawalForMulticurrency(globalVar, ormasDal, subaccountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 					else
 					{
-
-						if (CancelWithdrawal(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+						if (mainCurID == currencyID)
 						{
-							currentValue = 0.0;
-							//ormasDal.CommitTransaction(errorMessage);
-							return true;
+							if (CancelWithdrawal(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 						else
 						{
-							//ormasDal.CancelTransaction(errorMessage);
-							return false;
+							if (CancelWithdrawalForMulticurrency(globalVar, ormasDal, userID, currencyID, accountID, cashboxAccountID, errorMessage))
+							{
+								currentValue = 0.0;
+								//ormasDal.CommitTransaction(errorMessage);
+								return true;
+							}
+							else
+							{
+								//ormasDal.CancelTransaction(errorMessage);
+								return false;
+							}
 						}
 					}
 				}
@@ -589,35 +801,8 @@ namespace BusinessLayer{
 					return false;
 				}
 			}
-			/*if (statusID == statusMap.find("EXECUTED")->second)
-			{
-				if (0 != subaccountID)
-				{
-					if (Payout(globalVar, ormasDal, subaccountID, errorMessage))
-					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}
-				else
-				{
-					if (Payout(globalVar, ormasDal, userID, currencyID, accountID, errorMessage))
-					{
-						//ormasDal.CommitTransaction(errorMessage);
-						return true;
-					}
-					else
-					{
-						return false;
-					}
-				}
-			}
-			//ormasDal.CommitTransaction(errorMessage);
-			return true;*/
+			
+			
 		}
 		if (errorMessage.empty())
 		{
@@ -755,18 +940,636 @@ namespace BusinessLayer{
 
 	bool Withdrawal::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage)
 	{
-		/*CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
+		
+		if (uID > 0)
 		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
+			Balance balance;
+			Balance tempBalance;
+			Subaccount sub;
+			Withdrawal withdrawal;
+			Subaccount exchSub;
+			Subaccount mainSub;
+			Multicurrency multicurrency;
+			withdrawal.SetUserID(uID);
+			std::string filter = withdrawal.GenerateFilter(ormasDal);
+			std::vector<DataLayer::balancesViewCollection> balanceVector = ormasDal.GetBalances(errorMessage, filter);
+			if (0 < balanceVector.size())
+			{
+				for each (auto item in balanceVector)
+				{
+					sub.Clear();
+					tempBalance.Clear();
+					if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
+						return false;
+					if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+					{
+						if (sub.GetParentAccountID() == aID)
+						{
+							balance.SetSubaccountID(sub.GetID());
+						}
+					}
+				}
+			}
+			else
+			{
+				return false;
+			}
+			if (balance.GetSubaccountID() <= 0)
+				return false;
+			if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
+			{
+				int debAccID = balance.GetSubaccountID();
+				int credAccID = cashboxAccID;
+				if (0 == debAccID || 0 == credAccID)
+				{
+					return false;
+				}
+				sub.Clear();
+				if (!sub.GetSubaccountByID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
+					return false;
+
+				if (currencyID == sub.GetCurrencyID())
+				{
+					if (multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+					{
+						/*if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+							return false;
+						CurrencyRate curRate;
+						if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, exchSub.GetCurrencyID(), errorMessage))
+							return false;
+						exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() + value / (curRate.GetToValue() / curRate.GetFromValue()));
+						if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+							return false;*/
+						if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+						{
+							if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+								return false;
+							BalanceWithdrawalRelation bwRelation;
+							bwRelation.SetBalanceID(balance.GetID());
+							bwRelation.SetWithdrawalID(this->id);
+							if (bwRelation.CreateBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+								return true;
+						}
+					}
+				}
+				else
+				{
+					if (currencyID != sub.GetCurrencyID())
+					{
+						errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+						return false;
+					}
+					if (multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+					{
+
+						if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+							return false;
+						CurrencyRate curRate;
+						if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, sub.GetCurrencyID(), errorMessage))
+							return false;
+						debAccID = mainSub.GetID();
+						/*sub.SetCurrentBalance(sub.GetCurrentBalance() + value / (curRate.GetToValue() / curRate.GetFromValue()));
+						if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+							return false;*/
+						if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+						{
+							if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+								return false;
+							BalanceWithdrawalRelation bwRelation;
+							bwRelation.SetBalanceID(balance.GetID());
+							bwRelation.SetWithdrawalID(this->id);
+							if (bwRelation.CreateBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+								return true;
+						}
+					}
+				}
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					BalanceWithdrawalRelation bwRelation;
+					bwRelation.SetBalanceID(balance.GetID());
+					bwRelation.SetWithdrawalID(this->id);
+					if (bwRelation.CreateBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+						return true;
+				}
+			}
+		}
+		else if (aID > 0)
+		{
+			Currency cur;
+			int mainCurID = cur.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+			if (0 == mainCurID)
+			{
+				errorMessage = "Please contact with administroator! Cannot find main trade currency!";
+				return true;
+			}
+			if (mainCurID != currencyID)
+			{
+				errorMessage = "Account can be only main trade currency type!";
+				return true;
+			}
+			int debAccID = aID;
+			int credAccID = cashboxAccID;
+			if (0 == debAccID || 0 == credAccID)
+			{
+				return false;
+			}
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool Withdrawal::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage)
+	{
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Subaccount sub;
+		Multicurrency multicurrency;
+		int debAccID = sID;
+		int credAccID = cashboxAccID;
+		if (0 == debAccID || 0 == credAccID)
+		{
 			return false;
 		}
-		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
+
+		sub.Clear();
+		if (!sub.GetSubaccountByID(globalVar, ormasDal, debAccID, errorMessage))
 			return false;
-		}*/
+		if (currencyID == sub.GetCurrencyID())
+		{
+			if (multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+			{
+				/*if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, exchSub.GetCurrencyID(), errorMessage))
+					return false;
+				exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() + value / (curRate.GetToValue() / curRate.GetFromValue()));
+				if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+					return false;*/
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+						return false;
+					return true;
+				}
+			}
+		}
+		else
+		{
+			if (multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+			{
+				if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, sub.GetCurrencyID(), errorMessage))
+					return false;
+				debAccID = mainSub.GetID();
+				/*sub.SetCurrentBalance(sub.GetCurrentBalance() + value / (curRate.GetToValue() / curRate.GetFromValue()));
+				if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+					return false;*/
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+						return false;
+					return true;
+				}
+			}
+		}
+
+		if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	bool Withdrawal::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, double previousValue, std::string& errorMessage)
+	{
+		
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Multicurrency multicurrency;
+		if (userID > 0)
+		{
+			Balance balance;
+			Balance tempBalance;
+			Subaccount sub;
+			Withdrawal withdrawal;
+			withdrawal.SetUserID(uID);
+			std::string filter = withdrawal.GenerateFilter(ormasDal);
+			std::vector<DataLayer::balancesViewCollection> balanceVector = ormasDal.GetBalances(errorMessage, filter);
+			if (0 < balanceVector.size())
+			{
+				for each (auto item in balanceVector)
+				{
+					sub.Clear();
+					tempBalance.Clear();
+					if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
+						return false;
+					if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+					{
+						if (sub.GetParentAccountID() == aID)
+						{
+							balance.SetSubaccountID(sub.GetID());
+						}
+					}
+				}
+			}
+			else
+			{
+				return false;
+			}
+			if (balance.GetSubaccountID() <= 0)
+				return false;
+			if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
+			{
+				int debAccID = balance.GetSubaccountID();
+				int credAccID = cashboxAccID;
+				if (0 == debAccID || 0 == credAccID)
+				{
+					return false;
+				}
+				sub.Clear();
+				if (!sub.GetSubaccountByID(globalVar, ormasDal, debAccID, errorMessage))
+					return false;
+
+				if (currencyID == sub.GetCurrencyID())
+				{
+					if (multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+					{
+
+						/*if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+							return false;
+						CurrencyRate curRate;
+						if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, exchSub.GetCurrencyID(), errorMessage))
+							return false;
+
+						exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() + value / (curRate.GetToValue() / curRate.GetFromValue()) + previousValue / (curRate.GetToValue() / curRate.GetFromValue()));
+						if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+							return false;*/
+						if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+						{
+							if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+								return false;
+							return true;
+						}
+					}
+				}
+				else
+				{
+					if (currencyID != sub.GetCurrencyID())
+					{
+						errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+						return false;
+					}
+					if (multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+					{
+
+						if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+							return false;
+						CurrencyRate curRate;
+						if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, sub.GetCurrencyID(), errorMessage))
+							return false;
+						debAccID = mainSub.GetID();
+						/*sub.SetCurrentBalance(sub.GetCurrentBalance() + value / (curRate.GetToValue() / curRate.GetFromValue()) + previousValue / (curRate.GetToValue() / curRate.GetFromValue()));
+						if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+							return false;*/
+						if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+						{
+							if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+								return false;
+							return true;
+						}
+					}
+
+				}
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					return true;
+				}
+			}
+		}
+		else if (aID > 0)
+		{
+			Currency cur;
+			int mainCurID = cur.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+			if (0 == mainCurID)
+			{
+				errorMessage = "Please contact with administroator! Cannot find main trade currency!";
+				return true;
+			}
+			if (mainCurID != currencyID)
+			{
+				errorMessage = "Account can be only main trade currency type!";
+				return true;
+			}
+			int debAccID = aID;
+			int credAccID = cashboxAccID;
+			if (0 == debAccID || 0 == credAccID)
+			{
+				return false;
+			}
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool Withdrawal::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, double previousValue, std::string& errorMessage)
+	{
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Subaccount sub;
+		Multicurrency multicurrency;
+		int debAccID = sID;
+		int credAccID = cashboxAccID;
+		if (0 == debAccID || 0 == credAccID)
+		{
+			return false;
+		}
+		sub.Clear();
+		if (!sub.GetSubaccountByID(globalVar, ormasDal, debAccID, errorMessage))
+			return false;
+
+
+
+		if (currencyID == sub.GetCurrencyID())
+		{
+			if (multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+			{
+				/*if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, exchSub.GetCurrencyID(), errorMessage))
+					return false;
+
+				exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() + value / (curRate.GetToValue() / curRate.GetFromValue()) + previousValue / (curRate.GetToValue() / curRate.GetFromValue()));
+				if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+					return false;*/
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+						return false;
+					return true;
+				}
+			}
+		}
+		else
+		{
+			if (multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+			{
+				if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, sub.GetCurrencyID(), errorMessage))
+					return false;
+				debAccID = mainSub.GetID();
+				/*sub.SetCurrentBalance(sub.GetCurrentBalance() + value / (curRate.GetToValue() / curRate.GetFromValue()) + previousValue / (curRate.GetToValue() / curRate.GetFromValue()));
+				if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+					return false;*/
+				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+						return false;
+					return true;
+				}
+			}
+		}
+		if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	double Withdrawal::GetCurrentValue(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
+	{
+		Withdrawal payslip;
+		if (payslip.GetWithdrawalByID(globalVar, ormasDal, pID, errorMessage))
+			return payslip.GetValue();
+		return 0;
+	}
+
+	bool Withdrawal::CancelWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage)
+	{
+
+		if (userID > 0)
+		{
+			Balance balance;
+			Balance tempBalance;
+			Subaccount sub;
+			Withdrawal withdrawal;
+			withdrawal.SetUserID(uID);
+			Subaccount exchSub;
+			Subaccount mainSub;
+			Multicurrency multicurrency;
+			std::string filter = withdrawal.GenerateFilter(ormasDal);
+			std::vector<DataLayer::balancesViewCollection> balanceVector = ormasDal.GetBalances(errorMessage, filter);
+			if (0 < balanceVector.size())
+			{
+				for each (auto item in balanceVector)
+				{
+					sub.Clear();
+					tempBalance.Clear();
+					if (!tempBalance.GetBalanceByID(globalVar, ormasDal, std::get<0>(item), errorMessage))
+						return false;
+					if (sub.GetSubaccountByID(globalVar, ormasDal, tempBalance.GetSubaccountID(), errorMessage))
+					{
+						if (sub.GetParentAccountID() == aID)
+						{
+							balance.SetSubaccountID(sub.GetID());
+						}
+					}
+				}
+			}
+			else
+			{
+				return false;
+			}
+			if (balance.GetSubaccountID() <= 0)
+				return false;
+			if (balance.GetBalanceBySubaccountID(globalVar, ormasDal, balance.GetSubaccountID(), errorMessage))
+			{
+				int credAccID = balance.GetSubaccountID();
+				int debAccID = cashboxAccID;
+				if (0 == debAccID || 0 == credAccID)
+				{
+					return false;
+				}
+				sub.Clear();
+				if (!sub.GetSubaccountByID(globalVar, ormasDal, credAccID, errorMessage))
+					return false;
+
+				if (currencyID == sub.GetCurrencyID())
+				{
+					if (multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, credAccID, errorMessage))
+					{
+
+						/*if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+							return false;
+						CurrencyRate curRate;
+						if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, exchSub.GetCurrencyID(), errorMessage))
+							return false;
+
+						exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() - value / (curRate.GetToValue() / curRate.GetFromValue()));
+						if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+							return false;*/
+						if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+						{
+							if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+									return false;
+								BalanceWithdrawalRelation bwRelation;
+								bwRelation.SetBalanceID(balance.GetID());
+								bwRelation.SetWithdrawalID(this->id);
+								if (bwRelation.DeleteBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+									return true;
+						}
+					}
+				}
+				else
+				{
+					if (currencyID != sub.GetCurrencyID())
+					{
+						errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+						return false;
+					}
+					if (multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, credAccID, errorMessage))
+					{
+
+					if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+							return false;
+						CurrencyRate curRate;
+						if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, sub.GetCurrencyID(), errorMessage))
+							return false;
+						debAccID = mainSub.GetID();
+						/*sub.SetCurrentBalance(sub.GetCurrentBalance() - value / (curRate.GetToValue() / curRate.GetFromValue()));
+						if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+							return false;*/
+						if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+						{
+							if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+									return false;
+								BalanceWithdrawalRelation bwRelation;
+								bwRelation.SetBalanceID(balance.GetID());
+								bwRelation.SetWithdrawalID(this->id);
+								if (bwRelation.DeleteBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+									return true;
+						}
+					}
+				}
+				if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					BalanceWithdrawalRelation bwRelation;
+					bwRelation.SetBalanceID(balance.GetID());
+					bwRelation.SetWithdrawalID(this->id);
+					if (bwRelation.DeleteBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+						return true;
+				}
+			}
+		}
+		else if (aID > 0)
+		{
+			Currency cur;
+			int mainCurID = cur.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+			if (0 == mainCurID)
+			{
+				errorMessage = "Please contact with administroator! Cannot find main trade currency!";
+				return true;
+			}
+			if (mainCurID != currencyID)
+			{
+				errorMessage = "Account can be only main trade currency type!";
+				return true;
+			}
+			int credAccID = aID;
+			int debAccID = cashboxAccID;
+			if (0 == debAccID || 0 == credAccID)
+			{
+				return false;
+			}
+			if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool Withdrawal::CancelWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage)
+	{
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Subaccount sub;
+		Multicurrency multicurrency;
+		int credAccID = sID;
+		int debAccID = cashboxAccID;
+		if (0 == debAccID || 0 == credAccID)
+		{
+			return false;
+		}
+		sub.Clear();
+		if (!sub.GetSubaccountByID(globalVar, ormasDal, credAccID, errorMessage))
+			return false;
+
+		if (currencyID == sub.GetCurrencyID())
+		{
+			if (multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, credAccID, errorMessage))
+			{
+				/*if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, exchSub.GetCurrencyID(), errorMessage))
+					return false;
+
+				exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() - value / (curRate.GetToValue() / curRate.GetFromValue()));
+				if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+					return false;*/
+				if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+						return false;
+					return true;
+				}
+			}
+		}
+		else
+		{
+			if (multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, credAccID, errorMessage))
+			{
+				if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, sub.GetCurrencyID(), errorMessage))
+					return false;
+				credAccID = mainSub.GetID();
+				/*sub.SetCurrentBalance(sub.GetCurrentBalance() - value / (curRate.GetToValue() / curRate.GetFromValue()));
+				if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+					return false;*/
+				if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+				{
+					if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+						return false;
+					return true;
+				}
+			}
+		}
+		if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+		{
+				return true;
+		}
+		return false;
+	}
+
+	bool Withdrawal::PayoutForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage)
+	{
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Multicurrency multicurrency;
 
 		if (uID > 0)
 		{
@@ -808,75 +1611,149 @@ namespace BusinessLayer{
 				{
 					return false;
 				}
-				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+				sub.Clear();
+				if (!sub.GetSubaccountByID(globalVar, ormasDal, debAccID, errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, cID, errorMessage))
+					return false;
+
+				if (currencyID == sub.GetCurrencyID())
 				{
-					BalanceWithdrawalRelation bwRelation;
-					bwRelation.SetBalanceID(balance.GetID());
-					bwRelation.SetWithdrawalID(this->id);
-					if (bwRelation.CreateBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
-						return true;
+					if (!multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+						return false;
+					if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+						return false;
+					debAccID = mainSub.GetID();
+					/*sub.SetCurrentBalance(sub.GetCurrentBalance() + value);
+					if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;*/
+					if (this->CreateEntry(globalVar, ormasDal, debAccID, value*(curRate.GetToValue() / curRate.GetFromValue()), credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+					{
+						if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+							return false;
+						BalanceWithdrawalRelation bwRelation;
+						bwRelation.SetBalanceID(balance.GetID());
+						bwRelation.SetWithdrawalID(this->id);
+						if (bwRelation.CreateBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+							return true;
+					}
 				}
+				else
+				{
+					if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+						return false;
+					if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+						return false;
+					if (currencyID != exchSub.GetCurrencyID())
+					{
+						errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+						return false;
+					}
+					
+					/*exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() + value);
+					if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;*/
+					if (this->CreateEntry(globalVar, ormasDal, debAccID, value*(curRate.GetToValue() / curRate.GetFromValue()), credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+					{
+						if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+							return false;
+						BalanceWithdrawalRelation bwRelation;
+						bwRelation.SetBalanceID(balance.GetID());
+						bwRelation.SetWithdrawalID(this->id);
+						if (bwRelation.CreateBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+							return true;
+					}
+				}
+				
 			}
 		}
 		else if (aID > 0)
 		{
-			int debAccID = aID;
-			int credAccID = cashboxAccID;
+			errorMessage = "Main trade currency only for accounts!";
+			return false;
+			/*int credAccID = aID;
+			int debAccID = cashboxAccountID;
 			if (0 == debAccID || 0 == credAccID)
 			{
-				return false;
+			return false;
 			}
 			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
 			{
-				return true;
-			}
+			return true;
+			}*/
 		}
 		return false;
 	}
 
-	bool Withdrawal::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage)
+	bool Withdrawal::PayoutForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage)
 	{
-		/*CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}
-		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}*/
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Subaccount sub;
+		Multicurrency multicurrency;
 		int debAccID = sID;
 		int credAccID = cashboxAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
 			return false;
 		}
-		if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+		sub.Clear();
+		if (!sub.GetSubaccountByID(globalVar, ormasDal, debAccID, errorMessage))
+			return false;
+		CurrencyRate curRate;
+		if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, currencyID, errorMessage))
+			return false;
+
+		if (currencyID == sub.GetCurrencyID())
 		{
-			return true;
+			if (!multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+				return false;
+			if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+				return false;
+			debAccID = mainSub.GetID();
+			/*sub.SetCurrentBalance(sub.GetCurrentBalance() + value);
+			if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+				return false;*/
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value*(curRate.GetToValue() / curRate.GetFromValue()), credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+					return false;
+				return true;
+			}
 		}
+		else
+		{
+			if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+				return false;
+			if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+				return false;
+			if (currencyID != exchSub.GetCurrencyID())
+			{
+				errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+				return false;
+			}
+			
+			/*exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() + value);
+			if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+				return false;*/
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value*(curRate.GetToValue() / curRate.GetFromValue()), credAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+					return false;
+				return true;
+			}
+		}
+		
 		return false;
 	}
 
-	bool Withdrawal::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, double previousValue, std::string& errorMessage)
+	bool Withdrawal::PayoutForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, double previousValue, std::string& errorMessage)
 	{
-		/*CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Multicurrency multicurrency;
 
-		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}*/
-		
 		if (userID > 0)
 		{
 			Balance balance;
@@ -917,79 +1794,141 @@ namespace BusinessLayer{
 				{
 					return false;
 				}
-				if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+				sub.Clear();
+				if (!sub.GetSubaccountByID(globalVar, ormasDal, debAccID, errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, cID, errorMessage))
+					return false;
+
+				if (currencyID == sub.GetCurrencyID())
 				{
-					return true;
+					if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+						return false;
+					if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+						return false;
+					debAccID = mainSub.GetID();
+					/*sub.SetCurrentBalance(sub.GetCurrentBalance() + value - previousValue);
+					if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;*/
+					if (this->CreateEntry(globalVar, ormasDal, debAccID, value*(curRate.GetToValue() / curRate.GetFromValue()), credAccID, previousValue*(curRate.GetToValue() / curRate.GetFromValue()), ormasDal.GetSystemDateTime(), errorMessage))
+					{
+						if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+							return false;
+						return true;
+					}
 				}
+				else
+				{
+					if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+						return false;
+					if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+						return false;
+					if (currencyID != exchSub.GetCurrencyID())
+					{
+						errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+						return false;
+					}
+					
+					/*exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() + value - previousValue);
+					if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;*/
+					if (this->CreateEntry(globalVar, ormasDal, debAccID, value*(curRate.GetToValue() / curRate.GetFromValue()), credAccID, previousValue*(curRate.GetToValue() / curRate.GetFromValue()), ormasDal.GetSystemDateTime(), errorMessage))
+					{
+						if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+							return false;
+						return true;
+					}
+				}
+				
 			}
 		}
 		else if (aID > 0)
 		{
-			int debAccID = aID;
-			int credAccID = cashboxAccID;
+			errorMessage = "Main trade currency only for accounts!";
+			return false;
+			/*int credAccID = aID;
+			int debAccID = cashboxAccountID;
 			if (0 == debAccID || 0 == credAccID)
 			{
-				return false;
+			return false;
 			}
-			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, ormasDal.GetSystemDateTime(), errorMessage))
 			{
-				return true;
-			}
+			return true;
+			}*/
 		}
 		return false;
 	}
 
-	bool Withdrawal::Payout(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, double previousValue, std::string& errorMessage)
+	bool Withdrawal::PayoutForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, double previousValue, std::string& errorMessage)
 	{
-		/*CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Subaccount sub;
+		Multicurrency multicurrency;
 
-		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}*/
-		
 		int debAccID = sID;
 		int credAccID = cashboxAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
 			return false;
 		}
-		if (this->CreateEntry(globalVar, ormasDal, debAccID, value, credAccID, previousValue, ormasDal.GetSystemDateTime(), errorMessage))
+		sub.Clear();
+		if (!sub.GetSubaccountByID(globalVar, ormasDal, debAccID, errorMessage))
+			return false;
+		CurrencyRate curRate;
+		if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, currencyID, errorMessage))
+			return false;
+		if (currencyID == sub.GetCurrencyID())
 		{
-			return true;
+			if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+				return false;
+			if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+				return false;
+			debAccID = mainSub.GetID();
+			/*sub.SetCurrentBalance(sub.GetCurrentBalance() + value - previousValue);
+			if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+				return false;*/
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value*(curRate.GetToValue() / curRate.GetFromValue()), credAccID, previousValue*(curRate.GetToValue() / curRate.GetFromValue()), ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+					return false;
+				return true;
+			}
 		}
+		else
+		{
+			if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, debAccID, errorMessage))
+				return false;
+			if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+				return false;
+			if (currencyID != exchSub.GetCurrencyID())
+			{
+				errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+				return false;
+			}
+			/*exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() + value - previousValue);
+			if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+				return false;*/
+			if (this->CreateEntry(globalVar, ormasDal, debAccID, value*(curRate.GetToValue() / curRate.GetFromValue()), credAccID, previousValue*(curRate.GetToValue() / curRate.GetFromValue()), ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+					return false;
+				return true;
+			}
+		}
+		
 		return false;
 	}
 
-	double Withdrawal::GetCurrentValue(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
-	{
-		Withdrawal payslip;
-		if (payslip.GetWithdrawalByID(globalVar, ormasDal, pID, errorMessage))
-			return payslip.GetValue();
-		return 0;
-	}
+	
 
-	bool Withdrawal::CancelWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage)
+	bool Withdrawal::CancelWithdrawalForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cashboxAccID, std::string& errorMessage)
 	{
-		/*CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}
-		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}*/
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Multicurrency multicurrency;
 
 		if (userID > 0)
 		{
@@ -1031,18 +1970,82 @@ namespace BusinessLayer{
 				{
 					return false;
 				}
-				if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+				sub.Clear();
+				if (!sub.GetSubaccountByID(globalVar, ormasDal, credAccID, errorMessage))
+					return false;
+				CurrencyRate curRate;
+				if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, cID, errorMessage))
+					return false;
+
+				if (currencyID == sub.GetCurrencyID())
 				{
-					BalanceWithdrawalRelation bwRelation;
-					bwRelation.SetBalanceID(balance.GetID());
-					bwRelation.SetWithdrawalID(this->id);
-					if (bwRelation.DeleteBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
-						return true;
+					if (!multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, credAccID, errorMessage))
+						return false;
+					if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+						return false;
+					credAccID = mainSub.GetID();
+					/*sub.SetCurrentBalance(sub.GetCurrentBalance() - value);
+					if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;*/
+					if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value * (curRate.GetToValue() / curRate.GetFromValue()), debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+					{
+						if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+							return false;
+						BalanceWithdrawalRelation bwRelation;
+						bwRelation.SetBalanceID(balance.GetID());
+						bwRelation.SetWithdrawalID(this->id);
+						if (bwRelation.DeleteBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+							return true;
+					}
 				}
+				else
+				{
+					
+					if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, credAccID, errorMessage))
+						return false;
+					if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+						return false;
+					if (currencyID != exchSub.GetCurrencyID())
+					{
+						errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+						return false;
+					}
+
+					/*exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() - value );
+					if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+						return false;*/
+					if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value * (curRate.GetToValue() / curRate.GetFromValue()), debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+					{
+						if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+							return false;
+						BalanceWithdrawalRelation bwRelation;
+						bwRelation.SetBalanceID(balance.GetID());
+						bwRelation.SetWithdrawalID(this->id);
+						if (bwRelation.DeleteBalanceWithdrawalRelation(globalVar, ormasDal, errorMessage))
+							return true;
+					}
+				}
+				
 			}
 		}
 		else if (aID > 0)
 		{
+
+			errorMessage = "Main trade currency only for accounts!";
+			return false;
+			/*
+			Currency cur;
+			int mainCurID = cur.GetMainTradeCurrencyID(globalVar, ormasDal, errorMessage);
+			if (0 == mainCurID)
+			{
+				errorMessage = "Please contact with administroator! Cannot find main trade currency!";
+				return true;
+			}
+			if (mainCurID != currencyID)
+			{
+				errorMessage = "Account can be only main trade currency type!";
+				return true;
+			}
 			int credAccID = aID;
 			int debAccID = cashboxAccID;
 			if (0 == debAccID || 0 == credAccID)
@@ -1052,37 +2055,70 @@ namespace BusinessLayer{
 			if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
 			{
 				return true;
-			}
+			}*/
 		}
 		return false;
 	}
 
-	bool Withdrawal::CancelWithdrawal(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage)
+	bool Withdrawal::CancelWithdrawalForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage)
 	{
-		/*CashboxEmployeeRelation cashEmpRel;
-		if (!cashEmpRel.GetCashboxEmployeeByEmployeeID(globalVar, ormasDal, loggedUserID, errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}
+		Subaccount exchSub;
+		Subaccount mainSub;
+		Subaccount sub;
+		Multicurrency multicurrency;
 
-		Cashbox cashbox;
-		if (!cashbox.GetCashboxByID(globalVar, ormasDal, cashEmpRel.GetCashboxID(), errorMessage))
-		{
-			errorMessage = "Access denied! You haven't rights for doing operations with cashbox!";
-			return false;
-		}*/
-		
 		int credAccID = sID;
 		int debAccID = cashboxAccID;
 		if (0 == debAccID || 0 == credAccID)
 		{
 			return false;
 		}
-		if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value, debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+		sub.Clear();
+		if (!sub.GetSubaccountByID(globalVar, ormasDal, credAccID, errorMessage))
+			return false;
+		CurrencyRate curRate;
+		if (!curRate.GetCurrencyRateByToCurrencyID(globalVar, ormasDal, currencyID, errorMessage))
+			return false;
+
+		if (currencyID == sub.GetCurrencyID())
 		{
+			if (!multicurrency.GetMulticurrencyBySubCurrencyID(globalVar, ormasDal, credAccID, errorMessage))
+				return false;
+			if (!mainSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountMainCurrencyID(), errorMessage))
+				return false;
+			credAccID = mainSub.GetID();
+			/*sub.SetCurrentBalance(sub.GetCurrentBalance() - value);
+			if (!sub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+				return false;*/
+			if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value * (curRate.GetToValue() / curRate.GetFromValue()), debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+					return false;
 				return true;
+			}
 		}
+		else
+		{
+			if (!multicurrency.GetMulticurrencyByMainCurrencyID(globalVar, ormasDal, credAccID, errorMessage))
+				return false;
+			if (!exchSub.GetSubaccountByID(globalVar, ormasDal, multicurrency.GetSubaccountCurrencyID(), errorMessage))
+				return false;
+			if (currencyID != exchSub.GetCurrencyID())
+			{
+				errorMessage = "This subaccount have diffenent currency, selected currency not correct!";
+				return false;
+			}
+			/*exchSub.SetCurrentBalance(exchSub.GetCurrentBalance() - value );
+			if (!exchSub.UpdateSubaccount(globalVar, ormasDal, errorMessage))
+				return false;*/
+			if (this->CorrectingEntry(globalVar, ormasDal, credAccID, value * (curRate.GetToValue() / curRate.GetFromValue()), debAccID, ormasDal.GetSystemDateTime(), errorMessage))
+			{
+				if (!multicurrency.CheckMulticurrencyCorrectness(globalVar, ormasDal, errorMessage))
+					return false;
+				return true;
+			}
+		}
+		
 		return false;
 	}
 

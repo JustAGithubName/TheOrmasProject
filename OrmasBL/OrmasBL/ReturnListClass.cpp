@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "ReturnListClass.h"
+#include "PriceExtensionClass.h"
+#include "ReturnPriceCorrectionClass.h"
 
 namespace BusinessLayer
 {
@@ -88,8 +90,24 @@ namespace BusinessLayer
 		sum = rSum;
 		statusID = sID;
 		currencyID = cID;
+		int priceExtensionID = 0;
+		double oldValue = sum;
+		double extendedPrice = GetExtendedPrice(globalVar, ormasDal, productID, priceExtensionID, errorMessage);
+		if (extendedPrice != 0)
+			sum = sum + count*extendedPrice;
 		if (0 != id && ormasDal.CreateReturnList(id, returnID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
+			if (priceExtensionID > 0)
+			{
+				ReturnPriceCorrection opCorrection;
+				opCorrection.SetReturnID(returnID);
+				opCorrection.SetReturnListID(id);
+				opCorrection.SetPriceExtensionID(priceExtensionID);
+				opCorrection.SetStandartValue(oldValue);
+				opCorrection.SetNewValue(sum);
+				if (!opCorrection.CreateReturnPriceCorrection(globalVar, ormasDal, errorMessage))
+					return false;
+			}
 			return true;
 		}
 		return false;
@@ -97,8 +115,24 @@ namespace BusinessLayer
 	bool ReturnList::CreateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
 		id = ormasDal.GenerateID();
+		int priceExtensionID = 0;
+		double oldValue = sum;
+		double extendedPrice = GetExtendedPrice(globalVar, ormasDal, productID, priceExtensionID, errorMessage);
+		if (extendedPrice != 0)
+			sum = sum + count*extendedPrice;
 		if (0 != id && ormasDal.CreateReturnList(id, returnID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
+			if (priceExtensionID > 0)
+			{
+				ReturnPriceCorrection opCorrection;
+				opCorrection.SetReturnID(returnID);
+				opCorrection.SetReturnListID(id);
+				opCorrection.SetPriceExtensionID(priceExtensionID);
+				opCorrection.SetStandartValue(oldValue);
+				opCorrection.SetNewValue(sum);
+				if (!opCorrection.CreateReturnPriceCorrection(globalVar, ormasDal, errorMessage))
+					return false;
+			}
 			return true;
 		}
 		return false;
@@ -132,16 +166,48 @@ namespace BusinessLayer
 		sum = rSum;
 		statusID = sID;
 		currencyID = cID;
+		int priceExtensionID = 0;
+		double oldValue = sum;
+		double extendedPrice = GetExtendedPrice(globalVar, ormasDal, productID, priceExtensionID, errorMessage);
+		if (extendedPrice != 0)
+			sum = sum + count*extendedPrice;
 		if (0 != id && ormasDal.UpdateReturnList(id, returnID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
+			if (priceExtensionID > 0)
+			{
+				ReturnPriceCorrection opCorrection;
+				opCorrection.SetReturnID(returnID);
+				opCorrection.SetReturnListID(id);
+				opCorrection.SetPriceExtensionID(priceExtensionID);
+				opCorrection.SetStandartValue(oldValue);
+				opCorrection.SetNewValue(sum);
+				if (!opCorrection.CreateReturnPriceCorrection(globalVar, ormasDal, errorMessage))
+					return false;
+			}
 			return true;
 		}
 		return false;
 	}
 	bool ReturnList::UpdateReturnList(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
+		int priceExtensionID = 0;
+		double oldValue = sum;
+		double extendedPrice = GetExtendedPrice(globalVar, ormasDal, productID, priceExtensionID, errorMessage);
+		if (extendedPrice != 0)
+			sum = sum + count*extendedPrice;
 		if (0 != id && ormasDal.UpdateReturnList(id, returnID, productID, count, sum, statusID, currencyID, errorMessage))
 		{
+			if (priceExtensionID > 0)
+			{
+				ReturnPriceCorrection opCorrection;
+				opCorrection.SetReturnID(returnID);
+				opCorrection.SetReturnListID(id);
+				opCorrection.SetPriceExtensionID(priceExtensionID);
+				opCorrection.SetStandartValue(oldValue);
+				opCorrection.SetNewValue(sum);
+				if (!opCorrection.CreateReturnPriceCorrection(globalVar, ormasDal, errorMessage))
+					return false;
+			}
 			return true;
 		}
 		return false;
@@ -242,5 +308,17 @@ namespace BusinessLayer
 		}
 		errorMessage = "Return list with this parameters are already exist! Please avoid the duplication!";
 		return true;
+	}
+	double ReturnList::GetExtendedPrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prodID, int& prExt, std::string& errorMessage)
+	{
+		PriceExtension pExension;
+		if (!pExension.GetPriceExtensionByProductIDAndExpeditorID(globalVar, ormasDal, prodID, employeeID, errorMessage))
+			return 0;
+		if (pExension.GetValue() != 0)
+		{
+			prExt = pExension.GetID();
+			return pExension.GetValue();
+		}
+		return 0;
 	}
 }

@@ -37,5 +37,6 @@ private:
 	QWidget* parentForm;
 	MainForm* mainForm;
 	unsigned int employeeID = 0;
+	unsigned int clientID = 0;
 };
 #endif //CREATEORDLITDLG_H

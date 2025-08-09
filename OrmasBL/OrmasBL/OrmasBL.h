@@ -45,6 +45,9 @@ namespace BusinessLayer
 		std::vector<T> GetAllDataForClass(std::string& errorMessage, std::string filter = "");
 
 		template<class T>
+		std::vector<T> GetAllDataForClass(int limit, int offset, std::string& errorMessage, std::string filter = "");
+
+		template<class T>
 		std::string GenerateFilter(T* T)
 		{
 			return T->GenerateFilter(ormasDal);
@@ -90,6 +93,7 @@ namespace BusinessLayer
 		bool CreateConsumeOtherStocks(BusinessLayer::ConsumeOtherStocks*, std::string&);
 		bool CreateConsumeOtherStocksList(BusinessLayer::ConsumeOtherStocksList*, std::string&);
 		bool CreateCurrency(BusinessLayer::Currency*, std::string&);
+		bool CreateCurrencyRate(BusinessLayer::CurrencyRate*, std::string&);
 		bool CreateDivisionAccountRelation(BusinessLayer::DivisionAccountRelation*, std::string&);
 		bool CreateDivisionEmployeeRelation(BusinessLayer::DivisionEmployeeRelation*, std::string&);
 		bool CreateDivision(BusinessLayer::Division*, std::string&);
@@ -116,9 +120,13 @@ namespace BusinessLayer
 		bool CreateLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog*, std::string&);
 		bool CreateLocation(BusinessLayer::Location*, std::string&);
 		bool CreateMeasure(BusinessLayer::Measure*, std::string&);
+		bool CreateMulticurrency(BusinessLayer::Multicurrency*, std::string&);
 		bool CreateNetCost(BusinessLayer::NetCost*, std::string&);
+		bool CreateNetCostHistory(BusinessLayer::NetCostHistory*, std::string&);
+		bool CreateNetCostCoefficient(BusinessLayer::NetCostCoefficient*, std::string&);
 		bool CreateOrder(BusinessLayer::Order*, std::string&);
 		bool CreateOrderList(BusinessLayer::OrderList*, std::string&);
+		bool CreateOrderPriceCorrection(BusinessLayer::OrderPriceCorrection*, std::string&);
 		bool CreateOrderRaw(BusinessLayer::OrderRaw*, std::string&);
 		bool CreateOrderRawList(BusinessLayer::OrderRawList*, std::string&);
 		bool CreateOtherStocks(BusinessLayer::OtherStocks*, std::string&);
@@ -130,6 +138,7 @@ namespace BusinessLayer
 		bool CreatePostingFixedAssets(BusinessLayer::PostingFixedAssets*, std::string&);
 		bool CreatePosition(BusinessLayer::Position*, std::string&);
 		bool CreatePrice(BusinessLayer::Price*, std::string&);
+		bool CreatePriceExtension(BusinessLayer::PriceExtension*, std::string&);
 		bool CreateProduct(BusinessLayer::Product*, std::string&);
 		bool CreateProductBranchRelation(BusinessLayer::ProductBranchRelation*, std::string&);
 		bool CreateProduction(BusinessLayer::Production*, std::string&);
@@ -152,6 +161,7 @@ namespace BusinessLayer
 		bool CreateRelationType(BusinessLayer::RelationType*, std::string&);
 		bool CreateReturn(BusinessLayer::Return*, std::string&);
 		bool CreateReturnList(BusinessLayer::ReturnList*, std::string&);
+		bool CreateReturnPriceCorrection(BusinessLayer::ReturnPriceCorrection*, std::string&);
 		bool CreateRole(BusinessLayer::Role*, std::string&);
 		bool CreateSalary(BusinessLayer::Salary*, std::string&);
 		bool CreateSalaryType(BusinessLayer::SalaryType*, std::string&);
@@ -218,6 +228,7 @@ namespace BusinessLayer
 		bool DeleteConsumeOtherStocks(BusinessLayer::ConsumeOtherStocks*, std::string&);
 		bool DeleteConsumeOtherStocksList(BusinessLayer::ConsumeOtherStocksList*, std::string&);
 		bool DeleteCurrency(BusinessLayer::Currency*, std::string&);
+		bool DeleteCurrencyRate(BusinessLayer::CurrencyRate*, std::string&);
 		bool DeleteCreditor(BusinessLayer::Creditor*, std::string&);
 		bool DeleteDivisionAccountRelation(BusinessLayer::DivisionAccountRelation*, std::string&);
 		bool DeleteDivisionEmployeeRelation(BusinessLayer::DivisionEmployeeRelation*, std::string&);
@@ -245,9 +256,13 @@ namespace BusinessLayer
 		bool DeleteLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog*, std::string&);
 		bool DeleteLocation(BusinessLayer::Location*, std::string&);
 		bool DeleteMeasure(BusinessLayer::Measure*, std::string&);
+		bool DeleteMulticurrency(BusinessLayer::Multicurrency*, std::string&);
 		bool DeleteNetCost(BusinessLayer::NetCost*, std::string&);
+		bool DeleteNetCostHistory(BusinessLayer::NetCostHistory*, std::string&);
+		bool DeleteNetCostCoefficient(BusinessLayer::NetCostCoefficient*, std::string&);
 		bool DeleteOrder(BusinessLayer::Order*, std::string&);
 		bool DeleteOrderList(BusinessLayer::OrderList*, std::string&);
+		bool DeleteOrderPriceCorrection(BusinessLayer::OrderPriceCorrection*, std::string&);
 		bool DeleteOrderRaw(BusinessLayer::OrderRaw*, std::string&);
 		bool DeleteOrderRawList(BusinessLayer::OrderRawList*, std::string&);
 		bool DeleteOtherStocks(BusinessLayer::OtherStocks*, std::string&);
@@ -259,6 +274,7 @@ namespace BusinessLayer
 		bool DeletePostingFixedAssets(BusinessLayer::PostingFixedAssets*, std::string&);
 		bool DeletePosition(BusinessLayer::Position*, std::string&);
 		bool DeletePrice(BusinessLayer::Price*, std::string&);
+		bool DeletePriceExtension(BusinessLayer::PriceExtension*, std::string&);
 		bool DeleteProduct(BusinessLayer::Product*, std::string&);
 		bool DeleteProductBranchRelation(BusinessLayer::ProductBranchRelation*, std::string&);
 		bool DeleteProduction(BusinessLayer::Production*, std::string&);
@@ -281,6 +297,7 @@ namespace BusinessLayer
 		bool DeleteRelationType(BusinessLayer::RelationType*, std::string&);
 		bool DeleteReturn(BusinessLayer::Return*, std::string&);
 		bool DeleteReturnList(BusinessLayer::ReturnList*, std::string&);
+		bool DeleteReturnPriceCorrection(BusinessLayer::ReturnPriceCorrection*, std::string&);
 		bool DeleteRole(BusinessLayer::Role*, std::string&);
 		bool DeleteSalary(BusinessLayer::Salary*, std::string&);
 		bool DeleteSalaryType(BusinessLayer::SalaryType*, std::string&);
@@ -347,6 +364,7 @@ namespace BusinessLayer
 		bool UpdateConsumeOtherStocks(BusinessLayer::ConsumeOtherStocks*, std::string&);
 		bool UpdateConsumeOtherStocksList(BusinessLayer::ConsumeOtherStocksList*, std::string&);
 		bool UpdateCurrency(BusinessLayer::Currency*, std::string&);
+		bool UpdateCurrencyRate(BusinessLayer::CurrencyRate*, std::string&);
 		bool UpdateCreditor(BusinessLayer::Creditor*, std::string&);
 		bool UpdateDivisionAccountRelation(BusinessLayer::DivisionAccountRelation*, std::string&);
 		bool UpdateDivisionEmployeeRelation(BusinessLayer::DivisionEmployeeRelation*, std::string&);
@@ -374,9 +392,13 @@ namespace BusinessLayer
 		bool UpdateLowValueStockChangeLog(BusinessLayer::LowValueStockChangeLog*, std::string&);
 		bool UpdateLocation(BusinessLayer::Location*, std::string&);
 		bool UpdateMeasure(BusinessLayer::Measure*, std::string&);
+		bool UpdateMulticurrency(BusinessLayer::Multicurrency*, std::string&);
 		bool UpdateNetCost(BusinessLayer::NetCost*, std::string&);
+		bool UpdateNetCostHistory(BusinessLayer::NetCostHistory*, std::string&);
+		bool UpdateNetCostCoefficient(BusinessLayer::NetCostCoefficient*, std::string&);
 		bool UpdateOrder(BusinessLayer::Order*, std::string&);
 		bool UpdateOrderList(BusinessLayer::OrderList*, std::string&);
+		bool UpdateOrderPriceCorrection(BusinessLayer::OrderPriceCorrection*, std::string&);
 		bool UpdateOrderRaw(BusinessLayer::OrderRaw*, std::string&);
 		bool UpdateOrderRawList(BusinessLayer::OrderRawList*, std::string&);
 		bool UpdateOtherStocks(BusinessLayer::OtherStocks*, std::string&);
@@ -388,6 +410,7 @@ namespace BusinessLayer
 		bool UpdatePostingFixedAssets(BusinessLayer::PostingFixedAssets*, std::string&);
 		bool UpdatePosition(BusinessLayer::Position*, std::string&);
 		bool UpdatePrice(BusinessLayer::Price*, std::string&);
+		bool UpdatePriceExtension(BusinessLayer::PriceExtension*, std::string&);
 		bool UpdateProduct(BusinessLayer::Product*, std::string&);
 		bool UpdateProductBranchRelation(BusinessLayer::ProductBranchRelation*, std::string&);
 		bool UpdateProduction(BusinessLayer::Production*, std::string&);
@@ -410,6 +433,7 @@ namespace BusinessLayer
 		bool UpdateRelationType(BusinessLayer::RelationType*, std::string&);
 		bool UpdateReturn(BusinessLayer::Return*, std::string&);
 		bool UpdateReturnList(BusinessLayer::ReturnList*, std::string&);
+		bool UpdateReturnPriceCorrection(BusinessLayer::ReturnPriceCorrection*, std::string&);
 		bool UpdateRole(BusinessLayer::Role*, std::string&);
 		bool UpdateSalary(BusinessLayer::Salary*, std::string&);
 		bool UpdateSalaryType(BusinessLayer::SalaryType*, std::string&);
@@ -459,9 +483,13 @@ namespace BusinessLayer
 		bool GenerateReports(std::string, std::string);
 		bool CorrectingEntries();
 		bool CorrectingNetCostInStock();
+		bool CorrectingNetCostInConsumeProduct();
+		bool CorrectingNetCostInStockTransfer();
+		bool ConsumeDocSetError();
 		bool CorrectingNetCostInTransport();
 		bool SaveStockState(std::string, std::string);
 		bool SaveTransportState(std::string, std::string);
+		bool SaveNetCostState(std::string, std::string);
 		bool CorrectDates(std::string);
 		std::string wstring_to_utf8(const std::wstring& str);
 	};

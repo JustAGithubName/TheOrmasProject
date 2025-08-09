@@ -47,8 +47,13 @@ namespace BusinessLayer{
 
 		//Generate filter string for class
 		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
+		virtual std::string GenerateFilterLessDate(DataLayer::OrmasDal& ormasDal);
+		std::string GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string formDate, std::string toDate);
+		std::string GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> priceIDList);
 		bool GetPriceByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		bool GetPriceByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
+		std::vector<int> GetPriceIDsByProductIDVec(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> prodIDList, std::string& errorMessage);
+		double GetProductAveragePriceForPeriodByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prodID, std::string fromDate, std::string tillDate, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();
 	private:

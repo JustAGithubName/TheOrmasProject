@@ -88,6 +88,12 @@ namespace BusinessLayer{
 		bool CorrectingEntry(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int debAccID, double currentSum, int credAccID, std::string oExecDate, std::string& errorMessage);
 		int GetCurrentStatusID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage);
 		std::string wstring_to_utf8(const std::wstring& str);
+		bool ReplenishmentForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cbAccID, std::string& errorMessage);
+		bool ReplenishmentForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cbAccID, double previousValue, std::string& errorMessage);
+		bool ReplenishmentForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cbAccID, std::string& errorMessage);
+		bool ReplenishmentForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cbAccID, double previousValue, std::string& errorMessage);
+		bool CancelPaymentForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int uID, int cID, int aID, int cbAccID, std::string& errorMessage);
+		bool CancelPaymentForMulticurrency(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int sID, int cashboxAccID, std::string& errorMessage);
 	};
 }
 #endif

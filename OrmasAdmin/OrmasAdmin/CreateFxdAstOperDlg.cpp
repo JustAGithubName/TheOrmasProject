@@ -63,7 +63,7 @@ void CreateFxdAstOperDlg::SetID(int ID, QString childName)
 }
 
 void CreateFxdAstOperDlg::SetFixedAssetsOperationParams(QString oDate, QString oName, double oValue, QString oInc, QString oDec,
-	int fxAssID, int id)
+	int fxAssID, QString oRe, int id)
 {
 	fixedAssetsOperations->SetDate(oDate.toUtf8().constData());
 	fixedAssetsOperations->SetName(oName.toUtf8().constData());
@@ -71,10 +71,11 @@ void CreateFxdAstOperDlg::SetFixedAssetsOperationParams(QString oDate, QString o
 	fixedAssetsOperations->SetIncrement(oInc == "true" ? true : false);
 	fixedAssetsOperations->SetDecrement(oDec == "true" ? true : false);
 	fixedAssetsOperations->SetFixedAssetsID(fxAssID);
+	fixedAssetsOperations->SetRevaluation(oRe == "true" ? true : false);
 	fixedAssetsOperations->SetID(id);
 }
 
-void CreateFxdAstOperDlg::FillEditElements(QString oDate, QString oName, double oValue, QString oInc, QString oDec, int fxAssID)
+void CreateFxdAstOperDlg::FillEditElements(QString oDate, QString oName, double oValue, QString oInc, QString oDec, int fxAssID, QString oRe)
 {
 	operDateEdit->setDate(QDate::fromString(oDate, "dd.MM.yyyy"));
 	nameEdit->setText(oName);
@@ -82,6 +83,7 @@ void CreateFxdAstOperDlg::FillEditElements(QString oDate, QString oName, double 
 	fixedAstEdit->setText(QString::number(fxAssID));
 	oInc == "true" ? inRdb->setChecked(true) : inRdb->setChecked(false);
 	oDec == "true" ? decRdb->setChecked(true) : decRdb->setChecked(false);
+	oRe == "true" ? decRdb->setChecked(true) : reRdb->setChecked(false);
 }
 
 bool CreateFxdAstOperDlg::FillDlgElements(QTableView* pTable)
@@ -95,13 +97,15 @@ bool CreateFxdAstOperDlg::FillDlgElements(QTableView* pTable)
 			pTable->model()->data(pTable->model()->index(mIndex.row(), 4)).toString().toUtf8().constData(),
 			pTable->model()->data(pTable->model()->index(mIndex.row(), 5)).toString().toUtf8().constData(),
 			pTable->model()->data(pTable->model()->index(mIndex.row(), 6)).toInt(),
+			pTable->model()->data(pTable->model()->index(mIndex.row(), 7)).toString().toUtf8().constData(),
 			pTable->model()->data(pTable->model()->index(mIndex.row(), 0)).toInt());
 		FillEditElements(pTable->model()->data(pTable->model()->index(mIndex.row(), 1)).toString().toUtf8().constData(),
 			pTable->model()->data(pTable->model()->index(mIndex.row(), 2)).toString().toUtf8().constData(),
 			pTable->model()->data(pTable->model()->index(mIndex.row(), 3)).toDouble(),
 			pTable->model()->data(pTable->model()->index(mIndex.row(), 4)).toString().toUtf8().constData(),
 			pTable->model()->data(pTable->model()->index(mIndex.row(), 5)).toString().toUtf8().constData(),
-			pTable->model()->data(pTable->model()->index(mIndex.row(), 6)).toInt());
+			pTable->model()->data(pTable->model()->index(mIndex.row(), 6)).toInt(),
+			pTable->model()->data(pTable->model()->index(mIndex.row(), 7)).toString().toUtf8().constData());
 		return true;
 	}
 	else
@@ -118,7 +122,7 @@ void CreateFxdAstOperDlg::CreateFixedAssetsOperation()
 	{
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		SetFixedAssetsOperationParams(operDateEdit->text(), nameEdit->text(), valueEdit->text().toDouble(), inRdb->isChecked()? "true":"false",
-			decRdb->isChecked() ? "true" : "false", fixedAstEdit->text().toInt());
+			decRdb->isChecked() ? "true" : "false", fixedAstEdit->text().toInt(), reRdb->isChecked() ? "true" : "false");
 		dialogBL->StartIsolatedTransaction(errorMessage);
 		if (dialogBL->CreateFixedAssetsOperation(fixedAssetsOperations, errorMessage))
 		{
@@ -133,7 +137,8 @@ void CreateFxdAstOperDlg::CreateFixedAssetsOperation()
 						<< new QStandardItem(QString::number(fixedAssetsOperations->GetValue(), 'f', 3))
 						<< new QStandardItem(inRdb->isChecked() ? "true" : "false")
 						<< new QStandardItem(decRdb->isChecked() ? "true" : "false")
-						<< new QStandardItem(QString::number(fixedAssetsOperations->GetFixedAssetsID()));
+						<< new QStandardItem(QString::number(fixedAssetsOperations->GetFixedAssetsID()))
+						<< new QStandardItem(reRdb->isChecked() ? "true" : "false");
 					QStandardItemModel *itemModel = (QStandardItemModel *)parentDataForm->tableView->model();
 					itemModel->appendRow(fixedAssetsOperationItem);
 				}
@@ -179,7 +184,7 @@ void CreateFxdAstOperDlg::EditFixedAssetsOperation()
 		{
 			DataForm *parentDataForm = (DataForm*)parentForm;
 			SetFixedAssetsOperationParams(operDateEdit->text(), nameEdit->text(), valueEdit->text().toDouble(), inRdb->isChecked() ? "true" : "false",
-				decRdb->isChecked() ? "true" : "false", fixedAstEdit->text().toInt(), fixedAssetsOperations->GetID());
+				decRdb->isChecked() ? "true" : "false", fixedAstEdit->text().toInt(), reRdb->isChecked() ? "true" : "false", fixedAssetsOperations->GetID());
 			dialogBL->StartIsolatedTransaction(errorMessage);
 			if (dialogBL->UpdateFixedAssetsOperation(fixedAssetsOperations, errorMessage))
 			{
@@ -193,6 +198,7 @@ void CreateFxdAstOperDlg::EditFixedAssetsOperation()
 						itemModel->item(mIndex.row(), 4)->setText(inRdb->isChecked()?"true":"false");
 						itemModel->item(mIndex.row(), 5)->setText(decRdb->isChecked() ? "true" : "false");
 						itemModel->item(mIndex.row(), 6)->setText(QString::number(fixedAssetsOperations->GetFixedAssetsID()));
+						itemModel->item(mIndex.row(), 7)->setText(reRdb->isChecked() ? "true" : "false");
 						emit itemModel->dataChanged(mIndex, mIndex);
 					}
 				}

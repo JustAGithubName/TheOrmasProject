@@ -5,8 +5,11 @@
 	<file>docs/account_card.html</file>
 	<file>docs/cash_list.html</file>
 	<file>docs/company_balance.html</file>
+	<file>docs/company_balance_period.html</file>
 	<file>docs/consumption.html</file>
 	<file>docs/financial_report.html</file>
+	<file>docs/financial_report_letterhead.html</file>
+	<file>docs/financial_report_period.html</file>
 	<file>docs/income.html</file>
 	<file>docs/inventarization.html</file>
 	<file>docs/invoice.html</file>
@@ -14,6 +17,7 @@
 	<file>docs/profitability.html</file>
 	<file>docs/production.html</file>
 	<file>docs/return.html</file>
+	<file>docs/return_rep.html</file>
 	<file>docs/sales.html</file>
 	<file>docs/daily_sales.html</file>
 	<file>docs/specification.html</file>
@@ -30,6 +34,7 @@
 	<file>docs/common_report.html</file>
 	<file>docs/fixed_asset.html</file>
 	<file>docs/fixed_assets_turnover.html</file>
-  <file>docs/product_stock.html</file>
+	<file>docs/product_stock.html</file>
+	<file>docs/exp_month_rep.html</file>
 </qresource>
 </RCC>

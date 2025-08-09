@@ -54,7 +54,7 @@ GenerateAccCardRep::GenerateAccCardRep(BusinessLayer::OrmasBL *ormasBL, QWidget 
 		prevTillMonth += ".";
 		prevTillMonth += std::to_string(year - 1);
 	}
-	if (day > 15 && month == 1)
+	if (day >= 15 && month == 1)
 	{
 		startDate = "01.";
 		startDate += std::to_string(1);
@@ -80,7 +80,7 @@ GenerateAccCardRep::GenerateAccCardRep(BusinessLayer::OrmasBL *ormasBL, QWidget 
 		prevTillMonth += ".";
 		prevTillMonth += std::to_string(year - 1);
 	}
-	if (day > 15 && month > 1)
+	if (day >= 15 && month > 1)
 	{
 		startDate = "01.";
 		startDate += std::to_string(month);
@@ -222,9 +222,6 @@ void GenerateAccCardRep::SetID(int ID, QString childName)
 void GenerateAccCardRep::Generate()
 {
 	QString message = tr("Loading...");
-	//QWidget* checkedWidget = IsWindowExist(((MainForm*)parentForm)->mdiArea->subWindowList(), QString("generateAccRepForm"));
-	//if (checkedWidget == nullptr)
-	//{
 	ReportForm *rForm = new ReportForm(dialogBL, mainForm);
 		rForm->setWindowTitle(tr("Account turnover balance sheet"));
 		std::string prevMonthLastDate = GetPrevMonthEnd(fromDateEdit->text().toUtf8().constData());
@@ -269,12 +266,6 @@ void GenerateAccCardRep::Generate()
 				QString(tr("Ok")));
 			errorMessage = "";
 		}
-	//}
-	//else
-	//{
-	//	checkedWidget->topLevelWidget();
-	//	checkedWidget->activateWindow();
-	//}
 	Close();
 }
 

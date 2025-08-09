@@ -542,7 +542,7 @@ namespace BusinessLayer
 			return false;
 		if (fxDetails.GetAmortizeAccountID() <= 0 || fxDetails.GetPrimaryCostAccountID() <= 0)
 			return false;
-		if (!daRel.GetDARelationByDivisionIDAndCode(globalVar, ormasDal, fxDetails.GetDepartmentID(), "TO WRITE-OFF", errorMessage))
+		if (!daRel.GetDARelationByDivisionIDAndCode(globalVar, ormasDal, fxDetails.GetDepartmentID(), "FIXED ASSETS WRITE-OFF", errorMessage))
 			return false;
 
 		Subaccount primAcc;

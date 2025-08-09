@@ -1,42 +1,69 @@
-	<div id="items">
+	<div class="items">
 				<div class = "pannel-block">
 					<div class="pannel" id="create-order">
-						<div id="order-img"></div>
+						<div class="order-img"></div>
 						<label class= "for-pannel">Создать заказ</label>
 					</div>
+				</div>
+				<div class = "pannel-block">
 					<div class="pannel" id="create-return">
-						<div id="return-img"></div>
+						<div class="return-img"></div>
 						<label class= "for-pannel">Создать возврат</label>
 					
 					</div>
 				</div>
 				<div class = "pannel-block">
 					<div class="pannel" id="show-list">
-						<div id="list-img"></div>
+						<div class="list-img"></div>
 						<label class= "for-pannel">Список</label>
 					</div>
+				</div>
+				<div class = "pannel-block">
 					<div class="pannel" id="transport">
-						<div id="transport-img"></div>
+						<div class="transport-img"></div>
 						<label class= "for-pannel">Транспорт</label>
 					</div>
 				</div>
 				<div class = "pannel-block">
 					<div class="pannel" id="clients-balance">
-						<div id="balance-img"></div>
+						<div class="balance-img"></div>
 						<label class= "for-pannel">Баланс</label>
 					
 					</div>
+				</div>
+				<div class = "pannel-block">
 					<div class="pannel" id="clients">
-						<div id="clients-img"></div>
+						<div class="clients-img"></div>
 						<label class= "for-pannel">Клиенты</label>
 					
 					</div>
 				</div>
 				<div class = "pannel-block">
 					<div class="pannel" id="payment">
-						<div id="price-img"></div>
+						<div class="price-img"></div>
 						<label class= "for-pannel">Оплата</label>
 					
 					</div>
 				</div>
+				<div class = "pannel-block">
+					<div class="pannel" id="report">
+						<div class="report-img"></div>
+						<label class= "for-pannel">Отчеты</label>
+					
+					</div>
+				</div>
+				<div class = "pannel-block">
+					<div class="pannel" id="consume">
+						<div class="consume-img"></div>
+						<label class= "for-pannel">Заявка</label>
+					
+					</div>
+				</div>
+				<!--<div class = "pannel-block">
+					<div class="pannel" id="add-client">
+						<div class="add-client-img"></div>
+						<label class= "for-pannel">Добавить клиента</label>
+					
+					</div>
+				</div>-->
 			</div>

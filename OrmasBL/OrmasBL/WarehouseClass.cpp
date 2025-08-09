@@ -1,5 +1,10 @@
 #include "stdafx.h"
 #include "WarehouseClass.h"
+#include "CompanyEmployeeRelationClass.h"
+#include "WarehouseTypeClass.h"
+#include "BranchClass.h"
+#include "EmployeeClass.h"
+#include "WarehouseEmployeeRelationClass.h"
 #include <boost/algorithm/string.hpp>
 
 
@@ -242,6 +247,29 @@ namespace BusinessLayer{
 		else
 		{
 			errorMessage = "Cannot find Warehouse with this id";
+		}
+		return 0;
+	}
+
+	int Warehouse::GetWarehouseIDByUserIDAndTypeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int userID, int typeID, std::string& errorMessage)
+	{
+		CompanyEmployeeRelation ceRel;
+		int branchID = ceRel.GetBranchByEmployeeID(globalVar, ormasDal, userID, errorMessage);
+		ceRel.Clear();
+		WarehouseEmployeeRelation weRel;
+
+		int employeeID = 0;
+		int stockEmployeeBranchID = 0;
+		this->SetWarehouseTypeID(typeID);
+		std::string filter = this->GenerateFilter(ormasDal);
+		std::vector<DataLayer::warehouseViewCollection> warehouseVector = ormasDal.GetWarehouse(errorMessage, filter);
+		for each (auto item in warehouseVector)
+		{
+			employeeID = 0;
+			employeeID = weRel.GetEmployeeIDByWarehouseID(globalVar, ormasDal, std::get<0>(warehouseVector.at(0)), errorMessage);
+			stockEmployeeBranchID = ceRel.GetBranchByEmployeeID(globalVar, ormasDal, employeeID, errorMessage);
+			if (stockEmployeeBranchID == branchID)
+				return std::get<0>(warehouseVector.at(0));
 		}
 		return 0;
 	}

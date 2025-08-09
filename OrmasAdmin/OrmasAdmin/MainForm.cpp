@@ -19,6 +19,9 @@
 #include "GenerateFxAstRepDlg.h"
 #include "GenerateDailySalesRepDlg.h"
 #include "GenerateWTBSDlg.h"
+#include "GenerateAnaRepDlg.h"
+#include "GenerateExpMnhRepDlg.h"
+#include "GenerateRetRepDlg.h"
 #include "CashInfoDlg.h"
 #include "CashBookListDlg.h"
 #include "WarehouseEmployeeRelationClass.h"
@@ -110,6 +113,7 @@ void MainForm::SetAllMenuInvisible()
 	menuStock->setEnabled(false);
 	menuReports->setEnabled(false);
 	menuReferences->setEnabled(false);
+	menuAnalysis->setEnabled(false);
 	menuHelp->setEnabled(true);
 	
 	//actions in menu users
@@ -138,10 +142,12 @@ void MainForm::SetAllMenuInvisible()
 	actionSpecifications->setVisible(false);
 	actionSpecificationList->setVisible(false);
 	actionPrices->setVisible(false);
+	actionPriceExtention->setVisible(false);
 	actionNetCost->setVisible(false);
 	actionEmployeeProducts->setVisible(false);
 	actionBranchProducts->setVisible(false);
 	actionOtherStocks->setVisible(false);
+	actionNetCostCoefficient->setVisible(false);
 	
 	//actions in menu order
 	actionOrders->setVisible(false);
@@ -181,6 +187,9 @@ void MainForm::SetAllMenuInvisible()
 	actionBalances->setVisible(false);
 	actionAccounts->setVisible(false);
 	actionSubaccounts->setVisible(false); 
+	actionMulticurrency->setVisible(false);
+	actionCurrencyRate->setVisible(false);
+	actionSubaccounts->setVisible(false);
 	actionSubaccountLimit->setVisible(false);
 	actionGenerateOneAccount->setVisible(false);
 	actionGenerateAccounts->setVisible(false);
@@ -235,10 +244,13 @@ void MainForm::SetAllMenuInvisible()
 	actionAccountCard->setVisible(false);
 	actionWarehouseTurnover->setVisible(false);
 	actionDailySalesReport->setVisible(false);
+	actionExpeditorMonthlyReport->setVisible(false);
 	actionCommonReport->setVisible(false);
 	actionAgentReport->setVisible(false);
 	actionFixedAssetsReport->setVisible(false);
 	actionWarehouseReport->setVisible(false);
+	actionReturnReport->setVisible(false);
+	actionAnalysisReport->setVisible(false);
 
 	//actions in menu reference
 	actionCompany->setVisible(false);
@@ -273,6 +285,7 @@ void MainForm::SetAllMenuVisible()
 	menuReports->setEnabled(true);
 	menuReferences->setEnabled(true);
 	menuHelp->setEnabled(true);
+	menuAnalysis->setEnabled(false);
 
 	//actions in menu users
 	actionAllUsers->setVisible(true);
@@ -300,10 +313,12 @@ void MainForm::SetAllMenuVisible()
 	actionSpecifications->setVisible(true);
 	actionSpecificationList->setVisible(true);
 	actionPrices->setVisible(true);
+	actionPriceExtention->setVisible(true);
 	actionNetCost->setVisible(true);
 	actionEmployeeProducts->setVisible(true);
 	actionBranchProducts->setVisible(true);
 	actionOtherStocks->setVisible(true);
+	actionNetCostCoefficient->setVisible(true);
 
 	//actions in menu order
 	actionOrders->setVisible(true);
@@ -336,6 +351,8 @@ void MainForm::SetAllMenuVisible()
 	actionBalances->setVisible(true);
 	actionAccounts->setVisible(true);
 	actionSubaccounts->setVisible(true);
+	actionMulticurrency->setVisible(true);
+	actionCurrencyRate->setVisible(true);
 	actionSubaccountLimit->setVisible(true);
 	actionGenerateOneAccount->setVisible(true);
 	actionGenerateAccounts->setVisible(true);
@@ -395,11 +412,16 @@ void MainForm::SetAllMenuVisible()
 	actionSalesReport->setVisible(true);
 	actionAccountCard->setVisible(true);
 	actionWarehouseTurnover->setVisible(true);
+	
 	actionDailySalesReport->setVisible(true);
+	actionExpeditorMonthlyReport->setVisible(true);
 	actionCommonReport->setVisible(true);
 	actionAgentReport->setVisible(true);
+	
 	actionFixedAssetsReport->setVisible(true);
 	actionWarehouseReport->setVisible(true);
+	actionReturnReport->setVisible(true);
+	actionAnalysisReport->setVisible(true);
 
 	//actions in menu reference
 	actionCompany->setVisible(true);
@@ -492,10 +514,12 @@ void MainForm::CreateConnections()
 	QObject::connect(actionSpecifications, &QAction::triggered, this, &MainForm::OpenSpecificationForm);
 	QObject::connect(actionSpecificationList, &QAction::triggered, this, &MainForm::OpenSpecificationListForm);
 	QObject::connect(actionPrices, &QAction::triggered, this, &MainForm::OpenPriceForm);
+	QObject::connect(actionPriceExtention, &QAction::triggered, this, &MainForm::OpenPriceExtensionForm);
 	QObject::connect(actionNetCost, &QAction::triggered, this, &MainForm::OpenNetCostForm);
 	QObject::connect(actionEmployeeProducts, &QAction::triggered, this, &MainForm::OpenEmployeeProductForm);
 	QObject::connect(actionBranchProducts, &QAction::triggered, this, &MainForm::OpenBranchProductForm);
 	QObject::connect(actionOtherStocks, &QAction::triggered, this, &MainForm::OpenOtherStocksForm);
+	QObject::connect(actionNetCostCoefficient, &QAction::triggered, this, &MainForm::OpenNetCostCoefficientForm);
 	
 
 	QObject::connect(actionOrders, &QAction::triggered, this, &MainForm::OpenOrderForm);
@@ -524,6 +548,8 @@ void MainForm::CreateConnections()
 	QObject::connect(actionBalances, &QAction::triggered, this, &MainForm::OpenBalanceForm);
 	QObject::connect(actionAccounts, &QAction::triggered, this, &MainForm::OpenAccountForm);
 	QObject::connect(actionSubaccounts, &QAction::triggered, this, &MainForm::OpenSubaccountForm);
+	QObject::connect(actionMulticurrency, &QAction::triggered, this, &MainForm::OpenMulticurrencyForm);
+	QObject::connect(actionCurrencyRate, &QAction::triggered, this, &MainForm::OpenCurrencyRateForm);
 	QObject::connect(actionSubaccountLimit, &QAction::triggered, this, &MainForm::OpenSubaccountLimitForm);
 	QObject::connect(actionGenerateAccounts, &QAction::triggered, this, &MainForm::GenerateAccountsForm);
 	QObject::connect(actionGenerateOneAccount, &QAction::triggered, this, &MainForm::GenerateOneAccountForm);
@@ -580,10 +606,13 @@ void MainForm::CreateConnections()
 	QObject::connect(actionAccountCard, &QAction::triggered, this, &MainForm::AccountCardForm);
 	QObject::connect(actionWarehouseTurnover, &QAction::triggered, this, &MainForm::WarehouseTurnoverForm);
 	QObject::connect(actionDailySalesReport, &QAction::triggered, this, &MainForm::DailySalesReportForm);
+	QObject::connect(actionExpeditorMonthlyReport, &QAction::triggered, this, &MainForm::ExpeditorMonthlyReportForm);
 	QObject::connect(actionCommonReport, &QAction::triggered, this, &MainForm::CommonReportForm);
 	QObject::connect(actionAgentReport, &QAction::triggered, this, &MainForm::AgentReportForm);
 	QObject::connect(actionFixedAssetsReport, &QAction::triggered, this, &MainForm::FixedAssetsForm);
 	QObject::connect(actionWarehouseReport, &QAction::triggered, this, &MainForm::WarehouseReportForm);
+	QObject::connect(actionReturnReport, &QAction::triggered, this, &MainForm::ReturnReportForm);
+	QObject::connect(actionAnalysisReport, &QAction::triggered, this, &MainForm::AnalysisReportForm);
 	
 	QObject::connect(actionCompany, &QAction::triggered, this, &MainForm::OpenCompanyForm);
 	QObject::connect(actionCurrency, &QAction::triggered, this, &MainForm::OpenCurrencyForm);
@@ -1718,6 +1747,54 @@ void MainForm::OpenPriceForm()
 
 }
 
+void MainForm::OpenPriceExtensionForm()
+{
+	QString message = tr("Loading...");
+	statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(mdiArea->subWindowList(), QString("priceExtesionForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(oBL, this);
+		dForm->setWindowTitle(tr("Price extension"));
+		dForm->FillTable<BusinessLayer::PriceExtensionView>(errorMessage);
+		if (errorMessage.empty())
+		{
+			dForm->setObjectName("priceExtesionForm");
+			dForm->QtConnect<BusinessLayer::PriceExtensionView>();
+			QMdiSubWindow *priceExWindow = new QMdiSubWindow;
+			priceExWindow->setWidget(dForm);
+			priceExWindow->setAttribute(Qt::WA_DeleteOnClose);
+			mdiArea->addSubWindow(priceExWindow);
+			priceExWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All price extension are shown");
+			statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+			errorMessage = "";
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All price extension are shown");
+		statusBar()->showMessage(message);
+	}
+
+}
+
 void MainForm::OpenNetCostForm()
 {
 	QString message = tr("Loading...");
@@ -1761,6 +1838,54 @@ void MainForm::OpenNetCostForm()
 		checkedWidget->topLevelWidget();
 		checkedWidget->activateWindow();
 		QString message = tr("All net cost are shown");
+		statusBar()->showMessage(message);
+	}
+
+}
+
+void MainForm::OpenNetCostCoefficientForm()
+{
+	QString message = tr("Loading...");
+	statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(mdiArea->subWindowList(), QString("netCostCoefficientForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(oBL, this);
+		dForm->setWindowTitle(tr("Net cost coefficient"));
+		dForm->FillTable<BusinessLayer::NetCostCoefficientView>(errorMessage);
+		if (errorMessage.empty())
+		{
+			dForm->setObjectName("netCostCoefficientForm");
+			dForm->QtConnect<BusinessLayer::NetCostCoefficientView>();
+			QMdiSubWindow *netCostCWindow = new QMdiSubWindow;
+			netCostCWindow->setWidget(dForm);
+			netCostCWindow->setAttribute(Qt::WA_DeleteOnClose);
+			mdiArea->addSubWindow(netCostCWindow);
+			netCostCWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All net cost coefficient are shown");
+			statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+			errorMessage = "";
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All net cost coefficient are shown");
 		statusBar()->showMessage(message);
 	}
 
@@ -2979,6 +3104,102 @@ void MainForm::OpenSubaccountForm()
 		checkedWidget->topLevelWidget();
 		checkedWidget->activateWindow();
 		QString message = tr("All subaccounts are shown");
+		statusBar()->showMessage(message);
+	}
+
+}
+
+void MainForm::OpenMulticurrencyForm()
+{
+	QString message = tr("Loading...");
+	statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(mdiArea->subWindowList(), QString("multicurrencyForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(oBL, this);
+		dForm->setWindowTitle(tr("Multicurrency"));
+		dForm->FillTable<BusinessLayer::MulticurrencyView>(errorMessage);
+		if (errorMessage.empty())
+		{
+			dForm->setObjectName("multicurrencyForm");
+			dForm->QtConnect<BusinessLayer::MulticurrencyView>();
+			QMdiSubWindow *multicurrencyWindow = new QMdiSubWindow;
+			multicurrencyWindow->setWidget(dForm);
+			multicurrencyWindow->setAttribute(Qt::WA_DeleteOnClose);
+			mdiArea->addSubWindow(multicurrencyWindow);
+			multicurrencyWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All multicurrency are shown");
+			statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+			errorMessage = "";
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All multicurrency are shown");
+		statusBar()->showMessage(message);
+	}
+
+}
+
+void MainForm::OpenCurrencyRateForm()
+{
+	QString message = tr("Loading...");
+	statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(mdiArea->subWindowList(), QString("currencyRateForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(oBL, this);
+		dForm->setWindowTitle(tr("Currency rate"));
+		dForm->FillTable<BusinessLayer::CurrencyRateView>(errorMessage);
+		if (errorMessage.empty())
+		{
+			dForm->setObjectName("currencyRateForm");
+			dForm->QtConnect<BusinessLayer::CurrencyRateView>();
+			QMdiSubWindow *curRateWindow = new QMdiSubWindow;
+			curRateWindow->setWidget(dForm);
+			curRateWindow->setAttribute(Qt::WA_DeleteOnClose);
+			mdiArea->addSubWindow(curRateWindow);
+			curRateWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All currency rate are shown");
+			statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+			errorMessage = "";
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All currency rate are shown");
 		statusBar()->showMessage(message);
 	}
 
@@ -4994,6 +5215,18 @@ void MainForm::DailySalesReportForm()
 	generateDailySalesRepDlg->show();
 }
 
+void MainForm::ExpeditorMonthlyReportForm()
+{
+	/*GenerateExpMnhRep *generateExpMnhRepDlg = new GenerateExpMnhRep(oBL, this);
+	generateExpMnhRepDlg->setAttribute(Qt::WA_DeleteOnClose);
+	generateExpMnhRepDlg->setWindowTitle(tr("Generate expeditor monthly report"));
+	QMdiSubWindow *generateExpMnhRepWindow = new QMdiSubWindow;
+	generateExpMnhRepWindow->setWidget(generateExpMnhRepDlg);
+	generateExpMnhRepWindow->setAttribute(Qt::WA_DeleteOnClose);
+	mdiArea->addSubWindow(generateExpMnhRepWindow);
+	generateExpMnhRepDlg->show();*/
+}
+
 void MainForm::AgentReportForm()
 {
 	GenerateAgentRep *generateAgentRepDlg = new GenerateAgentRep(oBL, this);
@@ -5018,7 +5251,29 @@ void MainForm::CommonReportForm()
 	commonRepDlg->show();
 }
 
+void MainForm::ReturnReportForm()
+{
+	GenerateRetRep *retRepDlg = new GenerateRetRep(oBL, this);
+	retRepDlg->setAttribute(Qt::WA_DeleteOnClose);
+	retRepDlg->setWindowTitle(tr("Return report"));
+	QMdiSubWindow *retDlgRepWindow = new QMdiSubWindow;
+	retDlgRepWindow->setWidget(retRepDlg);
+	retDlgRepWindow->setAttribute(Qt::WA_DeleteOnClose);
+	mdiArea->addSubWindow(retDlgRepWindow);
+	retRepDlg->show();
+}
 
+void MainForm::AnalysisReportForm()
+{
+	/*AnalysisRep *anaRepDlg = new AnalysisRep(oBL, this);
+	anaRepDlg->setAttribute(Qt::WA_DeleteOnClose);
+	anaRepDlg->setWindowTitle(tr("Analysis report"));
+	QMdiSubWindow *anaDlgRepWindow = new QMdiSubWindow;
+	anaDlgRepWindow->setWidget(anaRepDlg);
+	anaDlgRepWindow->setAttribute(Qt::WA_DeleteOnClose);
+	mdiArea->addSubWindow(anaDlgRepWindow);
+	commonRepDlg->show();*/
+}
 
 void MainForm::OpenCompanyForm()
 {

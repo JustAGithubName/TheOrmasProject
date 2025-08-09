@@ -66,6 +66,7 @@ namespace BusinessLayer{
 		//Generate filter string for class
 		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
 		std::string GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> subaccountIDList);
+		std::string GenerateNotINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> subaccountIDList);
 		bool GetSubaccountByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int aID, std::string& errorMessage);
 		bool GetSubaccountByNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string aNumber, std::string& errorMessage);
 		std::string GenerateRawNumber(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage);

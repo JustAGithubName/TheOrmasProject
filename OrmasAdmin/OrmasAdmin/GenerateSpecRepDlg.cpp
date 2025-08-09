@@ -2,7 +2,7 @@
 #include "GenerateSpecRepDlg.h"
 #include "MainForm.h"
 #include "DocForm.h"
-
+#include "PriceClass.h"
 
 GenerateSpecRep::GenerateSpecRep(BusinessLayer::OrmasBL *ormasBL, QWidget *parent) :QDialog(parent)
 {
@@ -155,6 +155,27 @@ GenerateSpecRep::~GenerateSpecRep()
 {
 }
 
+class ProductionConsumeData{
+public:
+	double count = 0;
+	double sum = 0;
+	int productID = 0;
+	double price = 0;
+	bool Clear(){
+		count = 0;
+		sum = 0;
+		productID = 0;
+		price = 0;
+		return true;
+	}
+	bool operator==(int prodID) const
+	{
+		if (productID == prodID)
+			return true;
+		return false;
+	}
+};
+
 void GenerateSpecRep::Generate()
 {
 	BusinessLayer::Status status;
@@ -211,7 +232,7 @@ void GenerateSpecRep::Generate()
 		QString reportText = file.readAll();
 		//generating report
 		std::map<int, double> prodnProductCount;
-		std::map<int, double> consumeProductCount;
+		// std::map<int, double> consumeProductCount;
 		std::map<int, double> specProductCount;
 
 		if (vecProdn.size() > 0)
@@ -244,7 +265,9 @@ void GenerateSpecRep::Generate()
 				}
 			}
 
-
+			
+			ProductionConsumeData conData;
+			std::deque<ProductionConsumeData> conDataVec; 
 			if (vecConRaw.size() > 0)
 			{
 				BusinessLayer::ProductionConsumeRawList cRawList;
@@ -262,17 +285,39 @@ void GenerateSpecRep::Generate()
 					{
 						for each (auto listItem in vecCRawList)
 						{
-							if (consumeProductCount.find(listItem.GetProductID()) != consumeProductCount.end())
+							/*if (consumeProductCount.find(listItem.GetProductID()) != consumeProductCount.end())
 							{
 								consumeProductCount.find(listItem.GetProductID())->second = consumeProductCount.find(listItem.GetProductID())->second + listItem.GetCount();
 							}
 							else
 							{
 								consumeProductCount.insert(std::make_pair(listItem.GetProductID(), listItem.GetCount()));
+							}*/
+
+							auto iteratorPosition = std::find_if(conDataVec.begin(), conDataVec.end(), [&](const ProductionConsumeData& left){
+								return left == listItem.GetProductID();
+							});
+							if (iteratorPosition == conDataVec.end())
+							{
+								conData.Clear();
+								conData.count = listItem.GetCount();
+								conData.sum = listItem.GetSum();
+								conData.productID = listItem.GetProductID();
+								conDataVec.push_back(conData);
+							}
+							else
+							{
+								iteratorPosition->count = iteratorPosition->count + listItem.GetCount();
+								iteratorPosition->sum = iteratorPosition->sum + listItem.GetSum();
 							}
 						}
 					}
 				}
+			}
+
+			for (unsigned int i = 0; i < conDataVec.size(); ++i)
+			{
+				conDataVec[i].price = conDataVec[i].sum / conDataVec[i].count;
 			}
 
 			BusinessLayer::Specification specification;
@@ -349,32 +394,37 @@ void GenerateSpecRep::Generate()
 						specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(product.GetName().c_str()) + "</td>";
 						specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(specProduct.second) + "</td>";
 						specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(measure.GetShortName().c_str()) + "</td>";
-						if (consumeProductCount.find(product.GetID()) != consumeProductCount.end())
+						auto iteratorPosition = std::find_if(conDataVec.begin(), conDataVec.end(), [&](const ProductionConsumeData& left){
+							return left == specProduct.first;
+						});
+						if (iteratorPosition != conDataVec.end())
 						{
-							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(consumeProductCount.find(product.GetID())->second) + "</td>";
+							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(iteratorPosition->count) + "</td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(measure.GetShortName().c_str()) + "</td>";
-							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(consumeProductCount.find(product.GetID())->second - specProduct.second) + "</td>";
+							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(iteratorPosition->count - specProduct.second) + "</td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(measure.GetShortName().c_str()) + "</td>";
-							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number((consumeProductCount.find(product.GetID())->second - specProduct.second) * product.GetPrice()) + "</td>";
-							difSum += (consumeProductCount.find(product.GetID())->second - specProduct.second) * product.GetPrice();
-							sum += consumeProductCount.find(product.GetID())->second * product.GetPrice();
+							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number((iteratorPosition->count - specProduct.second) * iteratorPosition->price) + "</td>";
+							difSum += (iteratorPosition->count - specProduct.second) * iteratorPosition->price;
+							sum += iteratorPosition->count * iteratorPosition->price;
 						}
 						else
 						{
+							BusinessLayer::Price price;
+							double averagePrice = price.GetProductAveragePriceForPeriodByProductID(dialogBL->globalVar, dialogBL->GetOrmasDal(), specProduct.first, fromDateEdit->text().toUtf8().constData(), tillDateEdit->text().toUtf8().constData(), errorMessage);
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '> 0 </td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(measure.GetShortName().c_str()) + "</td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(specProduct.second * -1) + "</td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(measure.GetShortName().c_str()) + "</td>";
-							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(specProduct.second * -1 * product.GetPrice()) + "</td>";
-							difSum += specProduct.second * -1 * product.GetPrice();
+							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(specProduct.second * -1 * averagePrice) + "</td>";
+							difSum += specProduct.second * -1 * averagePrice;
 						}
 					}
 				}
 			}
-			for each (auto consumedProduct in consumeProductCount)
+			for each (auto consumedProduct in conDataVec)
 			{
 				product.Clear();
-				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), consumedProduct.first, errorMessage))
+				if (product.GetProductByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), consumedProduct.productID, errorMessage))
 				{
 					measure.Clear();
 					if (measure.GetMeasureByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), product.GetMeasureID(), errorMessage))
@@ -386,13 +436,13 @@ void GenerateSpecRep::Generate()
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(product.GetName().c_str()) + "</td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '> 0 </td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(measure.GetShortName().c_str()) + "</td>";
-							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(consumedProduct.second) + "</td>";
+							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(consumedProduct.count) + "</td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(measure.GetShortName().c_str()) + "</td>";
-							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(consumedProduct.second) + "</td>";
+							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(consumedProduct.count) + "</td>";
 							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString(measure.GetShortName().c_str()) + "</td>";
-							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(consumedProduct.second * product.GetPrice()) + "</td>";
-							difSum += consumedProduct.second * product.GetPrice();
-							sum += consumedProduct.second * product.GetPrice();
+							specTableBody += "<td style='border: 1px solid black; text - align: center; '>" + QString::number(consumedProduct.count * consumedProduct.price) + "</td>";
+							difSum += consumedProduct.count * consumedProduct.price;
+							sum += consumedProduct.count * consumedProduct.price;
 						}
 					}
 				}

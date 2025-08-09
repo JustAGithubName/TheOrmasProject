@@ -67,6 +67,9 @@ public:
     QLabel *prodNamePh;
     QLabel *volumePh;
     SearchBox *searchEdit;
+    QLabel *newPriceCurrency;
+    QLabel *oldPriceCurrency;
+    QLabel *currenctCurrency;
 
     void setupUi(QDialog *CreateOrdRList)
     {
@@ -288,6 +291,21 @@ public:
 
         gridLayout->addWidget(searchEdit, 0, 0, 1, 6);
 
+        newPriceCurrency = new QLabel(CreateOrdRList);
+        newPriceCurrency->setObjectName(QStringLiteral("newPriceCurrency"));
+
+        gridLayout->addWidget(newPriceCurrency, 6, 2, 1, 1);
+
+        oldPriceCurrency = new QLabel(CreateOrdRList);
+        oldPriceCurrency->setObjectName(QStringLiteral("oldPriceCurrency"));
+
+        gridLayout->addWidget(oldPriceCurrency, 3, 2, 1, 1);
+
+        currenctCurrency = new QLabel(CreateOrdRList);
+        currenctCurrency->setObjectName(QStringLiteral("currenctCurrency"));
+
+        gridLayout->addWidget(currenctCurrency, 5, 4, 1, 1);
+
         QWidget::setTabOrder(productBtn, countEdit);
         QWidget::setTabOrder(countEdit, sumEdit);
         QWidget::setTabOrder(sumEdit, orderRawBtn);
@@ -331,6 +349,9 @@ public:
 #endif // QT_NO_TOOLTIP
         prodNamePh->setText(QString());
         volumePh->setText(QString());
+        newPriceCurrency->setText(QString());
+        oldPriceCurrency->setText(QString());
+        currenctCurrency->setText(QString());
     } // retranslateUi
 
 };

@@ -7,8 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>694</width>
-    <height>183</height>
+    <height>207</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Create/Update fixed assets operation</string>
@@ -32,7 +38,71 @@
    <property name="bottomMargin">
     <number>17</number>
    </property>
-   <item row="7" column="0" colspan="2">
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Operation value:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QRadioButton" name="inRdb">
+     <property name="text">
+      <string>Increase</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QRadioButton" name="decRdb">
+     <property name="text">
+      <string>Markdown</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Operation name:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_7">
+     <property name="text">
+      <string>Operation date:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QPushButton" name="fxdAstButton">
+     <property name="text">
+      <string>Select fixed assets</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QRadioButton" name="reRdb">
+     <property name="text">
+      <string>Revaluation</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="fixedAstEdit"/>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QDateEdit" name="operDateEdit"/>
+   </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="QLineEdit" name="nameEdit"/>
+   </item>
+   <item row="4" column="1" colspan="2">
+    <widget class="QLineEdit" name="valueEdit"/>
+   </item>
+   <item row="7" column="0" colspan="3">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -62,63 +132,6 @@
       </widget>
      </item>
     </layout>
-   </item>
-   <item row="0" column="0">
-    <widget class="QPushButton" name="fxdAstButton">
-     <property name="text">
-      <string>Select fixed assets</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="fixedAstEdit"/>
-   </item>
-   <item row="2" column="1">
-    <widget class="QDateEdit" name="operDateEdit"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_7">
-     <property name="text">
-      <string>Operation date:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Operation name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Operation value:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="nameEdit"/>
-   </item>
-   <item row="4" column="1">
-    <widget class="QLineEdit" name="valueEdit"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QRadioButton" name="inRdb">
-     <property name="text">
-      <string>Markdown</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QRadioButton" name="decRdb">
-     <property name="text">
-      <string>Revaluation</string>
-     </property>
-    </widget>
    </item>
   </layout>
  </widget>

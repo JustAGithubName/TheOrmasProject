@@ -12,6 +12,8 @@ CreateRtrnListDlg::CreateRtrnListDlg(BusinessLayer::OrmasBL *ormasBL, bool updat
 	DataForm *dataFormParent = (DataForm *)this->parentForm;
 	mainForm = (MainForm *)dataFormParent->GetParent();
 	returnID = ((DataForm*)parent)->returnID;
+	employeeID = ((DataForm*)parent)->employeeID;
+	clientID = ((DataForm*)parent)->clientID;
 	vDouble = new QDoubleValidator(0.00, 1000000000.00, 3, this);
 	vInt = new QIntValidator(0, 1000000000, this);
 	productEdit->setValidator(vInt);
@@ -216,6 +218,8 @@ void CreateRtrnListDlg::AddProductToList()
 		SetReturnListParams(returnID, productEdit->text().toInt(),
 			countEdit->text().toDouble(), (countEdit->text().toDouble() * product->GetPrice()),
 			statusVector.at(0).GetID(), product->GetCurrencyID());
+		returnList->employeeID = employeeID;
+		returnList->clientID = clientID;
 		if (dialogBL->CreateReturnList(returnList, errorMessage))
 		{
 			if (parentDataForm != nullptr)
@@ -233,7 +237,7 @@ void CreateRtrnListDlg::AddProductToList()
 						ProductListItem << new QStandardItem(QString::number(0));
 					}
 					ProductListItem << new QStandardItem(product->GetName().c_str())
-						<< new QStandardItem(QString::number(product->GetPrice()))
+						<< new QStandardItem(QString::number(returnList->GetSum() / returnList->GetCount(),'f',2))
 						<< new QStandardItem(currency->GetShortName().c_str())
 						<< new QStandardItem(QString::number(product->GetVolume()))
 						<< new QStandardItem(measure->GetName().c_str())
@@ -297,6 +301,8 @@ void CreateRtrnListDlg::EditProductInList()
 			SetReturnListParams(returnEdit->text().toInt(),
 				productEdit->text().toInt(), countEdit->text().toDouble(), sumEdit->text().toDouble(), statusEdit->text().toInt(),
 				returnList->GetCurrencyID(), returnList->GetID());
+			returnList->employeeID = employeeID;
+			returnList->clientID = clientID;
 			if (dialogBL->UpdateReturnList(returnList, errorMessage))
 			{
 				if (parentDataForm != nullptr)
@@ -326,7 +332,7 @@ void CreateRtrnListDlg::EditProductInList()
 						
 						itemModel->item(mIndex.row(), 1)->setText(QString::number(returnList->GetReturnID()));
 						itemModel->item(mIndex.row(), 2)->setText(product->GetName().c_str());
-						itemModel->item(mIndex.row(), 3)->setText(QString::number(product->GetPrice()));
+						itemModel->item(mIndex.row(), 3)->setText(QString::number(returnList->GetSum() / returnList->GetCount(),'f',2));
 						itemModel->item(mIndex.row(), 4)->setText(currency->GetShortName().c_str());
 						itemModel->item(mIndex.row(), 5)->setText(QString::number(product->GetVolume()));
 						itemModel->item(mIndex.row(), 6)->setText(measure->GetName().c_str());
@@ -548,7 +554,8 @@ void CreateRtrnListDlg::InitComboBox()
 	{
 		for (unsigned int i = 0; i < curVector.size(); i++)
 		{
-			currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
+			if (curVector[i].GetMainTrade() == true)
+				currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
 		}
 	}
 }

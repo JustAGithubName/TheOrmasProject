@@ -12,7 +12,7 @@ CreatePmtDlg::CreatePmtDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWi
 	parentForm = parent;
 	DataForm *dataFormParent = (DataForm *)this->parentForm;
 	mainForm = (MainForm *)dataFormParent->GetParent();
-	vDouble = new QDoubleValidator(0.00, 1000000000.00, 3, this);
+	vDouble = new QDoubleValidator(0.00, 1000000000.00, 2, this);
 	vInt = new QIntValidator(0, 1000000000, this);
 	userEdit->setValidator(vInt);
 	valueEdit->setValidator(vDouble);
@@ -47,7 +47,7 @@ CreatePmtDlg::CreatePmtDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWi
 		}
 		statusEdit->setText(QString::number(statusVector.at(0).GetID()));
 		statusPh->setText(statusVector.at(0).GetName().c_str());
-
+		statusBtn->setEnabled(false);
 		QObject::connect(okBtn, &QPushButton::released, this, &CreatePmtDlg::CreatePayment);
 	}
 	QObject::connect(cancelBtn, &QPushButton::released, this, &CreatePmtDlg::Close);
@@ -213,6 +213,24 @@ void CreatePmtDlg::FillEditElements(QString pDate, double pValue, QString pTarge
 	{
 		accNumberEdit->setText(acc.GetNumber().c_str());
 	}
+
+	BusinessLayer::Status statusExec;
+	statusExec.SetName("EXECUTED");
+	std::string statusFilter = dialogBL->GenerateFilter<BusinessLayer::Status>(&status);
+	std::vector<BusinessLayer::Status> statusVector = dialogBL->GetAllDataForClass<BusinessLayer::Status>(errorMessage, statusFilter);
+	if (statusVector.size() == 0)
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Status are empty please contact with Admin")),
+			QString(tr("Ok")));
+		errorMessage.clear();
+		return;
+	}
+	int curID = statusEdit->text().toInt();
+	int executeID = statusVector.at(0).GetID();
+	if (curID == executeID)
+		valueEdit->setReadOnly(true);
+	currencyCmb->setEnabled(false);
 }
 
 bool CreatePmtDlg::FillDlgElements(QTableView* pTable)

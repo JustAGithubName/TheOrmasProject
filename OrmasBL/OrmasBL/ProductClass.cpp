@@ -299,6 +299,30 @@ namespace BusinessLayer
 		}
 		return false;
 	}
+
+	std::vector<int> Product::GetProductIDsByTypeID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int pID, std::string& errorMessage)
+	{
+		std::vector<int> prodID;
+		if (pID <= 0)
+			return prodID;
+		productTypeID = pID;
+		std::string filter = GenerateFilter(ormasDal);
+		std::vector<DataLayer::productsViewCollection> productVector = ormasDal.GetProducts(errorMessage, filter);
+		if (0 != productVector.size())
+		{
+			for each (auto item in productVector)
+			{
+				prodID.push_back(std::get<0>(item));
+			}
+
+			return prodID;
+		}
+		else
+		{
+			errorMessage = "Cannot find price with this product id";
+		}
+		return prodID;
+	}
 	
 	bool Product::IsEmpty()
 	{

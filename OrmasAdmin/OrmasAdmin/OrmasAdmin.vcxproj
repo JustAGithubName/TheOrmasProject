@@ -382,6 +382,59 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_GenerateWrRepDlg.cpp</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_GenerateWrRepDlg.cpp</Outputs>
     </CustomBuild>
+    <CustomBuild Include="CreatePrExDlg.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "CreatePrExDlg.h" -o "moc_CreatePrExDlg.cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "CreatePrExDlg.h" -o "moc_CreatePrExDlg.cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geterating moc file form CreatePrExDlg.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geterating moc file form CreatePrExDlg.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_CreatePrExDlg.cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_CreatePrExDlg.cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="CreateNcCoeffDlg.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "CreateNcCoeffDlg.h" -o "moc_CreateNcCoeffDlg.cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geterating moc file form CreateNcCoeffDlg.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_CreateNcCoeffDlg.cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "CreateNcCoeffDlg.h" -o "moc_CreateNcCoeffDlg.cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geterating moc file form CreateNcCoeffDlg.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_CreateNcCoeffDlg.cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="CreateMcurDlg.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "CreateMcurDlg.h" -o "moc_CreateMcurDlg.cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "CreateMcurDlg.h" -o "moc_CreateMcurDlg.cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geterating moc file form CreateMcurDlg.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geterating moc file form CreateMcurDlg.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_CreateMcurDlg.cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_CreateMcurDlg.cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="CreateCurRateDlg.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "CreateCurRateDlg.h" -o "moc_CreateCurRateDlg.cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "CreateCurRateDlg.h" -o "moc_CreateCurRateDlg.cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geterating moc file form CreateCurRateDlg.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geterating moc file form CreateCurRateDlg.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_CreateCurRateDlg.cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_CreateCurRateDlg.cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="GenerateAnaRepDlg.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "GenerateAnaRepDlg.h" -o "moc_GenerateAnaRepDlg.cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "GenerateAnaRepDlg.h" -o "moc_GenerateAnaRepDlg.cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geterating moc file form GenerateAnaRepDlg.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geterating moc file form GenerateAnaRepDlg.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_GenerateAnaRepDlg.cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_GenerateAnaRepDlg.cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="GenerateRetRepDlg.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "GenerateRetRepDlg.h" -o "moc_GenerateRetRepDlg.cpp"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "GenerateRetRepDlg.h" -o "moc_GenerateRetRepDlg.cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geterating moc file form GenerateRetRepDlg.h...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Geterating moc file form GenerateRetRepDlg.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_GenerateRetRepDlg.cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_GenerateRetRepDlg.cpp</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="GenerateExpMnhRepDlg.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "GenerateExpMnhRepDlg.h" -o "moc_GenerateExpMnhRepDlg.cpp"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geterating moc file form GenerateExpMnhRepDlg.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_GenerateExpMnhRepDlg.cpp</Outputs>
+    </CustomBuild>
     <ClInclude Include="resource.h" />
     <CustomBuild Include="SearchBox.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "SearchBox.h" -o "moc_SearchBox.cpp"</Command>
@@ -402,15 +455,19 @@
     <ClInclude Include="ui_CreateConOthStDlg.h" />
     <ClInclude Include="ui_CreateConOthStListDlg.h" />
     <ClInclude Include="ui_CreateCrdDlg.h" />
+    <ClInclude Include="ui_CreateCurRateDlg.h" />
     <ClInclude Include="ui_CreateDivAccDlg.h" />
     <ClInclude Include="ui_CreateEmpPrdDlg.h" />
     <ClInclude Include="ui_CreateFxdAstOperDlg.h" />
     <ClInclude Include="ui_CreateFxdAstDlg.h" />
     <ClInclude Include="ui_CreateGrpDlg.h" />
     <ClInclude Include="ui_CreateInveDlg.h" />
+    <ClInclude Include="ui_CreateMcurDlg.h" />
+    <ClInclude Include="ui_CreateNcCoeffDlg.h" />
     <ClInclude Include="ui_CreateOthStDlg.h" />
     <ClInclude Include="ui_CreateOthSTypeDlg.h" />
     <ClInclude Include="ui_CreatePrdBrnDlg.h" />
+    <ClInclude Include="ui_CreatePrExDlg.h" />
     <ClInclude Include="ui_CreateRcpOthStDlg.h" />
     <ClInclude Include="ui_CreateRcpOthStListDlg.h" />
     <ClInclude Include="ui_CreateSAccLmDlg.h" />
@@ -418,9 +475,12 @@
     <ClInclude Include="ui_CreateStockLmDlg.h" />
     <ClInclude Include="ui_CreateUserGrDlg.h" />
     <ClInclude Include="ui_GenerateAgentRepDlg.h" />
+    <ClInclude Include="ui_GenerateAnaRepDlg.h" />
     <ClInclude Include="ui_GenerateComRepDlg.h" />
     <ClInclude Include="ui_GenerateDailySalesRepDlg.h" />
+    <ClInclude Include="ui_GenerateExpMnhRepDlg.h" />
     <ClInclude Include="ui_GenerateFxAstRepDlg.h" />
+    <ClInclude Include="ui_GenerateRetRepDlg.h" />
     <ClInclude Include="ui_GenerateWrRepDlg.h" />
     <ClInclude Include="ui_GenerateWTBSDlg.h" />
     <ClInclude Include="ui_ReportForm.h" />
@@ -1361,6 +1421,7 @@
     <ClCompile Include="CreateConRListDlg.cpp" />
     <ClCompile Include="CreateCrdDlg.cpp" />
     <ClCompile Include="CreateCurDlg.cpp" />
+    <ClCompile Include="CreateCurRateDlg.cpp" />
     <ClCompile Include="CreateDivDlg.cpp" />
     <ClCompile Include="CreateEmpDlg.cpp" />
     <ClCompile Include="CreateEmpPrdDlg.cpp" />
@@ -1376,7 +1437,9 @@
     <ClCompile Include="CreateJbsDlg.cpp" />
     <ClCompile Include="CreateLcnDlg.cpp" />
     <ClCompile Include="CreateLowValStockDlg.cpp" />
+    <ClCompile Include="CreateMcurDlg.cpp" />
     <ClCompile Include="CreateMsrDlg.cpp" />
+    <ClCompile Include="CreateNcCoeffDlg.cpp" />
     <ClCompile Include="CreateNetCDlg.cpp" />
     <ClCompile Include="CreateOrdDlg.cpp" />
     <ClCompile Include="CreateOrdListDlg.cpp" />
@@ -1392,6 +1455,7 @@
     <ClCompile Include="CreatePPlanListDlg.cpp" />
     <ClCompile Include="CreatePrcDlg.cpp" />
     <ClCompile Include="CreatePrdBrnDlg.cpp" />
+    <ClCompile Include="CreatePrExDlg.cpp" />
     <ClCompile Include="CreateProdConRDlg.cpp" />
     <ClCompile Include="CreateProdConRListDlg.cpp" />
     <ClCompile Include="CreateProdnListDlg.cpp" />
@@ -1444,13 +1508,16 @@
     <ClCompile Include="GenerateAccDlg.cpp" />
     <ClCompile Include="GenerateAccRepDlg.cpp" />
     <ClCompile Include="GenerateAgentRepDlg.cpp" />
+    <ClCompile Include="GenerateAnaRepDlg.cpp" />
     <ClCompile Include="GenerateCmpBlcDlg.cpp" />
     <ClCompile Include="GenerateComRepDlg.cpp" />
     <ClCompile Include="GenerateDailySalesRepDlg.cpp" />
+    <ClCompile Include="GenerateExpMnhRepDlg.cpp" />
     <ClCompile Include="GenerateFinRepDlg.cpp" />
     <ClCompile Include="GenerateFxAstRepDlg.cpp" />
     <ClCompile Include="GenerateOneAccDlg.cpp" />
     <ClCompile Include="GenerateProfRepDlg.cpp" />
+    <ClCompile Include="GenerateRetRepDlg.cpp" />
     <ClCompile Include="GenerateSalesRepDlg.cpp" />
     <ClCompile Include="GenerateSpecRepDlg.cpp" />
     <ClCompile Include="GenerateWrRepDlg.cpp" />
@@ -1594,6 +1661,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="moc_CreateCurRateDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="moc_CreateDivAccDlg.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1658,7 +1729,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="moc_CreateMcurDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="moc_CreateMsrDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="moc_CreateNcCoeffDlg.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -1723,6 +1802,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="moc_CreatePrdTpDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="moc_CreatePrExDlg.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -1930,6 +2013,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="moc_GenerateAnaRepDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="moc_GenerateCmpBlcDlg.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
@@ -1939,6 +2026,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="moc_GenerateDailySalesRepDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="moc_GenerateExpMnhRepDlg.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -1955,6 +2046,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="moc_GenerateProfRepDlg.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="moc_GenerateRetRepDlg.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -3362,6 +3457,81 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating ui_GenerateWrRepDlg.h file...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ui_GenerateWrRepDlg.h</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ui_GenerateWrRepDlg.h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="CreatePrExDlg.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe"  "CreatePrExDlg.ui" -o "ui_CreatePrExDlg.h"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe"  "CreatePrExDlg.ui" -o "ui_CreatePrExDlg.h"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating ui_CreatePrExDlg.h file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating ui_CreatePrExDlg.h file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ui_CreatePrExDlg.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ui_CreatePrExDlg.h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="CreateNcCoeffDlg.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe"  "CreateNcCoeffDlg.ui" -o "ui_CreateNcCoeffDlg.h"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating ui_CreateNcCoeffDlg.h file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ui_CreateNcCoeffDlg.h</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe"  "CreateNcCoeffDlg.ui" -o "ui_CreateNcCoeffDlg.h"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating ui_CreateNcCoeffDlg.h file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ui_CreateNcCoeffDlg.h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="CreateMcurDlg.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe"  "CreateMcurDlg.ui" -o "ui_CreateMcurDlg.h"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe"  "CreateMcurDlg.ui" -o "ui_CreateMcurDlg.h"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating ui_CreateMcurDlg.h file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating ui_CreateMcurDlg.h file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ui_CreateMcurDlg.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ui_CreateMcurDlg.h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="CreateCurRateDlg.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe"  "CreateCurRateDlg.ui" -o "ui_CreateCurRateDlg.h"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe"  "CreateCurRateDlg.ui" -o "ui_CreateCurRateDlg.h"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating ui_CreateCurRateDlg.h file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating ui_CreateCurRateDlg.h file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ui_CreateCurRateDlg.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ui_CreateCurRateDlg.h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GenerateAnaRepDlg.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe"  "GenerateAnaRepDlg.ui" -o "ui_GenerateAnaRepDlg.h"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe"  "GenerateAnaRepDlg.ui" -o "ui_GenerateAnaRepDlg.h"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating ui_GenerateAnaRepDlg.h file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating ui_GenerateAnaRepDlg.h file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ui_GenerateAnaRepDlg.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ui_GenerateAnaRepDlg.h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="GenerateRetRepDlg.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe"  "GenerateRetRepDlg.ui" -o "ui_GenerateRetRepDlg.h"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe"  "GenerateRetRepDlg.ui" -o "ui_GenerateRetRepDlg.h"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating ui_GenerateRetRepDlg.h file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating ui_GenerateRetRepDlg.h file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ui_GenerateRetRepDlg.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ui_GenerateRetRepDlg.h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GenerateExpMnhRepDlg.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\uic.exe"  "GenerateExpMnhRepDlg.ui" -o "ui_GenerateExpMnhRepDlg.h"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\uic.exe"  "GenerateExpMnhRepDlg.ui" -o "ui_GenerateExpMnhRepDlg.h"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating ui_GenerateExpMnhDlg.h file...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating ui_GenerateExpMnhDlg.h file...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ui_GenerateExpMnhRepDlg.h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ui_GenerateExpMnhRepDlg.h</Outputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -611,6 +611,15 @@ namespace BusinessLayer
 		return "";
 	}
 
+	std::string Return::GenerateFilterForRawPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string fromDate, std::string toDate)
+	{
+		if (!toDate.empty() && !fromDate.empty())
+		{
+			return ormasDal.GetFilterForReturnForRawPeriod(id, clientID, date, executionDate, employeeID, count, sum, statusID, currencyID, fromDate, toDate);
+		}
+		return "";
+	}
+
 
 	bool Return::GetReturnByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage)
 	{
@@ -782,8 +791,7 @@ namespace BusinessLayer
 			}
 		}
 
-		if (std::round(sum * 10) / 10 != std::round(checkSum * 10) / 10
-			|| std::round(count * 10) / 10 != std::round(checkCount * 10) / 10)
+		if (fabs(sum - checkSum) > 0.01 || fabs(count - checkCount) > 0.01)
 			return false;
 		return true;
 	}

@@ -6,9 +6,12 @@
 		echo ("<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />");
 		echo ("<meta name='keywords' content='Ormas, oreder mamagement system, order' />");
 		echo ("<meta name='description' content='Oreder mamagement system' />");
+		echo ("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
 		echo ("<meta name='author' content='Main technology Comp.' />");
 		echo ("<meta name='robots' content='all' />");
+		echo ("<LINK rel='stylesheet' media='screen' type='text/css' href='css/bootstrap.css'/>");
 		echo ("<LINK rel='stylesheet' media='screen' type='text/css' title='Style' href='css/mainstyle.css'>");
+		echo ("<script type='text/javascript' src='js/bootstrap.js'></script>");
 	}	
 	require_once ('header.php');
 	$query = "SELECT * FROM \"OrmasSchema\".roles_view";
@@ -28,6 +31,14 @@
 		{
 			$_SESSION['role_id_stock_inspector']=$role_row['role_id']; 
 		}
+		if($role_row['role_name'] == "PURVEYOR MANEGER")
+		{
+			$_SESSION['role_id_purveyor_manager']=$role_row['role_id']; 
+		}
+		if($role_row['role_name'] == "PURVEYOR")
+		{
+			$_SESSION['role_id_purveyor']=$role_row['role_id']; 
+		}
 	}
 ?> 
 
@@ -39,6 +50,7 @@ if(!empty($_SESSION['name']) and !empty($_SESSION['surname']) and !empty($_SESSI
 		$surname    = $_SESSION['surname'];
 		$role_id = $_SESSION['role_id'];
 		$id = $_SESSION['id'];
+		$phone    = $_SESSION['phone'];
 	}
 	 $message="";
 ?>
@@ -62,6 +74,7 @@ unset($_SESSION['password']);
 unset($_SESSION['login']); 
 unset($_SESSION['role']); 
 unset($_SESSION['id']);
+unset($_SESSION['phone']);
 
 if (isset($_POST['phone']) && isset($_POST['password'])) 
 { 
@@ -103,6 +116,7 @@ if (isset($_POST['phone']) && isset($_POST['password']))
 					$_SESSION['id']=$user_row['user_id'];
 					$_SESSION['role_id']=$user_row['role_id'];
 					$_SESSION['password']=$user_row['password'];
+					$_SESSION['phone']=$user_row['user_phone'];
 					echo '<script type="text/javascript"> window.location = "menu.php";</script>';
 				}
 				else
@@ -118,11 +132,11 @@ if (isset($_POST['phone']) && isset($_POST['password']))
 }
 ?>
 
-<div id = "content">
-	<div id="login">
-		<div id="login-logo">
+<div class = "row content">
+	<div class = "container login">
+		<div class = "login-logo">
 		</div>
-		<div id="login-content">
+		<div class = "login-content">
 			<form action="index.php" method="post">
 				<p>
 					<label>Номер телефона:<br></label>
@@ -133,11 +147,11 @@ if (isset($_POST['phone']) && isset($_POST['password']))
 					<input name="password" type="password" >
 				</p>
 				<p>
-				<input id="submit" type="submit" name="submit" value="Войти"/>
+				<input class = "submit" type="submit" name="submit" value="Войти"/>
 				<br>
 			</form>
 		</div>
-		<div id="message">
+		<div class = "message">
 			<span><?php echo $message?></span>
 		</div>
 	</div>

@@ -38,6 +38,7 @@ private:
 	QIntValidator *vInt = nullptr;
 	std::map<std::string, int> statusMap;
 	void InitComboBox();
+	void AutoSelectUser();
 	QWidget* parentForm;
 	MainForm* mainForm;
 	bool CheckAccess();

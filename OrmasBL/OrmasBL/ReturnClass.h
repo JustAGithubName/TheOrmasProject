@@ -62,6 +62,7 @@ namespace BusinessLayer
 		//Generate filter string for class
 		virtual std::string GenerateFilter(DataLayer::OrmasDal& ormasDal);
 		std::string GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string formDate, std::string toDate);
+		std::string GenerateFilterForRawPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string formDate, std::string toDate);
 		bool GetReturnByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int rID, std::string& errorMessage);
 		bool IsEmpty();
 		void Clear();

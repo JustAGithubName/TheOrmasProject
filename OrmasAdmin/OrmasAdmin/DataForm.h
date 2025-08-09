@@ -188,6 +188,11 @@ private slots:
 	void DelCurDlg();
 	bool SearchInCurForm(std::string searchFilter);
 
+	void CrtCurRateDlg();
+	void UdpCurRateDlg();
+	void DelCurRateDlg();
+	bool SearchInCurRateForm(std::string searchFilter);
+
 	void CrtDivDlg();
 	void UdpDivDlg();
 	void DelDivDlg();
@@ -275,10 +280,20 @@ private slots:
 	void DelMsrDlg();
 	bool SearchInMsrForm(std::string searchFilter);
 
+	void CrtMcurDlg();
+	void UdpMcurDlg();
+	void DelMcurDlg();
+	bool SearchInMcurForm(std::string searchFilter);
+
 	void CrtNetCDlg();
 	void UdpNetCDlg();
 	void DelNetCDlg();
 	bool SearchInNetCForm(std::string searchFilter);
+
+	void CrtNetCostCoeffDlg();
+	void UdpNetCostCoeffDlg();
+	void DelNetCostCoeffDlg();
+	bool SearchInNetCCoeffForm(std::string searchFilter);
 
 	void CrtOrdDlg();
 	void UdpOrdDlg();
@@ -314,6 +329,11 @@ private slots:
 	void UdpPcrDlg();
 	void DelPcrDlg();
 	bool SearchInPcrForm(std::string searchFilter);
+
+	void CrtPrExDlg();
+	void UdpPrExDlg();
+	void DelPrExDlg();
+	bool SearchInPrExForm(std::string searchFilter);
 
 	void CrtPhotoDlg();
 	void UdpPhotoDlg();
@@ -623,6 +643,8 @@ public:
 	unsigned int writeOffRawID = 0;
 	unsigned int employeeID = 0;
 	unsigned int stockEmployeeID = 0;
+	unsigned int clientID = 0;
+	unsigned int currencyID = 0;
 protected:
 	virtual void keyPressEvent(QKeyEvent *event);
 };

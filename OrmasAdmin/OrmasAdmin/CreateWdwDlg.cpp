@@ -11,7 +11,7 @@ CreateWdwDlg::CreateWdwDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWi
 	parentForm = parent;
 	DataForm *dataFormParent = (DataForm *)this->parentForm;
 	mainForm = (MainForm *)dataFormParent->GetParent();
-	vDouble = new QDoubleValidator(0.00, 1000000000.00, 3, this);
+	vDouble = new QDoubleValidator(0.00, 1000000000.00, 2, this);
 	vInt = new QIntValidator(0, 1000000000, this);
 	userEdit->setValidator(vInt);
 	valueEdit->setValidator(vDouble);
@@ -19,7 +19,7 @@ CreateWdwDlg::CreateWdwDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWi
 	targetEdit->setMaxLength(100);
 	saIDEdit->setValidator(vInt);
 	if (true == updateFlag)
-	{
+	{		
 		DataForm *parentDataForm = (DataForm*)parentForm;
 		itemModel = (QStandardItemModel *)parentDataForm->tableView->model();
 		mIndex = parentDataForm->tableView->selectionModel()->currentIndex();
@@ -47,6 +47,7 @@ CreateWdwDlg::CreateWdwDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFlag, QWi
 		}
 		statusEdit->setText(QString::number(statusVector.at(0).GetID()));
 		statusPh->setText(statusVector.at(0).GetName().c_str());
+		statusBtn->setEnabled(false);
 
 		QObject::connect(okBtn, &QPushButton::released, this, &CreateWdwDlg::CreateWithdrawal);
 	}
@@ -220,6 +221,24 @@ void CreateWdwDlg::FillEditElements(QString wDate, double wValue, int wUserID, i
 	{
 		statusPh->setText(status.GetName().c_str());
 	}
+
+	BusinessLayer::Status statusExec;
+	statusExec.SetName("EXECUTED");
+	std::string statusFilter = dialogBL->GenerateFilter<BusinessLayer::Status>(&status);
+	std::vector<BusinessLayer::Status> statusVector = dialogBL->GetAllDataForClass<BusinessLayer::Status>(errorMessage, statusFilter);
+	if (statusVector.size() == 0)
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Status are empty please contact with Admin")),
+			QString(tr("Ok")));
+		errorMessage.clear();
+		return;
+	}
+	int curID = statusEdit->text().toInt();
+	int executeID = statusVector.at(0).GetID();
+	if (curID == executeID)
+		valueEdit->setReadOnly(true);
+	currencyCmb->setEnabled(false);
 }
 
 bool CreateWdwDlg::FillDlgElements(QTableView* pTable)

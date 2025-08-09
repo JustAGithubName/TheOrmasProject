@@ -1,21 +1,21 @@
 @import url('mainstyle.css');
 
-#regis-content{
+.regis-content{
 	background-color:white;
 	margin:auto;
 	margin-top:20px;
 }
 
-#regis-row{
+.regis-row{
 	margin-top:10px;
 	padding-left:10px;
 }
-#regis-content label{
+.regis-content label{
 	display:inline-block;
 	width:280px;
 }
 
-#regis-content select{
+.regis-content select{
 	display:inline-block;
 	width:304px;
 	height:25px;
@@ -23,7 +23,7 @@
 	font-size:14px;
 }
 
-#regis-main-label{
+.regis-main-label{
 	font-size:24px;
 	width:100px;
 	margin:auto;
@@ -31,7 +31,7 @@
 }
 
 #regis-label{
-	font-size:18px;
+	font-size:1rem;
 	width:100px;
 }
 
@@ -44,7 +44,7 @@
 
 input[type="text"]
 {
-    font-size:14px;
+    font-size:0.8rem;
 	display:inline-block;
 	width:300px;
 	height:18px;
@@ -55,7 +55,7 @@ input[type="text"]
 
 input[type="email"]
 {
-    font-size:14px;
+    font-size:0.8rem;
 	display:inline-block;
 	width:300px;
 	height:18px;
@@ -67,7 +67,7 @@ input[type="email"]
 
 input[type="password"]
 {
-    font-size:14px;
+    font-size:0.8rem;
 	display:inline-block;
 	width:300px;
 	height:18px;

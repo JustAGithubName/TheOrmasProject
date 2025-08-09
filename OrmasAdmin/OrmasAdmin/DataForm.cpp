@@ -1006,6 +1006,44 @@ void DataForm::FilterSearchInBase()
 			if (SearchInCurForm(filter))
 				this->CloseDataForm();
 		}
+		if (objectName() == "currencyRateForm")
+		{
+			BusinessLayer::CurrencyRateView currencyRateView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				currencyRateView.SetID(filterText.toInt());
+				break;
+			case 1:
+				currencyRateView.SetFromCurrencyShortName(filterText.toStdString());
+				break;
+			case 2:
+				currencyRateView.SetFromValue(filterText.toDouble());
+				break;
+			case 3:
+				currencyRateView.SetToCurrencyShortName(filterText.toStdString());
+				break;
+			case 4:
+				currencyRateView.SetToValue(filterText.toDouble());
+				break;
+			case 5:
+				currencyRateView.SetFromCurrencyID(filterText.toInt());
+				break;
+			case 6:
+				currencyRateView.SetToCurrencyID(filterText.toInt());
+				break;
+			case 7:
+				currencyRateView.SetChangeDate(filterText.toStdString());
+				break;
+			}
+
+			filter = currencyRateView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInCurRateForm(filter))
+				this->CloseDataForm();
+		}
 		if (objectName() == "divisionForm")
 		{
 			BusinessLayer::Division div;
@@ -1308,6 +1346,9 @@ void DataForm::FilterSearchInBase()
 				break;
 			case 6:
 				fxOper.SetFixedAssetsID(filterText.toInt());
+				break;
+			case 7:
+				fxOper.SetRevaluation(filterText.toInt());
 				break;
 			}
 			filter = fxOper.GenerateFilter(dataFormBL->GetOrmasDal());
@@ -1671,6 +1712,49 @@ void DataForm::FilterSearchInBase()
 			if (SearchInMsrForm(filter))
 				this->CloseDataForm();
 		}
+		if (objectName() == "multicurrencyForm")
+		{
+			BusinessLayer::MulticurrencyView multi;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				multi.SetID(filterText.toInt());
+				break;
+			case 1:
+				multi.SetExchangeCurrencyNumber(filterText.toStdString());
+				break;
+			case 2:
+				multi.SetExchangeCurrencyValue(filterText.toDouble());
+				break;
+			case 3:
+				multi.SetExchangeCurShortName(filterText.toStdString());
+				break;
+			case 4:
+				multi.SetMainCurrencyNumber(filterText.toStdString());
+				break;
+			case 5:
+				multi.SetMainCurrencyValue(filterText.toDouble());
+				break;
+			case 6:
+				multi.SetMainCurShortName(filterText.toStdString());
+				break;
+			case 7:
+				multi.SetSubaccountCurrencyID(filterText.toInt());
+				break;
+			case 8:
+				multi.SetSubaccountMainCurrencyID(filterText.toInt());
+				break;
+			case 9:
+				multi.SetComment(filterText.toStdString());
+				break;
+			}
+			filter = multi.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInMcurForm(filter))
+				this->CloseDataForm();
+		}
 		if (objectName() == "netCostForm")
 		{
 			BusinessLayer::NetCostView nckView;
@@ -1709,6 +1793,34 @@ void DataForm::FilterSearchInBase()
 				return;
 			this->setObjectName("");
 			if (SearchInNetCForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "netCostCoefficientForm")
+		{
+			BusinessLayer::NetCostCoefficientView nckcView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				nckcView.SetID(filterText.toInt());
+				break;
+			case 1:
+				nckcView.SetProductName(filterText.toStdString());
+				break;
+			case 2:
+				nckcView.SetValue(filterText.toDouble());
+				break;
+			case 3:
+				nckcView.SetProductID(filterText.toInt());
+				break;
+			case 4:
+				nckcView.SetComment(filterText.toStdString());
+				break;
+			}
+			filter = nckcView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInNetCCoeffForm(filter))
 				this->CloseDataForm();
 		}
 		if (objectName() == "orderForm")
@@ -2049,6 +2161,62 @@ void DataForm::FilterSearchInBase()
 				return;
 			this->setObjectName("");
 			if (SearchInPrcForm(filter))
+				this->CloseDataForm();
+		}
+		if (objectName() == "priceExtensionForm")
+		{
+			BusinessLayer::PriceExtensionView priceExView;
+			switch (columnSearchCmb->currentData().toInt())
+			{
+			case 0:
+				priceExView.SetID(filterText.toInt());
+				break;
+			case 1:
+				priceExView.SetProductName(filterText.toStdString());
+				break;
+			case 2:
+				priceExView.SetValue(filterText.toDouble());
+				break;
+			case 3:
+				priceExView.SetDate(filterText.toStdString());
+				break;
+			case 4:
+				priceExView.SetDayCount(filterText.toInt());
+				break;
+			case 5:
+				priceExView.SetLocationName(filterText.toStdString());
+				break;
+			case 6:
+				priceExView.SetExpeditorName(filterText.toStdString());
+				break;
+			case 7:
+				priceExView.SetBranchName(filterText.toStdString());
+				break;
+			case 8:
+				priceExView.SetClientName(filterText.toStdString());
+				break;
+			case 9:
+				priceExView.SetProductID(filterText.toInt());
+				break;
+			case 10:
+				priceExView.SetLocationID(filterText.toInt());
+				break;
+			case 11:
+				priceExView.SetExpeditorID(filterText.toInt());
+				break;
+			case 12:
+				priceExView.SetBranchID(filterText.toInt());
+				break;
+			case 13:
+				priceExView.SetClientID(filterText.toInt());
+				break;
+			
+			}
+			filter = priceExView.GenerateFilter(dataFormBL->GetOrmasDal());
+			if (filter.empty())
+				return;
+			this->setObjectName("");
+			if (SearchInPrExForm(filter))
 				this->CloseDataForm();
 		}
 		if (objectName() == "productTypeForm")
@@ -3090,7 +3258,7 @@ void DataForm::FilterSearchInBase()
 			if (filter.empty())
 				return;
 			this->setObjectName("");
-			if (SearchInRtrnForm(filter))
+			if (SearchInSAccForm(filter))
 				this->CloseDataForm();
 		}
 		if (objectName() == "subaccountLimitForm")
@@ -3118,7 +3286,7 @@ void DataForm::FilterSearchInBase()
 			if (filter.empty())
 				return;
 			this->setObjectName("");
-			if (SearchInRtrnForm(filter))
+			if (SearchInSAccLmForm(filter))
 				this->CloseDataForm();
 		}
 		if (objectName() == "stockForm")
@@ -3180,7 +3348,7 @@ void DataForm::FilterSearchInBase()
 			if (filter.empty())
 				return;
 			this->setObjectName("");
-			if(SearchInRtrnForm(filter))
+			if(SearchInStockForm(filter))
 				this->CloseDataForm();
 		}
 		if (objectName() == "stockLimitForm")
@@ -3249,7 +3417,7 @@ void DataForm::FilterSearchInBase()
 			if (filter.empty())
 				return;
 			this->setObjectName("");
-			if (SearchInStockLmForm(filter))
+			if (SearchInTmsForm(filter))
 				this->CloseDataForm();
 		}
 		if (objectName() == "transportForm")
@@ -3860,6 +4028,12 @@ void DataForm::Refresh()
 		SearchInCurForm("");
 		this->CloseDataForm();
 	}
+	if (objectName() == "currencyRateForm")
+	{
+		this->setObjectName("");
+		SearchInCurRateForm("");
+		this->CloseDataForm();
+	}
 	if (objectName() == "divisionForm")
 	{
 		this->setObjectName("");
@@ -3956,10 +4130,22 @@ void DataForm::Refresh()
 		SearchInMsrForm("");
 		this->CloseDataForm();
 	}
+	if (objectName() == "multicurrencyForm")
+	{
+		this->setObjectName("");
+		SearchInMcurForm("");
+		this->CloseDataForm();
+	}
 	if (objectName() == "netCostForm")
 	{
 		this->setObjectName("");
 		SearchInNetCForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "netCostCoefficientForm")
+	{
+		this->setObjectName("");
+		SearchInNetCCoeffForm("");
 		this->CloseDataForm();
 	}
 	if (objectName() == "orderForm")
@@ -4002,6 +4188,12 @@ void DataForm::Refresh()
 	{
 		this->setObjectName("");
 		SearchInPrcForm("");
+		this->CloseDataForm();
+	}
+	if (objectName() == "priceExtensionForm")
+	{
+		this->setObjectName("");
+		SearchInPrExForm("");
 		this->CloseDataForm();
 	}
 	if (objectName() == "productTypeForm")
@@ -7312,6 +7504,7 @@ void DataForm::ViewConPDlg()
 	BusinessLayer::NetCost netCost;
 	QString tableBody;
 	double sum = 0;
+	BusinessLayer::PriceExtension pExension;
 	for each (auto item in vecConProdList)
 	{
 		product.Clear();
@@ -7325,6 +7518,12 @@ void DataForm::ViewConPDlg()
 				QString(tr("Ok")));
 			return;
 		}
+		/*
+			Get price exchange
+		*/
+		pExension.Clear();
+		pExension.GetPriceExtensionByProductIDAndExpeditorID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetID(), consumeProdcut.GetEmployeeID(), errorMessage);
+		
 		if (!netCost.GetNetCostByProductID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetProductID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
@@ -7351,11 +7550,32 @@ void DataForm::ViewConPDlg()
 		tableBody += "<td>" + QString(product.GetName().c_str()) + "</td>";
 		tableBody += "<td>" + QString(measure.GetShortName().c_str()) + "</td>";
 		tableBody += "<td>" + QString::number(item.GetCount()) + "</td>";
-		tableBody += "<td>" + QString::number(product.GetPrice(), 'f', 3) + "</td>";
-		tableBody += "<td>" + QString::number(item.GetCount()*product.GetPrice(), 'f', 3) + "</td>";
+		if (pExension.GetValue() != 0)
+		{
+			tableBody += "<td>" + QString::number(product.GetPrice() + pExension.GetValue(), 'f', 3) + "</td>";
+		}
+		else
+		{
+			tableBody += "<td>" + QString::number(product.GetPrice(), 'f', 3) + "</td>";
+		}
+		if (pExension.GetValue() != 0)
+		{
+			tableBody += "<td>" + QString::number(item.GetCount()*(product.GetPrice() + pExension.GetValue()), 'f', 3) + "</td>";
+		}
+		else
+		{
+			tableBody += "<td>" + QString::number(item.GetCount()*product.GetPrice(), 'f', 3) + "</td>";
+		}
 		tableBody += "<td>" + QString(currency.GetShortName().c_str()) + "</td>";
 		tableBody += "</tr>";
-		sum += item.GetCount()*product.GetPrice();
+		if (pExension.GetValue() != 0)
+		{
+			sum += item.GetCount()*(product.GetPrice() + pExension.GetValue());
+		}
+		else
+		{
+			sum += item.GetCount()*product.GetPrice();
+		}
 		i++;
 	}
 	reportText.replace(QString("TableBodyPh"), tableBody, Qt::CaseInsensitive);
@@ -8026,6 +8246,70 @@ void DataForm::DelCurDlg()
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Currency with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
+void DataForm::CrtCurRateDlg()
+{
+	CreateCurRateDlg *currencyRateDlg = new CreateCurRateDlg(dataFormBL, false, this);
+	currencyRateDlg->setAttribute(Qt::WA_DeleteOnClose);
+	currencyRateDlg->setWindowTitle(tr("Create currency rate"));
+	QMdiSubWindow *currencyRateWindow = new QMdiSubWindow;
+	currencyRateWindow->setWidget(currencyRateDlg);
+	currencyRateWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(currencyRateWindow);
+	currencyRateDlg->show();
+}
+void DataForm::UdpCurRateDlg()
+{
+	CreateCurRateDlg *currencyRateDlg = new CreateCurRateDlg(dataFormBL, true, this);
+	currencyRateDlg->setAttribute(Qt::WA_DeleteOnClose);
+	currencyRateDlg->setWindowTitle(tr("Update currency rate"));
+	QMdiSubWindow *currencyRateWindow = new QMdiSubWindow;
+	currencyRateWindow->setWidget(currencyRateDlg);
+	currencyRateWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(currencyRateWindow);
+	if (currencyRateDlg->FillDlgElements(tableView))
+	{
+		currencyRateDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelCurRateDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::CurrencyRate currencyRate;
+	currencyRate.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteCurrencyRate(&currencyRate, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Currency rate with this id does not exist!")),
 			QString(tr("Ok")));
 	}
 }
@@ -9399,7 +9683,7 @@ void DataForm::UdpMsrDlg()
 {
 	CreateMsrDlg *measureDlg = new CreateMsrDlg(dataFormBL, true, this);
 	measureDlg->setAttribute(Qt::WA_DeleteOnClose);
-	measureDlg->setWindowTitle(tr("Update currency"));
+	measureDlg->setWindowTitle(tr("Update measure"));
 	QMdiSubWindow *measureWindow = new QMdiSubWindow;
 	measureWindow->setWidget(measureDlg);
 	measureWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -9444,6 +9728,70 @@ void DataForm::DelMsrDlg()
 	{
 		QMessageBox::information(NULL, QString(tr("Warning")),
 			QString(tr("Measure with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
+void DataForm::CrtMcurDlg()
+{
+	CreateMcurDlg *multicurrencyDlg = new CreateMcurDlg(dataFormBL, false, this);
+	multicurrencyDlg->setAttribute(Qt::WA_DeleteOnClose);
+	multicurrencyDlg->setWindowTitle(tr("Create multicurrency"));
+	QMdiSubWindow *multicurrencyWindow = new QMdiSubWindow;
+	multicurrencyWindow->setWidget(multicurrencyDlg);
+	multicurrencyWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(multicurrencyWindow);
+	multicurrencyDlg->show();
+}
+void DataForm::UdpMcurDlg()
+{
+	CreateMcurDlg *multicurrencyDlg = new CreateMcurDlg(dataFormBL, true, this);
+	multicurrencyDlg->setAttribute(Qt::WA_DeleteOnClose);
+	multicurrencyDlg->setWindowTitle(tr("Update multicurrency"));
+	QMdiSubWindow *multicurrencyWindow = new QMdiSubWindow;
+	multicurrencyWindow->setWidget(multicurrencyDlg);
+	multicurrencyWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(multicurrencyWindow);
+	if (multicurrencyDlg->FillDlgElements(tableView))
+	{
+		multicurrencyDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelMcurDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::Multicurrency multicurrency;
+	multicurrency.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteMulticurrency(&multicurrency, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Multicurrency with this id does not exist!")),
 			QString(tr("Ok")));
 	}
 }
@@ -9493,6 +9841,70 @@ void DataForm::DelNetCDlg()
 	if (0 != id)
 	{
 		if (dataFormBL->DeleteNetCost(&netCost, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Net cost with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
+void DataForm::CrtNetCostCoeffDlg()
+{
+	CreateNcCoeffDlg *netCostCoeffDlg = new CreateNcCoeffDlg(dataFormBL, false, this);
+	netCostCoeffDlg->setAttribute(Qt::WA_DeleteOnClose);
+	netCostCoeffDlg->setWindowTitle(tr("Create net cost coefficient"));
+	QMdiSubWindow *netCostCWindow = new QMdiSubWindow;
+	netCostCWindow->setWidget(netCostCoeffDlg);
+	netCostCWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(netCostCWindow);
+	netCostCoeffDlg->show();
+}
+void DataForm::UdpNetCostCoeffDlg()
+{
+	CreateNcCoeffDlg *netCostCoeffDlg = new CreateNcCoeffDlg(dataFormBL, true, this);
+	netCostCoeffDlg->setAttribute(Qt::WA_DeleteOnClose);
+	netCostCoeffDlg->setWindowTitle(tr("Update net cost coefficient"));
+	QMdiSubWindow *netCostCWindow = new QMdiSubWindow;
+	netCostCWindow->setWidget(netCostCoeffDlg);
+	netCostCWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(netCostCWindow);
+	if (netCostCoeffDlg->FillDlgElements(tableView))
+	{
+		netCostCoeffDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelNetCostCoeffDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::NetCostCoefficient netCostCoeff;
+	netCostCoeff.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeleteNetCostCoefficient(&netCostCoeff, errorMessage))
 		{
 			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
 			ChangeBtnState();
@@ -9904,6 +10316,7 @@ void DataForm::ViewOrdRDlg()
 			QString(tr("Ok")));
 		return;
 	}
+
 	QString reportText = file.readAll();
 	orderRawList.SetOrderRawID(orderRaw.GetID());
 	std::string filter = orderRawList.GenerateFilter(dataFormBL->GetOrmasDal());
@@ -9930,6 +10343,8 @@ void DataForm::ViewOrdRDlg()
 	QString tableBody;
 	for each (auto item in vecOrdRawList)
 	{
+		if (item.GetCurrencyID() != orderRaw.GetCurrencyID())
+			continue;
 		product.Clear();
 		measure.Clear();
 		currency.Clear();
@@ -9947,7 +10362,7 @@ void DataForm::ViewOrdRDlg()
 				QString(tr("Ok")));
 			return;
 		}
-		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetCurrencyID(), errorMessage))
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), item.GetCurrencyID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr("Currency is wrong!")),
@@ -10427,6 +10842,7 @@ void DataForm::ViewPmtDlg()
 		}
 		else
 		{
+			accountant.SetID(vecEmpRep.at(0).GetID());
 			accountant.SetName(vecEmpRep.at(0).GetName());
 			accountant.SetSurname(vecEmpRep.at(0).GetSurname());
 		}
@@ -10546,24 +10962,20 @@ void DataForm::ViewPmtDlg()
 			return;
 		}
 	}
-	else if (payment.GetAccountID()>0)
-	{
-		account.Clear();
-		if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetAccountID(), errorMessage))
-		{
-			QMessageBox::information(NULL, QString(tr("Info")),
-				QString(tr(errorMessage.c_str())),
-				QString(tr("Ok")));
-			return;
-		}
-	}
-	else
+	else if (payment.GetSubaccountID()>0)
 	{
 		subAcc.Clear();
 		if (!subAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetSubaccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+			return;
+		}
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), subAcc.GetCurrencyID(), errorMessage))
+		{
+			QMessageBox::information(NULL, QString(tr("Info")),
+				QString(tr("Can't find currency for this withdrawal!")),
 				QString(tr("Ok")));
 			return;
 		}
@@ -10575,13 +10987,25 @@ void DataForm::ViewPmtDlg()
 			return;
 		}
 	}
+	else
+	{
+		account.Clear();
+		if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetAccountID(), errorMessage))
+		{
+			QMessageBox::information(NULL, QString(tr("Info")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+			return;
+		}
+	}
+	
 	
 	//generating report
 	reportText.replace(QString("ComNamePh"), QString(company.GetName().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("NumberPh"), QString::number(payment.GetID()), Qt::CaseInsensitive);
 	reportText.replace(QString("DatePh"), QString(payment.GetDate().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("DebAccNumPh"), QString(acc.GetNumber().c_str()), Qt::CaseInsensitive);
-	if (payment.GetUserID() > 0 )
+	if (payment.GetSubaccountID() > 0)
 	{
 		reportText.replace(QString("CredAccNumPh"), QString(subAcc.GetNumber().c_str()), Qt::CaseInsensitive);
 	}
@@ -10589,12 +11013,41 @@ void DataForm::ViewPmtDlg()
 	{
 		reportText.replace(QString("CredAccNumPh"), QString(account.GetNumber().c_str()), Qt::CaseInsensitive);
 	}
-	reportText.replace(QString("SumPh"), QString::number(payment.GetValue()), Qt::CaseInsensitive);
+	reportText.replace(QString("SumPh"), QString::number(payment.GetValue(),'f',3), Qt::CaseInsensitive);
 	reportText.replace(QString("FromWhoPh"), QString(payment.GetWho().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("TargetPh"), QString(payment.GetTarget().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("AccounantNamePh"), QString(accountant.GetSurname().c_str()) + " " + QString(accountant.GetName().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("CachierNamePh"), QString(cashier.GetSurname().c_str()) + " " + QString(cashier.GetName().c_str()), Qt::CaseInsensitive);
-	reportText.replace(QString("CurrPh"), QString(currency.GetShortName().c_str()), Qt::CaseInsensitive);
+	
+	currency.Clear();
+	if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetCurrencyID(), errorMessage))
+	{
+		QMessageBox::information(NULL, QString(tr("Info")),
+			QString(tr("Can't find currency for this payment!")),
+			QString(tr("Ok")));
+		return;
+	}
+	reportText.replace(QString("CurPh"), QString(currency.GetShortName().c_str()), Qt::CaseInsensitive);
+	/*if (payment.GetSubaccountID()>0)
+	{
+		BusinessLayer::Subaccount subFroCur;
+		if (!subFroCur.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetSubaccountID(), errorMessage))
+			return;	
+		currency.Clear();
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), payment.GetCurrencyID(), errorMessage))
+		{
+			QMessageBox::information(NULL, QString(tr("Info")),
+				QString(tr("Can't find currency for this withdrawal!")),
+				QString(tr("Ok")));
+			return;
+		}
+		reportText.replace(QString("CurPh"), QString(currency.GetShortName().c_str()), Qt::CaseInsensitive);
+	}
+	else
+	{
+		reportText.replace(QString("CurPh"), QString("TJS"), Qt::CaseInsensitive);
+	}*/
+	
 
 	docForm->webEngineView->setHtml(reportText);
 	docForm->SetContent(reportText);
@@ -10729,6 +11182,71 @@ void DataForm::DelPrcDlg()
 			QString(tr("Ok")));
 	}
 }
+
+void DataForm::CrtPrExDlg()
+{
+	CreatePrExDlg *priceExDlg = new CreatePrExDlg(dataFormBL, false, this);
+	priceExDlg->setAttribute(Qt::WA_DeleteOnClose);
+	priceExDlg->setWindowTitle(tr("Create price extension"));
+	QMdiSubWindow *priceExWindow = new QMdiSubWindow;
+	priceExWindow->setWidget(priceExDlg);
+	priceExWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(priceExWindow);
+	priceExDlg->show();
+}
+void DataForm::UdpPrExDlg()
+{
+	CreatePrExDlg *priceExDlg = new CreatePrExDlg(dataFormBL, true, this);
+	priceExDlg->setAttribute(Qt::WA_DeleteOnClose);
+	priceExDlg->setWindowTitle(tr("Update price extension"));
+	QMdiSubWindow *priceExWindow = new QMdiSubWindow;
+	priceExWindow->setWidget(priceExDlg);
+	priceExWindow->setAttribute(Qt::WA_DeleteOnClose);
+	((MainForm*)parentForm)->mdiArea->addSubWindow(priceExWindow);
+	if (priceExDlg->FillDlgElements(tableView))
+	{
+		priceExDlg->show();
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Please select one row at first!")),
+			QString(tr("Ok")));
+	}
+}
+void DataForm::DelPrExDlg()
+{
+	int result = QMessageBox::question(this, QString(tr("Affirm")),
+		QString(tr("Do you really want to delete these data? (WARNING! All data will be irretrievable lost)")),
+		QString(tr("Yes")), QString(tr("No")));
+	if (result == 1)
+		return;
+	std::string errorMessage = "";
+	int id = GetIDFromTable(tableView, errorMessage);
+	BusinessLayer::PriceExtension priceEx;
+	priceEx.SetID(id);
+	if (0 != id)
+	{
+		if (dataFormBL->DeletePriceExtension(&priceEx, errorMessage))
+		{
+			tableView->model()->removeRow(tableView->selectionModel()->currentIndex().row());
+			ChangeBtnState();
+		}
+		else
+		{
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+		}
+	}
+	else
+	{
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(tr("Price extension with this id does not exist!")),
+			QString(tr("Ok")));
+	}
+}
+
 
 void DataForm::CrtProdTpDlg()
 {
@@ -14256,6 +14774,8 @@ void DataForm::ViewTrsDlg()
 			QString(tr("Ok")));
 		return;
 	}
+	BusinessLayer::PriceExtension pExension;
+
 
 	//generating report
 	reportText.replace(QString("NumberPh"), QString::number(transport.GetID()), Qt::CaseInsensitive);
@@ -14294,17 +14814,45 @@ void DataForm::ViewTrsDlg()
 				QString(tr("Ok")));
 			return;
 		}
+
+		/*
+		Get price exchange
+		*/
+		pExension.Clear();
+		pExension.GetPriceExtensionByProductIDAndExpeditorID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), product.GetID(), transport.GetEmployeeID(), errorMessage);
+
 		tableBody += "<tr>";
 		tableBody += "<td>" + QString::number(i) + "</td>";
 		tableBody += "<td>" + QString(product.GetName().c_str()) + "</td>";
 		tableBody += "<td>" + QString(measure.GetShortName().c_str()) + "</td>";
 		tableBody += "<td>" + QString::number(item.GetCount()) + "</td>";
-		tableBody += "<td>" + QString::number(product.GetPrice(), 'f', 3) + "</td>";
-		tableBody += "<td>" + QString::number(item.GetCount() * product.GetPrice(), 'f', 3) + "</td>";
+		if (pExension.GetValue() != 0)
+		{
+			tableBody += "<td>" + QString::number(product.GetPrice() + pExension.GetValue(), 'f', 3) + "</td>";
+		}
+		else
+		{
+			tableBody += "<td>" + QString::number(product.GetPrice(), 'f', 3) + "</td>";
+		}
+		if (pExension.GetValue() != 0)
+		{
+			tableBody += "<td>" + QString::number(item.GetCount()*(product.GetPrice() + pExension.GetValue()), 'f', 3) + "</td>";
+		}
+		else
+		{
+			tableBody += "<td>" + QString::number(item.GetCount()*product.GetPrice(), 'f', 3) + "</td>";
+		}
 		tableBody += "<td>" + QString(currency.GetShortName().c_str()) + "</td>";
 		tableBody += "</tr>";
 		i++;
-		sum += item.GetCount() * product.GetPrice();
+		if (pExension.GetValue() != 0)
+		{
+			sum += item.GetCount()*(product.GetPrice() + pExension.GetValue());
+		}
+		else
+		{
+			sum += item.GetCount()*product.GetPrice();
+		}
 	}
 	reportText.replace(QString("TableBodyPh"), tableBody, Qt::CaseInsensitive);
 	reportText.replace(QString("SumPh"), QString::number(sum, 'f' ,3), Qt::CaseInsensitive);
@@ -14982,24 +15530,20 @@ void DataForm::ViewWdwDlg()
 			return;
 		}
 	}
-	else if (withdrawal.GetAccountID()>0)
-	{
-		account.Clear();
-		if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetAccountID(), errorMessage))
-		{
-			QMessageBox::information(NULL, QString(tr("Info")),
-				QString(tr(errorMessage.c_str())),
-				QString(tr("Ok")));
-			return;
-		}
-	}
-	else
+	else if (withdrawal.GetSubaccountID()>0)
 	{
 		subAcc.Clear();
 		if (!subAcc.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetSubaccountID(), errorMessage))
 		{
 			QMessageBox::information(NULL, QString(tr("Info")),
 				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+			return;
+		}
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), subAcc.GetCurrencyID(), errorMessage))
+		{
+			QMessageBox::information(NULL, QString(tr("Info")),
+				QString(tr("Can't find currency for this withdrawal!")),
 				QString(tr("Ok")));
 			return;
 		}
@@ -15011,28 +15555,70 @@ void DataForm::ViewWdwDlg()
 			return;
 		}
 	}
+	else
+	{
+		account.Clear();
+		if (!account.GetAccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetAccountID(), errorMessage))
+		{
+			QMessageBox::information(NULL, QString(tr("Info")),
+				QString(tr(errorMessage.c_str())),
+				QString(tr("Ok")));
+			return;
+		}
+	}
+	
 
 	//generating report
 	reportText.replace(QString("ComNamePh"), QString(company.GetName().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("NumberPh"), QString::number(withdrawal.GetID()), Qt::CaseInsensitive);
 	reportText.replace(QString("DatePh"), QString(withdrawal.GetDate().c_str()), Qt::CaseInsensitive);
-	if (withdrawal.GetUserID() > 0)
+	
+	currency.Clear();
+	if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetCurrencyID(), errorMessage))
 	{
+		QMessageBox::information(NULL, QString(tr("Info")),
+			QString(tr("Can't find currency for this payment!")),
+			QString(tr("Ok")));
+		return;
+	}
+	reportText.replace(QString("CurPh"), QString(currency.GetShortName().c_str()), Qt::CaseInsensitive);
+	/*if (withdrawal.GetUserID() > 0)
+	{
+		BusinessLayer::Subaccount subFroCur;
+		if (!subFroCur.GetSubaccountByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), withdrawal.GetSubaccountID(), errorMessage))
+			return;
+		currency.Clear();
+		if (!currency.GetCurrencyByID(dataFormBL->globalVar, dataFormBL->GetOrmasDal(), subFroCur.GetCurrencyID(), errorMessage))
+		{
+			QMessageBox::information(NULL, QString(tr("Info")),
+				QString(tr("Can't find currency for this withdrawal!")),
+				QString(tr("Ok")));
+			return;
+		}
 		reportText.replace(QString("DebAccNumPh"), QString(subAcc.GetNumber().c_str()), Qt::CaseInsensitive);
 	}
 	else
 	{
 		reportText.replace(QString("DebAccNumPh"), QString(account.GetNumber().c_str()) , Qt::CaseInsensitive);
-	}
+	}*/
 	
 	reportText.replace(QString("CredAccNumPh"), QString(acc.GetNumber().c_str()), Qt::CaseInsensitive);
-	reportText.replace(QString("SumPh"), QString::number(withdrawal.GetValue()), Qt::CaseInsensitive);
+	reportText.replace(QString("SumPh"), QString::number(withdrawal.GetValue(),'f',3), Qt::CaseInsensitive);
 	reportText.replace(QString("ToWhoPh"), QString(withdrawal.GetWho().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("TargetPh"), QString(withdrawal.GetTarget().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("OwnerNamePh"), QString(owner.GetSurname().c_str()) + " " + QString(owner.GetName().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("AccounantNamePh"), QString(accountant.GetSurname().c_str()) + " " + QString(accountant.GetName().c_str()), Qt::CaseInsensitive);
 	reportText.replace(QString("CashierPh"), QString(cashier.GetSurname().c_str()) + " " + QString(cashier.GetName().c_str()), Qt::CaseInsensitive);
-	reportText.replace(QString("CurrencyPh"), QString(currency.GetShortName().c_str()), Qt::CaseInsensitive);
+	if (withdrawal.GetSubaccountID() > 0)
+	{
+		reportText.replace(QString("DebAccNumPh"), QString(subAcc.GetNumber().c_str()), Qt::CaseInsensitive);
+	}
+	else
+	{
+		reportText.replace(QString("DebAccNumPh"), QString(account.GetNumber().c_str()), Qt::CaseInsensitive);
+	}
+	
+	
 
 	docForm->webEngineView->setHtml(reportText);
 	docForm->SetContent(reportText);
@@ -15809,6 +16395,15 @@ QStringList DataForm::GetTableHeader<BusinessLayer::Currency>()
 }
 
 template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::CurrencyRateView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("From name") << QObject::tr("From value") << QObject::tr("To name")
+		<< QObject::tr("To value") << QObject::tr("From currency ID") << QObject::tr("To currency ID") << QObject::tr("Date");
+	return header;
+}
+
+template<>
 QStringList DataForm::GetTableHeader<BusinessLayer::Division>()
 {
 	QStringList header;
@@ -15892,7 +16487,7 @@ QStringList DataForm::GetTableHeader<BusinessLayer::FixedAssetsOperations>()
 {
 	QStringList header;
 	header << QObject::tr("ID") << QObject::tr("Date") << QObject::tr("Name") << QObject::tr("Value")
-		<< QObject::tr("Increment") << QObject::tr("Decrement") << QObject::tr("Fixed assets ID");
+		<< QObject::tr("Increment") << QObject::tr("Decrement") << QObject::tr("Fixed assets ID") << QObject::tr("Revaluation");
 	return header;
 }
 
@@ -15991,6 +16586,16 @@ QStringList DataForm::GetTableHeader<BusinessLayer::Measure>()
 }
 
 template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::MulticurrencyView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Exchange number") << QObject::tr("Exchange value") << QObject::tr("Exchange currency name")
+		<< QObject::tr("Main number") << QObject::tr("Main value") << QObject::tr("Main currency name") << QObject::tr("Exchange subaccount ID")
+		<< QObject::tr("Main subaccount ID") << QObject::tr("Comment");
+	return header;
+}
+
+template<>
 QStringList DataForm::GetTableHeader<BusinessLayer::NetCostView>()
 {
 	QStringList header;
@@ -15998,6 +16603,15 @@ QStringList DataForm::GetTableHeader<BusinessLayer::NetCostView>()
 		<< QObject::tr("Value") << QObject::tr("Currency name") << QObject::tr("Currency ID") << QObject::tr("Product ID") << QObject::tr("Is outdated?");
 	return header;
 }
+
+template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::NetCostCoefficientView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Product name") << QObject::tr("Coefficient") << QObject::tr("Product ID") << QObject::tr("Comment");
+	return header;
+}
+
 
 template<>
 QStringList DataForm::GetTableHeader<BusinessLayer::OrderView>()
@@ -16108,6 +16722,17 @@ QStringList DataForm::GetTableHeader<BusinessLayer::PriceView>()
 	QStringList header;
 	header << QObject::tr("ID") << QObject::tr("Date") << QObject::tr("Product name") << QObject::tr("Volume") << QObject::tr("Measure name")
 		<< QObject::tr("Value") << QObject::tr("Currency name") << QObject::tr("Currency ID") << QObject::tr("Product ID") << QObject::tr("Is outdated?");
+	return header;
+}
+
+template<>
+QStringList DataForm::GetTableHeader<BusinessLayer::PriceExtensionView>()
+{
+	QStringList header;
+	header << QObject::tr("ID") << QObject::tr("Product name") << QObject::tr("Value")  << QObject::tr("Date")
+		<< QObject::tr("Day count") << QObject::tr("Location") << QObject::tr("Expeditor") << QObject::tr("Branch")
+		<< QObject::tr("Client") << QObject::tr("Product ID") << QObject::tr("Location ID") << QObject::tr("Expeditor ID") << QObject::tr("Branch ID") 
+		<< QObject::tr("Client ID");
 	return header;
 }
 
@@ -17031,6 +17656,22 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::Currency>(Busine
 	return items;
 }
 
+
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::CurrencyRateView>(BusinessLayer::CurrencyRateView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetFromCurrencyShortName().c_str())
+		<< new QStandardItem(QString::number(data.GetFromValue(),'f',3))
+		<< new QStandardItem(data.GetToCurrencyShortName().c_str())
+		<< new QStandardItem(QString::number(data.GetToValue(),'f',3))
+		<< new QStandardItem(QString::number(data.GetFromCurrencyID()))
+		<< new QStandardItem(QString::number(data.GetToCurrencyID()))
+		<< new QStandardItem(data.GetChangeDate().c_str());
+	return items;
+}
+
 template<>
 QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::Division>(BusinessLayer::Division& data)
 {
@@ -17088,7 +17729,7 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::EmployeeProductR
 		<< new QStandardItem(data.GetUserSurname().c_str())
 		<< new QStandardItem(data.GetUserPhone().c_str())
 		<< new QStandardItem(data.GetProductName().c_str())
-		<< new QStandardItem(QString::number(data.GetPrice(), 'f', 2))
+		<< new QStandardItem(QString::number(data.GetPrice(), 'f', 3))
 		<< new QStandardItem(QString::number(data.GetEmployeeID()))
 		<< new QStandardItem(QString::number(data.GetProductID()));
 	return items;
@@ -17172,7 +17813,8 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::FixedAssetsOpera
 		<< new QStandardItem(QString::number(data.GetValue(), 'f', 3))
 		<< new QStandardItem(data.GetIncrement()?"true":"false")
 		<< new QStandardItem(data.GetDecrement() ? "true" : "false")
-		<< new QStandardItem(QString::number(data.GetFixedAssetsID()));
+		<< new QStandardItem(QString::number(data.GetFixedAssetsID()))
+		<< new QStandardItem(data.GetRevaluation() ? "true" : "false");
 	return items;
 }
 
@@ -17337,6 +17979,23 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::Measure>(Busines
 }
 
 template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::MulticurrencyView>(BusinessLayer::MulticurrencyView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID())) 
+		<< new QStandardItem(data.GetExchangeCurrencyNumber().c_str())
+		<< new QStandardItem(QString::number(data.GetExchangeCurrencyValue(),'f',3))
+		<< new QStandardItem(data.GetExchangeCurShortName().c_str())
+		<< new QStandardItem(data.GetMainCurrencyNumber().c_str())
+		<< new QStandardItem(QString::number(data.GetMainCurrencyValue(),'f',3))
+		<< new QStandardItem(data.GetMainCurShortName().c_str())
+		<< new QStandardItem(QString::number(data.GetSubaccountCurrencyID()))
+		<< new QStandardItem(QString::number(data.GetSubaccountMainCurrencyID()))
+		<< new QStandardItem(data.GetComment().c_str());
+	return items;
+}
+
+template<>
 QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::NetCostView>(BusinessLayer::NetCostView& data)
 {
 	QList<QStandardItem*> items;
@@ -17350,6 +18009,18 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::NetCostView>(Bus
 		<< new QStandardItem(QString::number(data.GetCurrencyID()))
 		<< new QStandardItem(QString::number(data.GetProductID()))
 		<< new QStandardItem(data.GetIsOutdated() ? "true" : "false");
+	return items;
+}
+
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::NetCostCoefficientView>(BusinessLayer::NetCostCoefficientView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetProductName().c_str())
+		<< new QStandardItem(QString::number(data.GetValue()))
+		<< new QStandardItem(QString::number(data.GetProductID()))
+		<< new QStandardItem(data.GetComment().c_str());
 	return items;
 }
 
@@ -17389,7 +18060,7 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::OrderListView>(B
 	items << new QStandardItem(QString::number(data.GetID()))
 		<< new QStandardItem(QString::number(data.GetOrderID()))
 		<< new QStandardItem(data.GetProductName().c_str())
-		<< new QStandardItem(QString::number(data.GetPrice()))
+		<< new QStandardItem(QString::number(data.GetSum() / data.GetCount(),'f',3))
 		<< new QStandardItem(data.GetCurrencyName().c_str())
 		<< new QStandardItem(QString::number(data.GetVolume()))
 		<< new QStandardItem(data.GetMeasureName().c_str())
@@ -17548,6 +18219,27 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::PriceView>(Busin
 		<< new QStandardItem(QString::number(data.GetCurrencyID()))
 		<< new QStandardItem(QString::number(data.GetProductID()))
 		<< new QStandardItem(data.GetIsOutdated() ? "true" : "false");
+	return items;
+}
+
+template<>
+QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::PriceExtensionView>(BusinessLayer::PriceExtensionView& data)
+{
+	QList<QStandardItem*> items;
+	items << new QStandardItem(QString::number(data.GetID()))
+		<< new QStandardItem(data.GetProductName().c_str())
+		<< new QStandardItem(QString::number(data.GetValue()))
+		<< new QStandardItem(data.GetDate().c_str())
+		<< new QStandardItem(QString::number(data.GetDayCount()))
+		<< new QStandardItem(data.GetLocationName().c_str())
+		<< new QStandardItem(data.GetExpeditorName().c_str())
+		<< new QStandardItem(data.GetBranchName().c_str())
+		<< new QStandardItem(data.GetClientName().c_str())
+		<< new QStandardItem(QString::number(data.GetProductID()))
+		<< new QStandardItem(QString::number(data.GetLocationID()))
+		<< new QStandardItem(QString::number(data.GetExpeditorID()))
+		<< new QStandardItem(QString::number(data.GetBranchID()))
+		<< new QStandardItem(QString::number(data.GetClientID()));
 	return items;
 }
 
@@ -17993,7 +18685,7 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::ReturnListView>(
 	items << new QStandardItem(QString::number(data.GetID()))
 		<< new QStandardItem(QString::number(data.GetReturnID()))
 		<< new QStandardItem(data.GetProductName().c_str())
-		<< new QStandardItem(QString::number(data.GetPrice()))
+		<< new QStandardItem(QString::number(data.GetSum() / data.GetCount(),'f',3))
 		<< new QStandardItem(data.GetCurrencyName().c_str())
 		<< new QStandardItem(QString::number(data.GetVolume()))
 		<< new QStandardItem(data.GetMeasureName().c_str())
@@ -18352,7 +19044,7 @@ QList<QStandardItem*> DataForm::GetDataFromClass<BusinessLayer::WithdrawalView>(
 	QList<QStandardItem*> items;
 	items << new QStandardItem(QString::number(data.GetID()))
 		<< new QStandardItem(data.GetDate().c_str())
-		<< new QStandardItem(QString::number(data.GetValue()))
+		<< new QStandardItem(QString::number(data.GetValue(),'f',3))
 		<< new QStandardItem(data.GetCurrencyName().c_str())
 		<< new QStandardItem(data.GetUsername().c_str())
 		<< new QStandardItem(data.GetUserSurname().c_str())
@@ -18930,6 +19622,11 @@ void DataForm::QtConnect<BusinessLayer::Branch>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreatePrdBrnDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreatePriceExtension")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreatePrExDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
@@ -19131,6 +19828,11 @@ void DataForm::QtConnect<BusinessLayer::ChartOfAccountsView>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateMulticurrency")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateMcurDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
@@ -19187,6 +19889,11 @@ void DataForm::QtConnect<BusinessLayer::ClientView>()
 	{
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreatePmtDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreatePriceExtension")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreatePrExDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
 }
 
@@ -19608,6 +20315,44 @@ void DataForm::QtConnect<BusinessLayer::Currency>()
 }
 
 template<>
+void DataForm::QtConnect<BusinessLayer::CurrencyRateView>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionCurrencyRate");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtCurRateDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpCurRateDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelCurRateDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	editBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+}
+
+template<>
 void DataForm::QtConnect<BusinessLayer::Division>()
 {
 	BusinessLayer::Access access;
@@ -19861,6 +20606,21 @@ void DataForm::QtConnect<BusinessLayer::EmployeeView>()
 	{
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((GenerateAgentRep*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreatePriceExtension")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreatePrExDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "GenerateReturnReport")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((GenerateAgentRep*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "GenerateExpMnhReport")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((GenerateDailySalesRep*)parentDialog), SLOT(SetID(int, QString)));
 	}
 }
 
@@ -20383,6 +21143,11 @@ void DataForm::QtConnect<BusinessLayer::Location>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreatePurDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreatePriceExtension")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreatePrExDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
@@ -20460,6 +21225,44 @@ void DataForm::QtConnect<BusinessLayer::Measure>()
 }
 
 template<>
+void DataForm::QtConnect<BusinessLayer::MulticurrencyView>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionMulticurrency");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtMcurDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpMcurDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelMcurDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	editBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+}
+
+template<>
 void DataForm::QtConnect<BusinessLayer::NetCostView>()
 {
 	BusinessLayer::Access access;
@@ -20486,6 +21289,43 @@ void DataForm::QtConnect<BusinessLayer::NetCostView>()
 	if (pos != std::string::npos)
 	{
 		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelNetCDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+}
+
+template<>
+void DataForm::QtConnect<BusinessLayer::NetCostCoefficientView>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionNetCostCoefficient");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtNetCostCoeffDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpNetCostCoeffDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelNetCostCoeffDlg);
 	}
 	else
 	{
@@ -20975,6 +21815,43 @@ void DataForm::QtConnect<BusinessLayer::PriceView>()
 }
 
 template<>
+void DataForm::QtConnect<BusinessLayer::PriceExtensionView>()
+{
+	BusinessLayer::Access access;
+	std::string crud = access.GetCRUDAccess(dataFormBL->globalVar, &dataFormBL->GetOrmasDal(), loggedUser, "actionPriceExtension");
+	std::size_t pos = crud.find("C");
+	if (pos != std::string::npos)
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::CrtPrExDlg);
+	}
+	else
+	{
+		connect(createBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("U");
+	if (pos != std::string::npos)
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::UdpPrExDlg);
+	}
+	else
+	{
+		connect(editBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	pos = crud.find("D");
+	if (pos != std::string::npos)
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::DelPrExDlg);
+	}
+	else
+	{
+		connect(deleteBtn, &QPushButton::released, this, &DataForm::AcsDenied);
+	}
+	viewBtn->setVisible(false);
+	connect(closeBtn, &QPushButton::released, this, &DataForm::CloseDataForm);
+	connect(tableView->selectionModel(), SIGNAL(currentRowChanged(QModelIndex, QModelIndex)), this, SLOT(ChangeBtnState()));
+}
+
+template<>
 void DataForm::QtConnect<BusinessLayer::ProductType>()
 {
 	BusinessLayer::Access access;
@@ -21166,6 +22043,11 @@ void DataForm::QtConnect<BusinessLayer::ProductView>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateNetCDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateNetCostCoefficient")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateNcCoeffDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 	if (parentDialog != nullptr && parentDialog->objectName() == "CreateSpecification")
 	{
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
@@ -21185,6 +22067,11 @@ void DataForm::QtConnect<BusinessLayer::ProductView>()
 	{
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreatePrdBrnDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreatePriceExtension")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreatePrExDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
 }
 
@@ -22427,6 +23314,11 @@ void DataForm::QtConnect<BusinessLayer::Status>()
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateAccblRepDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateMulticurrency")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateMcurDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
 }
 
 template<>
@@ -22791,6 +23683,11 @@ void DataForm::QtConnect<BusinessLayer::SubaccountView>()
 	{
 		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
 		connect(this, SIGNAL(SendID(int, QString)), ((CreateBrSAccDlg*)parentDialog), SLOT(SetID(int, QString)));
+	}
+	if (parentDialog != nullptr && parentDialog->objectName() == "CreateMulticurrency")
+	{
+		connect(tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(GetIDValue(QModelIndex)));
+		connect(this, SIGNAL(SendID(int, QString)), ((CreateMcurDlg*)parentDialog), SLOT(SetID(int, QString)));
 	}
 }
 
@@ -23440,6 +24337,7 @@ bool DataForm::SearchInAccForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Account>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("accountForm");
 			dForm->QtConnect<BusinessLayer::Account>();
 			QMdiSubWindow *accountWindow = new QMdiSubWindow;
@@ -23491,6 +24389,7 @@ bool DataForm::SearchInAccblDocForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::AccountableDocument>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("accblDocForm");
 			dForm->QtConnect<BusinessLayer::AccountableDocument>();
 			QMdiSubWindow *accblDocWindow = new QMdiSubWindow;
@@ -23543,6 +24442,7 @@ bool DataForm::SearchInAccTpForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::AccountType>(currentParent->errorMessage);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("accountTypeForm");
 			dForm->QtConnect<BusinessLayer::AccountType>();
 			QMdiSubWindow *accountTypeWindow = new QMdiSubWindow;
@@ -23595,6 +24495,7 @@ bool DataForm::SearchInAcsItemForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::AccessItem>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::AccessItem>();
 			dForm->setObjectName("accessItemForm");
 			QMdiSubWindow *accessItemWindow = new QMdiSubWindow;
@@ -23647,6 +24548,7 @@ bool DataForm::SearchInAccessForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::AccessView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::AccessView>();
 			dForm->setObjectName("accessForm");
 			QMdiSubWindow *accessWindow = new QMdiSubWindow;
@@ -23699,6 +24601,7 @@ bool DataForm::SearchInAcctblForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::AccountableView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::AccountableView>();
 			dForm->setObjectName("accountableForm");
 			QMdiSubWindow *accountableWindow = new QMdiSubWindow;
@@ -23751,6 +24654,7 @@ bool DataForm::SearchInAmGrForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::AmortizeGroup>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("amGroupForm");
 			dForm->QtConnect<BusinessLayer::AmortizeGroup>();
 			QMdiSubWindow *amGrWindow = new QMdiSubWindow;
@@ -23802,6 +24706,7 @@ bool DataForm::SearchInAmTypeForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::AmortizeType>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("amTypeForm");
 			dForm->QtConnect<BusinessLayer::AmortizeType>();
 			QMdiSubWindow *amTypeWindow = new QMdiSubWindow;
@@ -23853,6 +24758,7 @@ bool DataForm::SearchInBlcForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::BalanceView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("balanceForm");
 			dForm->QtConnect<BusinessLayer::BalanceView>();
 			QMdiSubWindow *balanceWindow = new QMdiSubWindow;
@@ -23904,6 +24810,7 @@ bool DataForm::SearchInBrhForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Branch>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("branchForm");
 			dForm->QtConnect<BusinessLayer::Branch>();
 			QMdiSubWindow *branchWindow = new QMdiSubWindow;
@@ -23957,6 +24864,7 @@ bool DataForm::SearchInBrwForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::BorrowerView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::BorrowerView>();
 			dForm->setObjectName("borrowerForm");
 			QMdiSubWindow *borrowerWindow = new QMdiSubWindow;
@@ -24010,6 +24918,7 @@ bool DataForm::SearchInBrSAccForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::BranchSubaccountRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("branchSubaccountForm");
 			dForm->QtConnect<BusinessLayer::BranchSubaccountRelationView>();
 			QMdiSubWindow *branchSAccWindow = new QMdiSubWindow;
@@ -24063,6 +24972,7 @@ bool DataForm::SearchInCASHERForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::CashboxEmployeeRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::CashboxEmployeeRelationView>();
 			dForm->setObjectName("cashboxEmployeeForm");
 			QMdiSubWindow *cashEmpWindow = new QMdiSubWindow;
@@ -24113,6 +25023,7 @@ bool DataForm::SearchInCbxForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::CashboxView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("cashboxForm");
 			dForm->QtConnect<BusinessLayer::CashboxView>();
 			QMdiSubWindow *caWindow = new QMdiSubWindow;
@@ -24164,6 +25075,7 @@ bool DataForm::SearchInCOADForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ChartOfAccountsView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("chartOffAccountForm");
 			dForm->QtConnect<BusinessLayer::ChartOfAccountsView>();
 			QMdiSubWindow *chartOfAccountWindow = new QMdiSubWindow;
@@ -24216,6 +25128,7 @@ bool DataForm::SearchInCltForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ClientView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::ClientView>();
 			dForm->setObjectName("clientForm");
 			QMdiSubWindow *clientWindow = new QMdiSubWindow;
@@ -24267,6 +25180,7 @@ bool DataForm::SearchInCARForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::CompanyAccountRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("companyAccountForm");
 			dForm->QtConnect<BusinessLayer::CompanyAccountRelationView>();
 			QMdiSubWindow *companyAccountWindow = new QMdiSubWindow;
@@ -24318,6 +25232,7 @@ bool DataForm::SearchInCmpForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Company>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("companyForm");
 			dForm->QtConnect<BusinessLayer::Company>();
 			QMdiSubWindow *companyWindow = new QMdiSubWindow;
@@ -24370,6 +25285,7 @@ bool DataForm::SearchInCERForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::CompanyEmployeeRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::CompanyEmployeeRelationView>();
 			dForm->setObjectName("companyEmployeeForm");
 			QMdiSubWindow *comEmpWindow = new QMdiSubWindow;
@@ -24422,6 +25338,7 @@ bool DataForm::SearchInConPForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ConsumeProductView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("consumeProductForm");
 			dForm->QtConnect<BusinessLayer::ConsumeProductView>();
 			QMdiSubWindow *consumeProductWindow = new QMdiSubWindow;
@@ -24474,6 +25391,7 @@ bool DataForm::SearchInConOthForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ConsumeOtherStocksView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("consumeOthStForm");
 			dForm->QtConnect<BusinessLayer::ConsumeOtherStocksView>();
 			QMdiSubWindow *consumeOthStWindow = new QMdiSubWindow;
@@ -24525,6 +25443,7 @@ bool DataForm::SearchInConRForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ConsumeRawView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("consumeRawForm");
 			dForm->QtConnect<BusinessLayer::ConsumeRawView>();
 			QMdiSubWindow *consumeRawWindow = new QMdiSubWindow;
@@ -24576,6 +25495,7 @@ bool DataForm::SearchInCurForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Currency>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("currencyForm");
 			dForm->QtConnect<BusinessLayer::Currency>();
 			QMdiSubWindow *currencyWindow = new QMdiSubWindow;
@@ -24614,6 +25534,58 @@ bool DataForm::SearchInCurForm(std::string searchFilter)
 	return true;
 }
 
+bool DataForm::SearchInCurRateForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("currencyRateForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Currency rate"));
+		dForm->FillTable<BusinessLayer::CurrencyRateView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->parentDialog = this->parentDialog;
+			dForm->setObjectName("currencyRateForm");
+			dForm->QtConnect<BusinessLayer::CurrencyRateView>();
+			QMdiSubWindow *currencyRateWindow = new QMdiSubWindow;
+			currencyRateWindow->setWidget(dForm);
+			currencyRateWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(currencyRateWindow);
+			currencyRateWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All currency rate are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All currency rate are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
 bool DataForm::SearchInDivForm(std::string searchFilter)
 {
 	MainForm* currentParent = (MainForm*)parentForm;
@@ -24627,6 +25599,7 @@ bool DataForm::SearchInDivForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Division>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("divisionForm");
 			dForm->QtConnect<BusinessLayer::Division>();
 			QMdiSubWindow *divisionWindow = new QMdiSubWindow;
@@ -24680,6 +25653,7 @@ bool DataForm::SearchInDivAccForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::DivisionAccountRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("divisionAccountForm");
 			dForm->QtConnect<BusinessLayer::DivisionAccountRelationView>();
 			QMdiSubWindow *divisionAccWindow = new QMdiSubWindow;
@@ -24733,6 +25707,7 @@ bool DataForm::SearchInEmpForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::EmployeeView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::EmployeeView>();
 			dForm->setObjectName("employeeForm");
 			QMdiSubWindow *employeeWindow = new QMdiSubWindow;
@@ -24786,6 +25761,7 @@ bool DataForm::SearchInEmpPrdForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::EmployeeProductRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::EmployeeProductRelationView>();
 			dForm->setObjectName("employeeProductForm");
 			QMdiSubWindow *empPrdWindow = new QMdiSubWindow;
@@ -24837,6 +25813,7 @@ bool DataForm::SearchInEtrForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::EntryView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("entryForm");
 			dForm->QtConnect<BusinessLayer::EntryView>();
 			QMdiSubWindow *entryWindow = new QMdiSubWindow;
@@ -24888,6 +25865,7 @@ bool DataForm::SearchInEtrRtForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::EntryRouting>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("entryRoutingForm");
 			dForm->QtConnect<BusinessLayer::EntryRouting>();
 			QMdiSubWindow *entryRoutingWindow = new QMdiSubWindow;
@@ -24939,6 +25917,7 @@ bool DataForm::SearchInFxdAstForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::FixedAssetsView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("fixedAstForm");
 			dForm->QtConnect<BusinessLayer::FixedAssetsView>();
 			QMdiSubWindow *faWindow = new QMdiSubWindow;
@@ -24990,6 +25969,7 @@ bool DataForm::SearchInAstOperForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::FixedAssetsOperations>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("fixedAstOperForm");
 			dForm->QtConnect<BusinessLayer::FixedAssetsOperations>();
 			QMdiSubWindow *faoWindow = new QMdiSubWindow;
@@ -25041,6 +26021,7 @@ bool DataForm::SearchInInveForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::InventoryView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("inventoryForm");
 			dForm->QtConnect<BusinessLayer::InventoryView>();
 			QMdiSubWindow *inveWindow = new QMdiSubWindow;
@@ -25092,6 +26073,7 @@ bool DataForm::SearchInInvForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::InventorizationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("inventorizationForm");
 			dForm->QtConnect<BusinessLayer::InventorizationView>();
 			QMdiSubWindow *inventorizationWindow = new QMdiSubWindow;
@@ -25145,6 +26127,7 @@ bool DataForm::SearchInGroupForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Group>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::Group>();
 			dForm->setObjectName("groupForm");
 			QMdiSubWindow *groupWindow = new QMdiSubWindow;
@@ -25197,6 +26180,7 @@ bool DataForm::SearchInJbpForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::JobpriceView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::JobpriceView>();
 			dForm->setObjectName("jobpriceForm");
 			QMdiSubWindow *jobpriceWindow = new QMdiSubWindow;
@@ -25250,6 +26234,7 @@ bool DataForm::SearchInJbsForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::JobsheetView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::JobsheetView>();
 			dForm->setObjectName("jobsheetForm");
 			QMdiSubWindow *jobsheetWindow = new QMdiSubWindow;
@@ -25349,6 +26334,7 @@ bool DataForm::SearchInLowValStockForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::LowValueStockView>(currentParent->errorMessage, filter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::LowValueStockView>();
 			dForm->setObjectName("lowValueStockForm");
 			QMdiSubWindow *lvStockWindow = new QMdiSubWindow;
@@ -25400,6 +26386,7 @@ bool DataForm::SearchInLcnForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Location>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("locationForm");
 			dForm->QtConnect<BusinessLayer::Location>();
 			QMdiSubWindow *locationWindow = new QMdiSubWindow;
@@ -25451,6 +26438,7 @@ bool DataForm::SearchInMsrForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Measure>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("measureForm");
 			dForm->QtConnect<BusinessLayer::Measure>();
 			QMdiSubWindow *measureWindow = new QMdiSubWindow;
@@ -25489,6 +26477,58 @@ bool DataForm::SearchInMsrForm(std::string searchFilter)
 	return true;
 }
 
+bool DataForm::SearchInMcurForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("multicurrencyForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Multicurrency"));
+		dForm->FillTable<BusinessLayer::MulticurrencyView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->parentDialog = this->parentDialog;
+			dForm->setObjectName("multicurrencyForm");
+			dForm->QtConnect<BusinessLayer::MulticurrencyView>();
+			QMdiSubWindow *multicurrencyWindow = new QMdiSubWindow;
+			multicurrencyWindow->setWidget(dForm);
+			multicurrencyWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(multicurrencyWindow);
+			multicurrencyWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All multicurrency are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All multicurrency are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
 bool DataForm::SearchInNetCForm(std::string searchFilter)
 {
 	MainForm* currentParent = (MainForm*)parentForm;
@@ -25502,6 +26542,7 @@ bool DataForm::SearchInNetCForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::NetCostView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("netCostForm");
 			dForm->QtConnect<BusinessLayer::NetCostView>();
 			QMdiSubWindow *netCostWindow = new QMdiSubWindow;
@@ -25540,6 +26581,58 @@ bool DataForm::SearchInNetCForm(std::string searchFilter)
 	return true;
 }
 
+bool DataForm::SearchInNetCCoeffForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("netCostCoefficientForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Net cost coefficient"));
+		dForm->FillTable<BusinessLayer::NetCostCoefficientView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->parentDialog = this->parentDialog;
+			dForm->setObjectName("netCostCoefficientForm");
+			dForm->QtConnect<BusinessLayer::NetCostCoefficientView>();
+			QMdiSubWindow *netCostCWindow = new QMdiSubWindow;
+			netCostCWindow->setWidget(dForm);
+			netCostCWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(netCostCWindow);
+			netCostCWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All net cost coefficient are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All net cost are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
 bool DataForm::SearchInOrderForm(std::string searchFilter)
 {
 	MainForm* currentParent = (MainForm*)parentForm;
@@ -25553,6 +26646,7 @@ bool DataForm::SearchInOrderForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::OrderView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::OrderView>();
 			dForm->setObjectName("orderForm");
 			QMdiSubWindow *orderWindow = new QMdiSubWindow;
@@ -25604,6 +26698,7 @@ bool DataForm::SearchInOrdRForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::OrderRawView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("orderRawForm");
 			dForm->QtConnect<BusinessLayer::OrderRawView>();
 			QMdiSubWindow *orderRawWindow = new QMdiSubWindow;
@@ -25655,6 +26750,7 @@ bool DataForm::SearchInOthStForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::OtherStocksView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::OtherStocksView>();
 			dForm->setObjectName("otherStocksForm");
 			QMdiSubWindow *otherStocksWindow = new QMdiSubWindow;
@@ -25706,6 +26802,7 @@ bool DataForm::SearchInPcrForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::PercentRate>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::PercentRate>();
 			dForm->setObjectName("percentRateForm");
 			QMdiSubWindow *percentRateWindow = new QMdiSubWindow;
@@ -25766,13 +26863,22 @@ bool DataForm::SearchInPmtForm(std::string searchFilter)
 				filter = payment.GenerateFilter(currentParent->oBL->GetOrmasDal());
 			}
 		}
-		std::vector<std::string> filterList;
-		filterList.push_back(searchFilter);
-		filterList.push_back(filter);
-		filter = currentParent->oBL->ConcatenateFilters(filterList);
+		if (!filter.empty() && !searchFilter.empty())
+		{
+			std::vector<std::string> filterList;
+			filterList.push_back(searchFilter);
+			filterList.push_back(filter);
+			filter = currentParent->oBL->ConcatenateFilters(filterList);
+		}
+		else
+		{
+			filter = searchFilter;
+		}
+		
 		dForm->FillTable<BusinessLayer::PaymentView>(currentParent->errorMessage, filter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("paymentForm");
 			dForm->QtConnect<BusinessLayer::PaymentView>();
 			QMdiSubWindow *paymentWindow = new QMdiSubWindow;
@@ -25825,6 +26931,7 @@ bool DataForm::SearchInPosForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Position>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::Position>();
 			dForm->setObjectName("positionForm");
 			QMdiSubWindow *positionWindow = new QMdiSubWindow;
@@ -25876,6 +26983,7 @@ bool DataForm::SearchInPrcForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::PriceView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("priceForm");
 			dForm->QtConnect<BusinessLayer::PriceView>();
 			QMdiSubWindow *priceWindow = new QMdiSubWindow;
@@ -25914,6 +27022,58 @@ bool DataForm::SearchInPrcForm(std::string searchFilter)
 	return true;
 }
 
+bool DataForm::SearchInPrExForm(std::string searchFilter)
+{
+	MainForm* currentParent = (MainForm*)parentForm;
+	QString message = tr("Loading...");
+	currentParent->statusBar()->showMessage(message);
+	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("priceExtensionForm"));
+	if (checkedWidget == nullptr)
+	{
+		DataForm *dForm = new DataForm(currentParent->oBL, currentParent);
+		dForm->setWindowTitle(tr("Price extension"));
+		dForm->FillTable<BusinessLayer::PriceExtensionView>(currentParent->errorMessage, searchFilter);
+		if (currentParent->errorMessage.empty())
+		{
+			dForm->parentDialog = this->parentDialog;
+			dForm->setObjectName("priceExtensionForm");
+			dForm->QtConnect<BusinessLayer::PriceExtensionView>();
+			QMdiSubWindow *priceExWindow = new QMdiSubWindow;
+			priceExWindow->setWidget(dForm);
+			priceExWindow->setAttribute(Qt::WA_DeleteOnClose);
+			currentParent->mdiArea->addSubWindow(priceExWindow);
+			priceExWindow->resize(dForm->size().width() + 18, dForm->size().height() + 30);
+			dForm->show();
+			dForm->topLevelWidget();
+			dForm->activateWindow();
+			dForm->raise();
+			dForm->setWindowFlags(dForm->windowFlags() | Qt::WindowStaysOnTopHint);
+			QString message = tr("All price extension are shown");
+			currentParent->statusBar()->showMessage(message);
+		}
+		else
+		{
+			delete dForm;
+			QString message = tr("End with error!");
+			currentParent->statusBar()->showMessage(message);
+			QMessageBox::information(NULL, QString(tr("Warning")),
+				QString(tr(currentParent->errorMessage.c_str())),
+				QString(tr("Ok")));
+			currentParent->errorMessage = "";
+			return false;
+		}
+	}
+	else
+	{
+		checkedWidget->topLevelWidget();
+		checkedWidget->activateWindow();
+		QString message = tr("All price extension are shown");
+		currentParent->statusBar()->showMessage(message);
+		return false;
+	}
+	return true;
+}
+
 
 bool DataForm::SearchInProdTpForm(std::string searchFilter)
 {
@@ -25928,6 +27088,7 @@ bool DataForm::SearchInProdTpForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ProductType>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::ProductType>();
 			dForm->setObjectName("productTypeForm");
 			QMdiSubWindow *prodTypeWindow = new QMdiSubWindow;
@@ -25980,6 +27141,7 @@ bool DataForm::SearchInPrdBrnForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ProductBranchRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::ProductBranchRelationView>();
 			dForm->setObjectName("branchProductForm");
 			QMdiSubWindow *brnPrdWindow = new QMdiSubWindow;
@@ -26031,6 +27193,7 @@ bool DataForm::SearchInProdForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ProductView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::ProductView>();
 			dForm->setObjectName("productForm");
 			QMdiSubWindow *productWindow = new QMdiSubWindow;
@@ -26082,6 +27245,7 @@ bool DataForm::SearchInProdnForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Production>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::Production>();
 			dForm->setObjectName("productionForm");
 			QMdiSubWindow *productionWindow = new QMdiSubWindow;
@@ -26134,6 +27298,7 @@ bool DataForm::SearchInProdConRForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ProductionConsumeRawView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("productionCnsumeRawForm");
 			dForm->QtConnect<BusinessLayer::ProductionConsumeRawView>();
 			QMdiSubWindow *pConsumeRawWindow = new QMdiSubWindow;
@@ -26186,6 +27351,7 @@ bool DataForm::SearchInPPlanConRForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ProductionPlanView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::ProductionPlanView>();
 			dForm->setObjectName("productionPlanForm");
 			QMdiSubWindow *productionPlanWindow = new QMdiSubWindow;
@@ -26238,6 +27404,7 @@ bool DataForm::SearchInPurForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::PurveyorView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::PurveyorView>();
 			dForm->setObjectName("purveyorForm");
 			QMdiSubWindow *purveyorWindow = new QMdiSubWindow;
@@ -26292,6 +27459,7 @@ bool DataForm::SearchInPspForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::PayslipView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("payslipForm");
 			dForm->QtConnect<BusinessLayer::PayslipView>();
 			QMdiSubWindow *payslipWindow = new QMdiSubWindow;
@@ -26343,6 +27511,7 @@ bool DataForm::SearchInRelForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::RelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("relationForm");
 			dForm->QtConnect<BusinessLayer::RelationView>();
 			QMdiSubWindow *relationWindow = new QMdiSubWindow;
@@ -26395,6 +27564,7 @@ bool DataForm::SearchInRelTypeForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::RelationType>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("relationTypeForm");
 			dForm->QtConnect<BusinessLayer::RelationType>();
 			QMdiSubWindow *relationtypeWindow = new QMdiSubWindow;
@@ -26447,6 +27617,7 @@ bool DataForm::SearchInRoleForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Role>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("roleForm");
 			dForm->QtConnect<BusinessLayer::Role>();
 			QMdiSubWindow *roleWindow = new QMdiSubWindow;
@@ -26498,6 +27669,7 @@ bool DataForm::SearchInRcpOthStForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ReceiptOtherStocksView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("receiptOthStForm");
 			dForm->QtConnect<BusinessLayer::ReceiptOtherStocksView>();
 			QMdiSubWindow *rosWindow = new QMdiSubWindow;
@@ -26549,6 +27721,7 @@ bool DataForm::SearchInRcpPForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ReceiptProductView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("receiptProductForm");
 			dForm->QtConnect<BusinessLayer::ReceiptProductView>();
 			QMdiSubWindow *receiptProductWindow = new QMdiSubWindow;
@@ -26600,6 +27773,7 @@ bool DataForm::SearchInStockLmForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::StockLimitView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("stockLimitForm");
 			dForm->QtConnect<BusinessLayer::StockLimitView>();
 			QMdiSubWindow *stockLmWindow = new QMdiSubWindow;
@@ -26651,6 +27825,7 @@ bool DataForm::SearchInStockTrForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::StockTransferView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("StockTransferForm");
 			dForm->QtConnect<BusinessLayer::StockTransferView>();
 			QMdiSubWindow *StockTransferWindow = new QMdiSubWindow;
@@ -26703,6 +27878,7 @@ bool DataForm::SearchInRfdForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::RefundView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("refundForm");
 			dForm->QtConnect<BusinessLayer::RefundView>();
 			QMdiSubWindow *refundWindow = new QMdiSubWindow;
@@ -26755,6 +27931,7 @@ bool DataForm::SearchInRtrnForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::ReturnView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::ReturnView>();
 			dForm->setObjectName("returnForm");
 			QMdiSubWindow *returnWindow = new QMdiSubWindow;
@@ -26806,6 +27983,7 @@ bool DataForm::SearchInSlrForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::SalaryView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("salaryForm");
 			dForm->QtConnect<BusinessLayer::SalaryView>();
 			QMdiSubWindow *salaryWindow = new QMdiSubWindow;
@@ -26857,6 +28035,7 @@ bool DataForm::SearchInSlrTypeForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::SalaryType>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("salaryTypeForm");
 			dForm->QtConnect<BusinessLayer::SalaryType>();
 			QMdiSubWindow *salaryTypeWindow = new QMdiSubWindow;
@@ -26908,6 +28087,7 @@ bool DataForm::SearchInStsForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::Status>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("statusForm");
 			dForm->QtConnect<BusinessLayer::Status>();
 			QMdiSubWindow *statusWindow = new QMdiSubWindow;
@@ -26960,6 +28140,7 @@ bool DataForm::SearchInStsRuleForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::StatusRuleView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("statusRuleForm");
 			dForm->QtConnect<BusinessLayer::StatusRuleView>();
 			QMdiSubWindow *statusRuleWindow = new QMdiSubWindow;
@@ -27013,6 +28194,7 @@ bool DataForm::SearchInSpecForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::SpecificationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::SpecificationView>();
 			dForm->setObjectName("specificationForm");
 			QMdiSubWindow *specWindow = new QMdiSubWindow;
@@ -27064,6 +28246,7 @@ bool DataForm::SearchInSplForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::SpoilageView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::SpoilageView>();
 			dForm->setObjectName("spoilageForm");
 			QMdiSubWindow *spoilageWindow = new QMdiSubWindow;
@@ -27115,6 +28298,7 @@ bool DataForm::SearchInSAccForm(std::string searchFilter)
 	std::string filter = "";
 
 	if (currentParent->GetLoggedUser()->GetRoleID() == rolesMap.find("SUPERUSER")->second ||
+		currentParent->GetLoggedUser()->GetRoleID() == rolesMap.find("OWNER")->second ||
 		currentParent->GetLoggedUser()->GetRoleID() == rolesMap.find("CHIEF ACCOUNTANT")->second)
 	{
 		filter = "";
@@ -27134,10 +28318,18 @@ bool DataForm::SearchInSAccForm(std::string searchFilter)
 			}
 		}
 	}
-	std::vector<std::string> filterList;
-	filterList.push_back(filter);
-	filterList.push_back(searchFilter);
-	filter = currentParent->oBL->ConcatenateFilters(filterList);
+	if (filter.empty())
+	{
+		filter = searchFilter;
+	}
+	else
+	{
+		std::vector<std::string> filterList;
+		filterList.push_back(filter);
+		filterList.push_back(searchFilter);
+		filter = currentParent->oBL->ConcatenateFilters(filterList);
+	}
+	
 	currentParent->errorMessage.clear();
 	QWidget* checkedWidget = IsWindowExist(currentParent->mdiArea->subWindowList(), QString("subaccountForm"));
 	if (checkedWidget == nullptr)
@@ -27147,6 +28339,7 @@ bool DataForm::SearchInSAccForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::SubaccountView>(currentParent->errorMessage, filter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("subaccountForm");
 			dForm->QtConnect<BusinessLayer::SubaccountView>();
 			QMdiSubWindow *subaccountWindow = new QMdiSubWindow;
@@ -27199,6 +28392,7 @@ bool DataForm::SearchInSAccLmForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::SubaccountLimitView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("subaccountLimitForm");
 			dForm->QtConnect<BusinessLayer::SubaccountLimitView>();
 			QMdiSubWindow *subaccountLmWindow = new QMdiSubWindow;
@@ -27250,6 +28444,7 @@ bool DataForm::SearchInStockForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::StockView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("stockForm");
 			dForm->QtConnect<BusinessLayer::StockView>();
 			QMdiSubWindow *stockWindow = new QMdiSubWindow;
@@ -27302,6 +28497,7 @@ bool DataForm::SearchInTmsForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::TimesheetView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::TimesheetView>();
 			dForm->setObjectName("timesheetForm");
 			QMdiSubWindow *timesheetWindow = new QMdiSubWindow;
@@ -27353,6 +28549,7 @@ bool DataForm::SearchInTrsForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::TransportView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("transportForm");
 			dForm->QtConnect<BusinessLayer::TransportView>();
 			QMdiSubWindow *transportWindow = new QMdiSubWindow;
@@ -27406,6 +28603,7 @@ bool DataForm::SearchInUserForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::UserView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::UserView>();
 			dForm->setObjectName("userForm");
 			QMdiSubWindow *userWindow = new QMdiSubWindow;
@@ -27459,6 +28657,7 @@ bool DataForm::SearchInUserGrForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::UserGroupRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::UserGroupRelationView>();
 			dForm->setObjectName("userGroupForm");
 			QMdiSubWindow *userGrWindow = new QMdiSubWindow;
@@ -27511,6 +28710,7 @@ bool DataForm::SearchInWrhForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::WarehouseView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("warehouseForm");
 			dForm->QtConnect<BusinessLayer::WarehouseView>();
 			QMdiSubWindow *wareWindow = new QMdiSubWindow;
@@ -27562,6 +28762,7 @@ bool DataForm::SearchInWrhTpForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::WarehouseType>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("warehouseTypeForm");
 			dForm->QtConnect<BusinessLayer::WarehouseType>();
 			QMdiSubWindow *wTypeWindow = new QMdiSubWindow;
@@ -27615,6 +28816,7 @@ bool DataForm::SearchInWERForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::WarehouseEmployeeRelationView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::WarehouseEmployeeRelationView>();
 			dForm->setObjectName("warehouseEmployeeForm");
 			QMdiSubWindow *werEmpWindow = new QMdiSubWindow;
@@ -27675,13 +28877,22 @@ bool DataForm::SearchInwWdwForm(std::string searchFilter)
 				filter = withdrawal.GenerateFilter(currentParent->oBL->GetOrmasDal());
 			}
 		}
-		std::vector<std::string> filterList;
-		filterList.push_back(filter);
-		filterList.push_back(searchFilter);
-		filter = currentParent->oBL->ConcatenateFilters(filterList);
+		if (!filter.empty())
+		{
+			std::vector<std::string> filterList;
+			filterList.push_back(filter);
+			filterList.push_back(searchFilter);
+			filter = currentParent->oBL->ConcatenateFilters(filterList);
+		}
+		else
+		{
+			filter = searchFilter;
+		}
+
 		dForm->FillTable<BusinessLayer::WithdrawalView>(currentParent->errorMessage, filter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("withdrawalForm");
 			dForm->QtConnect<BusinessLayer::WithdrawalView>();
 			QMdiSubWindow *withdrawalWindow = new QMdiSubWindow;
@@ -27734,6 +28945,7 @@ bool DataForm::SearchInWOffForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::WriteOffView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->QtConnect<BusinessLayer::WriteOffView>();
 			dForm->setObjectName("writeOffForm");
 			QMdiSubWindow *writeOfftWindow = new QMdiSubWindow;
@@ -27785,6 +28997,7 @@ bool DataForm::SearchInWOffRawForm(std::string searchFilter)
 		dForm->FillTable<BusinessLayer::WriteOffRawView>(currentParent->errorMessage, searchFilter);
 		if (currentParent->errorMessage.empty())
 		{
+			dForm->parentDialog = this->parentDialog;
 			dForm->setObjectName("writeOffRawForm");
 			dForm->QtConnect<BusinessLayer::WriteOffRawView>();
 			QMdiSubWindow *writeOffRawWindow = new QMdiSubWindow;

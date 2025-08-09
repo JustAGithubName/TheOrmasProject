@@ -10,6 +10,9 @@
 #include "CompanyEmployeeRelationClass.h"
 #include "TransportClass.h"
 #include <codecvt>
+#include "WarehouseEmployeeRelationClass.h"
+#include "WarehouseClass.h"
+#include "SubaccountClass.h"
 
 namespace BusinessLayer
 {
@@ -1033,9 +1036,36 @@ namespace BusinessLayer
 			}
 		}
 
-		if (std::round(sum * 10) / 10 != std::round(checkSum * 10) / 10
-			|| std::round(count * 10) / 10 != std::round(checkCount * 10) / 10)
+		if (fabs(sum - checkSum) > 0.01 || fabs(count - checkCount) > 0.01)
 			return false;
+		return true;
+	}
+
+	bool  Order::CheckDataWriteCorrectness(GlobalVariable* globalVar, DataLayer::OrmasDal& ormasDal, int stockEmployeeID, std::string& errorMessage)
+	{
+		BusinessLayer::WarehouseEmployeeRelation weRel;
+		if (!weRel.GetWarehouseEmployeeByEmployeeID(globalVar, ormasDal, stockEmployeeID, errorMessage))
+			return false;
+		BusinessLayer::Warehouse warehouse;
+		if (!warehouse.GetWarehouseByID(globalVar, ormasDal, weRel.GetWarehouseID(), errorMessage))
+			return false;
+		BusinessLayer::Subaccount subaccount;
+		if (!subaccount.GetSubaccountByID(globalVar, ormasDal, warehouse.GetSubaccountID(), errorMessage))
+			return false;
+
+		/*Stock stock;
+		double sum = 0;
+		stock.SetWarehouseID(warehouse.GetID());
+		std::string filter = stock.GenerateFilter(ormasDal);
+		std::vector<DataLayer::stockViewCollection> stockVector = ormasDal.GetStock(errorMessage, filter);
+
+		for (const auto& item : stockVector)
+		{
+			sum += std::get<7>(item);
+		}
+
+		if (fabs(std::round(sum * 1000) / 1000 - std::round(subaccount.GetCurrentBalance() * 1000) / 1000) > 1)
+			return false;*/
 		return true;
 	}
 }

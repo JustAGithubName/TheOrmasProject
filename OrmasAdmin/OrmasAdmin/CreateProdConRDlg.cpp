@@ -11,6 +11,7 @@ CreateProdConRDlg::CreateProdConRDlg(BusinessLayer::OrmasBL *ormasBL, bool updat
 	setupUi(this);
 	//setModal(true);
 	dialogBL = ormasBL;
+	
 	parentForm = parent;
 	DataForm *dataFormParent = (DataForm *)this->parentForm;
 	mainForm = (MainForm *)dataFormParent->GetParent();
@@ -55,6 +56,7 @@ CreateProdConRDlg::CreateProdConRDlg(BusinessLayer::OrmasBL *ormasBL, bool updat
 		
 		BusinessLayer::Status *status = new BusinessLayer::Status();
 		status->SetName("ORDERED");
+		statusBtn->setEnabled(false);
 		std::string statusFilter = dialogBL->GenerateFilter<BusinessLayer::Status>(status);
 		std::vector<BusinessLayer::Status> statusVector = dialogBL->GetAllDataForClass<BusinessLayer::Status>(errorMessage, statusFilter);
 		delete status;
@@ -81,6 +83,7 @@ CreateProdConRDlg::CreateProdConRDlg(BusinessLayer::OrmasBL *ormasBL, bool updat
 	QObject::connect(sumEdit, &QLineEdit::textChanged, this, &CreateProdConRDlg::TextEditChanged);
 	QObject::connect(this, SIGNAL(CloseCreatedForms()), ((MainForm*)((DataForm*)parent)->GetParent()), SLOT(CloseChildsByName()));
 	InitComboBox();
+	AutoSelectUser();
 }
 
 CreateProdConRDlg::~CreateProdConRDlg()
@@ -889,7 +892,41 @@ void CreateProdConRDlg::InitComboBox()
 	{
 		for (unsigned int i = 0; i < curVector.size(); i++)
 		{
-			currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
+			if (curVector[i].GetMainTrade() == true)
+				currencyCmb->addItem(curVector[i].GetShortName().c_str(), QVariant(curVector[i].GetID()));
+		}
+	}
+}
+
+void CreateProdConRDlg::AutoSelectUser()
+{
+	BusinessLayer::Role *role = new BusinessLayer::Role();
+	role->SetName("PRODUCT MANAGER");
+	std::string roleFilter = dialogBL->GenerateFilter<BusinessLayer::Role>(role);
+	std::vector<BusinessLayer::Role> roleVector = dialogBL->GetAllDataForClass<BusinessLayer::Role>(errorMessage, roleFilter);
+
+	if (roleVector.size() == 0)
+	{
+		delete role;
+		QString message = tr("Sorry could not define the role for this employee!");
+		mainForm->statusBar()->showMessage(message);
+		QMessageBox::information(NULL, QString(tr("Warning")),
+			QString(message),
+			QString(tr("Ok")));
+		errorMessage = "";
+		return;
+	}
+
+	if (dialogBL->loggedUser->GetRoleID() == roleVector.at(0).GetID())
+	{
+		stockEmployeeBtn->hide();
+		stockEmployeeEdit->setText(QString::number(dialogBL->loggedUser->GetID()));
+		BusinessLayer::User user2;
+		if (user2.GetUserByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), dialogBL->loggedUser->GetID(), errorMessage))
+		{
+			empStockNamePh->setText(user2.GetName().c_str());
+			empStockSurnamePh->setText(user2.GetSurname().c_str());
+			empStockPhonePh->setText(user2.GetPhone().c_str());
 		}
 	}
 }

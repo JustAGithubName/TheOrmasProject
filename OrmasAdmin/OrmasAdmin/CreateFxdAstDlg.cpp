@@ -47,7 +47,7 @@ CreateFxdAstDlg::CreateFxdAstDlg(BusinessLayer::OrmasBL *ormasBL, bool updateFla
 
 	accableIDEdit->setValidator(vInt);
 	purEditID->setValidator(vInt);
-	accID->setValidator(vInt);
+	accIDEdit->setValidator(vInt);
 
 	InitComboBox();
 	
@@ -240,7 +240,7 @@ void CreateFxdAstDlg::FillEditElements(int specID, QString invNumber, double pri
 	{
 		if (postingFixedAssets->GetAccountID() > 0)
 		{
-			accableIDEdit->setText(QString::number(postingFixedAssets->GetAccountID()));
+			accIDEdit->setText(QString::number(postingFixedAssets->GetAccountID()));
 			BusinessLayer::ChartOfAccounts coa;
 			BusinessLayer::Account acc;
 			if (acc.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), postingFixedAssets->GetAccountID(), errorMessage))
@@ -268,8 +268,8 @@ void CreateFxdAstDlg::FillEditElements(int specID, QString invNumber, double pri
 				accableIDEdit->setText("");
 				accLB->hide();
 				accountName->hide();
-				accID->hide();
-				accID->setText("");
+				accIDEdit->hide();
+				accIDEdit->setText("");
 			}
 		}
 		if (postingFixedAssets->GetSubaccountID() > 0)
@@ -286,8 +286,8 @@ void CreateFxdAstDlg::FillEditElements(int specID, QString invNumber, double pri
 					purEditID->setText("");
 					accLB->hide();
 					accountName->hide();
-					accID->hide();
-					accID->setText("");
+					accIDEdit->hide();
+					accIDEdit->setText("");
 				}
 			}
 		}
@@ -354,7 +354,7 @@ void CreateFxdAstDlg::SetID(int ID, QString childName)
 			}
 			if (childName == QString("accountForm"))
 			{
-				accID->setText(QString::number(ID));
+				accIDEdit->setText(QString::number(ID));
 				BusinessLayer::Account account;
 				if (account.GetAccountByID(dialogBL->globalVar, dialogBL->GetOrmasDal(), ID, errorMessage))
 				{
@@ -433,7 +433,7 @@ void CreateFxdAstDlg::CreateFixedAssets()
 	{
 		if (newFACxb->isChecked())
 		{
-			if (0 == accableIDEdit->text().toInt() && 0 == purEditID->text().toInt() && 0 == accID->text().toInt())
+			if (0 == accableIDEdit->text().toInt() && 0 == purEditID->text().toInt() && 0 == accIDEdit->text().toInt())
 			{
 				QMessageBox::information(NULL, QString(tr("Warning")),
 					QString(tr("Please recheck all fields, accountable ID, purveyor ID or account ID!")),
@@ -459,7 +459,7 @@ void CreateFxdAstDlg::CreateFixedAssets()
 		fixedAssetsUnion->fixedAssetsAccountID = fAstTypeCmb->currentData().toInt();
 		fixedAssetsUnion->purveyorID = purEditID->text().toInt();
 		fixedAssetsUnion->accountableID = accableIDEdit->text().toInt();
-		fixedAssetsUnion->accountID = accID->text().toInt();
+		fixedAssetsUnion->accountID = accIDEdit->text().toInt();
 		SetFixedAssetsUnionParams(fixedAssets, fixedAssetsSpecification, fixedAssetsDetails, postingFixedAssets);
 		if (dialogBL->CreateFixedAssetsUnion(fixedAssetsUnion, errorMessage))
 		{
@@ -603,7 +603,7 @@ void CreateFxdAstDlg::EditFixedAssets()
 					serviceLifeEdit->text().toInt(), isAmChx->isChecked() ? "true" : "false", buyDateEdit->text(),
 					startDateEdit->text(), "", statusEdit->text().toInt(), fixedAssetsDetails->GetID(), fixedAssets->GetID());
 			}
-			if (accableIDEdit->text().isEmpty() && purEditID->text().isEmpty() && accID->text().isEmpty())
+			if (accableIDEdit->text().isEmpty() && purEditID->text().isEmpty() && accIDEdit->text().isEmpty())
 			{
 				fixedAssetsUnion->isNewFixedAssets = false;
 			}
@@ -616,7 +616,7 @@ void CreateFxdAstDlg::EditFixedAssets()
 			fixedAssetsUnion->fixedAssetsAccountID = fAstTypeCmb->currentData().toInt();
 			fixedAssetsUnion->purveyorID = purEditID->text().toInt();
 			fixedAssetsUnion->accountableID = accableIDEdit->text().toInt();
-			fixedAssetsUnion->accountID = accID->text().toInt();
+			fixedAssetsUnion->accountID = accIDEdit->text().toInt();
 			SetFixedAssetsUnionParams(fixedAssets, fixedAssetsSpecification, fixedAssetsDetails, postingFixedAssets);
 			if (dialogBL->UpdateFixedAssetsUnion(fixedAssetsUnion, errorMessage))
 			{
@@ -1051,7 +1051,7 @@ void CreateFxdAstDlg::HideSpecButton()
 		accountName->setText("");
 		accableIDEdit->setText("");
 		purEditID->setText("");
-		accID->setText("");
+		accIDEdit->setText("");
 		amortizeEdit->setReadOnly(false);
 	}
 }

@@ -445,6 +445,27 @@
    <item row="0" column="0" colspan="6">
     <widget class="SearchBox" name="searchEdit"/>
    </item>
+   <item row="6" column="2">
+    <widget class="QLabel" name="newPriceCurrency">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QLabel" name="oldPriceCurrency">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="4">
+    <widget class="QLabel" name="currenctCurrency">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>

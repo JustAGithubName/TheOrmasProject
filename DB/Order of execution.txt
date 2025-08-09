@@ -15,3 +15,17 @@ chart_of_accounts
 entry_routing //not needed now
 division
 warehouse_type
+amortize_type
+amortize_group
+
+Instalation step
+1. Add company + 
+1.1. Add brach
+2. Generate accounts + 
+2.1. Add division-account relation
+3. Add Cashbox +
+4. Add warehouse +
+5. Add top managment-
+6. Add dependencies employee-cashbox, emploee-warehouse-
+7. Add access+
+8. Cashbox route rules+

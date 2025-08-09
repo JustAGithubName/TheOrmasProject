@@ -1,5 +1,11 @@
 #include "stdafx.h"
 #include "FixedAssetsOperationsClass.h"
+#include "EntryClass.h"
+#include "FixedAssetsClass.h"
+#include "FixedAssetsDetailsClass.h"
+#include "EntryOperationRelationClass.h"
+#include "SubaccountClass.h"
+#include "AccountClass.h"
 
 namespace BusinessLayer
 {
@@ -12,6 +18,7 @@ namespace BusinessLayer
 		increment = std::get<4>(fCollection);
 		decrement = std::get<5>(fCollection);
 		fixedAssetsID = std::get<6>(fCollection);
+		revaluation = std::get<7>(fCollection);
 	}
 
 	int FixedAssetsOperations::GetID()
@@ -49,6 +56,11 @@ namespace BusinessLayer
 		return fixedAssetsID;
 	}
 
+	bool FixedAssetsOperations::GetRevaluation()
+	{
+		return revaluation;
+	}
+
 	void FixedAssetsOperations::SetID(int fID)
 	{
 		id = fID;
@@ -83,9 +95,14 @@ namespace BusinessLayer
 	{
 		fixedAssetsID = faID;
 	}
+	
+	void FixedAssetsOperations::SetRevaluation(bool oRevaluation)
+	{
+		revaluation = oRevaluation;
+	}
 
 	bool FixedAssetsOperations::CreateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName,
-		double oValue, bool oIncrement, bool oDecrement, int faID, std::string& errorMessage)
+		double oValue, bool oIncrement, bool oDecrement, int faID, bool oRevaluation, std::string& errorMessage)
 	{
 		if (IsDuplicate(globalVar, ormasDal, oDate, oName, oValue, errorMessage))
 			return false;
@@ -99,8 +116,23 @@ namespace BusinessLayer
 		//ormasDal.StartTransaction(errorMessage);
 		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateFixedAssetsOperations(id, date, name, value, increment,
-			decrement, fixedAssetsID, errorMessage))
+			decrement, fixedAssetsID, oRevaluation, errorMessage))
 		{
+			if (oIncrement == true)
+			{
+				if (!CreateIncrementOperation(globalVar, ormasDal, faID, name, oValue, oDate, errorMessage))
+					return false;
+			}
+			if (oDecrement == true)
+			{
+				if (!CreateDecrementOperation(globalVar, ormasDal, faID, name, oValue, oDate, errorMessage))
+					return false;
+			}
+			if (oRevaluation == true)
+			{
+				if (!CreateRevaluationOperation(globalVar, ormasDal, faID, name, oValue, oDate, errorMessage))
+					return false;
+			}
 			return true;
 		}
 		if (errorMessage.empty())
@@ -119,8 +151,23 @@ namespace BusinessLayer
 		//ormasDal.StartTransaction(errorMessage);
 		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.CreateFixedAssetsOperations(id, date, name, value, increment,
-			decrement, fixedAssetsID, errorMessage))
+			decrement, fixedAssetsID, revaluation, errorMessage))
 		{
+			if (increment == true)
+			{
+				if (!CreateIncrementOperation(globalVar, ormasDal, fixedAssetsID, name, value, date, errorMessage))
+					return false;
+			}
+			if (decrement == true)
+			{
+				if (!CreateDecrementOperation(globalVar, ormasDal, fixedAssetsID, name, value, date, errorMessage))
+					return false;
+			}
+			if (revaluation == true)
+			{
+				if (!CreateRevaluationOperation(globalVar, ormasDal, fixedAssetsID, name, value, date, errorMessage))
+					return false;
+			}
 			return true;
 		}
 		if (errorMessage.empty())
@@ -145,8 +192,9 @@ namespace BusinessLayer
 		return false;
 	}
 	bool FixedAssetsOperations::UpdateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName,
-		double oValue, bool oIncrement, bool oDecrement, int faID, std::string& errorMessage)
+		double oValue, bool oIncrement, bool oDecrement, int faID, bool oRevaluation, std::string& errorMessage)
 	{
+		return false;
 		date = oDate;
 		name = oName;
 		value = oValue;
@@ -156,7 +204,7 @@ namespace BusinessLayer
 		//ormasDal.StartTransaction(errorMessage);
 		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateFixedAssetsOperations(id, date, name, value, increment,
-			decrement, fixedAssetsID, errorMessage))
+			decrement, fixedAssetsID, oRevaluation, errorMessage))
 		{
 			return true;
 		}
@@ -169,10 +217,11 @@ namespace BusinessLayer
 	}
 	bool FixedAssetsOperations::UpdateFixedAssetsOperations(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
+		return false;
 		//ormasDal.StartTransaction(errorMessage);
 		globalVar->currentOperationID = id;
 		if (0 != id && ormasDal.UpdateFixedAssetsOperations(id, date, name, value, increment,
-			decrement, fixedAssetsID, errorMessage))
+			decrement, fixedAssetsID, revaluation, errorMessage))
 		{
 			return true;
 		}
@@ -189,7 +238,7 @@ namespace BusinessLayer
 		if (0 != id || !date.empty() || !name.empty() || 0 != value || 0 != fixedAssetsID)
 		{
 			return ormasDal.GetFilterForFixedAssetsOperations(id, date, name, value, increment,
-				decrement, fixedAssetsID);
+				decrement, fixedAssetsID, revaluation);
 		}
 		return "";
 	}
@@ -210,6 +259,7 @@ namespace BusinessLayer
 			increment = std::get<4>(fixedAssetsOperationsVector.at(0));
 			decrement = std::get<5>(fixedAssetsOperationsVector.at(0));
 			fixedAssetsID = std::get<6>(fixedAssetsOperationsVector.at(0));
+			revaluation = std::get<7>(fixedAssetsOperationsVector.at(0));
 			return true;
 		}
 		else
@@ -222,7 +272,7 @@ namespace BusinessLayer
 	bool FixedAssetsOperations::IsEmpty()
 	{
 		if (0 == id && date == "" && name == "" && 0.0 == value 
-			&& false == increment && false == decrement && 0 == fixedAssetsID)
+			&& false == increment && false == decrement && 0 == fixedAssetsID && false == revaluation)
 			return true;
 		return false;
 	}
@@ -236,6 +286,7 @@ namespace BusinessLayer
 		increment = false;
 		decrement = false;
 		fixedAssetsID = 0;
+		revaluation = false;
 	}
 
 	bool FixedAssetsOperations::IsDuplicate(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string oDate, std::string oName, double oValue, std::string& errorMessage)
@@ -275,6 +326,147 @@ namespace BusinessLayer
 			return false;
 		}
 		errorMessage = "Fixed assets operation with these parameters are already exist! Please avoid the duplication!";
+		return true;
+	}
+
+	bool FixedAssetsOperations::CreateIncrementOperation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fxID, std::string oName, double value, std::string oDate, std::string& errorMessage)
+	{
+		return false;
+		/*Entry entry;
+		EntryOperationRelation eRelation;
+		FixedAssets fAssets;
+		FixedAssetsDetails fDetails;
+		Subaccount fMainSub;
+
+		if (!fAssets.GetFixedAssetsByID(globalVar, ormasDal, fxID, errorMessage))
+			return false;
+		if (!fDetails.GetFixedAssetsDetailsByID(globalVar, ormasDal, fAssets.GetFixedAssetsDetailsID(), errorMessage))
+			return false;
+		if (!fMainSub.GetSubaccountByID(globalVar, ormasDal, fDetails.GetPrimaryCostAccountID(), errorMessage))
+			return false;
+
+
+		entry.Clear();
+		eRelation.Clear();
+		errorMessage.clear();
+		if (fMainSub.GetCurrentBalance() > 0)
+		{
+			if (!entry.CreateEntry(globalVar, ormasDal, oDate, account33120.GetID(), fMainSub.GetCurrentBalance(), fMainSub.GetID(), oName, errorMessage))
+				return false;
+			if (!eRelation.CreateEntryOperationRelation(globalVar, ormasDal, entry.GetID(), id, errorMessage))
+				return false;
+		}
+		else
+		{
+			if (!entry.CreateEntry(globalVar, ormasDal, oDate, fMainSub.GetID(), fMainSub.GetCurrentBalance()*(-1), account33120.GetID(), oName, errorMessage))
+				return false;
+			if (!eRelation.CreateEntryOperationRelation(globalVar, ormasDal, entry.GetID(), id, errorMessage))
+				return false;
+		}
+
+		entry.Clear();
+		eRelation.Clear();
+		errorMessage.clear();
+		if (value > 0)
+		{
+			if (!entry.CreateEntry(globalVar, ormasDal, oDate, fMainSub.GetID(), value, account33120.GetID(), oName, errorMessage))
+				return false;
+			if (!eRelation.CreateEntryOperationRelation(globalVar, ormasDal, entry.GetID(), id, errorMessage))
+				return false;
+		}
+		else
+		{
+			return false;
+		}
+
+		fAssets.SetPrimaryCost(value);
+		if (!fAssets.UpdateFixedAssets(globalVar, ormasDal, errorMessage))
+			return false;
+
+		return true;*/
+	}
+
+	bool FixedAssetsOperations::CreateDecrementOperation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fxID, std::string oName, double value, std::string oDate, std::string& errorMessage)
+	{
+		return false;
+	}
+
+	bool FixedAssetsOperations::CreateRevaluationOperation(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int fxID, std::string oName, double value, std::string oDate, std::string& errorMessage)
+	{
+		Entry entry;
+		EntryOperationRelation eRelation;
+		FixedAssets fAssets;
+		FixedAssetsDetails fDetails;
+		Subaccount fMainSub;
+		Subaccount fAmorSub;
+		Account account33120;
+
+		if (!account33120.GetAccountByNumber(globalVar, ormasDal, "33120", errorMessage))
+			return false;
+		if (!fAssets.GetFixedAssetsByID(globalVar, ormasDal, fxID, errorMessage))
+			return false;
+		if (!fDetails.GetFixedAssetsDetailsByID(globalVar, ormasDal, fAssets.GetFixedAssetsDetailsID(), errorMessage))
+			return false;
+		if (!fMainSub.GetSubaccountByID(globalVar, ormasDal, fDetails.GetPrimaryCostAccountID(), errorMessage))
+			return false;
+		if (!fAmorSub.GetSubaccountByID(globalVar, ormasDal, fDetails.GetAmortizeAccountID(), errorMessage))
+			return false;
+
+		entry.Clear();
+		eRelation.Clear();
+		errorMessage.clear();
+		if (fAmorSub.GetCurrentBalance() > 0)
+		{
+			if (!entry.CreateEntry(globalVar, ormasDal, oDate, account33120.GetID(), fAmorSub.GetCurrentBalance(), fAmorSub.GetID(), oName, errorMessage))
+				return false;
+			if (!eRelation.CreateEntryOperationRelation(globalVar, ormasDal, entry.GetID(), id, errorMessage))
+				return false;
+		}
+		else
+		{
+			if (!entry.CreateEntry(globalVar, ormasDal, oDate, fAmorSub.GetID(), fAmorSub.GetCurrentBalance()*(-1), account33120.GetID(), oName, errorMessage))
+				return false;
+			if (!eRelation.CreateEntryOperationRelation(globalVar, ormasDal, entry.GetID(), id, errorMessage))
+				return false;
+		}
+		
+		entry.Clear();
+		eRelation.Clear();
+		errorMessage.clear();
+		if (fMainSub.GetCurrentBalance() > 0)
+		{
+			if (!entry.CreateEntry(globalVar, ormasDal, oDate, account33120.GetID(), fMainSub.GetCurrentBalance(), fMainSub.GetID(), oName, errorMessage))
+				return false;
+			if (!eRelation.CreateEntryOperationRelation(globalVar, ormasDal, entry.GetID(), id, errorMessage))
+				return false;
+		}
+		else
+		{
+			if (!entry.CreateEntry(globalVar, ormasDal, oDate, fMainSub.GetID(), fMainSub.GetCurrentBalance()*(-1), account33120.GetID(), oName, errorMessage))
+				return false;
+			if (!eRelation.CreateEntryOperationRelation(globalVar, ormasDal, entry.GetID(), id, errorMessage))
+				return false;
+		}
+
+		entry.Clear();
+		eRelation.Clear();
+		errorMessage.clear();
+		if (value > 0)
+		{
+			if (!entry.CreateEntry(globalVar, ormasDal, oDate, fMainSub.GetID(), value, account33120.GetID(), oName, errorMessage))
+				return false;
+			if (!eRelation.CreateEntryOperationRelation(globalVar, ormasDal, entry.GetID(), id, errorMessage))
+				return false;
+		}
+		else
+		{
+				return false;
+		}
+
+		fAssets.SetPrimaryCost(value);
+		if (!fAssets.UpdateFixedAssets(globalVar, ormasDal, errorMessage))
+			return false;
+
 		return true;
 	}
 }

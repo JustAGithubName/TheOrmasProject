@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "PriceClass.h"
+#include "ProductClass.h"
 
 namespace BusinessLayer{
 	Price::Price(DataLayer::pricesCollection pCollection)
@@ -82,8 +83,8 @@ namespace BusinessLayer{
 	bool Price::CreatePrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string pDate, double pValue, int cID, int prID, bool pIsOutdated,
 		std::string& errorMessage)
 	{
-		if (IsDuplicate(globalVar, ormasDal, pDate, pValue, cID, prID, errorMessage))
-			return false;
+		//if (IsDuplicate(globalVar, ormasDal, pDate, pValue, cID, prID, errorMessage))
+		//	return false;
 		id = ormasDal.GenerateID();
 		date = pDate;
 		value = pValue;
@@ -102,8 +103,8 @@ namespace BusinessLayer{
 	}
 	bool Price::CreatePrice(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string& errorMessage)
 	{
-		if (IsDuplicate(globalVar, ormasDal, errorMessage))
-			return false;
+		//if (IsDuplicate(globalVar, ormasDal, errorMessage))
+		//	return false;
 		id = ormasDal.GenerateID();
 		if (0 != id && ormasDal.CreatePrice(id, date, value, currencyID, productID, isOutdated, errorMessage))
 		{
@@ -169,6 +170,24 @@ namespace BusinessLayer{
 		return "";
 	}
 
+	std::string Price::GenerateFilterLessDate(DataLayer::OrmasDal& ormasDal)
+	{
+		if (0 != id || date.empty() || 0 != productID || 0 != currencyID || 0 != value || (isOutdated == true || isOutdated == false))
+		{
+			return ormasDal.GetFilterForPriceLessDate(id, date, value, currencyID, productID, isOutdated);
+		}
+		return "";
+	}
+
+	std::string Price::GenerateFilterForPeriod(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::string formDate, std::string toDate)
+	{
+		if (0 != id || date.empty() || 0 != productID || 0 != currencyID || 0 != value || (isOutdated == true || isOutdated == false) || formDate.empty() || toDate.empty())
+		{
+			return ormasDal.GetFilterForPriceForPeriod(id, date, value, currencyID, productID, isOutdated, formDate, toDate);
+		}
+		return "";
+	}
+
 	bool Price::GetPriceByID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int bID, std::string& errorMessage)
 	{
 		if (bID <= 0)
@@ -215,6 +234,75 @@ namespace BusinessLayer{
 			errorMessage = "Cannot find price with this product id";
 		}
 		return false;
+	}
+	
+	std::vector<int> Price::GetPriceIDsByProductIDVec(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> prodIDList, std::string& errorMessage)
+	{
+		std::vector<int> priceIDs;
+		Product product;
+		if (prodIDList.size() > 0)
+		{
+			std::string prodFilter = "";
+			prodFilter = product.GenerateINFilter(globalVar, ormasDal, prodIDList);
+			if (prodFilter.empty())
+				return priceIDs;
+			std::string filter = GenerateFilter(ormasDal);
+			std::vector<DataLayer::pricesViewCollection> priceVector = ormasDal.GetPrices(errorMessage, prodFilter);
+			if (0 != priceVector.size())
+			{
+				for each (auto item in priceVector)
+				{
+					priceIDs.push_back(std::get<0>(item));					
+				}
+				return priceIDs;
+			}
+			else
+			{
+				errorMessage = "Cannot find price with this product id";
+			}
+		}
+		return priceIDs;
+	}
+
+
+
+	std::string Price::GenerateINFilter(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, std::vector<int> priceIDList)
+	{
+		if (priceIDList.size()>0)
+		{
+			return ormasDal.GetINFilterForPriceID(priceIDList);
+		}
+		return "";
+	}
+
+	double Price::GetProductAveragePriceForPeriodByProductID(GlobalVariable* globalVar, DataLayer::OrmasDal &ormasDal, int prodID, std::string fromDate, std::string tillDate, std::string& errorMessage)
+	{
+		if (prodID > 0)
+		{
+			productID = prodID;
+			std::string prodFilter = "";
+			prodFilter = GenerateFilterForPeriod(globalVar, ormasDal, fromDate, tillDate);
+			if (prodFilter.empty())
+				return 0;
+			std::vector<DataLayer::pricesViewCollection> priceVector = ormasDal.GetPrices(errorMessage, prodFilter);
+			if (0 != priceVector.size())
+			{
+				int count = 0;
+				double sum = 0;
+				for each (auto item in priceVector)
+				{
+					count++;
+					sum += std::get<5>(item);
+					
+				}
+				return sum / count;
+			}
+			else
+			{
+				errorMessage = "Cannot find price with this product id";
+			}
+		}
+		return 0;
 	}
 
 	bool Price::IsEmpty()

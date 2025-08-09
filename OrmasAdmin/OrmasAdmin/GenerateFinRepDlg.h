@@ -16,6 +16,7 @@ public:
 	private slots:
 	void Generate();
 	void Close();
+	void ChangeRadio();
 private:
 	BusinessLayer::FinancialReport *fReport = new BusinessLayer::FinancialReport();
 	QWidget* parentForm;
@@ -23,6 +24,6 @@ private:
 	std::string prevFromMonth;
 	std::string prevTillMonth;
 	void CalculatePrevMonth(std::string, std::string, std::string&, std::string&);
-
+	int CalculateMonthCount(std::string, std::string);
 };
 #endif

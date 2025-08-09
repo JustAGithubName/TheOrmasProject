@@ -539,7 +539,7 @@ void CashBookListDlg::GetPrevMonthEnd(std::string forDate, std::string& fromDate
 			startDate = std::to_string(day - 1);
 			startDate += ".";
 		}
-		if (month < 11)
+		if (month < 10)
 		{
 			startDate += "0";
 			startDate += std::to_string(month);
@@ -564,7 +564,7 @@ std::string CashBookListDlg::GetCurrentDate()
 	std::string startDate = "";
 	startDate = std::to_string(day);
 	startDate += ".";
-	if (month < 11)
+	if (month < 10)
 	{
 		startDate += "0";
 		startDate += std::to_string(month);
